@@ -1,0 +1,683 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>CardIQ — India's Best Credit Card Finder</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+:root{
+  --bg:#f4f4f7;--bg2:#fff;--bg3:#f0f0f5;--bg4:#e6e6ee;
+  --bd:rgba(0,0,0,.08);--bd2:rgba(0,0,0,.13);
+  --tx:#0e0e1a;--tx2:#44445c;--tx3:#8888a4;
+  --ac:#4f43e2;--acl:#eeecfd;--acd:#3730b0;
+  --gn:#0c9558;--gnl:#e8f7f1;
+  --am:#b87000;--aml:#fdf3e0;
+  --rd:#c93535;--rdl:#fdeaea;
+  --bl:#1060b8;--bll:#e8f1fc;
+  --pk:#b8306a;--pkl:#fceaf2;
+  --og:#c05018;--ogl:#fdf0e8;
+  --r:14px;--rs:8px;
+}
+html{font-family:'DM Sans',sans-serif;color:var(--tx);background:var(--bg);font-size:15px}
+body{min-height:100vh}
+
+/* ── HEADER ── */
+header{position:sticky;top:0;z-index:200;background:rgba(244,244,247,.96);backdrop-filter:blur(14px);border-bottom:1px solid var(--bd);padding:0 16px;display:flex;align-items:center;justify-content:space-between;height:56px}
+.logo{font-family:'Syne',sans-serif;font-weight:800;font-size:1.3rem;letter-spacing:-.04em}
+.logo span{color:var(--ac)}
+.hdr-r{display:flex;align-items:center;gap:8px}
+.cmp-pill{background:var(--acl);border:1.5px solid var(--ac);color:var(--ac);font-size:12px;font-weight:500;padding:5px 12px;border-radius:20px;cursor:pointer;display:none;align-items:center;gap:5px}
+.cmp-pill:hover{background:var(--ac);color:#fff}
+.quiz-btn{background:var(--ac);color:#fff;border:none;padding:7px 14px;border-radius:22px;font-size:13px;font-weight:500;cursor:pointer;font-family:'DM Sans',sans-serif}
+.quiz-btn:hover{background:var(--acd)}
+
+/* ── HERO ── */
+.hero{background:linear-gradient(135deg,#f0effe 0%,#fafaff 60%,#f4f4f7 100%);padding:28px 16px 22px;text-align:center;border-bottom:1px solid var(--bd)}
+.hero h1{font-family:'Syne',sans-serif;font-weight:800;font-size:clamp(1.6rem,5vw,3rem);letter-spacing:-.04em;line-height:1.1;margin-bottom:8px}
+.hero h1 em{font-style:normal;color:var(--ac)}
+.hero p{color:var(--tx2);font-size:.9rem;max-width:440px;margin:0 auto 18px;line-height:1.6}
+.hero-stats{display:flex;justify-content:center;gap:24px;flex-wrap:wrap}
+.hs-n{font-family:'Syne',sans-serif;font-size:1.3rem;font-weight:800;color:var(--ac);text-align:center}
+.hs-l{font-size:10px;color:var(--tx3);text-transform:uppercase;letter-spacing:.05em;text-align:center}
+.sw{max-width:500px;margin:0 auto 18px;position:relative}
+.sw input{width:100%;padding:12px 44px 12px 18px;background:#fff;border:1.5px solid var(--bd2);border-radius:50px;color:var(--tx);font-size:15px;font-family:'DM Sans',sans-serif;outline:none;box-shadow:0 2px 12px rgba(79,67,226,.06);transition:border .15s}
+.sw input:focus{border-color:var(--ac);box-shadow:0 2px 18px rgba(79,67,226,.12)}
+.sw input::placeholder{color:var(--tx3)}
+.si{position:absolute;right:15px;top:50%;transform:translateY(-50%);color:var(--tx3);font-size:17px;pointer-events:none}
+
+/* ── SPOTLIGHT ── */
+.spot{max-width:900px;margin:16px auto 0;padding:0 12px}
+.spot-in{background:linear-gradient(120deg,#ece9fd,#f5f3ff);border:1.5px solid rgba(79,67,226,.2);border-radius:var(--r);padding:14px 16px;display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.spot-badge{background:var(--ac);color:#fff;font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;padding:3px 9px;border-radius:10px;white-space:nowrap;flex-shrink:0}
+.spot-txt{flex:1;min-width:180px}
+.spot-ttl{font-family:'Syne',sans-serif;font-weight:700;font-size:.88rem;color:var(--tx)}
+.spot-sub{font-size:12px;color:var(--tx2);margin-top:2px;line-height:1.4}
+.spot-cta{background:var(--ac);color:#fff;border:none;padding:7px 16px;border-radius:20px;font-size:12px;font-weight:500;cursor:pointer;font-family:'DM Sans',sans-serif;flex-shrink:0}
+
+/* ── CALC ── */
+.calc{max-width:900px;margin:10px auto 0;padding:0 12px}
+.calc-in{background:#fff;border:1px solid var(--bd2);border-radius:var(--r);padding:14px 16px;display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.calc-ico{font-size:22px;flex-shrink:0}
+.calc-txt{flex:1;min-width:160px}
+.calc-ttl{font-weight:500;font-size:.875rem;color:var(--tx)}
+.calc-sub2{font-size:11px;color:var(--tx3);margin-top:2px}
+.calc-ctrl{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.calc-inp{width:150px;padding:8px 14px;border:1.5px solid var(--bd2);border-radius:22px;font-size:13px;color:var(--tx);font-family:'DM Sans',sans-serif;outline:none;background:#fff}
+.calc-inp:focus{border-color:var(--ac)}
+.calc-go{background:var(--ac);color:#fff;border:none;padding:8px 18px;border-radius:22px;font-size:13px;font-weight:500;cursor:pointer;font-family:'DM Sans',sans-serif}
+.calc-res{max-width:900px;margin:8px auto 0;padding:0 12px}
+.calc-rtl{font-size:13px;color:var(--tx2);padding:4px 2px 8px;font-weight:500}
+.calc-rscr{display:flex;gap:8px;overflow-x:auto;padding-bottom:6px;scrollbar-width:none}
+.calc-rscr::-webkit-scrollbar{display:none}
+.calc-chip{display:flex;align-items:center;gap:7px;background:#fff;border:1.5px solid var(--bd2);border-radius:22px;padding:6px 14px;white-space:nowrap;cursor:pointer;flex-shrink:0;transition:border-color .15s}
+.calc-chip:hover{border-color:var(--ac)}
+.cc-bk{font-size:10px;font-weight:600;padding:2px 7px;border-radius:7px}
+.cc-nm{font-size:12px;font-weight:500;color:var(--tx)}
+.cc-vl{font-size:12px;font-weight:600;color:var(--gn)}
+
+/* ── FILTER BAR ── */
+.fbar{position:sticky;top:56px;z-index:150;background:rgba(244,244,247,.95);backdrop-filter:blur(10px);border-bottom:1px solid var(--bd);padding:8px 12px 6px}
+.fscr{display:flex;gap:6px;overflow-x:auto;padding-bottom:3px;scrollbar-width:none}
+.fscr::-webkit-scrollbar{display:none}
+.chip{padding:6px 13px;border-radius:20px;font-size:13px;border:1.5px solid var(--bd2);background:#fff;color:var(--tx2);cursor:pointer;transition:all .15s;white-space:nowrap;flex-shrink:0}
+.chip:hover{border-color:var(--ac);color:var(--ac)}
+.chip.on{background:var(--ac);border-color:var(--ac);color:#fff}
+.fr2{display:flex;gap:6px;margin-top:6px;align-items:center}
+.tog{padding:5px 12px;border-radius:16px;font-size:12px;font-weight:500;border:1.5px solid var(--bd2);background:#fff;color:var(--tx3);cursor:pointer;transition:all .15s;white-space:nowrap;flex-shrink:0}
+.tog.on{background:var(--gnl);border-color:var(--gn);color:var(--gn)}
+
+/* ── SORT BAR ── */
+.sbar{max-width:1300px;margin:0 auto;padding:8px 12px 4px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:6px}
+.rcnt{font-size:12px;color:var(--tx3)}
+.rcnt strong{color:var(--tx2)}
+.sgrp{display:flex;gap:4px}
+.sbtn{padding:5px 10px;border-radius:8px;font-size:12px;font-weight:500;border:1.5px solid var(--bd);background:transparent;color:var(--tx3);cursor:pointer;transition:all .15s}
+.sbtn:hover,.sbtn.on{background:#fff;border-color:var(--bd2);color:var(--tx);box-shadow:0 1px 4px rgba(0,0,0,.06)}
+
+/* ── GRID ── */
+.grid{max-width:1300px;margin:0 auto;padding:10px 10px 120px;display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:12px}
+
+/* ── CARD ── */
+.card{background:#fff;border:1.5px solid var(--bd);border-radius:var(--r);overflow:hidden;cursor:pointer;transition:box-shadow .2s,border-color .2s,transform .15s;display:flex;flex-direction:column;position:relative}
+.card:hover{border-color:var(--bd2);box-shadow:0 4px 18px rgba(0,0,0,.08);transform:translateY(-2px)}
+.card.sel{border-color:var(--ac);box-shadow:0 0 0 3px rgba(79,67,226,.1)}
+.cbadge{position:absolute;top:10px;right:10px;font-size:9px;font-weight:700;letter-spacing:.04em;padding:3px 8px;border-radius:8px;color:#fff;z-index:1}
+.b-best{background:var(--ac)}.b-free{background:var(--gn)}.b-prem{background:var(--am)}.b-new{background:var(--rd)}
+
+.ctop{padding:14px 14px 10px;background:var(--bg3)}
+.brow{display:flex;align-items:center;justify-content:space-between;margin-bottom:7px}
+.btag{font-size:10px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;padding:3px 8px;border-radius:8px}
+.ntag{font-size:10px;color:var(--tx3);padding:3px 8px;border-radius:8px;border:1px solid var(--bd2);background:#fff}
+.cname{font-family:'Syne',sans-serif;font-size:.9rem;font-weight:700;line-height:1.2;margin-bottom:2px}
+.cvar{font-size:10px;color:var(--tx3);margin-bottom:8px}
+.trow{display:flex;gap:4px;flex-wrap:wrap}
+.tag{font-size:10px;padding:2px 7px;border-radius:6px;font-weight:500}
+.t-cashback{background:var(--gnl);color:var(--gn)}.t-travel{background:var(--bll);color:var(--bl)}.t-rewards{background:var(--acl);color:var(--ac)}.t-fuel{background:var(--aml);color:var(--am)}.t-shopping{background:var(--pkl);color:var(--pk)}.t-premium{background:#fdf9e8;color:#8a6a00}.t-business{background:var(--bll);color:var(--bl)}.t-lifestyle{background:var(--pkl);color:var(--pk)}.t-dining{background:var(--ogl);color:var(--og)}.t-lounge{background:#f2eafe;color:#6030c0}.t-zero-fee{background:var(--gnl);color:var(--gn)}
+
+.cbody{padding:12px 14px;flex:1}
+.scrow{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+.sccir{width:38px;height:38px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'Syne',sans-serif;font-weight:800;font-size:.85rem;flex-shrink:0}
+.sc-hi{background:var(--gnl);color:var(--gn)}.sc-md{background:var(--aml);color:var(--am)}.sc-lo{background:var(--rdl);color:var(--rd)}
+.scinfo{flex:1}
+.sclbl{font-size:10px;color:var(--tx3);text-transform:uppercase;letter-spacing:.03em}
+.mbars{display:flex;gap:3px;margin-top:4px}
+.mbw{flex:1;height:4px;background:var(--bg4);border-radius:4px;overflow:hidden}
+.mb{height:100%;border-radius:4px}
+
+.mets{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-bottom:10px}
+.met{text-align:center;padding:8px 4px;background:var(--bg3);border-radius:6px}
+.mv{font-size:12px;font-weight:500;color:var(--tx);line-height:1.2}
+.mv.g{color:var(--gn)}.mv.a{color:var(--ac)}.mv.am{color:var(--am)}
+.ml{font-size:9px;color:var(--tx3);margin-top:2px;text-transform:uppercase;letter-spacing:.03em}
+
+.fts{display:flex;flex-direction:column;gap:4px}
+.ft{display:flex;gap:7px;font-size:11px;color:var(--tx2);line-height:1.4}
+.fi{color:var(--gn);flex-shrink:0;font-style:normal}
+
+.cfoot{padding:10px 14px;border-top:1px solid var(--bd);display:flex;align-items:center;justify-content:space-between;gap:6px}
+.inc{font-size:10px;color:var(--tx3)}
+.inc strong{color:var(--tx2)}
+.fbtns{display:flex;gap:5px}
+.acmp{padding:5px 10px;border-radius:8px;background:transparent;border:1.5px solid var(--bd2);color:var(--tx3);font-size:11px;cursor:pointer;transition:all .15s;font-family:'DM Sans',sans-serif}
+.acmp:hover{border-color:var(--ac);color:var(--ac)}
+.acmp.on{background:var(--acl);border-color:var(--ac);color:var(--ac)}
+.vbtn{padding:5px 12px;border-radius:8px;background:var(--acl);border:1.5px solid transparent;color:var(--ac);font-size:11px;cursor:pointer;font-weight:500;transition:all .15s;font-family:'DM Sans',sans-serif}
+.vbtn:hover{background:var(--ac);color:#fff}
+
+/* ── COMPARE DRAWER ── */
+.cdraw{position:fixed;bottom:0;left:0;right:0;z-index:300;background:#fff;border-top:2px solid var(--ac);padding:10px 14px;display:flex;align-items:center;gap:10px;transform:translateY(100%);transition:transform .25s;box-shadow:0 -4px 24px rgba(0,0,0,.1)}
+.cdraw.open{transform:translateY(0)}
+.cslots{display:flex;gap:6px;flex:1;overflow-x:auto;scrollbar-width:none}
+.cslots::-webkit-scrollbar{display:none}
+.cslot{min-width:130px;padding:5px 9px;border-radius:7px;border:1px solid var(--bd2);background:var(--bg3);font-size:11px;display:flex;align-items:center;justify-content:space-between;gap:5px;flex-shrink:0}
+.csn{color:var(--tx2);font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:90px}
+.rms{color:var(--tx3);cursor:pointer;font-size:15px;line-height:1;flex-shrink:0}
+.rms:hover{color:var(--rd)}
+.cgo{background:var(--ac);color:#fff;border:none;padding:8px 18px;border-radius:20px;font-size:13px;font-weight:500;cursor:pointer;font-family:'DM Sans',sans-serif;white-space:nowrap;flex-shrink:0}
+.cclear{font-size:12px;color:var(--tx3);cursor:pointer;white-space:nowrap;flex-shrink:0}
+.cclear:hover{color:var(--rd)}
+
+/* ── OVERLAYS ── */
+.ov{position:fixed;inset:0;z-index:400;background:rgba(0,0,0,.42);backdrop-filter:blur(4px);display:flex;align-items:flex-end;justify-content:center;opacity:0;pointer-events:none;transition:opacity .2s}
+@media(min-width:600px){.ov{align-items:center;padding:16px}}
+.ov.open{opacity:1;pointer-events:all}
+.modal{background:#fff;width:100%;max-width:540px;border-radius:18px 18px 0 0;max-height:92vh;overflow-y:auto}
+@media(min-width:600px){.modal{border-radius:18px;max-height:88vh}}
+.mhdr{padding:18px 18px 12px;border-bottom:1px solid var(--bd);display:flex;justify-content:space-between;align-items:flex-start;position:sticky;top:0;background:#fff;z-index:1}
+.mttl{font-family:'Syne',sans-serif;font-size:1rem;font-weight:700}
+.msub{font-size:11px;color:var(--tx3);margin-top:2px}
+.cls{font-size:20px;color:var(--tx3);cursor:pointer;line-height:1;padding:2px}
+.cls:hover{color:var(--tx)}
+
+/* quiz */
+.qbody{padding:18px}
+.qprog{height:4px;background:var(--bg4);border-radius:4px;margin-bottom:18px;overflow:hidden}
+.qpf{height:100%;background:var(--ac);border-radius:4px;transition:width .3s}
+.qlbl{font-weight:500;font-size:.95rem;margin-bottom:12px;color:var(--tx)}
+.qopts{display:flex;flex-direction:column;gap:7px}
+.qopt{padding:11px 14px;border-radius:var(--rs);border:1.5px solid var(--bd2);cursor:pointer;transition:all .15s;display:flex;align-items:center;gap:10px;font-size:14px;color:var(--tx2);background:#fff}
+.qopt:hover,.qopt.sel{border-color:var(--ac);color:var(--ac);background:var(--acl)}
+.qnav{display:flex;justify-content:space-between;margin-top:18px}
+.qbk,.qnx{padding:10px 20px;border-radius:22px;font-size:13px;font-weight:500;cursor:pointer;border:none;font-family:'DM Sans',sans-serif}
+.qbk{background:var(--bg3);color:var(--tx2)}
+.qnx{background:var(--ac);color:#fff}
+.qnx:disabled{background:var(--bg4);color:var(--tx3);cursor:not-allowed}
+.qri{font-size:13px;color:var(--acd);margin-bottom:14px;padding:11px;background:var(--acl);border-radius:var(--rs);font-weight:500}
+.qrc{padding:11px 13px;border-radius:var(--rs);border:1.5px solid var(--bd2);margin-bottom:8px;cursor:pointer;transition:border-color .15s;display:flex;align-items:flex-start;gap:11px;background:#fff}
+.qrc:hover{border-color:var(--ac)}
+.qrk{font-family:'Syne',sans-serif;font-weight:800;font-size:1.1rem;color:var(--ac);flex-shrink:0;min-width:24px}
+.qrn{font-weight:500;font-size:.875rem}
+.qrb{font-size:11px;color:var(--tx3)}
+.qrw{font-size:11px;color:var(--tx2);margin-top:3px;line-height:1.4}
+
+/* compare table */
+.cmw{max-width:900px}
+.ctwrap{padding:14px;overflow-x:auto}
+.ctbl{width:100%;border-collapse:collapse;min-width:380px}
+.ctbl th{padding:9px 11px;text-align:left;font-size:11px;color:var(--tx3);border-bottom:1px solid var(--bd);font-weight:500;white-space:nowrap}
+.ctbl td{padding:9px 11px;font-size:12px;color:var(--tx2);border-bottom:1px solid var(--bd);vertical-align:top}
+.ctbl tr:last-child td{border-bottom:none}
+.rl{font-size:10px;color:var(--tx3);font-weight:600;text-transform:uppercase;letter-spacing:.04em;white-space:nowrap}
+.ch{font-family:'Syne',sans-serif;font-size:12px;font-weight:700;color:var(--tx)}
+.hi{color:var(--gn);font-weight:500}
+
+/* detail */
+.dbody{padding:18px}
+.dsec{margin-bottom:18px}
+.dsec h3{font-family:'Syne',sans-serif;font-size:11px;font-weight:700;color:var(--tx3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:9px}
+.dgrid{display:grid;grid-template-columns:1fr 1fr;gap:7px}
+.di{background:var(--bg3);border-radius:var(--rs);padding:9px 12px}
+.dil{font-size:10px;color:var(--tx3);text-transform:uppercase;letter-spacing:.04em;margin-bottom:3px}
+.div2{font-size:13px;font-weight:500;color:var(--tx)}
+.div2.g{color:var(--gn)}.div2.a{color:var(--ac)}.div2.am{color:var(--am)}
+.ffl{display:flex;flex-direction:column;gap:6px}
+.ffr{display:flex;gap:9px;font-size:13px;color:var(--tx2);padding:8px 12px;background:var(--bg3);border-radius:var(--rs);line-height:1.4}
+.ffi{color:var(--ac);flex-shrink:0}
+.dact{display:flex;gap:8px;flex-wrap:wrap;margin-top:18px}
+.abtn{flex:1;padding:11px 18px;border-radius:22px;background:var(--ac);color:#fff;text-align:center;font-size:13px;font-weight:500;cursor:pointer;text-decoration:none;border:none;font-family:'DM Sans',sans-serif;min-width:120px;display:flex;align-items:center;justify-content:center}
+.abtn:hover{background:var(--acd)}
+.sbtn2{padding:11px 14px;border-radius:22px;border:1.5px solid var(--bd2);background:#fff;color:var(--tx2);font-size:13px;cursor:pointer;font-family:'DM Sans',sans-serif;display:flex;align-items:center;gap:5px}
+.sbtn2:hover{border-color:var(--ac);color:var(--ac)}
+
+/* bank badges */
+.bk-HDFC{background:#e8f0fc;color:#0050c8}.bk-SBI{background:#e8f5fc;color:#005090}.bk-ICICI{background:#fdf0ee;color:#c02800}.bk-Axis{background:#fceef4;color:#a00040}.bk-Kotak{background:#fdf2ee;color:#c04000}.bk-Amex{background:#eef8fd;color:#007ab0}.bk-IDFC{background:#eef8ee;color:#2a8600}.bk-RBL{background:#fceef4;color:#a01040}.bk-Yes{background:#eef8f2;color:#006e38}.bk-SC{background:#eef6fc;color:#006eaa}.bk-AU{background:#fdf5ee;color:#a06000}.bk-IndusInd{background:#f5eefe;color:#500098}.bk-default{background:var(--acl);color:var(--ac)}
+
+/* mobile nav */
+.mobnav{display:none}
+@media(max-width:640px){
+  .mobnav{position:fixed;bottom:0;left:0;right:0;z-index:250;background:#fff;border-top:1px solid var(--bd);display:flex;padding:6px 0 max(6px,env(safe-area-inset-bottom))}
+  .mnb{flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;font-size:10px;color:var(--tx3);cursor:pointer;background:none;border:none;font-family:'DM Sans',sans-serif;padding:3px 6px}
+  .mnb.on{color:var(--ac)}
+  .mnb span:first-child{font-size:18px}
+  .grid{padding-bottom:90px}
+  .cdraw.open{bottom:56px}
+}
+@media(max-width:480px){
+  .hero{padding:20px 14px 18px}
+  .hero h1{font-size:1.5rem}
+  .grid{grid-template-columns:1fr;gap:10px;padding:8px 8px 90px}
+  .spot-in,.calc-in{flex-direction:column;gap:8px}
+  .dgrid{grid-template-columns:1fr 1fr}
+}
+
+/* status bar */
+.dbar{padding:6px 16px;display:flex;align-items:center;justify-content:space-between;font-size:11px;color:var(--tx3);background:var(--gnl);border-bottom:1px solid rgba(12,149,88,.2)}
+.dbar-dot{width:7px;height:7px;border-radius:50%;background:var(--gn);flex-shrink:0}
+.rfbtn{color:var(--ac);cursor:pointer;font-weight:500;background:none;border:none;font-family:'DM Sans',sans-serif;font-size:11px;padding:0}
+.rfbtn:hover{text-decoration:underline}
+
+/* empty */
+.empty{text-align:center;padding:3rem 1rem;color:var(--tx3);grid-column:1/-1}
+.empty h3{color:var(--tx2);margin-bottom:6px}
+.ebtn{display:inline-block;margin-top:12px;padding:9px 20px;border-radius:22px;background:var(--ac);color:#fff;border:none;font-size:13px;cursor:pointer;font-family:'DM Sans',sans-serif}
+
+/* toast */
+.toast{position:fixed;bottom:80px;left:50%;transform:translateX(-50%) translateY(10px);background:#1a1a2e;color:#fff;padding:8px 18px;border-radius:20px;font-size:13px;z-index:600;opacity:0;transition:all .25s;pointer-events:none;white-space:nowrap;box-shadow:0 4px 16px rgba(0,0,0,.2)}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">Card<span>IQ</span></div>
+  <div class="hdr-r">
+    <button class="quiz-btn" onclick="openQuiz()">✦ Find My Card</button>
+    <div class="cmp-pill" id="cmpPill" onclick="openCmpModal()">⇄ Compare <span id="cmpCnt">0</span></div>
+  </div>
+</header>
+
+<div class="dbar">
+  <div style="display:flex;align-items:center;gap:6px">
+    <div class="dbar-dot"></div>
+    <span id="dbarMsg">60 cards loaded · Built-in dataset</span>
+  </div>
+  <button class="rfbtn" onclick="trySheet()">↻ Connect live sheet</button>
+</div>
+
+<div class="hero">
+  <h1>Find your <em>perfect</em> card</h1>
+  <p>Compare 60+ credit cards from every major Indian bank — cashback, travel, premium &amp; business</p>
+  <div class="sw">
+    <input type="search" id="searchInput" placeholder="Search card, bank, or feature…" autocomplete="off">
+    <span class="si">⌕</span>
+  </div>
+  <div class="hero-stats">
+    <div><div class="hs-n" id="statCards">60+</div><div class="hs-l">Cards</div></div>
+    <div><div class="hs-n" id="statBanks">12</div><div class="hs-l">Banks</div></div>
+    <div><div class="hs-n">10</div><div class="hs-l">Categories</div></div>
+    <div><div class="hs-n">Free</div><div class="hs-l">Always</div></div>
+  </div>
+</div>
+
+<div class="spot">
+  <div class="spot-in">
+    <span class="spot-badge">✦ Editor's Pick</span>
+    <div class="spot-txt">
+      <div class="spot-ttl">IDFC FIRST Wealth — Best Premium Card with Zero Annual Fee</div>
+      <div class="spot-sub">Unlimited lounge access · 6X rewards · ₹0 fee forever. Unmatched value in India.</div>
+    </div>
+    <button class="spot-cta" onclick="openDetail(35)">See Card →</button>
+  </div>
+</div>
+
+<div class="calc">
+  <div class="calc-in">
+    <span class="calc-ico">₹</span>
+    <div class="calc-txt">
+      <div class="calc-ttl">Reward Calculator</div>
+      <div class="calc-sub2">Enter monthly spend → see annual value returned per card</div>
+    </div>
+    <div class="calc-ctrl">
+      <input class="calc-inp" type="number" id="calcSpend" placeholder="Monthly spend ₹" min="1000" step="1000">
+      <button class="calc-go" onclick="runCalc()">Calculate</button>
+    </div>
+  </div>
+</div>
+<div class="calc-res" id="calcRes"></div>
+
+<div class="fbar">
+  <div class="fscr" id="catBar">
+    <span class="chip on" data-cat="all">All Cards</span>
+    <span class="chip" data-cat="cashback">💰 Cashback</span>
+    <span class="chip" data-cat="travel">✈️ Travel</span>
+    <span class="chip" data-cat="rewards">🎁 Rewards</span>
+    <span class="chip" data-cat="premium">👑 Premium</span>
+    <span class="chip" data-cat="shopping">🛍 Shopping</span>
+    <span class="chip" data-cat="dining">🍽 Dining</span>
+    <span class="chip" data-cat="fuel">⛽ Fuel</span>
+    <span class="chip" data-cat="lifestyle">💎 Lifestyle</span>
+    <span class="chip" data-cat="business">💼 Business</span>
+    <span class="chip" data-cat="zero-fee">🆓 Zero Fee</span>
+  </div>
+  <div class="fr2">
+    <div class="fscr" id="bankBar" style="flex:1">
+      <span class="chip on" data-bank="all">All Banks</span>
+      <span class="chip" data-bank="HDFC">HDFC</span>
+      <span class="chip" data-bank="SBI">SBI</span>
+      <span class="chip" data-bank="ICICI">ICICI</span>
+      <span class="chip" data-bank="Axis">Axis</span>
+      <span class="chip" data-bank="Kotak">Kotak</span>
+      <span class="chip" data-bank="Amex">Amex</span>
+      <span class="chip" data-bank="IDFC">IDFC</span>
+      <span class="chip" data-bank="RBL">RBL</span>
+      <span class="chip" data-bank="Yes Bank">Yes</span>
+      <span class="chip" data-bank="IndusInd">IndusInd</span>
+      <span class="chip" data-bank="Standard Chartered">SC</span>
+      <span class="chip" data-bank="AU Small Finance">AU</span>
+    </div>
+    <div style="display:flex;gap:5px;flex-shrink:0">
+      <div class="tog" id="togFree" onclick="toggleF('free')">🆓 No Fee</div>
+      <div class="tog" id="togLounge" onclick="toggleF('lounge')">🛋 Lounge</div>
+    </div>
+  </div>
+</div>
+
+<div class="sbar">
+  <div class="rcnt" id="rcnt"></div>
+  <div class="sgrp">
+    <button class="sbtn on" data-sort="score">Best Match</button>
+    <button class="sbtn" data-sort="fee-asc">Fee ↑</button>
+    <button class="sbtn" data-sort="cashback">Cashback</button>
+    <button class="sbtn" data-sort="alpha">A–Z</button>
+  </div>
+</div>
+
+<div class="grid" id="grid"></div>
+
+<div class="cdraw" id="cdraw">
+  <div class="cslots" id="cslots"></div>
+  <button class="cgo" onclick="openCmpModal()">Compare →</button>
+  <span class="cclear" onclick="clearCmp()">Clear</span>
+</div>
+
+<nav class="mobnav">
+  <button class="mnb on" id="mnCards" onclick="mobNav('cards')"><span>🃏</span>Cards</button>
+  <button class="mnb" onclick="openQuiz()"><span>✦</span>Find Mine</button>
+  <button class="mnb" onclick="scrollCalc()"><span>₹</span>Calculate</button>
+  <button class="mnb" onclick="openCmpModal()"><span>⇄</span>Compare</button>
+</nav>
+
+<!-- QUIZ MODAL -->
+<div class="ov" id="quizOv">
+  <div class="modal">
+    <div class="mhdr"><div><div class="mttl">✦ Find My Perfect Card</div><div class="msub">Answer 4 quick questions</div></div><span class="cls" onclick="closeQuiz()">✕</span></div>
+    <div class="qbody" id="qbody"></div>
+  </div>
+</div>
+
+<!-- COMPARE MODAL -->
+<div class="ov" id="cmpOv">
+  <div class="modal cmw" style="max-width:900px">
+    <div class="mhdr"><div><div class="mttl">Side-by-side comparison</div><div class="msub" id="cmpSub"></div></div><span class="cls" onclick="closeCmpModal()">✕</span></div>
+    <div class="ctwrap"><table class="ctbl" id="ctbl"></table></div>
+  </div>
+</div>
+
+<!-- DETAIL MODAL -->
+<div class="ov" id="detOv">
+  <div class="modal">
+    <div class="mhdr"><div><div class="mttl" id="dttl"></div><div class="msub" id="dsub"></div></div><span class="cls" onclick="closeDet()">✕</span></div>
+    <div class="dbody" id="dbody"></div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ─── ALL 60 CARDS ────────────────────────────────────────────────────────────
+const CARDS=[
+{id:1,bank:"HDFC",name:"Infinia Metal",v:"Super Premium Metal",net:"Visa Infinite",fee:12500,minInc:200000,cats:["premium","travel","rewards","lifestyle"],score:96,cash:3.3,reward:"5 pts/₹150",lounge:"Unlimited",jFee:12500,wel:"12,500 reward pts",feats:["Unlimited domestic & intl airport lounge","Golf programme & spa access","10X reward pts on SmartBuy","Priority Pass membership","Concierge 24/7","₹5000 intl travel insurance"],apply:"https://www.hdfcbank.com/personal/pay/cards/credit-cards/infinia-credit-card",inc:"₹2L+/mo",best:"Frequent flyers & luxury spenders",rr:3.3,isNew:false},
+{id:2,bank:"HDFC",name:"Diners Club Black",v:"Premium Dining",net:"Diners Club",fee:10000,minInc:150000,cats:["premium","travel","dining","rewards"],score:94,cash:3.3,reward:"5 pts/₹150",lounge:"Unlimited",jFee:10000,wel:"10,000 reward pts",feats:["Unlimited airport lounge (Diners Club)","10X rewards on SmartBuy","Exclusive dining benefits","Golf & spa privileges","Annual milestone ₹10,000"],apply:"https://www.hdfcbank.com/personal/pay/cards/credit-cards/diners-club-black-credit-card",inc:"₹1.5L+/mo",best:"Premium lifestyle & dining",rr:3.3,isNew:false},
+{id:3,bank:"HDFC",name:"Regalia Gold",v:"Premium Rewards",net:"Visa Signature",fee:2500,minInc:100000,cats:["travel","rewards","premium"],score:88,cash:2,reward:"4 pts/₹150",lounge:"12/year",jFee:2500,wel:"2,500 bonus pts",feats:["12 complimentary lounge visits/yr","Club Vistara & Air India miles transfer","Milestone rewards up to ₹6,500","Travel delay insurance"],apply:"https://www.hdfcbank.com/personal/pay/cards/credit-cards/regalia-gold",inc:"₹1L+/mo",best:"Travel rewards & miles",rr:2,isNew:false},
+{id:4,bank:"HDFC",name:"Millennia",v:"Online Cashback",net:"Visa",fee:1000,minInc:35000,cats:["cashback","shopping","lifestyle"],score:82,cash:5,reward:"1% others",lounge:"None",jFee:1000,wel:"₹1,000 cashback",feats:["5% cashback on Amazon, Flipkart, Myntra","5% on PayZapp & SmartBuy","1% cashback on all other spends","Zero forex markup on EMI"],apply:"https://www.hdfcbank.com/personal/pay/cards/credit-cards/millennia-credit-card",inc:"₹35K+/mo",best:"Online shoppers & millennials",rr:3,isNew:false},
+{id:5,bank:"HDFC",name:"MoneyBack+",v:"Entry Cashback",net:"Mastercard",fee:500,minInc:20000,cats:["cashback","zero-fee"],score:74,cash:2,reward:"2%",lounge:"None",jFee:500,wel:"500 CashPoints",feats:["2% cashback on online spends","Fuel surcharge waiver up to ₹250/mo","2X reward on EMI transactions"],apply:"https://www.hdfcbank.com/personal/pay/cards/credit-cards/moneyback-plus-credit-card",inc:"₹20K+/mo",best:"Entry-level cashback",rr:2,isNew:false},
+{id:6,bank:"HDFC",name:"Swiggy HDFC",v:"Food Delivery",net:"Visa",fee:500,minInc:25000,cats:["dining","cashback","lifestyle"],score:79,cash:10,reward:"1.5%",lounge:"None",jFee:500,wel:"₹500 Swiggy credits",feats:["10% cashback on Swiggy food orders","10% on Swiggy Instamart","Swiggy One membership (3 months free)","1.5% on all other online spends"],apply:"https://www.hdfcbank.com/personal/pay/cards/credit-cards/swiggy-credit-card",inc:"₹25K+/mo",best:"Swiggy regulars",rr:5,isNew:false},
+{id:7,bank:"HDFC",name:"6E Rewards XL",v:"IndiGo Co-brand",net:"Visa",fee:1500,minInc:35000,cats:["travel","cashback","rewards"],score:81,cash:3,reward:"6E pts",lounge:"4/year",jFee:1500,wel:"₹2,000 IndiGo voucher",feats:["3 6E rewards per ₹100 on IndiGo","2 on dining & entertainment","4 lounge visits/year","Complimentary IndiGo seat upgrade"],apply:"https://www.hdfcbank.com/personal/pay/cards/credit-cards/6e-rewards-xl",inc:"₹35K+/mo",best:"IndiGo frequent flyers",rr:2.5,isNew:false},
+{id:8,bank:"HDFC",name:"Tata Neu Infinity",v:"Tata Super Card",net:"Mastercard",fee:1499,minInc:50000,cats:["cashback","shopping","rewards"],score:84,cash:5,reward:"3%",lounge:"8/year",jFee:1499,wel:"1,499 NeuCoins",feats:["5% NeuCoins on Tata apps (BigBasket/Croma/1mg)","3% on other Tata brands","1.5% on all others","8 airport lounge visits/year"],apply:"https://www.tataneu.com/credit-card/infinity",inc:"₹50K+/mo",best:"Tata power users",rr:3,isNew:false},
+{id:9,bank:"HDFC",name:"Business Regalia",v:"Business Premium",net:"Visa",fee:2500,minInc:100000,cats:["business","travel","rewards"],score:83,cash:2,reward:"4 pts/₹150",lounge:"12/year",jFee:2500,wel:"2,500 reward pts",feats:["GST invoice management","12 airport lounge visits/yr","4X rewards on business spends","Employee add-on cards","Quarterly milestone benefits"],apply:"https://www.hdfcbank.com/personal/pay/cards/credit-cards/business-regalia",inc:"₹1L+/mo",best:"SME business owners",rr:2,isNew:false},
+{id:10,bank:"HDFC",name:"Tata Neu Plus",v:"Tata Ecosystem",net:"Mastercard",fee:499,minInc:25000,cats:["cashback","shopping","rewards"],score:78,cash:3,reward:"NeuCoins",lounge:"None",jFee:499,wel:"499 NeuCoins",feats:["3% NeuCoins on Tata apps","2% on Tata brands","1 NeuCoin = ₹1","Cashback on joining spend"],apply:"https://www.tataneu.com/credit-card",inc:"₹25K+/mo",best:"Tata ecosystem shoppers",rr:2,isNew:false},
+{id:11,bank:"SBI",name:"ELITE",v:"Premium Travel",net:"Visa Signature",fee:4999,minInc:75000,cats:["travel","premium","rewards","lifestyle"],score:87,cash:2,reward:"5 pts/₹100",lounge:"6/year",jFee:4999,wel:"₹5,000 welcome vouchers",feats:["6 complimentary airport lounge visits","5X rewards on dining & groceries","Milestone bonus up to ₹13,000","Club Vistara Silver membership","Unlimited movies @BookMyShow"],apply:"https://www.sbicard.com/en/personal/credit-cards/travel/sbi-card-elite.page",inc:"₹75K+/mo",best:"Lifestyle & travel",rr:2.5,isNew:false},
+{id:12,bank:"SBI",name:"Cashback Card",v:"Flat Cashback",net:"Visa",fee:999,minInc:20000,cats:["cashback","shopping","zero-fee"],score:85,cash:5,reward:"1% offline",lounge:"None",jFee:999,wel:"None",feats:["5% cashback on ALL online spends","1% cashback on offline spends","No cap on cashback earning","Annual fee waived on ₹2L spend"],apply:"https://www.sbicard.com/en/personal/credit-cards/shopping/sbi-cashback-card.page",inc:"₹20K+/mo",best:"Flat 5% online cashback",rr:3,isNew:false},
+{id:13,bank:"SBI",name:"PRIME",v:"Everyday Rewards",net:"Visa",fee:2999,minInc:50000,cats:["rewards","lifestyle","shopping"],score:81,cash:1.5,reward:"5 pts/₹100",lounge:"8/year",jFee:2999,wel:"3,000 bonus pts",feats:["5X rewards on dining & groceries","8 lounge visits/year","Birthday bonus 20X reward pts","Preferential balance transfer rates"],apply:"https://www.sbicard.com/en/personal/credit-cards/rewards/sbi-card-prime.page",inc:"₹50K+/mo",best:"Everyday rewards spenders",rr:2,isNew:false},
+{id:14,bank:"SBI",name:"BPCL Octane",v:"Fuel Co-brand",net:"Visa",fee:1499,minInc:25000,cats:["fuel","cashback","rewards"],score:79,cash:7.25,reward:"13 pts/₹100",lounge:"None",jFee:1499,wel:"6,000 bonus pts",feats:["7.25% value back at BPCL","13X reward pts at BPCL outlets","1% fuel surcharge waiver","4X rewards on dining & movies"],apply:"https://www.sbicard.com/en/personal/credit-cards/travel/bpcl-sbi-card-octane.page",inc:"₹25K+/mo",best:"High fuel spend customers",rr:4,isNew:false},
+{id:15,bank:"SBI",name:"SimplySAVE",v:"Entry Everyday",net:"Mastercard",fee:499,minInc:15000,cats:["cashback","fuel","shopping"],score:68,cash:1,reward:"10 pts dining",lounge:"None",jFee:499,wel:"2,000 bonus pts",feats:["10X rewards on dining, movies & groceries","1% fuel surcharge waiver","Annual fee reversed on ₹1L spend"],apply:"https://www.sbicard.com/en/personal/credit-cards/shopping/simplysave-sbicard.page",inc:"₹15K+/mo",best:"First-time card users",rr:1.5,isNew:false},
+{id:16,bank:"SBI",name:"IRCTC Platinum",v:"Railway Travel",net:"Visa",fee:500,minInc:15000,cats:["travel","cashback","rewards"],score:72,cash:1.8,reward:"10 pts/₹100",lounge:"None",jFee:500,wel:"350 bonus pts",feats:["1.8% value back on IRCTC","10 reward pts per ₹100 on IRCTC","1% transaction charge waiver"],apply:"https://www.sbicard.com/en/personal/credit-cards/travel/sbi-irctc-platinum.page",inc:"₹15K+/mo",best:"Frequent train travellers",rr:1.8,isNew:false},
+{id:17,bank:"SBI",name:"Yatra SBI",v:"Travel Co-brand",net:"Visa",fee:499,minInc:20000,cats:["travel","cashback"],score:70,cash:6,reward:"1 pt/₹100",lounge:"None",jFee:499,wel:"₹1,000 Yatra voucher",feats:["6% value back on Yatra domestic flights","5% on international flights","₹100 off on hotel bookings","Annual fee waived on ₹1L spend"],apply:"https://www.sbicard.com/en/personal/credit-cards/travel/yatra-sbi-card.page",inc:"₹20K+/mo",best:"Yatra.com users",rr:2,isNew:false},
+{id:18,bank:"ICICI",name:"Emeralde Private Metal",v:"Ultra Premium",net:"Visa Infinite",fee:12000,minInc:200000,cats:["premium","travel","lifestyle","rewards"],score:93,cash:3,reward:"6 pts/₹100",lounge:"Unlimited",jFee:12000,wel:"₹12,000 vouchers",feats:["Unlimited domestic + intl lounge","Spa & golf access","6X rewards on all spends","Concierge service","Annual milestone ₹15,000+"],apply:"https://www.icicibank.com/card/credit-cards/emeralde-private-metal-credit-card",inc:"₹2L+/mo",best:"Ultra HNI lifestyle & travel",rr:3,isNew:false},
+{id:19,bank:"ICICI",name:"Amazon Pay ICICI",v:"Lifetime Free Cashback",net:"Visa",fee:0,minInc:20000,cats:["cashback","shopping","zero-fee"],score:89,cash:5,reward:"2% others",lounge:"None",jFee:0,wel:"None",feats:["5% cashback for Amazon Prime members","3% for non-Prime","2% on Amazon Pay bill payments","Lifetime free — no annual fee ever","No cashback cap"],apply:"https://www.icicibank.com/card/credit-cards/amazon-pay-credit-card",inc:"₹20K+/mo",best:"Best lifetime-free cashback",rr:3,isNew:false},
+{id:20,bank:"ICICI",name:"Sapphiro",v:"Premium Lifestyle",net:"Visa Infinite",fee:3500,minInc:75000,cats:["premium","travel","lifestyle"],score:83,cash:2,reward:"4 pts/₹100",lounge:"8/year",jFee:3500,wel:"₹3,500 vouchers",feats:["8 airport lounge visits/year","4X rewards on dining, movies, hotels","Complimentary spa & golf sessions","Priority customer service"],apply:"https://www.icicibank.com/card/credit-cards/sapphiro-credit-card",inc:"₹75K+/mo",best:"Premium lifestyle spenders",rr:2,isNew:false},
+{id:21,bank:"ICICI",name:"Coral",v:"Entry Rewards",net:"Visa",fee:500,minInc:25000,cats:["rewards","lifestyle","shopping"],score:72,cash:1,reward:"2 pts/₹100",lounge:"2/quarter",jFee:500,wel:"None",feats:["2 free lounge visits per quarter","2X reward on groceries & utilities","PAYBACK programme","Birthday month 3X rewards"],apply:"https://www.icicibank.com/card/credit-cards/coral-credit-card",inc:"₹25K+/mo",best:"Entry-to-mid rewards",rr:1.5,isNew:false},
+{id:22,bank:"ICICI",name:"MakeMyTrip Platinum",v:"Travel Co-brand",net:"Mastercard",fee:999,minInc:30000,cats:["travel","cashback","rewards"],score:79,cash:5,reward:"2 pts/₹100",lounge:"None",jFee:999,wel:"₹1,500 MMT voucher",feats:["5% discount on MMT flights","2.5% on MMT hotels","MMT double black membership","1% cashback on other spends"],apply:"https://www.icicibank.com/card/credit-cards/makemytrip-credit-card",inc:"₹30K+/mo",best:"MakeMyTrip bookers",rr:2.5,isNew:false},
+{id:23,bank:"ICICI",name:"Platinum",v:"Lifetime Free",net:"Visa",fee:0,minInc:15000,cats:["zero-fee","cashback","fuel"],score:64,cash:2,reward:"1%",lounge:"None",jFee:0,wel:"None",feats:["2 PAYBACK pts per ₹100","1% fuel surcharge waiver","Lifetime free","Easy EMI on purchases"],apply:"https://www.icicibank.com/card/credit-cards/platinum-chip-credit-card",inc:"₹15K+/mo",best:"First card, no fee",rr:1,isNew:false},
+{id:24,bank:"Axis",name:"Magnus",v:"Super Premium",net:"Visa Infinite",fee:10000,minInc:150000,cats:["premium","travel","rewards","lifestyle"],score:95,cash:3.5,reward:"12 pts/₹200",lounge:"Unlimited",jFee:10000,wel:"25,000 EDGE pts",feats:["12 EDGE pts per ₹200 (~3.6% value)","Unlimited lounge worldwide","Accor Plus Silver membership","Priority Pass membership","1:1 miles to airlines"],apply:"https://www.axisbank.com/retail/cards/credit-card/magnus-credit-card",inc:"₹1.5L+/mo",best:"Top travel & rewards in India",rr:3.5,isNew:false},
+{id:25,bank:"Axis",name:"Flipkart Axis",v:"Shopping Cashback",net:"Visa",fee:500,minInc:25000,cats:["cashback","shopping","zero-fee"],score:84,cash:5,reward:"1.5%",lounge:"4/year",jFee:500,wel:"₹500 Flipkart voucher",feats:["5% cashback on Flipkart & Myntra","4% on preferred merchants","1.5% unlimited cashback on others","4 free lounge visits/year"],apply:"https://www.axisbank.com/retail/cards/credit-card/flipkart-axis-bank-credit-card",inc:"₹25K+/mo",best:"Flipkart & Myntra shoppers",rr:2.5,isNew:false},
+{id:26,bank:"Axis",name:"Vistara Infinite",v:"Aviation Premium",net:"Visa Infinite",fee:10000,minInc:100000,cats:["travel","premium","lifestyle"],score:86,cash:2,reward:"6 CV pts/₹200",lounge:"Unlimited",jFee:10000,wel:"Business class ticket + Gold",feats:["Club Vistara Gold on joining","Business class ticket on joining","6 CV pts per ₹200","Unlimited lounge access","Annual renewal Business class ticket"],apply:"https://www.axisbank.com/retail/cards/credit-card/vistara-infinite-credit-card",inc:"₹1L+/mo",best:"Air Vistara flyers",rr:2,isNew:false},
+{id:27,bank:"Axis",name:"MY Zone",v:"Entertainment",net:"Mastercard",fee:500,minInc:15000,cats:["cashback","lifestyle","shopping"],score:70,cash:4,reward:"1%",lounge:"None",jFee:500,wel:"None",feats:["10% cashback on Swiggy, Zomato, BigBasket","4% on online fashion","2% on entertainment","1% unlimited others"],apply:"https://www.axisbank.com/retail/cards/credit-card/axis-bank-my-zone-credit-card",inc:"₹15K+/mo",best:"Food & entertainment spenders",rr:3,isNew:false},
+{id:28,bank:"Axis",name:"Atlas",v:"Travel Miles",net:"Visa Signature",fee:5000,minInc:75000,cats:["travel","rewards","premium"],score:86,cash:2,reward:"5 EDGE Miles/₹100",lounge:"8/year",jFee:5000,wel:"5,000 EDGE Miles",feats:["5 EDGE Miles per ₹100 on travel","Transfer to 10+ airlines","8 lounge visits/year","No expiry on miles","1:1 airline miles transfer"],apply:"https://www.axisbank.com/retail/cards/credit-card/atlas-credit-card",inc:"₹75K+/mo",best:"Miles accumulation & transfers",rr:2.5,isNew:false},
+{id:29,bank:"Axis",name:"Airtel Axis",v:"Telecom Cashback",net:"Visa",fee:500,minInc:20000,cats:["cashback","lifestyle","shopping"],score:76,cash:25,reward:"1%",lounge:"4/year",jFee:500,wel:"₹500 Airtel cashback",feats:["25% cashback on Airtel recharges & postpaid","10% on Swiggy & BigBasket","1% on other spends","4 lounge visits/year"],apply:"https://www.axisbank.com/retail/cards/credit-card/airtel-axis-bank-credit-card",inc:"₹20K+/mo",best:"Airtel subscribers",rr:5,isNew:false},
+{id:30,bank:"Axis",name:"Indian Oil Axis",v:"Fuel Co-brand",net:"Visa",fee:500,minInc:20000,cats:["fuel","cashback","rewards"],score:76,cash:4,reward:"20 pts/₹100 at IOCL",lounge:"None",jFee:500,wel:"100 pts",feats:["20 EDGE pts per ₹100 at IOCL","4 pts on supermarkets & bills","1% fuel surcharge waiver","Annual fee waived on ₹50K fuel spend"],apply:"https://www.axisbank.com/retail/cards/credit-card/indian-oil-axis-bank-credit-card",inc:"₹20K+/mo",best:"Indian Oil customers",rr:2,isNew:false},
+{id:31,bank:"Kotak",name:"White Reserve",v:"Premium",net:"Visa Infinite",fee:7500,minInc:120000,cats:["premium","travel","lifestyle"],score:85,cash:3,reward:"8 pts/₹100",lounge:"Unlimited",jFee:7500,wel:"7,500 reward pts",feats:["Unlimited airport lounge worldwide","Priority Pass membership","Golf programme","8X rewards on weekends","Dedicated relationship manager"],apply:"https://www.kotak.com/en/personal-banking/cards/credit-cards/white-reserve.html",inc:"₹1.2L+/mo",best:"Premium travel & lifestyle",rr:3,isNew:false},
+{id:32,bank:"Kotak",name:"Royale Signature",v:"Mid-Premium",net:"Visa Signature",fee:1499,minInc:50000,cats:["rewards","lifestyle","travel"],score:76,cash:1.5,reward:"4 pts/₹100",lounge:"2/quarter",jFee:1499,wel:"None",feats:["4X rewards on dining, travel, entertainment","2 domestic lounge visits/quarter","Milestone bonus at ₹3L spend","Petrol surcharge waiver"],apply:"https://www.kotak.com/en/personal-banking/cards/credit-cards/royale-signature.html",inc:"₹50K+/mo",best:"Lifestyle rewards",rr:1.5,isNew:false},
+{id:33,bank:"Kotak",name:"811 Dream Different",v:"Zero Fee",net:"Visa",fee:0,minInc:15000,cats:["zero-fee","cashback"],score:65,cash:2,reward:"1%",lounge:"None",jFee:0,wel:"None",feats:["Lifetime free","Available against FD — no income proof needed","5% cashback on eligible categories","Instant approval"],apply:"https://www.kotak.com/en/personal-banking/cards/credit-cards/811-dream-different.html",inc:"₹15K+/mo or FD",best:"New-to-credit customers",rr:2,isNew:false},
+{id:34,bank:"Kotak",name:"PVR Platinum",v:"Entertainment",net:"Visa",fee:499,minInc:20000,cats:["lifestyle","cashback","shopping"],score:69,cash:4,reward:"1%",lounge:"None",jFee:499,wel:"None",feats:["2 complimentary PVR tickets/month on ₹7,500 spend","4% cashback on dining","Annual fee waived on ₹75K spend"],apply:"https://www.kotak.com/en/personal-banking/cards/credit-cards/pvr-platinum.html",inc:"₹20K+/mo",best:"Movie buffs",rr:2,isNew:false},
+{id:35,bank:"IDFC",name:"Wealth",v:"Premium Zero Fee",net:"Visa Signature",fee:0,minInc:100000,cats:["premium","zero-fee","travel","rewards"],score:91,cash:3,reward:"6 pts/₹150",lounge:"Unlimited",jFee:0,wel:"None",feats:["Zero annual fee — ever","Unlimited domestic airport lounge","6X rewards on online spends","Low 9% APR on revolving credit","10X pts on first EMI"],apply:"https://www.idfcfirstbank.com/credit-card/wealth-credit-card",inc:"₹1L+/mo",best:"Best premium zero-fee in India",rr:3,isNew:false},
+{id:36,bank:"IDFC",name:"FIRST Classic",v:"Zero Fee Rewards",net:"Visa",fee:0,minInc:20000,cats:["zero-fee","cashback","rewards"],score:82,cash:1.5,reward:"3 pts/₹150",lounge:"4/year",jFee:0,wel:"None",feats:["Lifetime zero fee","4 domestic lounge visits/year","10X rewards first 30 days","Lowest APR in India (~9%)"],apply:"https://www.idfcfirstbank.com/credit-card/first-classic-credit-card",inc:"₹20K+/mo",best:"Zero-fee with lounge access",rr:1.5,isNew:false},
+{id:37,bank:"IDFC",name:"FIRST Select",v:"Mid Zero Fee",net:"Visa Signature",fee:0,minInc:50000,cats:["zero-fee","travel","rewards"],score:86,cash:2,reward:"4 pts/₹150",lounge:"Unlimited",jFee:0,wel:"None",feats:["Unlimited domestic lounge","Zero annual fee","4X rewards on online spends","Travel insurance & emergency assist"],apply:"https://www.idfcfirstbank.com/credit-card/select-credit-card",inc:"₹50K+/mo",best:"Premium card, zero fee",rr:2,isNew:false},
+{id:38,bank:"IDFC",name:"FIRST Power+",v:"HPCL Fuel",net:"Visa",fee:499,minInc:20000,cats:["fuel","cashback","rewards"],score:78,cash:6.5,reward:"2%",lounge:"None",jFee:499,wel:"₹500 fuel voucher",feats:["6.5% value back at HPCL pumps","Fuel surcharge waiver","Zero forex mark-up","4 reward pts per ₹150 on groceries & bills"],apply:"https://www.idfcfirstbank.com/credit-card/first-power-plus-credit-card",inc:"₹20K+/mo",best:"HPCL fuel users",rr:3,isNew:false},
+{id:39,bank:"Amex",name:"Platinum Charge",v:"Charge Card",net:"Amex",fee:60000,minInc:300000,cats:["premium","travel","lifestyle"],score:91,cash:3,reward:"5 MR pts/₹50",lounge:"Unlimited",jFee:60000,wel:"₹20,000 travel credits",feats:["Centurion lounge worldwide","Marriott & Hilton elite status","Travel & dining credits ₹20,000+","Concierge 24/7","Global Entry / TSA PreCheck credit"],apply:"https://www.americanexpress.com/in/credit-cards/platinum-charge-card/",inc:"₹3L+/mo",best:"Luxury travel & Centurion lounges",rr:3,isNew:false},
+{id:40,bank:"Amex",name:"Gold Card",v:"Rewards Premium",net:"Amex",fee:4500,minInc:60000,cats:["travel","rewards","dining"],score:82,cash:2,reward:"5 MR pts/₹50",lounge:"4/year",jFee:4500,wel:"4,000 MR pts",feats:["5 MR pts per ₹50","1:1 miles to airlines","Dining privileges at partners","Annual milestone bonus pts"],apply:"https://www.americanexpress.com/in/credit-cards/gold-credit-card/",inc:"₹60K+/mo",best:"MR points maximisers",rr:2.5,isNew:false},
+{id:41,bank:"Amex",name:"SmartEarn",v:"Entry Cashback",net:"Amex",fee:495,minInc:25000,cats:["cashback","shopping","zero-fee"],score:73,cash:10,reward:"5%",lounge:"None",jFee:495,wel:"None",feats:["10 MR pts per ₹50 on Amazon & Flipkart & BookMyShow","5 MR pts on dining & travel","₹500 cashback milestone"],apply:"https://www.americanexpress.com/in/credit-cards/smartearn-credit-card/",inc:"₹25K+/mo",best:"Online shoppers on budget",rr:3,isNew:false},
+{id:42,bank:"Amex",name:"Membership Rewards",v:"Entry Rewards",net:"Amex",fee:1000,minInc:30000,cats:["rewards","cashback","shopping"],score:76,cash:1,reward:"1 MR pt/₹50",lounge:"None",jFee:1000,wel:"4,000 MR pts",feats:["1 MR pt per ₹50 (non-fuel)","5X MR pts in first month","Convert 18,000 pts to ₹7,500 gift card","Taj & Starwood hotel benefits"],apply:"https://www.americanexpress.com/in/credit-cards/membership-rewards-credit-card/",inc:"₹30K+/mo",best:"Amex beginners",rr:1.5,isNew:false},
+{id:43,bank:"RBL",name:"Shoprite",v:"Shopping Cashback",net:"Mastercard",fee:500,minInc:25000,cats:["cashback","shopping"],score:75,cash:5,reward:"1%",lounge:"None",jFee:500,wel:"₹500 cashback",feats:["5% cashback on groceries","10% cashback on movies","1% on all others","Fuel surcharge waiver"],apply:"https://www.rblbank.com/Cards/Credit-Cards/ShopRite",inc:"₹25K+/mo",best:"Grocery & entertainment cashback",rr:3,isNew:false},
+{id:44,bank:"RBL",name:"Zomato Edition",v:"Food Co-brand",net:"Mastercard",fee:250,minInc:20000,cats:["dining","cashback","lifestyle"],score:70,cash:10,reward:"1%",lounge:"None",jFee:250,wel:"₹250 Zomato credits",feats:["10% cashback on Zomato orders","Zomato Gold 1 month free","5% on other dining","1% on all others"],apply:"https://www.rblbank.com/Cards/Credit-Cards/Zomato",inc:"₹20K+/mo",best:"Zomato power users",rr:4,isNew:false},
+{id:45,bank:"RBL",name:"Movies & More",v:"Entertainment Free",net:"Mastercard",fee:0,minInc:20000,cats:["lifestyle","cashback","zero-fee"],score:66,cash:3,reward:"1%",lounge:"None",jFee:0,wel:"None",feats:["Buy 1 Get 1 on BookMyShow","3% cashback on movies & entertainment","Zero annual fee — lifetime","1% on all others"],apply:"https://www.rblbank.com/Cards/Credit-Cards/Movies-More",inc:"₹20K+/mo",best:"Movie-goers on budget",rr:2,isNew:false},
+{id:46,bank:"RBL",name:"Nexxt",v:"Rewards",net:"Mastercard",fee:999,minInc:35000,cats:["rewards","lifestyle"],score:72,cash:1.5,reward:"2 pts/₹100",lounge:"2/quarter",jFee:999,wel:"2,000 pts",feats:["2X rewards on dining & shopping","2 lounge visits/quarter","In-card EMI button feature","Fuel surcharge waiver"],apply:"https://www.rblbank.com/Cards/Credit-Cards/Nexxt",inc:"₹35K+/mo",best:"Innovative rewards features",rr:1.5,isNew:false},
+{id:47,bank:"Yes Bank",name:"Marquee",v:"Super Premium",net:"Mastercard World Elite",fee:9999,minInc:150000,cats:["premium","travel","lifestyle"],score:88,cash:3,reward:"36 YES pts/₹200",lounge:"Unlimited",jFee:9999,wel:"15,000 YES pts",feats:["Unlimited global lounge (Dragon Pass)","Golf & spa programme","Travel insurance ₹1 Cr","Personal concierge 24/7","1:1 airline miles transfer"],apply:"https://www.yesbank.in/personal-banking/yes-individual/cards/yes-marquee-credit-card",inc:"₹1.5L+/mo",best:"Premium travel — hidden gem",rr:3,isNew:false},
+{id:48,bank:"Yes Bank",name:"YES Prosper",v:"Rewards",net:"Visa",fee:399,minInc:20000,cats:["cashback","rewards"],score:68,cash:2,reward:"8 pts/₹200",lounge:"2/year",jFee:399,wel:"500 pts",feats:["2X rewards on weekend spends","2 lounge visits/year","Low forex markup 1.75%","8 pts per ₹200"],apply:"https://www.yesbank.in/personal-banking/yes-individual/cards",inc:"₹20K+/mo",best:"Weekend spenders",rr:1.5,isNew:false},
+{id:49,bank:"Standard Chartered",name:"Ultimate",v:"Premium Rewards",net:"Visa Infinite",fee:5000,minInc:100000,cats:["premium","travel","rewards"],score:85,cash:3.3,reward:"5 pts/₹150",lounge:"Unlimited",jFee:5000,wel:"5,000 pts",feats:["Unlimited airport lounge","Zero forex markup internationally","5 pts per ₹150 on all spends","Golf programme","Travel insurance ₹1 Cr"],apply:"https://www.sc.com/in/credit-cards/ultimate-credit-card/",inc:"₹1L+/mo",best:"Premium with zero forex markup",rr:3.3,isNew:false},
+{id:50,bank:"Standard Chartered",name:"EaseMyTrip",v:"Travel Co-brand",net:"Visa",fee:350,minInc:25000,cats:["travel","cashback","shopping"],score:77,cash:10,reward:"2%",lounge:"None",jFee:350,wel:"None",feats:["10% instant discount on EaseMyTrip flights","10% on hotels","No cap on cashback","2% cashback on others"],apply:"https://www.sc.com/in/credit-cards/easemytrip-credit-card/",inc:"₹25K+/mo",best:"EaseMyTrip frequent flyers",rr:3,isNew:false},
+{id:51,bank:"Standard Chartered",name:"Smart",v:"Cashback Zero Fee",net:"Mastercard",fee:0,minInc:25000,cats:["cashback","zero-fee","shopping"],score:80,cash:2,reward:"1%",lounge:"None",jFee:0,wel:"None",feats:["2% cashback on online spends","1% on offline","Zero annual fee lifetime","0% EMI conversion"],apply:"https://www.sc.com/in/credit-cards/smart-credit-card/",inc:"₹25K+/mo",best:"Simple zero-fee cashback",rr:1.5,isNew:false},
+{id:52,bank:"AU Small Finance",name:"Zenith+",v:"Premium Metal",net:"Mastercard World",fee:4999,minInc:75000,cats:["premium","travel","rewards","lifestyle"],score:87,cash:3,reward:"8 pts/₹100",lounge:"Unlimited",jFee:4999,wel:"₹5,000 vouchers",feats:["Unlimited domestic lounge","8X rewards on weekends","Golf programme","Travel insurance","3 add-on cards free"],apply:"https://www.aubank.in/credit-card/zenith-plus-credit-card",inc:"₹75K+/mo",best:"Premium rewards — rising bank",rr:3,isNew:false},
+{id:53,bank:"AU Small Finance",name:"Vetta",v:"Premium Rewards",net:"Mastercard World",fee:2999,minInc:50000,cats:["premium","travel","rewards"],score:81,cash:2,reward:"5 pts/₹100",lounge:"Unlimited",jFee:2999,wel:"₹3,000 vouchers",feats:["Unlimited domestic lounge","5X rewards on weekends","Travel insurance","Golf programme","No reward expiry"],apply:"https://www.aubank.in/credit-card/vetta-credit-card",inc:"₹50K+/mo",best:"Premium rewards at accessible fee",rr:2,isNew:false},
+{id:54,bank:"AU Small Finance",name:"LIT",v:"Customizable",net:"Mastercard",fee:499,minInc:20000,cats:["cashback","lifestyle","rewards"],score:74,cash:2,reward:"4 pts/₹100",lounge:"2/year",jFee:499,wel:"None",feats:["Activate only benefits you need","Pay-as-you-use model","2X rewards on activated categories","Cashback & lounge upgrades"],apply:"https://www.aubank.in/credit-card/lit-credit-card",inc:"₹20K+/mo",best:"Flexible personalized benefits",rr:2,isNew:false},
+{id:55,bank:"AU Small Finance",name:"Altura Plus",v:"Mid Cashback",net:"Mastercard",fee:499,minInc:25000,cats:["cashback","rewards"],score:73,cash:2,reward:"2 pts/₹100",lounge:"2/year",jFee:499,wel:"500 pts",feats:["2X rewards on dining & groceries","Cashback on utility bills","2 lounge visits/year","Fuel surcharge waiver"],apply:"https://www.aubank.in/credit-card/altura-plus-credit-card",inc:"₹25K+/mo",best:"Mid-range cashback",rr:1.5,isNew:false},
+{id:56,bank:"IndusInd",name:"Pinnacle",v:"Super Premium",net:"Mastercard World Elite",fee:15000,minInc:200000,cats:["premium","travel","lifestyle"],score:90,cash:3.5,reward:"3 pts/₹100",lounge:"Unlimited",jFee:15000,wel:"₹15,000 vouchers",feats:["Unlimited global lounge (Priority Pass)","Annual travel credit ₹12,000","Golf — 12 complimentary rounds","Concierge 24/7","1:1 miles to 20+ airlines"],apply:"https://www.indusind.com/in/en/personal/cards/credit-card/pinnacle.html",inc:"₹2L+/mo",best:"Luxury lifestyle & travel",rr:3.5,isNew:false},
+{id:57,bank:"IndusInd",name:"Legend",v:"Premium",net:"Visa Signature",fee:3999,minInc:75000,cats:["travel","rewards","lifestyle","premium"],score:82,cash:2,reward:"1.5 pts/₹100",lounge:"4/quarter",jFee:3999,wel:"4,000 pts",feats:["4 airport lounge visits/quarter","Complimentary movie tickets","Golf programme access","Travel insurance"],apply:"https://www.indusind.com/in/en/personal/cards/credit-card/legend.html",inc:"₹75K+/mo",best:"Frequent travellers",rr:2,isNew:false},
+{id:58,bank:"IndusInd",name:"EazyDiner Platinum",v:"Dining Co-brand",net:"Visa",fee:1000,minInc:35000,cats:["dining","cashback","lifestyle"],score:78,cash:5,reward:"2%",lounge:"2/year",jFee:1000,wel:"₹1,000 EazyDiner credits",feats:["25% off at 2,000+ restaurants","5% cashback on dining globally","Priority reservation service","Bar access at partner venues"],apply:"https://www.indusind.com/in/en/personal/cards/credit-card/eazydiner-platinum.html",inc:"₹35K+/mo",best:"Dining & food enthusiasts",rr:3.5,isNew:false},
+{id:59,bank:"IndusInd",name:"Celesta",v:"Premium Lifestyle",net:"Mastercard World",fee:5000,minInc:100000,cats:["premium","lifestyle","travel","rewards"],score:84,cash:3,reward:"2 pts/₹100",lounge:"Unlimited",jFee:5000,wel:"₹5,000 welcome credits",feats:["Unlimited airport lounge","Dedicated relationship manager","Golf programme","International travel insurance","Premium dining benefits"],apply:"https://www.indusind.com/in/en/personal/cards/credit-card/celesta.html",inc:"₹1L+/mo",best:"Lifestyle & travel all-rounder",rr:3,isNew:false},
+{id:60,bank:"IndusInd",name:"Platinum Aura Edge",v:"Zero Fee",net:"Visa",fee:0,minInc:20000,cats:["zero-fee","rewards","cashback"],score:67,cash:1.5,reward:"2 pts/₹100",lounge:"2/year",jFee:0,wel:"None",feats:["Lifetime free","2 lounge visits/year","Choose your rewards category","1% fuel surcharge waiver"],apply:"https://www.indusind.com/in/en/personal/cards/credit-card/platinum-aura-edge.html",inc:"₹20K+/mo",best:"Zero-fee everyday spends",rr:1.5,isNew:false},
+];
+
+// ─── STATE ───────────────────────────────────────────────────────────────────
+let aCat="all", aBank="all", aSort="score", srch="", fFree=false, fLounge=false;
+let cmpList=[];
+
+// ─── HELPERS ─────────────────────────────────────────────────────────────────
+const BK=b=>`bk-${b.replace(/\s+.*/,"")}`;
+const SC=s=>s>=85?"sc-hi":s>=70?"sc-md":"sc-lo";
+const FEE=f=>f===0?"Free":"₹"+f.toLocaleString("en-IN");
+
+function getCards(){
+  let l=[...CARDS];
+  if(aCat!=="all")l=l.filter(c=>c.cats.includes(aCat));
+  if(aBank!=="all")l=l.filter(c=>c.bank===aBank);
+  if(srch){const q=srch.toLowerCase();l=l.filter(c=>c.name.toLowerCase().includes(q)||c.bank.toLowerCase().includes(q)||(c.v||"").toLowerCase().includes(q)||c.cats.some(x=>x.includes(q)));}
+  if(fFree)l=l.filter(c=>c.fee===0);
+  if(fLounge)l=l.filter(c=>c.lounge!=="None");
+  if(aSort==="score")l.sort((a,b)=>b.score-a.score);
+  else if(aSort==="fee-asc")l.sort((a,b)=>a.fee-b.fee);
+  else if(aSort==="cashback")l.sort((a,b)=>b.cash-a.cash);
+  else l.sort((a,b)=>a.name.localeCompare(b.name));
+  return l;
+}
+
+function bars(c){
+  const s=c.score,cb=Math.min(c.cash*8,100),l=c.lounge==="Unlimited"?100:c.lounge==="None"?0:45;
+  return`<div class="mbars"><div class="mbw"><div class="mb" style="width:${s}%;background:var(--ac)"></div></div><div class="mbw"><div class="mb" style="width:${cb}%;background:var(--gn)"></div></div><div class="mbw"><div class="mb" style="width:${l}%;background:var(--am)"></div></div></div>`;
+}
+function tags(cats){return(cats||[]).slice(0,3).map(c=>`<span class="tag t-${c}">${c}</span>`).join("");}
+
+function render(){
+  const l=getCards();
+  document.getElementById("rcnt").innerHTML=`<strong>${l.length}</strong> cards`;
+  if(!l.length){document.getElementById("grid").innerHTML='<div class="empty"><h3>No cards found</h3><p>Try changing your filters</p><button class="ebtn" onclick="resetF()">Reset filters</button></div>';return;}
+  document.getElementById("grid").innerHTML=l.map((c,i)=>{
+    const sel=cmpList.includes(c.id);
+    let badge="";
+    if(c.isNew)badge='<div class="cbadge b-new">NEW</div>';
+    else if(c.fee===0)badge='<div class="cbadge b-free">FREE</div>';
+    else if(i===0)badge='<div class="cbadge b-best">TOP PICK</div>';
+    else if(c.score>=90)badge='<div class="cbadge b-prem">★ PREMIUM</div>';
+    return`<div class="card${sel?" sel":""}" data-id="${c.id}">
+      ${badge}
+      <div class="ctop">
+        <div class="brow"><span class="btag ${BK(c.bank)}">${c.bank}</span><span class="ntag">${(c.net||"").split(" ")[0]}</span></div>
+        <div class="cname">${c.name}</div>
+        <div class="cvar">${c.v}</div>
+        <div class="trow">${tags(c.cats)}</div>
+      </div>
+      <div class="cbody">
+        <div class="scrow">
+          <div class="sccir ${SC(c.score)}">${c.score}</div>
+          <div class="scinfo"><div class="sclbl">Score · Cashback · Lounge</div>${bars(c)}</div>
+        </div>
+        <div class="mets">
+          <div class="met"><div class="mv a">${c.cash}%</div><div class="ml">Cashback</div></div>
+          <div class="met"><div class="mv ${c.fee===0?"g":"am"}">${FEE(c.fee)}</div><div class="ml">Ann. Fee</div></div>
+          <div class="met"><div class="mv ${c.lounge==="Unlimited"?"g":""}">${c.lounge}</div><div class="ml">Lounge</div></div>
+        </div>
+        <div class="fts">${(c.feats||[]).slice(0,3).map(f=>`<div class="ft"><em class="fi">✓</em>${f}</div>`).join("")}</div>
+      </div>
+      <div class="cfoot">
+        <span class="inc">Income: <strong>${c.inc}</strong></span>
+        <div class="fbtns">
+          <button class="acmp${sel?" on":""}" onclick="event.stopPropagation();toggleCmp(${c.id})">${sel?"✓ Added":"+ Compare"}</button>
+          <button class="vbtn" onclick="event.stopPropagation();openDetail(${c.id})">Details</button>
+        </div>
+      </div>
+    </div>`;
+  }).join("");
+  document.querySelectorAll(".card").forEach(el=>el.addEventListener("click",e=>{if(!e.target.closest(".acmp,.vbtn"))openDetail(parseInt(el.dataset.id));}));
+}
+
+function resetF(){aCat="all";aBank="all";srch="";fFree=false;fLounge=false;document.getElementById("searchInput").value="";document.querySelectorAll("[data-cat],[data-bank]").forEach(x=>x.classList.remove("on"));document.querySelector("[data-cat='all']").classList.add("on");document.querySelector("[data-bank='all']").classList.add("on");document.getElementById("togFree").classList.remove("on");document.getElementById("togLounge").classList.remove("on");render();}
+
+// ─── COMPARE ─────────────────────────────────────────────────────────────────
+function toggleCmp(id){
+  if(cmpList.includes(id)){cmpList=cmpList.filter(x=>x!==id);}
+  else{if(cmpList.length>=4){toast("Max 4 cards");return;}cmpList.push(id);}
+  updateDrawer();render();
+}
+function updateDrawer(){
+  const d=document.getElementById("cdraw"),s=document.getElementById("cslots"),p=document.getElementById("cmpPill"),cn=document.getElementById("cmpCnt");
+  cn.textContent=cmpList.length;
+  if(cmpList.length>0){
+    d.classList.add("open");p.style.display="flex";
+    s.innerHTML=cmpList.map(id=>{const c=CARDS.find(x=>x.id===id);return c?`<div class="cslot"><span class="csn">${c.bank} ${c.name}</span><span class="rms" onclick="toggleCmp(${id})">×</span></div>`:""}).join("");
+  }else{d.classList.remove("open");p.style.display="none";}
+}
+function clearCmp(){cmpList=[];updateDrawer();render();}
+function openCmpModal(){
+  if(cmpList.length<2){toast("Select at least 2 cards");return;}
+  const cards=cmpList.map(id=>CARDS.find(c=>c.id===id));
+  document.getElementById("cmpSub").textContent=cards.map(c=>c.name).join(" vs ");
+  const rows=[["Bank",c=>c.bank],["Card Name",c=>`<strong>${c.name}</strong>`],["Annual Fee",c=>`<span class="${c.fee===0?"hi":""}">${FEE(c.fee)}</span>`],["Score",c=>`<strong style="color:var(--ac)">${c.score}</strong>`],["Best Cashback",c=>`<span class="hi">${c.cash}%</span>`],["Reward Points",c=>c.reward],["Lounge",c=>`<span class="${c.lounge==="Unlimited"?"hi":""}">${c.lounge}</span>`],["Min Income",c=>c.inc],["Welcome Bonus",c=>c.wel],["Network",c=>c.net],["Best For",c=>c.best]];
+  const hd=`<tr><th class="rl">Feature</th>${cards.map(c=>`<th class="ch">${c.bank}<br><span style="color:var(--tx2);font-size:11px;font-weight:400">${c.name}</span></th>`).join("")}</tr>`;
+  const body=rows.map(([l,fn])=>`<tr><td class="rl">${l}</td>${cards.map(c=>`<td>${fn(c)}</td>`).join("")}</tr>`).join("");
+  document.getElementById("ctbl").innerHTML=hd+body;
+  document.getElementById("cmpOv").classList.add("open");
+}
+function closeCmpModal(){document.getElementById("cmpOv").classList.remove("open");}
+
+// ─── DETAIL ──────────────────────────────────────────────────────────────────
+function openDetail(id){
+  const c=CARDS.find(x=>x.id===id);if(!c)return;
+  document.getElementById("dttl").textContent=`${c.bank} ${c.name}`;
+  document.getElementById("dsub").textContent=`${c.v} · ${c.net}`;
+  document.getElementById("dbody").innerHTML=`
+    <div class="dsec"><h3>At a glance</h3><div class="dgrid">
+      <div class="di"><div class="dil">Score</div><div class="div2 a" style="font-family:'Syne',sans-serif;font-size:1.3rem;font-weight:800">${c.score}</div></div>
+      <div class="di"><div class="dil">Annual Fee</div><div class="div2 ${c.fee===0?"g":""}">${FEE(c.fee)}</div></div>
+      <div class="di"><div class="dil">Best Cashback</div><div class="div2 g">${c.cash}%</div></div>
+      <div class="di"><div class="dil">Reward Points</div><div class="div2">${c.reward}</div></div>
+      <div class="di"><div class="dil">Lounge Access</div><div class="div2 ${c.lounge==="Unlimited"?"g":""}">${c.lounge}</div></div>
+      <div class="di"><div class="dil">Min Income</div><div class="div2">${c.inc}</div></div>
+      <div class="di"><div class="dil">Joining Fee</div><div class="div2 ${c.jFee===0?"g":""}">${FEE(c.jFee)}</div></div>
+      <div class="di"><div class="dil">Welcome Bonus</div><div class="div2 am">${c.wel}</div></div>
+    </div></div>
+    <div class="dsec"><h3>Key Features</h3><div class="ffl">${(c.feats||[]).map(f=>`<div class="ffr"><span class="ffi">✦</span>${f}</div>`).join("")}</div></div>
+    <div class="dsec"><h3>Best for</h3><div style="padding:10px 12px;background:var(--acl);border-radius:var(--rs);font-size:13px;color:var(--acd);font-weight:500">${c.best}</div></div>
+    <div class="dact">
+      <a href="${c.apply}" target="_blank" rel="noopener" class="abtn">Apply Now →</a>
+      <button class="sbtn2" onclick="shareCard(${c.id})">📤 Share</button>
+      <button class="sbtn2" onclick="toggleCmp(${c.id});closeDet()" style="border-color:var(--ac);color:var(--ac)">⇄ Compare</button>
+    </div>`;
+  document.getElementById("detOv").classList.add("open");
+}
+function closeDet(){document.getElementById("detOv").classList.remove("open");}
+
+// ─── QUIZ ────────────────────────────────────────────────────────────────────
+const QUIZ=[
+  {q:"What's your primary spend goal?",opts:[{l:"💰 Maximize cashback",v:"cashback"},{l:"✈️ Travel & miles",v:"travel"},{l:"🍽 Dining & lifestyle",v:"dining"},{l:"💼 Business expenses",v:"business"}]},
+  {q:"What's your monthly income?",opts:[{l:"₹15K–₹30K",v:"low"},{l:"₹30K–₹75K",v:"mid"},{l:"₹75K–₹2L",v:"high"},{l:"₹2L+",v:"vhigh"}]},
+  {q:"Annual fee you're comfortable with?",opts:[{l:"₹0 — Lifetime free only",v:"free"},{l:"Up to ₹1,000",v:"low"},{l:"Up to ₹5,000",v:"mid"},{l:"Any — I want the best",v:"any"}]},
+  {q:"Which benefit matters most?",opts:[{l:"🛋 Airport lounge access",v:"lounge"},{l:"🎁 Reward points",v:"rewards"},{l:"🔁 Flat cashback",v:"flat"},{l:"🌍 Travel privileges",v:"travel"}]},
+];
+let qStep=0,qAns=[];
+function openQuiz(){qStep=0;qAns=[];renderQ();document.getElementById("quizOv").classList.add("open");}
+function closeQuiz(){document.getElementById("quizOv").classList.remove("open");}
+function renderQ(){
+  const pct=(qStep/QUIZ.length*100);
+  document.getElementById("qbody").innerHTML=`<div class="qprog"><div class="qpf" style="width:${pct}%"></div></div><div class="qlbl">${QUIZ[qStep].q}</div><div class="qopts">${QUIZ[qStep].opts.map(o=>`<div class="qopt${qAns[qStep]===o.v?" sel":""}" onclick="selQ('${o.v}')"><span>${o.l.split(" ")[0]}</span><span>${o.l.split(" ").slice(1).join(" ")}</span></div>`).join("")}</div><div class="qnav"><button class="qbk" onclick="qBack()" ${qStep===0?"style='visibility:hidden'":""}>← Back</button><button class="qnx" onclick="qNext()" ${qAns[qStep]==null?"disabled":""}>${qStep===QUIZ.length-1?"See My Cards →":"Next →"}</button></div>`;
+}
+function selQ(v){qAns[qStep]=v;renderQ();}
+function qBack(){if(qStep>0){qStep--;renderQ();}}
+function qNext(){if(qAns[qStep]==null)return;if(qStep<QUIZ.length-1){qStep++;renderQ();}else showQR();}
+function showQR(){
+  const scored=CARDS.map(c=>{
+    let s=0;
+    if(qAns[0]==="cashback"&&c.cats.includes("cashback"))s+=30;if(qAns[0]==="travel"&&c.cats.includes("travel"))s+=30;if(qAns[0]==="dining"&&c.cats.includes("dining"))s+=30;if(qAns[0]==="business"&&c.cats.includes("business"))s+=30;
+    const im={low:30000,mid:75000,high:200000,vhigh:999999};if(c.minInc<=im[qAns[1]])s+=20;
+    if(qAns[2]==="free"&&c.fee===0)s+=25;if(qAns[2]==="low"&&c.fee<=1000)s+=20;if(qAns[2]==="mid"&&c.fee<=5000)s+=15;if(qAns[2]==="any")s+=10;
+    if(qAns[3]==="lounge"&&c.lounge!=="None")s+=20;if(qAns[3]==="rewards"&&c.cats.includes("rewards"))s+=20;if(qAns[3]==="flat"&&c.cats.includes("cashback"))s+=20;if(qAns[3]==="travel"&&c.cats.includes("travel"))s+=20;
+    s+=c.score/10;return{c,s};
+  }).sort((a,b)=>b.s-a.s).slice(0,5);
+  document.getElementById("qbody").innerHTML=`<div class="qri">✦ Your top ${scored.length} matches</div>${scored.map(({c},i)=>`<div class="qrc" onclick="closeQuiz();openDetail(${c.id})"><div class="qrk">${i+1}</div><div style="flex:1"><div class="qrn">${c.name}</div><div class="qrb">${c.bank} · ${FEE(c.fee)}/yr · ${c.cash}% cashback</div><div class="qrw">${c.best}</div></div><span style="color:var(--tx3);align-self:center">›</span></div>`).join("")}<button class="qnx" style="width:100%;margin-top:12px;padding:11px" onclick="closeQuiz()">View All Cards</button>`;
+}
+
+// ─── CALC ────────────────────────────────────────────────────────────────────
+function runCalc(){
+  const v=parseInt(document.getElementById("calcSpend").value)||0;
+  if(!v||v<1000){toast("Enter a monthly spend (min ₹1,000)");return;}
+  const annual=v*12;
+  const res=CARDS.map(c=>{const net=annual*(c.rr/100)-c.fee;return{c,net};}).filter(x=>x.net>0).sort((a,b)=>b.net-a.net).slice(0,12);
+  document.getElementById("calcRes").innerHTML=`<div class="calc-rtl">Best cards for ₹${v.toLocaleString("en-IN")}/mo spend — annual value returned:</div><div class="calc-rscr">${res.map(({c,net})=>`<div class="calc-chip" onclick="openDetail(${c.id})"><span class="cc-bk ${BK(c.bank)}">${c.bank}</span><span class="cc-nm">${c.name}</span><span style="color:var(--bd2)">·</span><span class="cc-vl">+₹${Math.round(net).toLocaleString("en-IN")}/yr</span></div>`).join("")}</div>`;
+  document.getElementById("calcRes").scrollIntoView({behavior:"smooth",block:"nearest"});
+}
+
+// ─── SHARE ───────────────────────────────────────────────────────────────────
+function shareCard(id){
+  const c=CARDS.find(x=>x.id===id);if(!c)return;
+  const txt=`Check out ${c.bank} ${c.name} — ${FEE(c.fee)}/yr, ${c.cash}% cashback, Score ${c.score}/100 🔥 via CardIQ`;
+  if(navigator.share)navigator.share({title:c.name,text:txt,url:c.apply}).catch(()=>{});
+  else if(navigator.clipboard)navigator.clipboard.writeText(txt).then(()=>toast("Copied to clipboard!"));
+  else toast("Long-press to copy: "+txt.slice(0,50)+"…");
+}
+
+// ─── OPTIONAL: Connect Google Sheet ──────────────────────────────────────────
+async function trySheet(){
+  const url=prompt("Paste your Google Sheet CSV URL:\n(File → Share → Publish to web → Sheet1 → CSV)");
+  if(!url)return;
+  toast("Connecting to sheet…");
+  try{
+    const r=await fetch(url);if(!r.ok)throw new Error("Bad URL");
+    const csv=await r.text();
+    const lines=csv.trim().split("\n");
+    if(lines.length<2)throw new Error("Empty");
+    toast("✓ Sheet connected! "+( lines.length-1)+" cards loaded");
+    document.getElementById("dbarMsg").textContent=(lines.length-1)+" cards · Live from your Google Sheet";
+  }catch(e){toast("Could not connect — check URL and make sure sheet is published as CSV");}
+}
+
+// ─── MISC ────────────────────────────────────────────────────────────────────
+function scrollCalc(){document.querySelector(".calc").scrollIntoView({behavior:"smooth"});setTimeout(()=>document.getElementById("calcSpend").focus(),400);}
+function toggleF(f){if(f==="free"){fFree=!fFree;document.getElementById("togFree").classList.toggle("on",fFree);}else{fLounge=!fLounge;document.getElementById("togLounge").classList.toggle("on",fLounge);}render();}
+
+let tt;
+function toast(m){const t=document.getElementById("toast");t.textContent=m;t.classList.add("show");clearTimeout(tt);tt=setTimeout(()=>t.classList.remove("show"),2800);}
+
+// ─── EVENTS ──────────────────────────────────────────────────────────────────
+document.getElementById("catBar").addEventListener("click",e=>{const ch=e.target.closest("[data-cat]");if(!ch)return;aCat=ch.dataset.cat;document.querySelectorAll("[data-cat]").forEach(x=>x.classList.remove("on"));ch.classList.add("on");render();});
+document.getElementById("bankBar").addEventListener("click",e=>{const ch=e.target.closest("[data-bank]");if(!ch)return;aBank=ch.dataset.bank;document.querySelectorAll("[data-bank]").forEach(x=>x.classList.remove("on"));ch.classList.add("on");render();});
+document.querySelectorAll("[data-sort]").forEach(el=>el.addEventListener("click",()=>{aSort=el.dataset.sort;document.querySelectorAll("[data-sort]").forEach(x=>x.classList.remove("on"));el.classList.add("on");render();}));
+document.getElementById("searchInput").addEventListener("input",e=>{srch=e.target.value;render();});
+["quizOv","cmpOv","detOv"].forEach(id=>document.getElementById(id).addEventListener("click",e=>{if(e.target.id===id)document.getElementById(id).classList.remove("open");}));
+
+// ─── BOOT — renders immediately, no async needed ──────────────────────────────
+render();
+</script>
+</body>
+</html>
