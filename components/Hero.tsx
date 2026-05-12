@@ -86,7 +86,7 @@ export function Hero() {
           </div>
 
           {/* Right: Stacked card showcase */}
-          <div className="relative h-[480px] lg:h-[560px] flex items-center justify-center">
+          <div className="className="relative h-[280px] sm:h-[380px] lg:h-[520px] flex items-center justify-center overflow-hidden">
             {featuredCards.map((card, i) => (
               <motion.div
                 key={card.id}
@@ -101,7 +101,7 @@ export function Hero() {
                 className="absolute"
                 style={{ zIndex: i === 1 ? 3 : 2 - Math.abs(i - 1) }}
               >
-                <CardMockup card={card} size="lg" />
+                <CardMockup card={card} size="md" />
               </motion.div>
             ))}
 
