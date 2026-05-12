@@ -1,0 +1,13 @@
+{
+  "crons": [
+    {
+      "path": "/api/scrape",
+      "schedule": "0 2 * * 0"
+    }
+  ],
+  "functions": {
+    "app/api/scrape/route.ts": {
+      "maxDuration": 300
+    }
+  }
+}
