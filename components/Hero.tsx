@@ -86,7 +86,7 @@ export function Hero() {
           </div>
 
           {/* Right: Stacked card showcase */}
-          <div className="className="relative h-[280px] sm:h-[380px] lg:h-[520px] flex items-center justify-center overflow-hidden">
+          <div className="relative h-[280px] sm:h-[380px] lg:h-[520px] flex items-center justify-center overflow-hidden">
             {featuredCards.map((card, i) => (
               <motion.div
                 key={card.id}
