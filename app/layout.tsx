@@ -6,26 +6,17 @@ import './globals.css';
 
 export const metadata: Metadata = {
   title: 'CardIQ — Honest credit card intelligence for India',
-  description:
-    'The first affiliate-bias-free credit card comparison platform in India. Real annual value, devaluation tracking, points redemption optimization, and AI-powered recommendations.',
-  keywords: 'credit card india, best credit card, hdfc infinia, axis magnus, sbi cashback, credit card comparison, points redemption',
-  openGraph: {
-    title: 'CardIQ — Honest credit card intelligence for India',
-    description: 'Real annual value · Devaluation tracking · Points optimization · AI advisor',
-    type: 'website',
-    url: 'https://credit-iq-beryl.vercel.app',
-  },
-  twitter: {
-    card: 'summary_large_image',
-    title: 'CardIQ — Honest credit card intelligence for India',
-  },
-  metadataBase: new URL('https://credit-iq-beryl.vercel.app'),
+  description: 'Affiliate-bias-free credit card comparison platform.',
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en" className={`${GeistSans.variable} ${GeistMono.variable} dark`}>
-      <body>
+      <head>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+        <meta name="theme-color" content="#0a0a0b" />
+      </head>
+      <body style={{ overflowX: 'hidden', maxWidth: '100vw' }}>
         {children}
         <Analytics />
       </body>
