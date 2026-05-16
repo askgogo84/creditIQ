@@ -1,5 +1,4 @@
-@'
-'use client';
+﻿'use client';
 
 import { useState, useMemo } from 'react';
 import { Header } from '@/components/Header';
@@ -57,7 +56,7 @@ export default function OptimizePage() {
     <main className="min-h-screen" style={{ overflowX: 'hidden' }}>
       <Header />
       <section className="pt-20 pb-6 px-4 grain relative" style={{ overflow: 'hidden' }}>
-        <div className="divider-rule mb-4 max-w-xs">— Points optimizer</div>
+        <div className="divider-rule mb-4 max-w-xs">â€” Points optimizer</div>
         <h1 className="font-display text-3xl sm:text-4xl md:text-5xl leading-[1.05] text-ink-50 mb-3">
           {"Don't let your points "}
           <em className="text-copper-400 not-italic display-italic">rot</em>
@@ -135,7 +134,7 @@ export default function OptimizePage() {
                 )}
               </AnimatePresence>
               <div>
-                <div className="text-[10px] font-mono uppercase tracking-widest text-ink-400 mb-3">All redemption paths · ranked by ₹ value</div>
+                <div className="text-[10px] font-mono uppercase tracking-widest text-ink-400 mb-3">All redemption paths Â· ranked by â‚¹ value</div>
                 <div className="space-y-2">
                   {recommendations.map((r, i) => {
                     const Icon = TYPE_ICONS[r.option.type] ?? Package;
@@ -148,7 +147,7 @@ export default function OptimizePage() {
                           <div className="w-8 h-8 rounded bg-white/5 border border-white/10 flex items-center justify-center text-copper-400 shrink-0"><Icon className="w-3.5 h-3.5" /></div>
                           <div className="flex-1 min-w-0">
                             <div className="text-sm font-medium text-ink-100 truncate">{r.option.partner || r.option.type}</div>
-                            <div className="text-[11px] text-ink-400 truncate">{r.option.best_for ?? r.option.notes ?? `${r.option.type} redemption`}{' · '}<span className="font-mono">₹{r.option.value_per_point_inr.toFixed(2)}/pt</span></div>
+                            <div className="text-[11px] text-ink-400 truncate">{r.option.best_for ?? r.option.notes ?? `${r.option.type} redemption`}{' Â· '}<span className="font-mono">â‚¹{r.option.value_per_point_inr.toFixed(2)}/pt</span></div>
                           </div>
                           <div className="text-right shrink-0 ml-1">
                             <div className="font-display text-base sm:text-lg text-ink-50 tabular">{formatINR(r.inr_value)}</div>
@@ -169,4 +168,3 @@ export default function OptimizePage() {
     </main>
   );
 }
-'@ | Set-Content -Path "app\optimize\page.tsx" -Encoding UTF8
