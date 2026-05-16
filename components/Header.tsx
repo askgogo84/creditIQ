@@ -1,87 +1,112 @@
-'use client';
+﻿'use client';
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { useCompare } from '@/lib/store';
+import { useCompare, useTheme } from '@/lib/store';
 import { cn } from '@/lib/utils';
-import { Search, Menu, Sparkles } from 'lucide-react';
+import { Sparkles, Menu, X, Sun, Moon } from 'lucide-react';
 import { useEffect, useState } from 'react';
+
+const nav = [
+  { href: '/', label: 'Discover' },
+  { href: '/smart-match', label: 'Smart Match' },
+  { href: '/optimize', label: 'Optimize Points' },
+  { href: '/compare', label: 'Compare' },
+  { href: '/about', label: 'Manifesto' },
+];
 
 export function Header() {
   const pathname = usePathname();
   const compareCount = useCompare((s) => s.cards.length);
+  const { theme, toggle } = useTheme();
   const [scrolled, setScrolled] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 10);
-    window.addEventListener('scroll', onScroll);
+    window.addEventListener('scroll', onScroll, { passive: true });
     return () => window.removeEventListener('scroll', onScroll);
   }, []);
 
-  const nav = [
-    { href: '/', label: 'Discover' },
-    { href: '/smart-match', label: 'Smart Match' },
-    { href: '/optimize', label: 'Optimize Points' },
-    { href: '/compare', label: 'Compare' },
-    { href: '/about', label: 'Manifesto' },
-  ];
+  useEffect(() => { setMenuOpen(false); }, [pathname]);
+
+  const isDark = theme === 'dark';
 
   return (
-    <header
-      className={cn(
-        'fixed top-0 left-0 right-0 z-50 transition-all duration-300',
-        scrolled ? 'backdrop-blur-xl bg-ink-950/80 border-b border-white/5' : 'bg-transparent'
-      )}
-    >
-      <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
-        <Link href="/" className="flex items-center gap-2 group">
-          <div className="relative">
+    <>
+      <header
+        className={cn('fixed top-0 left-0 right-0 z-50 transition-all duration-300', scrolled ? 'backdrop-blur-xl border-b shadow-sm' : 'bg-transparent')}
+        style={{ backgroundColor: scrolled ? (isDark ? 'rgba(10,10,11,0.9)' : 'rgba(248,247,244,0.9)') : 'transparent', borderBottomColor: 'var(--border)' }}
+      >
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between gap-3">
+          <Link href="/" className="flex items-center gap-2 shrink-0">
             <div className="w-8 h-8 rounded-md bg-gradient-to-br from-copper-300 via-copper-500 to-copper-700 flex items-center justify-center">
-              <span className="font-display font-bold text-ink-950 text-sm">C</span>
+              <span className="font-display font-bold text-white text-sm">C</span>
             </div>
-            <div className="absolute -inset-0.5 rounded-md bg-copper-400 opacity-0 group-hover:opacity-30 blur-md transition-opacity" />
-          </div>
-          <div className="leading-none">
-            <div className="font-display text-xl text-ink-50">CardIQ</div>
-            <div className="text-[9px] font-mono text-ink-300 tracking-widest uppercase">Intelligence</div>
-          </div>
-        </Link>
+            <div className="leading-none">
+              <div className="font-display text-xl" style={{ color: 'var(--text)' }}>CardIQ</div>
+              <div className="text-[9px] font-mono tracking-widest uppercase hidden sm:block" style={{ color: 'var(--text-dim)' }}>Intelligence</div>
+            </div>
+          </Link>
 
-        <nav className="hidden md:flex items-center gap-1">
-          {nav.map((item) => (
-            <Link
-              key={item.href}
-              href={item.href}
-              className={cn(
-                'px-4 py-2 text-sm tracking-wide transition-colors rounded',
-                pathname === item.href
-                  ? 'text-copper-400'
-                  : 'text-ink-200 hover:text-copper-300'
-              )}
-            >
-              {item.label}
-            </Link>
-          ))}
-        </nav>
+          <nav className="hidden lg:flex items-center gap-1">
+            {nav.map((item) => (
+              <Link key={item.href} href={item.href} className="px-3 py-2 text-sm tracking-wide transition-colors rounded" style={{ color: pathname === item.href ? 'var(--accent)' : 'var(--text-muted)' }}>
+                {item.label}
+              </Link>
+            ))}
+          </nav>
 
-        <div className="flex items-center gap-3">
-          <Link
-            href="/compare"
-            className={cn(
-              'relative px-3 py-2 text-sm rounded border transition-all',
-              compareCount > 0
-                ? 'border-copper-500 text-copper-300 bg-copper-500/10'
-                : 'border-white/10 text-ink-300 hover:border-white/20'
+          <div className="flex items-center gap-2 shrink-0">
+            {compareCount > 0 && (
+              <Link href="/compare" className="px-3 py-2 text-xs sm:text-sm rounded border font-mono tabular min-h-[36px] flex items-center" style={{ borderColor: 'color-mix(in srgb, var(--accent) 40%, transparent)', color: 'var(--accent)', background: 'color-mix(in srgb, var(--accent) 10%, transparent)' }}>
+                {compareCount}
+              </Link>
             )}
-          >
-            <span className="font-mono tabular">⇄ {compareCount}</span>
-          </Link>
-          <Link href="/smart-match" className="hidden sm:flex items-center gap-1.5 btn-primary text-sm">
-            <Sparkles className="w-3.5 h-3.5" />
-            Find My Card
-          </Link>
+
+            <button
+              onClick={toggle}
+              className="w-9 h-9 rounded-lg border flex items-center justify-center transition-all"
+              style={{ borderColor: 'var(--border-strong)', color: 'var(--text-muted)', background: 'transparent' }}
+              aria-label="Toggle theme"
+            >
+              {isDark ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
+            </button>
+
+            <Link href="/smart-match" className="hidden sm:flex items-center gap-1.5 btn-primary text-sm py-2 px-3">
+              <Sparkles className="w-3.5 h-3.5 shrink-0" />
+              <span className="hidden md:inline">Find My Card</span>
+              <span className="md:hidden">Match</span>
+            </Link>
+
+            <button onClick={() => setMenuOpen(!menuOpen)} className="lg:hidden w-10 h-10 flex items-center justify-center rounded border touch-manipulation" style={{ borderColor: 'var(--border-strong)', color: 'var(--text-muted)' }} aria-label="Toggle menu">
+              {menuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+            </button>
+          </div>
         </div>
-      </div>
-    </header>
+      </header>
+
+      {menuOpen && (
+        <div className="fixed inset-0 z-40 lg:hidden" onClick={() => setMenuOpen(false)}>
+          <div className="absolute inset-0 backdrop-blur-md" style={{ background: isDark ? 'rgba(10,10,11,0.8)' : 'rgba(248,247,244,0.8)' }} />
+          <nav className="absolute top-16 left-0 right-0 border-b py-4 px-4 space-y-1" style={{ background: 'var(--bg)', borderBottomColor: 'var(--border)' }} onClick={(e) => e.stopPropagation()}>
+            {nav.map((item) => (
+              <Link key={item.href} href={item.href} className="flex items-center px-4 py-3 rounded-lg text-base font-medium transition-colors min-h-[48px]" style={{ background: pathname === item.href ? 'color-mix(in srgb, var(--accent) 12%, transparent)' : 'transparent', color: pathname === item.href ? 'var(--accent)' : 'var(--text)' }}>
+                {item.label}
+              </Link>
+            ))}
+            <button onClick={toggle} className="flex items-center gap-3 px-4 py-3 rounded-lg w-full text-base min-h-[48px]" style={{ color: 'var(--text-muted)' }}>
+              {isDark ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
+              {isDark ? 'Switch to light mode' : 'Switch to dark mode'}
+            </button>
+            <div className="pt-3 border-t" style={{ borderTopColor: 'var(--border)' }}>
+              <Link href="/smart-match" className="btn-primary w-full flex items-center justify-center gap-2 text-base">
+                <Sparkles className="w-4 h-4" /> Find My Perfect Card
+              </Link>
+            </div>
+          </nav>
+        </div>
+      )}
+    </>
   );
 }
