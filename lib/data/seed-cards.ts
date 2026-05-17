@@ -754,3 +754,69 @@ const MORE_CARDS: CreditCard[] = [
 
 // Merge into main export
 SEED_CARDS.push(...MORE_CARDS);
+
+// APR + employment data patch — applied after SEED_CARDS is defined
+// Standard Indian credit card APRs + employment eligibility
+const APR_MAP: Record<string, { apr: number; employment: string[]; interest_free: number }> = {
+  'hdfc-infinia':          { apr: 23.88, employment: ['salaried','self-employed'], interest_free: 50 },
+  'hdfc-regalia-gold':     { apr: 23.88, employment: ['salaried','self-employed'], interest_free: 50 },
+  'hdfc-millennia':        { apr: 23.88, employment: ['salaried','self-employed'], interest_free: 50 },
+  'hdfc-diners-black':     { apr: 23.88, employment: ['salaried','self-employed'], interest_free: 50 },
+  'hdfc-marriott-bonvoy':  { apr: 23.88, employment: ['salaried','self-employed'], interest_free: 50 },
+  'hdfc-moneyback-plus':   { apr: 23.88, employment: ['salaried'], interest_free: 50 },
+  'hdfc-swiggy':           { apr: 23.88, employment: ['salaried'], interest_free: 50 },
+  'hdfc-freedom':          { apr: 23.88, employment: ['salaried','student'], interest_free: 50 },
+  'tata-neu-infinity-hdfc':{ apr: 41.88, employment: ['salaried','self-employed'], interest_free: 50 },
+  'tata-neu-plus-hdfc':    { apr: 41.88, employment: ['salaried'], interest_free: 50 },
+  'sbi-cashback':          { apr: 45.0,  employment: ['salaried','self-employed'], interest_free: 50 },
+  'sbi-elite':             { apr: 45.0,  employment: ['salaried','self-employed'], interest_free: 50 },
+  'sbi-simplyclick':       { apr: 42.0,  employment: ['salaried','self-employed'], interest_free: 50 },
+  'sbi-bpcl-octane':       { apr: 45.0,  employment: ['salaried','self-employed'], interest_free: 50 },
+  'sbi-air-india-signature':{ apr: 45.0, employment: ['salaried','self-employed'], interest_free: 50 },
+  'icici-amazon-pay':      { apr: 42.0,  employment: ['salaried','self-employed'], interest_free: 50 },
+  'icici-sapphiro':        { apr: 42.0,  employment: ['salaried','self-employed'], interest_free: 50 },
+  'icici-emeralde':        { apr: 42.0,  employment: ['salaried','self-employed'], interest_free: 50 },
+  'icici-coral':           { apr: 42.0,  employment: ['salaried','self-employed'], interest_free: 50 },
+  'icici-rubyx':           { apr: 42.0,  employment: ['salaried','self-employed'], interest_free: 50 },
+  'axis-magnus-burgundy':  { apr: 52.86, employment: ['salaried','self-employed'], interest_free: 50 },
+  'axis-atlas':            { apr: 52.86, employment: ['salaried','self-employed'], interest_free: 50 },
+  'axis-flipkart':         { apr: 52.86, employment: ['salaried','self-employed'], interest_free: 50 },
+  'axis-ace':              { apr: 52.86, employment: ['salaried','self-employed'], interest_free: 50 },
+  'axis-vistara-infinite': { apr: 52.86, employment: ['salaried','self-employed'], interest_free: 50 },
+  'axis-myzone':           { apr: 52.86, employment: ['salaried','self-employed'], interest_free: 50 },
+  'axis-horizon':          { apr: 52.86, employment: ['salaried','self-employed'], interest_free: 50 },
+  'amex-platinum-travel':  { apr: 42.0,  employment: ['salaried','self-employed'], interest_free: 50 },
+  'amex-gold':             { apr: 42.0,  employment: ['salaried','self-employed'], interest_free: 50 },
+  'amex-mrcc':             { apr: 42.0,  employment: ['salaried','self-employed'], interest_free: 50 },
+  'idfc-first-wealth':     { apr: 42.0,  employment: ['salaried','self-employed'], interest_free: 48 },
+  'idfc-first-select':     { apr: 42.0,  employment: ['salaried','self-employed'], interest_free: 48 },
+  'idfc-first-classic':    { apr: 42.0,  employment: ['salaried','student'], interest_free: 48 },
+  'kotak-811-dream':       { apr: 45.0,  employment: ['salaried','self-employed','student'], interest_free: 50 },
+  'kotak-league-platinum': { apr: 45.0,  employment: ['salaried','self-employed'], interest_free: 50 },
+  'kotak-royale-signature':{ apr: 45.0,  employment: ['salaried','self-employed'], interest_free: 50 },
+  'rbl-shoprite':          { apr: 39.0,  employment: ['salaried','self-employed'], interest_free: 50 },
+  'rbl-popcorn':           { apr: 39.0,  employment: ['salaried','self-employed','student'], interest_free: 50 },
+  'yes-marquee':           { apr: 42.0,  employment: ['salaried','self-employed'], interest_free: 50 },
+  'yes-first-preferred':   { apr: 42.0,  employment: ['salaried','self-employed'], interest_free: 50 },
+  'sc-ultimate':           { apr: 42.0,  employment: ['salaried','self-employed'], interest_free: 50 },
+  'sc-smart':              { apr: 42.0,  employment: ['salaried','self-employed'], interest_free: 50 },
+  'sc-digismart':          { apr: 42.0,  employment: ['salaried','self-employed'], interest_free: 50 },
+  'au-altura-plus':        { apr: 45.0,  employment: ['salaried','self-employed'], interest_free: 50 },
+  'au-zenith':             { apr: 45.0,  employment: ['salaried','self-employed'], interest_free: 50 },
+  'au-lit':                { apr: 45.0,  employment: ['salaried','self-employed'], interest_free: 50 },
+  'indusind-pinnacle':     { apr: 42.0,  employment: ['salaried','self-employed'], interest_free: 50 },
+  'indusind-celesta':      { apr: 42.0,  employment: ['salaried','self-employed'], interest_free: 50 },
+  'indusind-iconia':       { apr: 42.0,  employment: ['salaried','self-employed'], interest_free: 50 },
+  'hsbc-cashback':         { apr: 42.0,  employment: ['salaried','self-employed'], interest_free: 50 },
+  'hsbc-premier':          { apr: 42.0,  employment: ['salaried','self-employed'], interest_free: 50 },
+};
+
+// Patch all cards with APR + employment data
+SEED_CARDS.forEach(card => {
+  const data = APR_MAP[card.id];
+  if (data) {
+    (card as any).apr_percent = data.apr;
+    (card as any).eligible_employment = data.employment;
+    (card as any).interest_free_days = data.interest_free;
+  }
+});

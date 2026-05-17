@@ -111,6 +111,14 @@ export interface CreditCard {
   highlights: string[];
   drawbacks?: string[];
   expert_rating?: number; // 0-10
+  user_rating?: number; // 0-5 from user reviews
+  user_review_count?: number;
+
+  // APR & eligibility
+  apr_percent?: number;
+  eligible_employment?: ('salaried' | 'self-employed' | 'student')[];
+  interest_free_days?: number;
+  cash_withdrawal_fee_percent?: number;
 
   // Meta
   active: boolean;
