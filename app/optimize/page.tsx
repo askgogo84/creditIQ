@@ -20,6 +20,7 @@ export default function OptimizePage() {
   const allCards = SEED_CARDS.filter((c) => c.active);
   const [selectedCardId, setSelectedCardId] = useState(allCards[0].id);
   const [points, setPoints] = useState(50000);
+  const [pointsInput, setPointsInput] = useState('50000');
   const [preference, setPreference] = useState<'any' | 'cash' | 'travel' | 'shopping'>('any');
   const [aiAdvice, setAiAdvice] = useState<string>('');
   const [aiLoading, setAiLoading] = useState(false);
@@ -33,6 +34,19 @@ export default function OptimizePage() {
   const bestValue = recommendations[0]?.inr_value ?? 0;
   const worstValue = recommendations[recommendations.length - 1]?.inr_value ?? 0;
   const valueRange = bestValue - worstValue;
+
+  const handlePointsInput = (val: string) => {
+    // Remove leading zeros and non-numeric chars
+    const clean = val.replace(/\D/g, '').replace(/^0+/, '') || '0';
+    setPointsInput(clean);
+    const num = parseInt(clean, 10);
+    if (!isNaN(num) && num >= 0) setPoints(num);
+  };
+
+  const handleSlider = (val: number) => {
+    setPoints(val);
+    setPointsInput(val.toString());
+  };
 
   const fetchAIAdvice = async () => {
     setAiLoading(true);
@@ -56,8 +70,8 @@ export default function OptimizePage() {
     <main className="min-h-screen" style={{ overflowX: 'hidden' }}>
       <Header />
       <section className="pt-20 pb-6 px-4 grain relative" style={{ overflow: 'hidden' }}>
-        <div className="divider-rule mb-4 max-w-xs">â€” Points optimizer</div>
-        <h1 className="font-display text-3xl sm:text-4xl md:text-5xl leading-[1.05] text-ink-50 mb-3">
+        <div className="divider-rule mb-4 max-w-xs">Points optimizer</div>
+        <h1 className="font-display text-3xl sm:text-4xl md:text-5xl leading-tight text-ink-50 mb-3">
           {"Don't let your points "}
           <em className="text-copper-400 not-italic display-italic">rot</em>
           {" as statement credit."}
@@ -76,7 +90,7 @@ export default function OptimizePage() {
                   <select
                     value={selectedCardId}
                     onChange={(e) => { setSelectedCardId(e.target.value); setAiAdvice(''); }}
-                    style={{ width: '100%', maxWidth: '100%', background: '#0a0a0b', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 6, padding: '10px 36px 10px 12px', fontSize: 14, color: '#f5f5f6', outline: 'none', cursor: 'pointer', appearance: 'none', WebkitAppearance: 'none' }}
+                    style={{ width: '100%', maxWidth: '100%', background: 'var(--bg-input)', border: '1px solid var(--border)', borderRadius: 6, padding: '10px 12px', fontSize: 14, color: 'var(--text)', outline: 'none', cursor: 'pointer' }}
                   >
                     {allCards.map((c) => (<option key={c.id} value={c.id}>{c.name}</option>))}
                   </select>
@@ -84,17 +98,34 @@ export default function OptimizePage() {
                 <div>
                   <div className="flex justify-between items-baseline mb-2">
                     <label className="text-[10px] font-mono uppercase tracking-widest text-ink-400">Points balance</label>
-                    <span className="font-display text-xl text-copper-300 tabular">{points.toLocaleString('en-IN')}</span>
+                    <span className="font-display text-xl text-copper-400 tabular">{points.toLocaleString('en-IN')}</span>
                   </div>
-                  <input type="range" min={1000} max={500000} step={1000} value={points} onChange={(e) => setPoints(parseInt(e.target.value))} style={{ width: '100%' }} />
-                  <div className="flex justify-between mt-1 text-[10px] font-mono text-ink-500"><span>1K</span><span>5L</span></div>
-                  <input type="number" value={points} onChange={(e) => setPoints(parseInt(e.target.value) || 0)} style={{ width: '100%', marginTop: 8, background: '#0a0a0b', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 6, padding: '8px 12px', fontSize: 14, color: '#f5f5f6', outline: 'none' }} placeholder="Or type exact points" />
+                  <input
+                    type="range"
+                    min={1000}
+                    max={500000}
+                    step={1000}
+                    value={Math.min(points, 500000)}
+                    onChange={(e) => handleSlider(parseInt(e.target.value))}
+                    style={{ width: '100%' }}
+                  />
+                  <div className="flex justify-between mt-1 text-[10px] font-mono text-ink-400"><span>1K</span><span>5L</span></div>
+                  <input
+                    type="text"
+                    inputMode="numeric"
+                    value={pointsInput}
+                    onChange={(e) => handlePointsInput(e.target.value)}
+                    placeholder="Type exact points e.g. 100000"
+                    style={{ width: '100%', marginTop: 8, background: 'var(--bg-input)', border: '1px solid var(--border)', borderRadius: 6, padding: '10px 12px', fontSize: 15, color: 'var(--text)', outline: 'none', fontFamily: 'monospace' }}
+                  />
                 </div>
                 <div>
                   <label className="text-[10px] font-mono uppercase tracking-widest text-ink-400 mb-2 block">Redemption preference</label>
                   <div className="grid grid-cols-2 gap-2">
                     {(['any', 'travel', 'cash', 'shopping'] as const).map((p) => (
-                      <button key={p} onClick={() => setPreference(p)} style={{ padding: '10px', borderRadius: 6, border: preference === p ? '1px solid rgba(212,163,115,0.5)' : '1px solid rgba(255,255,255,0.1)', background: preference === p ? 'rgba(212,163,115,0.12)' : 'transparent', color: preference === p ? '#d4a373' : '#9b9ba2', fontSize: 13, fontWeight: preference === p ? 600 : 400, textTransform: 'capitalize', cursor: 'pointer', minHeight: 44, touchAction: 'manipulation', WebkitTapHighlightColor: 'transparent' }}>{p}</button>
+                      <button key={p} onClick={() => setPreference(p)} style={{ padding: '10px', borderRadius: 6, border: preference === p ? '1px solid color-mix(in srgb, var(--accent) 50%, transparent)' : '1px solid var(--border)', background: preference === p ? 'color-mix(in srgb, var(--accent) 12%, transparent)' : 'transparent', color: preference === p ? 'var(--accent)' : 'var(--text-muted)', fontSize: 13, fontWeight: preference === p ? 600 : 400, textTransform: 'capitalize', cursor: 'pointer', minHeight: 44, touchAction: 'manipulation' }}>
+                        {p}
+                      </button>
                     ))}
                   </div>
                 </div>
@@ -117,41 +148,41 @@ export default function OptimizePage() {
                   <div className="sm:text-right">
                     <div className="text-[10px] font-mono uppercase tracking-widest text-ink-400">Worst case</div>
                     <div className="font-display text-xl text-crimson-400 tabular">{formatINR(worstValue)}</div>
-                    <div className="text-[10px] text-ink-400">Gap: <span className="text-copper-300">{formatINR(valueRange)}</span></div>
+                    <div className="text-[10px] text-ink-400">Gap: <span className="text-copper-400">{formatINR(valueRange)}</span></div>
                   </div>
                 </div>
                 <div className="h-1.5 bg-white/5 rounded overflow-hidden">
                   <div className="h-full bg-gradient-to-r from-crimson-500 via-copper-400 to-emerald-400 w-full" />
                 </div>
-                <div className="mt-1.5 text-[10px] font-mono uppercase tracking-widest text-ink-500">Your potential leverage by picking right</div>
+                <div className="mt-1.5 text-[10px] font-mono uppercase tracking-widest text-ink-400">Your potential leverage by picking right</div>
               </div>
               <AnimatePresence>
                 {aiAdvice && (
                   <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="bg-copper-500/10 border border-copper-500/30 rounded-xl p-4">
-                    <div className="flex items-center gap-2 mb-3"><Sparkles className="w-4 h-4 text-copper-400 shrink-0" /><span className="text-[10px] font-mono uppercase tracking-widest text-copper-300">AI strategy</span></div>
+                    <div className="flex items-center gap-2 mb-3"><Sparkles className="w-4 h-4 text-copper-400 shrink-0" /><span className="text-[10px] font-mono uppercase tracking-widest text-copper-400">AI strategy</span></div>
                     <p className="text-sm text-ink-100 font-display leading-relaxed whitespace-pre-wrap">{aiAdvice}</p>
                   </motion.div>
                 )}
               </AnimatePresence>
               <div>
-                <div className="text-[10px] font-mono uppercase tracking-widest text-ink-400 mb-3">All redemption paths Â· ranked by â‚¹ value</div>
+                <div className="text-[10px] font-mono uppercase tracking-widest text-ink-400 mb-3">All redemption paths - ranked by value</div>
                 <div className="space-y-2">
                   {recommendations.map((r, i) => {
                     const Icon = TYPE_ICONS[r.option.type] ?? Package;
                     const percent = bestValue > 0 ? (r.inr_value / bestValue) * 100 : 0;
                     return (
                       <motion.div key={i} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.04 }} className="bg-ink-900/40 border border-white/10 rounded-lg overflow-hidden" style={{ position: 'relative' }}>
-                        <div style={{ position: 'absolute', inset: 0, width: `${percent}%`, background: 'linear-gradient(to right, rgba(212,163,115,0.08), transparent)', pointerEvents: 'none' }} />
+                        <div style={{ position: 'absolute', inset: 0, width: `${percent}%`, background: 'linear-gradient(to right, color-mix(in srgb, var(--accent) 8%, transparent), transparent)', pointerEvents: 'none' }} />
                         <div className="relative flex items-center gap-3 p-3">
-                          <div className="font-display text-lg text-ink-500 tabular w-6 shrink-0 text-center">{i + 1}</div>
+                          <div className="font-display text-lg text-ink-400 tabular w-6 shrink-0 text-center">{i + 1}</div>
                           <div className="w-8 h-8 rounded bg-white/5 border border-white/10 flex items-center justify-center text-copper-400 shrink-0"><Icon className="w-3.5 h-3.5" /></div>
                           <div className="flex-1 min-w-0">
                             <div className="text-sm font-medium text-ink-100 truncate">{r.option.partner || r.option.type}</div>
-                            <div className="text-[11px] text-ink-400 truncate">{r.option.best_for ?? r.option.notes ?? `${r.option.type} redemption`}{' Â· '}<span className="font-mono">â‚¹{r.option.value_per_point_inr.toFixed(2)}/pt</span></div>
+                            <div className="text-[11px] text-ink-400 truncate">{r.option.best_for ?? r.option.notes ?? `${r.option.type} redemption`} - {r.option.value_per_point_inr.toFixed(2)}/pt</div>
                           </div>
                           <div className="text-right shrink-0 ml-1">
                             <div className="font-display text-base sm:text-lg text-ink-50 tabular">{formatINR(r.inr_value)}</div>
-                            {i === 0 ? <div className="text-[9px] font-mono uppercase text-emerald-400">best</div> : <div className="text-[9px] font-mono text-ink-500">-{formatINR(bestValue - r.inr_value)}</div>}
+                            {i === 0 ? <div className="text-[9px] font-mono uppercase text-emerald-400">best</div> : <div className="text-[9px] font-mono text-ink-400">-{formatINR(bestValue - r.inr_value)}</div>}
                           </div>
                         </div>
                       </motion.div>
@@ -168,4 +199,3 @@ export default function OptimizePage() {
     </main>
   );
 }
-
