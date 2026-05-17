@@ -1,1 +1,12 @@
-{"crons":[{"path":"/api/scrape","schedule":"0 2 * * 0"}]}
+{
+  "crons": [
+    {
+      "path": "/api/scrape",
+      "schedule": "0 2 * * 0"
+    },
+    {
+      "path": "/api/cards-sync",
+      "schedule": "0 9 * * 1"
+    }
+  ]
+}
