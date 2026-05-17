@@ -2,7 +2,8 @@
 
 export type Bank =
   | 'HDFC' | 'SBI' | 'ICICI' | 'Axis' | 'Kotak' | 'Amex'
-  | 'IDFC' | 'RBL' | 'Yes' | 'IndusInd' | 'SC' | 'AU' | 'AmEx' | 'HSBC' | 'Federal';
+  | 'IDFC' | 'RBL' | 'Yes' | 'IndusInd' | 'SC' | 'AU' | 'AmEx' | 'HSBC' | 'Federal'
+  | 'OneCard' | 'BOB' | 'IDBI';
 
 export type Category =
   | 'cashback' | 'travel' | 'rewards' | 'premium'
