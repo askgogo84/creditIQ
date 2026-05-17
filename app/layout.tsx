@@ -1,4 +1,4 @@
-﻿import type { Metadata } from 'next';
+import type { Metadata } from 'next';
 import { GeistSans } from 'geist/font/sans';
 import { GeistMono } from 'geist/font/mono';
 import { Analytics } from '@vercel/analytics/react';
@@ -6,7 +6,7 @@ import { ThemeProvider } from '@/components/ThemeProvider';
 import './globals.css';
 
 export const metadata: Metadata = {
-  title: 'CardIQ â€” Honest credit card intelligence for India',
+  title: 'CardIQ - Honest credit card intelligence for India',
   description: 'Affiliate-bias-free credit card comparison platform.',
   metadataBase: new URL('https://credit-iq-beryl.vercel.app'),
 };
