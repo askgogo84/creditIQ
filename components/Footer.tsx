@@ -51,6 +51,7 @@ export function Footer() {
             <div className="text-xs font-mono uppercase tracking-widest mb-4" style={{ color: 'var(--text-dim)' }}>Legal</div>
             <ul className="space-y-2.5 text-sm">
               {[
+                { href: '/privacy', label: 'Privacy Policy' },
                 { href: '/about#devaluations', label: 'Devaluation Log' },
                 { href: '/about', label: 'Methodology' },
               ].map(l => (
