@@ -13,6 +13,7 @@ const nav = [
   { href: '/optimize', label: 'Optimize Points' },
   { href: '/compare', label: 'Compare' },
   { href: '/about', label: 'Manifesto' },
+  { href: '/dashboard', label: 'Dashboard' },
 ];
 
 export function Header() {
