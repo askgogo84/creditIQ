@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import { cn } from '@/lib/utils';
 import type { CreditCard } from '@/lib/types';
@@ -11,56 +11,113 @@ interface CardMockupProps {
 }
 
 export function CardMockup({ card, size = 'md', className, interactive = true }: CardMockupProps) {
-  const sm = size === 'sm';
+  const isSmall = size === 'sm';
+  const isLarge = size === 'lg';
 
   return (
     <div
-      className={cn('card-mockup w-full', className)}
+      className={cn('card-mockup', className)}
       style={{ '--card-color': card.color } as React.CSSProperties}
     >
-      <div
-        className={cn(
-          'card-mockup-inner metallic relative overflow-hidden grain',
-          !interactive && 'transform-none hover:transform-none',
-          sm ? 'p-2.5' : 'p-4'
-        )}
-      >
-        {/* Bank + tier */}
-        <div className="flex justify-between items-start">
-          <div className={cn('text-white/90 font-bold uppercase tracking-widest', sm ? 'text-[7px]' : 'text-[10px]')}>
+      <div className="card-mockup-inner metallic" style={{ padding: isSmall ? '10px' : '16px' }}>
+
+        {/* Top row: bank + tier */}
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+          <div style={{
+            fontFamily: 'var(--font-geist), system-ui, sans-serif',
+            color: 'rgba(255,255,255,0.9)',
+            fontSize: isSmall ? '8px' : '11px',
+            fontWeight: 600,
+            letterSpacing: '0.1em',
+            textTransform: 'uppercase',
+          }}>
             {card.bank}
           </div>
-          <div className={cn('text-white/50 uppercase tracking-widest', sm ? 'text-[6px]' : 'text-[8px]')}>
+          <div style={{
+            fontFamily: 'var(--font-geist), system-ui, sans-serif',
+            color: 'rgba(255,255,255,0.5)',
+            fontSize: isSmall ? '7px' : '9px',
+            letterSpacing: '0.15em',
+            textTransform: 'uppercase',
+          }}>
             {card.tier === 'super-premium' ? 'PRIVATE' : card.tier === 'premium' ? 'INFINITE' : card.tier === 'mid' ? 'SIGNATURE' : 'CLASSIC'}
           </div>
         </div>
 
         {/* Chip */}
-        <div className={cn('rounded bg-gradient-to-br from-yellow-200 via-yellow-400 to-yellow-600 opacity-90', sm ? 'mt-2 w-6 h-4' : 'mt-4 w-9 h-6')} />
+        <div style={{
+          marginTop: isSmall ? '8px' : '14px',
+          width: isSmall ? '24px' : '36px',
+          height: isSmall ? '18px' : '26px',
+          borderRadius: '3px',
+          background: 'linear-gradient(135deg, #f6d365 0%, #fda085 100%)',
+          opacity: 0.9,
+        }} />
 
-        {/* Card number */}
-        <div className={cn('font-mono text-white/70 tracking-wider', sm ? 'mt-2 text-[7px]' : 'mt-3 text-[10px]')}>
-          â€¢â€¢â€¢â€¢ â€¢â€¢â€¢â€¢ â€¢â€¢â€¢â€¢ {card.id.slice(-4).toUpperCase()}
+        {/* Card number dots */}
+        <div style={{
+          marginTop: isSmall ? '6px' : '10px',
+          fontFamily: 'monospace',
+          color: 'rgba(255,255,255,0.7)',
+          fontSize: isSmall ? '7px' : '11px',
+          letterSpacing: isSmall ? '0.08em' : '0.15em',
+        }}>
+          •••• •••• •••• {card.id.slice(-4).toUpperCase()}
         </div>
 
-        {/* Bottom row */}
-        <div className={cn('absolute left-0 right-0 flex justify-between items-end px-2.5', sm ? 'bottom-2' : 'bottom-3 px-4')}>
+        {/* Bottom: cardholder + card name */}
+        <div style={{
+          position: 'absolute',
+          bottom: isSmall ? '8px' : '14px',
+          left: isSmall ? '10px' : '16px',
+          right: isSmall ? '10px' : '16px',
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'flex-end',
+        }}>
           <div>
-            <div className={cn('text-white/85 font-medium tracking-wide', sm ? 'text-[6px]' : 'text-[9px]')}>
-              CreditIQ MEMBER
+            <div style={{
+              color: 'rgba(255,255,255,0.4)',
+              fontSize: isSmall ? '5px' : '8px',
+              textTransform: 'uppercase',
+              letterSpacing: '0.1em',
+              marginBottom: '2px',
+            }}>
+              {isSmall ? '' : 'CARDHOLDER'}
+            </div>
+            <div style={{
+              color: 'rgba(255,255,255,0.85)',
+              fontSize: isSmall ? '6px' : '9px',
+              fontWeight: 500,
+              letterSpacing: '0.05em',
+            }}>
+              CREDITIQ MEMBER
             </div>
           </div>
-          <div className={cn('text-white font-semibold text-right leading-tight', sm ? 'text-[6px] max-w-[60px]' : 'text-[9px] max-w-[90px]')}>
+          <div style={{
+            fontFamily: "'Fraunces', Georgia, serif",
+            color: 'rgba(255,255,255,0.95)',
+            fontSize: isSmall ? '7px' : '11px',
+            fontWeight: 600,
+            textAlign: 'right',
+            maxWidth: isSmall ? '80px' : '120px',
+            lineHeight: 1.2,
+            wordBreak: 'break-word',
+          }}>
             {card.name.replace(card.bank, '').trim().split(' ').slice(0, 3).join(' ')}
           </div>
         </div>
 
-        {/* Sheen */}
-        <div className="absolute inset-0 opacity-25 pointer-events-none"
-          style={{ background: 'linear-gradient(105deg, transparent 30%, rgba(255,255,255,0.15) 45%, rgba(255,255,255,0.25) 50%, rgba(255,255,255,0.15) 55%, transparent 70%)' }}
-        />
+        {/* Reflective sheen */}
+        <div style={{
+          position: 'absolute',
+          inset: 0,
+          opacity: 0.25,
+          pointerEvents: 'none',
+          background: 'linear-gradient(105deg, transparent 30%, rgba(255,255,255,0.15) 45%, rgba(255,255,255,0.25) 50%, rgba(255,255,255,0.15) 55%, transparent 70%)',
+        }} />
+
       </div>
     </div>
   );
 }
-
