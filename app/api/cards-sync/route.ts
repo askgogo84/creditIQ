@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from 'next/server';
+﻿import { NextRequest, NextResponse } from 'next/server';
 
 export const runtime = 'nodejs';
 export const maxDuration = 60;
@@ -11,7 +11,7 @@ const SOURCES = [
 async function fetchPageText(url: string): Promise<string> {
   try {
     const res = await fetch(url, {
-      headers: { 'User-Agent': 'Mozilla/5.0 (compatible; CardIQ-Bot/1.0)' },
+      headers: { 'User-Agent': 'Mozilla/5.0 (compatible; CreditIQ-Bot/1.0)' },
       signal: AbortSignal.timeout(10000),
     });
     const html = await res.text();
@@ -93,10 +93,11 @@ export async function GET(req: NextRequest) {
 // Manual trigger from admin panel triggers POST
 export async function POST(req: NextRequest) {
   const auth = req.headers.get('authorization');
-  const secret = process.env.SYNC_SECRET || 'cardiq-sync-2026';
+  const secret = process.env.SYNC_SECRET || 'CreditIQ-sync-2026';
   if (auth !== `Bearer ${secret}`) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
   const result = await runDiscovery();
   return NextResponse.json(result);
 }
+

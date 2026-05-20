@@ -1,6 +1,6 @@
-import type { CreditCard } from './types';
+﻿import type { CreditCard } from './types';
 
-// Affiliate IDs come from environment variables — fill these once approved
+// Affiliate IDs come from environment variables â€” fill these once approved
 const PARTNER_IDS = {
   paisabazaar: process.env.PAISABAZAAR_PARTNER_ID,
   bankbazaar: process.env.BANKBAZAAR_PARTNER_ID,
@@ -26,7 +26,7 @@ export function getApplyUrl(card: CreditCard): { url: string; type: 'affiliate-d
     HDFC: `https://applyonline.hdfcbank.com/cards/credit-cards/${card.slug}?af_id=${PARTNER_IDS.hdfc || ''}`,
     SBI: `https://www.sbicard.com/en/personal/credit-cards/${card.slug}.page?afid=${PARTNER_IDS.sbi || ''}`,
     Axis: `https://application.axisbank.co.in/webforms/axis-credit-card/${card.slug}?aff=${PARTNER_IDS.axis || ''}`,
-    ICICI: `https://www.icicibank.com/personal-banking/cards/credit-card/${card.slug}?utm_source=${PARTNER_IDS.icici || 'cardiq'}`,
+    ICICI: `https://www.icicibank.com/personal-banking/cards/credit-card/${card.slug}?utm_source=${PARTNER_IDS.icici || 'CreditIQ'}`,
   };
 
   if (PARTNER_IDS[card.bank.toLowerCase() as keyof typeof PARTNER_IDS] && directBankPatterns[card.bank]) {
@@ -36,7 +36,7 @@ export function getApplyUrl(card: CreditCard): { url: string; type: 'affiliate-d
   // Aggregator fallback
   if (PARTNER_IDS.paisabazaar) {
     return {
-      url: `https://www.paisabazaar.com/credit-card/${card.slug}?utm_source=cardiq&partner_id=${PARTNER_IDS.paisabazaar}`,
+      url: `https://www.paisabazaar.com/credit-card/${card.slug}?utm_source=CreditIQ&partner_id=${PARTNER_IDS.paisabazaar}`,
       type: 'affiliate-aggregator',
     };
   }
@@ -50,7 +50,7 @@ export function getApplyUrl(card: CreditCard): { url: string; type: 'affiliate-d
   // Bank direct (no affiliate)
   if (card.apply_url) return { url: card.apply_url, type: 'bank-direct' };
 
-  // Placeholder — sends to bank homepage
+  // Placeholder â€” sends to bank homepage
   const bankHomes: Record<string, string> = {
     HDFC: 'https://www.hdfcbank.com/personal/pay/cards/credit-cards',
     SBI: 'https://www.sbicard.com/en/personal/credit-cards.page',
@@ -70,3 +70,4 @@ export function getApplyUrl(card: CreditCard): { url: string; type: 'affiliate-d
     type: 'placeholder',
   };
 }
+

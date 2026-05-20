@@ -1,4 +1,4 @@
-// Core domain types for CardIQ
+﻿// Core domain types for CreditIQ
 
 export type Bank =
   | 'HDFC' | 'SBI' | 'ICICI' | 'Axis' | 'Kotak' | 'Amex'
@@ -161,3 +161,4 @@ export interface RedemptionRecommendation {
   ranking: number;
   ai_suggestion?: string;
 }
+

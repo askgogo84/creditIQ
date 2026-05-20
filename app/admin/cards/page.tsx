@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 import { useState, useEffect } from 'react';
 import { Header } from '@/components/Header';
 import { Footer } from '@/components/Footer';
@@ -28,7 +28,7 @@ export default function AdminCardsPage() {
   const [loading, setLoading] = useState(false);
 
   const login = () => {
-    if (password === process.env.NEXT_PUBLIC_ADMIN_PASSWORD || password === 'cardiq2026') {
+    if (password === process.env.NEXT_PUBLIC_ADMIN_PASSWORD || password === 'CreditIQ2026') {
       setAuthed(true);
       loadPending();
     } else {
@@ -52,7 +52,7 @@ export default function AdminCardsPage() {
     try {
       const res = await fetch('/api/cards-sync', {
         method: 'POST',
-        headers: { Authorization: `Bearer ${process.env.NEXT_PUBLIC_SYNC_SECRET || 'cardiq-sync-2026'}` },
+        headers: { Authorization: `Bearer ${process.env.NEXT_PUBLIC_SYNC_SECRET || 'CreditIQ-sync-2026'}` },
       });
       const data = await res.json();
       setScanResult(data);
@@ -85,7 +85,7 @@ export default function AdminCardsPage() {
     return (
       <main className="min-h-screen flex items-center justify-center px-4">
         <div className="w-full max-w-sm bg-ink-900/40 border border-white/10 rounded-xl p-8 space-y-4">
-          <h1 className="font-display text-2xl text-ink-50">Admin — Card Manager</h1>
+          <h1 className="font-display text-2xl text-ink-50">Admin â€” Card Manager</h1>
           <input type="password" value={password} onChange={e => setPassword(e.target.value)}
             onKeyDown={e => e.key === 'Enter' && login()}
             placeholder="Password"
@@ -135,7 +135,7 @@ export default function AdminCardsPage() {
                   <div key={card.slug} className="p-4 flex items-start gap-4 flex-wrap sm:flex-nowrap">
                     <div className="flex-1 min-w-0">
                       <div className="font-medium text-ink-100">{card.name}</div>
-                      <div className="text-xs text-ink-400 mt-0.5 font-mono">{card.bank} · {card.tier} · ₹{card.annual_fee_inr}/year · {card.apr_percent}% APR</div>
+                      <div className="text-xs text-ink-400 mt-0.5 font-mono">{card.bank} Â· {card.tier} Â· â‚¹{card.annual_fee_inr}/year Â· {card.apr_percent}% APR</div>
                       <div className="text-xs text-ink-300 mt-1">{card.best_for}</div>
                       <div className="text-[10px] text-ink-500 mt-1 font-mono">Discovered: {new Date(card.discovered_at).toLocaleDateString('en-IN')} via {card.source}</div>
                     </div>
@@ -160,3 +160,4 @@ export default function AdminCardsPage() {
     </main>
   );
 }
+

@@ -25,7 +25,7 @@ export const useCompare = create<CompareStore>()(
       clear: () => set({ cards: [] }),
       isIn: (id) => get().cards.includes(id),
     }),
-    { name: 'cardiq-compare' }
+    { name: 'CreditIQ-compare' }
   )
 );
 
@@ -55,6 +55,7 @@ export const useTheme = create<ThemeStore>()(
         }
       },
     }),
-    { name: 'cardiq-theme' }
+    { name: 'CreditIQ-theme' }
   )
 );
+

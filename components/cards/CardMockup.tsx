@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { cn } from '@/lib/utils';
 import type { CreditCard } from '@/lib/types';
@@ -40,14 +40,14 @@ export function CardMockup({ card, size = 'md', className, interactive = true }:
 
         {/* Card number */}
         <div className={cn('font-mono text-white/70 tracking-wider', sm ? 'mt-2 text-[7px]' : 'mt-3 text-[10px]')}>
-          •••• •••• •••• {card.id.slice(-4).toUpperCase()}
+          â€¢â€¢â€¢â€¢ â€¢â€¢â€¢â€¢ â€¢â€¢â€¢â€¢ {card.id.slice(-4).toUpperCase()}
         </div>
 
         {/* Bottom row */}
         <div className={cn('absolute left-0 right-0 flex justify-between items-end px-2.5', sm ? 'bottom-2' : 'bottom-3 px-4')}>
           <div>
             <div className={cn('text-white/85 font-medium tracking-wide', sm ? 'text-[6px]' : 'text-[9px]')}>
-              CARDIQ MEMBER
+              CreditIQ MEMBER
             </div>
           </div>
           <div className={cn('text-white font-semibold text-right leading-tight', sm ? 'text-[6px] max-w-[60px]' : 'text-[9px] max-w-[90px]')}>
@@ -63,3 +63,4 @@ export function CardMockup({ card, size = 'md', className, interactive = true }:
     </div>
   );
 }
+

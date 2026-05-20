@@ -5,7 +5,7 @@ export const runtime = 'edge';
 
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
-  const title = searchParams.get('title') || 'CardIQ';
+  const title = searchParams.get('title') || 'CreditIQ';
   const subtitle = searchParams.get('subtitle') || 'Honest credit card intelligence for India';
   const badge = searchParams.get('badge') || '';
 
@@ -33,7 +33,7 @@ export async function GET(req: NextRequest) {
             <span style={{ color: 'white', fontWeight: 700, fontSize: 22 }}>C</span>
           </div>
           <div>
-            <div style={{ color: '#f5f5f6', fontSize: 28, fontWeight: 700 }}>CardIQ</div>
+            <div style={{ color: '#f5f5f6', fontSize: 28, fontWeight: 700 }}>CreditIQ</div>
             <div style={{ color: '#6f6f78', fontSize: 12, letterSpacing: 3, textTransform: 'uppercase' }}>Intelligence</div>
           </div>
         </div>

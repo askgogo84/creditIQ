@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { useState, useEffect } from 'react';
 import { Header } from '@/components/Header';
@@ -15,7 +15,7 @@ export default function AdminPage() {
 
   // Persist auth in sessionStorage for the session
   useEffect(() => {
-    if (typeof window !== 'undefined' && sessionStorage.getItem('cardiq-admin') === '1') {
+    if (typeof window !== 'undefined' && sessionStorage.getItem('CreditIQ-admin') === '1') {
       setAuthed(true);
     }
   }, []);
@@ -28,7 +28,7 @@ export default function AdminPage() {
     });
     if (res.ok) {
       setAuthed(true);
-      sessionStorage.setItem('cardiq-admin', '1');
+      sessionStorage.setItem('CreditIQ-admin', '1');
     } else {
       setError('Wrong password');
     }
@@ -92,9 +92,9 @@ export default function AdminPage() {
       <Header />
       <section className="pt-32 pb-24">
         <div className="max-w-6xl mx-auto px-6">
-          <div className="divider-rule mb-6 max-w-xs">— Admin</div>
+          <div className="divider-rule mb-6 max-w-xs">â€” Admin</div>
           <h1 className="font-display text-5xl text-ink-50 leading-[1.05] mb-12">
-            CardIQ <span className="display-italic text-copper-400">control</span>
+            CreditIQ <span className="display-italic text-copper-400">control</span>
           </h1>
 
           {/* Scraper controls */}
@@ -159,7 +159,7 @@ export default function AdminPage() {
                     {c.base_reward_rate}%
                   </div>
                   <div className="text-xs text-ink-400 font-mono">
-                    {c.last_verified ? new Date(c.last_verified).toLocaleDateString('en-IN') : '—'}
+                    {c.last_verified ? new Date(c.last_verified).toLocaleDateString('en-IN') : 'â€”'}
                   </div>
                 </div>
               ))}
@@ -171,3 +171,4 @@ export default function AdminPage() {
     </main>
   );
 }
+

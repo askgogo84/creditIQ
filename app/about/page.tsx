@@ -1,4 +1,4 @@
-import { Header } from '@/components/Header';
+﻿import { Header } from '@/components/Header';
 import { Footer } from '@/components/Footer';
 import { CompareTray } from '@/components/CompareTray';
 import { SEED_CARDS } from '@/lib/data/seed-cards';
@@ -18,7 +18,7 @@ export default function AboutPage() {
         <div className="absolute top-1/4 left-1/3 w-96 h-96 bg-copper-500/8 blur-[120px] rounded-full pointer-events-none" />
 
         <div className="max-w-4xl mx-auto px-6">
-          <div className="divider-rule mb-6 max-w-xs">— The manifesto</div>
+          <div className="divider-rule mb-6 max-w-xs">â€” The manifesto</div>
           <h1 className="font-display text-5xl md:text-7xl text-ink-50 leading-[0.95] mb-8">
             Why this site{' '}
             <span className="display-italic text-copper-400">exists</span>.
@@ -27,7 +27,7 @@ export default function AboutPage() {
           <div className="prose prose-invert prose-lg max-w-none font-display text-ink-200 leading-relaxed space-y-6 mt-12">
             <p>
               In India, "credit card comparison" is a business model, not a service. Paisabazaar,
-              BankBazaar, CardInsider — every major site earns ₹500 to ₹3,000 per approved
+              BankBazaar, CardInsider â€” every major site earns â‚¹500 to â‚¹3,000 per approved
               application. The card that pays more, ranks higher. Period.
             </p>
             <p>
@@ -36,8 +36,8 @@ export default function AboutPage() {
               Cards" lists that are really "Top 10 Cards That Pay Us The Most This Quarter."
             </p>
             <p className="text-copper-400 display-italic text-2xl md:text-3xl leading-snug py-4 border-l-2 border-copper-500 pl-6">
-              We built CardIQ because the smartest financial decision of your year — which credit
-              card to hold — deserves a recommendation that isn't bought.
+              We built CreditIQ because the smartest financial decision of your year â€” which credit
+              card to hold â€” deserves a recommendation that isn't bought.
             </p>
             <p>
               Our rankings are based on one thing: the actual rupee value a card generates for
@@ -96,7 +96,7 @@ export default function AboutPage() {
 
       <section className="py-24" id="devaluations">
         <div className="max-w-5xl mx-auto px-6">
-          <div className="divider-rule mb-4 max-w-xs">— The log</div>
+          <div className="divider-rule mb-4 max-w-xs">â€” The log</div>
           <h2 className="font-display text-4xl md:text-5xl text-ink-50 leading-[1.05] mb-4">
             Tracked devaluations
           </h2>
@@ -121,7 +121,7 @@ export default function AboutPage() {
                 <div>
                   <div className="text-sm text-ink-100">
                     <span className="font-medium">{d.cardName}</span>
-                    {' · '}
+                    {' Â· '}
                     <span className="text-ink-300">{d.description}</span>
                   </div>
                   <div className="text-[10px] font-mono uppercase tracking-widest text-ink-500 mt-1">
@@ -153,3 +153,4 @@ export default function AboutPage() {
     </main>
   );
 }
+

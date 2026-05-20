@@ -1,8 +1,9 @@
-﻿'use client';
+'use client';
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useCompare, useTheme } from '@/lib/store';
+import { cn } from '@/lib/utils';
 import { Sparkles, Menu, X, Sun, Moon } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
@@ -20,7 +21,6 @@ export function Header() {
   const { theme, toggle } = useTheme();
   const [scrolled, setScrolled] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
-  const isDark = theme === 'dark';
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 10);
@@ -30,91 +30,145 @@ export function Header() {
 
   useEffect(() => { setMenuOpen(false); }, [pathname]);
 
+  const isDark = theme === 'dark';
+
   return (
     <>
       <header
+        className={cn(
+          'fixed top-0 left-0 right-0 z-50 transition-all duration-300',
+          scrolled
+            ? 'backdrop-blur-xl border-b shadow-sm'
+            : 'bg-transparent'
+        )}
         style={{
-          position: 'fixed', top: 0, left: 0, right: 0, zIndex: 50,
-          transition: 'all 0.3s',
-          backdropFilter: scrolled ? 'blur(20px)' : 'none',
-          backgroundColor: scrolled ? (isDark ? 'rgba(10,10,11,0.9)' : 'rgba(248,247,244,0.92)') : 'transparent',
-          borderBottom: scrolled ? '1px solid var(--border)' : 'none',
+          backgroundColor: scrolled ? (isDark ? 'rgba(10,10,11,0.9)' : 'rgba(248,247,244,0.9)') : 'transparent',
+          borderBottomColor: 'var(--border)',
         }}
       >
-        <div style={{ maxWidth: 1280, margin: '0 auto', padding: '0 16px', height: 64, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
-          
-          <Link href="/" style={{ display: 'flex', alignItems: 'center', gap: 8, textDecoration: 'none', flexShrink: 0 }}>
-            <div style={{ width: 32, height: 32, borderRadius: 6, background: 'linear-gradient(135deg, #e9b97f, #d4a373, #b8834a)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <span style={{ fontFamily: 'Georgia, serif', fontWeight: 700, color: 'white', fontSize: 14 }}>C</span>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between gap-3">
+
+          {/* Logo */}
+          <Link href="/" className="flex items-center gap-2 shrink-0">
+            <div className="w-8 h-8 rounded-md bg-gradient-to-br from-copper-300 via-copper-500 to-copper-700 flex items-center justify-center">
+              <span className="font-display font-bold text-white text-sm">C</span>
             </div>
-            <div>
-              <div style={{ fontFamily: 'Georgia, serif', fontSize: 20, color: 'var(--text)', lineHeight: 1 }}>CardIQ</div>
-              <div style={{ fontFamily: 'monospace', fontSize: 9, color: 'var(--text-dim)', letterSpacing: '0.15em', textTransform: 'uppercase' }}>Intelligence</div>
+            <div className="leading-none">
+              <div className="font-display text-xl" style={{ color: 'var(--text)' }}>CreditIQ</div>
+              <div className="text-[9px] font-mono tracking-widest uppercase hidden sm:block" style={{ color: 'var(--text-dim)' }}>Intelligence</div>
             </div>
           </Link>
 
-          <nav style={{ display: 'none', alignItems: 'center', gap: 4 }} className="lg-nav">
+          {/* Desktop nav */}
+          <nav className="hidden lg:flex items-center gap-1">
             {nav.map((item) => (
-              <Link key={item.href} href={item.href} style={{ padding: '8px 12px', fontSize: 14, color: pathname === item.href ? 'var(--accent)' : 'var(--text-muted)', textDecoration: 'none', borderRadius: 4, transition: 'color 0.2s' }}>
+              <Link
+                key={item.href}
+                href={item.href}
+                className={cn('px-3 py-2 text-sm tracking-wide transition-colors rounded')}
+                style={{
+                  color: pathname === item.href ? 'var(--accent)' : 'var(--text-muted)',
+                }}
+              >
                 {item.label}
               </Link>
             ))}
           </nav>
 
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
+          {/* Right actions */}
+          <div className="flex items-center gap-2 shrink-0">
+            {/* Compare badge */}
             {compareCount > 0 && (
-              <Link href="/compare" style={{ padding: '6px 12px', fontSize: 13, borderRadius: 6, border: '1px solid color-mix(in srgb, var(--accent) 40%, transparent)', color: 'var(--accent)', background: 'color-mix(in srgb, var(--accent) 10%, transparent)', textDecoration: 'none', fontFamily: 'monospace', minHeight: 36, display: 'flex', alignItems: 'center' }}>
-                â‡„ {compareCount}
+              <Link
+                href="/compare"
+                className="px-3 py-2 text-xs sm:text-sm rounded border font-mono tabular min-h-[36px] flex items-center"
+                style={{
+                  borderColor: 'color-mix(in srgb, var(--accent) 40%, transparent)',
+                  color: 'var(--accent)',
+                  background: 'color-mix(in srgb, var(--accent) 10%, transparent)',
+                }}
+              >
+                ⇄ {compareCount}
               </Link>
             )}
 
+            {/* Theme toggle */}
             <button
               onClick={toggle}
-              title={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
-              style={{ width: 36, height: 36, borderRadius: 8, border: '1px solid var(--border-strong)', background: 'transparent', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-muted)', transition: 'all 0.2s', flexShrink: 0 }}
+              className="w-9 h-9 rounded-lg border flex items-center justify-center transition-all"
+              style={{
+                borderColor: 'var(--border-strong)',
+                color: 'var(--text-muted)',
+                background: 'transparent',
+              }}
+              aria-label={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
             >
-              {isDark ? <Sun size={16} /> : <Moon size={16} />}
+              {isDark
+                ? <Sun className="w-4 h-4" />
+                : <Moon className="w-4 h-4" />
+              }
             </button>
 
-            <Link href="/smart-match" className="btn-primary" style={{ fontSize: 13, padding: '8px 14px', minHeight: 36, gap: 6, display: 'flex', alignItems: 'center' }}>
-              <Sparkles size={14} />
-              <span>Find My Card</span>
+            {/* Find My Card CTA */}
+            <Link
+              href="/smart-match"
+              className="hidden sm:flex items-center gap-1.5 btn-primary text-sm py-2 px-3"
+            >
+              <Sparkles className="w-3.5 h-3.5 shrink-0" />
+              <span className="hidden md:inline">Find My Card</span>
+              <span className="md:hidden">Match</span>
             </Link>
 
+            {/* Hamburger */}
             <button
               onClick={() => setMenuOpen(!menuOpen)}
-              style={{ width: 40, height: 40, borderRadius: 6, border: '1px solid var(--border-strong)', background: 'transparent', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-muted)' }}
-              className="hamburger-btn"
+              className="lg:hidden w-10 h-10 flex items-center justify-center rounded border touch-manipulation"
+              style={{ borderColor: 'var(--border-strong)', color: 'var(--text-muted)' }}
+              aria-label="Toggle menu"
             >
-              {menuOpen ? <X size={20} /> : <Menu size={20} />}
+              {menuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
             </button>
           </div>
         </div>
       </header>
 
-      <style jsx>{`
-        @media (min-width: 1024px) {
-          .lg-nav { display: flex !important; }
-          .hamburger-btn { display: none !important; }
-        }
-      `}</style>
-
+      {/* Mobile menu */}
       {menuOpen && (
-        <div style={{ position: 'fixed', inset: 0, zIndex: 40 }} onClick={() => setMenuOpen(false)}>
-          <div style={{ position: 'absolute', inset: 0, backdropFilter: 'blur(16px)', background: isDark ? 'rgba(10,10,11,0.8)' : 'rgba(248,247,244,0.8)' }} />
-          <nav style={{ position: 'absolute', top: 64, left: 0, right: 0, background: 'var(--bg)', borderBottom: '1px solid var(--border)', padding: '16px' }} onClick={(e) => e.stopPropagation()}>
+        <div className="fixed inset-0 z-40 lg:hidden" onClick={() => setMenuOpen(false)}>
+          <div className="absolute inset-0 backdrop-blur-md" style={{ background: isDark ? 'rgba(10,10,11,0.8)' : 'rgba(248,247,244,0.8)' }} />
+          <nav
+            className="absolute top-16 left-0 right-0 border-b py-4 px-4 space-y-1"
+            style={{ background: 'var(--bg)', borderBottomColor: 'var(--border)' }}
+            onClick={(e) => e.stopPropagation()}
+          >
             {nav.map((item) => (
-              <Link key={item.href} href={item.href} style={{ display: 'flex', alignItems: 'center', padding: '12px 16px', borderRadius: 8, fontSize: 16, fontWeight: 500, color: pathname === item.href ? 'var(--accent)' : 'var(--text)', background: pathname === item.href ? 'color-mix(in srgb, var(--accent) 12%, transparent)' : 'transparent', textDecoration: 'none', minHeight: 48, marginBottom: 4 }}>
+              <Link
+                key={item.href}
+                href={item.href}
+                className="flex items-center px-4 py-3 rounded-lg text-base font-medium transition-colors min-h-[48px]"
+                style={{
+                  background: pathname === item.href ? 'color-mix(in srgb, var(--accent) 12%, transparent)' : 'transparent',
+                  color: pathname === item.href ? 'var(--accent)' : 'var(--text)',
+                }}
+              >
                 {item.label}
               </Link>
             ))}
-            <button onClick={toggle} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '12px 16px', borderRadius: 8, width: '100%', fontSize: 16, color: 'var(--text-muted)', background: 'transparent', border: 'none', cursor: 'pointer', minHeight: 48, marginBottom: 4 }}>
-              {isDark ? <Sun size={16} /> : <Moon size={16} />}
+
+            {/* Theme toggle in mobile menu */}
+            <button
+              onClick={toggle}
+              className="flex items-center gap-3 px-4 py-3 rounded-lg w-full text-base min-h-[48px]"
+              style={{ color: 'var(--text-muted)' }}
+            >
+              {isDark ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
               {isDark ? 'Switch to light mode' : 'Switch to dark mode'}
             </button>
-            <div style={{ borderTop: '1px solid var(--border)', paddingTop: 12, marginTop: 8 }}>
-              <Link href="/smart-match" className="btn-primary" style={{ width: '100%', justifyContent: 'center', fontSize: 16 }}>
-                <Sparkles size={16} /> Find My Perfect Card
+
+            <div className="pt-3 border-t" style={{ borderTopColor: 'var(--border)' }}>
+              <Link href="/smart-match" className="btn-primary w-full flex items-center justify-center gap-2 text-base">
+                <Sparkles className="w-4 h-4" />
+                Find My Perfect Card
               </Link>
             </div>
           </nav>
