@@ -1,5 +1,7 @@
 'use client';
 
+export const dynamic = 'force-dynamic';
+
 import { useState, useEffect } from 'react';
 import { createBrowserClient } from '@supabase/ssr';
 import { useRouter } from 'next/navigation';
@@ -27,12 +29,12 @@ export default function DashboardPage() {
   const [syncing, setSyncing] = useState(false);
   const router = useRouter();
 
-  const supabase = createBrowserClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-  );
-
   useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const supabase = createBrowserClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL || '',
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || ''
+    );
     supabase.auth.getUser().then(({ data: { user } }) => {
       if (!user) router.replace('/login');
       else { setUser(user); setLoading(false); }
@@ -40,6 +42,7 @@ export default function DashboardPage() {
   }, []);
 
   const signOut = async () => {
+    const supabase = createBrowserClient(process.env.NEXT_PUBLIC_SUPABASE_URL || '', process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '');
     await supabase.auth.signOut();
     router.replace('/');
   };

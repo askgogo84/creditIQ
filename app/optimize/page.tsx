@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo, useEffect, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { Header } from '@/components/Header';
 import { Footer } from '@/components/Footer';
@@ -17,7 +17,7 @@ const TYPE_ICONS: Record<string, any> = {
   cashback: CreditCard, voucher: ShoppingBag, product: Package, fuel: Package,
 };
 
-export default function OptimizePage() {
+function OptimizeContent() {
   const allCards = SEED_CARDS.filter((c) => c.active);
   const [selectedCardId, setSelectedCardId] = useState(allCards[0].id);
   const [points, setPoints] = useState(50000);
@@ -349,4 +349,8 @@ export default function OptimizePage() {
       <CompareTray />
     </main>
   );
+}
+
+export default function OptimizePage() {
+  return <Suspense fallback={null}><OptimizeContent /></Suspense>;
 }
