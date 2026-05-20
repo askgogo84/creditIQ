@@ -1,0 +1,273 @@
+'use client';
+
+import { useState, useRef } from 'react';
+import { Header } from '@/components/Header';
+import { Footer } from '@/components/Footer';
+import { Upload, FileText, CheckCircle, AlertCircle, Zap, ArrowRight, Lock, ChevronDown, X } from 'lucide-react';
+import Link from 'next/link';
+
+const BANKS = [
+  { id: 'HDFC', name: 'HDFC Bank', color: '#004C8F', hint: 'Download from HDFC NetBanking → Credit Cards → Statement' },
+  { id: 'Axis', name: 'Axis Bank', color: '#97144D', hint: 'Axis Mobile app → Credit Card → View Statement → Download PDF' },
+  { id: 'AmEx', name: 'American Express', color: '#006FCF', hint: 'Amex app → Account → Statements → Download' },
+  { id: 'ICICI', name: 'ICICI Bank', color: '#F58220', hint: 'iMobile → Credit Card → Statements → Download PDF' },
+  { id: 'SBI', name: 'SBI Card', color: '#2C4C9C', hint: 'SBI Card app → My Account → Statement → Download' },
+  { id: 'Kotak', name: 'Kotak Bank', color: '#EF3E23', hint: 'Kotak Mobile → Credit Card → Statement → Download' },
+  { id: 'IDFC', name: 'IDFC FIRST Bank', color: '#9B0C2C', hint: 'IDFC FIRST app → Cards → Statement → Download PDF' },
+  { id: 'Yes', name: 'YES Bank', color: '#0C2461', hint: 'YES Mobile → Credit Card → e-Statement → Download' },
+];
+
+interface ParseResult {
+  bank: string;
+  card_name: string;
+  card_last4: string;
+  points_balance: number;
+  points_currency: string;
+  cashback_balance: number;
+  statement_date: string;
+  points_expiry: string;
+  points_earned_this_month: number;
+  confidence: string;
+  customer_name: string;
+}
+
+export default function UploadStatementPage() {
+  const [selectedBank, setSelectedBank] = useState<typeof BANKS[0] | null>(null);
+  const [file, setFile] = useState<File | null>(null);
+  const [dragging, setDragging] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [result, setResult] = useState<ParseResult | null>(null);
+  const [error, setError] = useState('');
+  const [showHint, setShowHint] = useState(false);
+  const fileRef = useRef<HTMLInputElement>(null);
+
+  const handleFile = (f: File) => {
+    if (f.type !== 'application/pdf') { setError('Please upload a PDF file'); return; }
+    if (f.size > 10 * 1024 * 1024) { setError('File too large — max 10MB'); return; }
+    setFile(f);
+    setError('');
+    setResult(null);
+  };
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    setDragging(false);
+    const f = e.dataTransfer.files[0];
+    if (f) handleFile(f);
+  };
+
+  const handleParse = async () => {
+    if (!file) return;
+    setLoading(true);
+    setError('');
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+      formData.append('bank', selectedBank?.id || 'Unknown');
+
+      const res = await fetch('/api/parse-statement', { method: 'POST', body: formData });
+      const data = await res.json();
+
+      if (!res.ok || data.error) throw new Error(data.error || 'Failed to parse statement');
+      setResult(data.data);
+    } catch (e: any) {
+      setError(e.message);
+    }
+    setLoading(false);
+  };
+
+  return (
+    <main className="min-h-screen" style={{ overflowX: 'hidden' }}>
+      <Header />
+      <section className="pt-28 pb-20 px-4 sm:px-6">
+        <div className="max-w-2xl mx-auto">
+
+          {/* Badge */}
+          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border mb-6" style={{ background: 'color-mix(in srgb, var(--accent) 10%, transparent)', borderColor: 'color-mix(in srgb, var(--accent) 25%, transparent)' }}>
+            <Zap className="w-3.5 h-3.5" style={{ color: 'var(--accent)' }} />
+            <span className="text-[11px] font-mono uppercase tracking-widest" style={{ color: 'var(--accent)' }}>Instant · No login required</span>
+          </div>
+
+          <h1 className="font-display text-4xl sm:text-5xl mb-4 leading-tight" style={{ color: 'var(--text)' }}>
+            Upload your card{' '}
+            <em className="text-copper-400 not-italic display-italic">statement</em>
+          </h1>
+          <p className="text-lg mb-10 leading-relaxed" style={{ color: 'var(--text-muted)' }}>
+            Download your monthly PDF statement from your bank app. Upload here. AI reads your points balance in 3 seconds — no login, no OTP, no bank credentials.
+          </p>
+
+          {!result ? (
+            <div className="space-y-5">
+
+              {/* Bank selector */}
+              <div>
+                <label className="text-xs font-mono uppercase tracking-widest mb-3 block" style={{ color: 'var(--text-dim)' }}>
+                  1. Select your bank
+                </label>
+                <div className="grid grid-cols-2 gap-2">
+                  {BANKS.map(bank => (
+                    <button
+                      key={bank.id}
+                      onClick={() => { setSelectedBank(bank); setShowHint(true); }}
+                      className="flex items-center gap-3 p-3 rounded-xl border text-left transition-all"
+                      style={{
+                        borderColor: selectedBank?.id === bank.id ? bank.color : 'var(--border)',
+                        background: selectedBank?.id === bank.id ? `${bank.color}15` : 'var(--bg-elevated)',
+                      }}
+                    >
+                      <div className="w-8 h-8 rounded flex items-center justify-center text-white text-[10px] font-bold shrink-0" style={{ background: bank.color }}>
+                        {bank.id.slice(0, 2)}
+                      </div>
+                      <span className="text-sm font-medium truncate" style={{ color: 'var(--text)' }}>{bank.name}</span>
+                    </button>
+                  ))}
+                </div>
+
+                {/* Hint for selected bank */}
+                {selectedBank && showHint && (
+                  <div className="mt-3 rounded-xl p-3 flex items-start gap-2" style={{ background: 'color-mix(in srgb, var(--accent) 8%, transparent)', border: '1px solid color-mix(in srgb, var(--accent) 20%, transparent)' }}>
+                    <AlertCircle className="w-3.5 h-3.5 shrink-0 mt-0.5" style={{ color: 'var(--accent)' }} />
+                    <p className="text-xs leading-relaxed" style={{ color: 'var(--text-muted)' }}>
+                      <strong style={{ color: 'var(--text)' }}>How to get your {selectedBank.name} statement:</strong>{' '}
+                      {selectedBank.hint}
+                    </p>
+                    <button onClick={() => setShowHint(false)}><X className="w-3.5 h-3.5" style={{ color: 'var(--text-dim)' }} /></button>
+                  </div>
+                )}
+              </div>
+
+              {/* File upload */}
+              <div>
+                <label className="text-xs font-mono uppercase tracking-widest mb-3 block" style={{ color: 'var(--text-dim)' }}>
+                  2. Upload PDF statement
+                </label>
+                <div
+                  onDragOver={e => { e.preventDefault(); setDragging(true); }}
+                  onDragLeave={() => setDragging(false)}
+                  onDrop={handleDrop}
+                  onClick={() => fileRef.current?.click()}
+                  className="rounded-2xl border-2 border-dashed p-8 text-center cursor-pointer transition-all"
+                  style={{
+                    borderColor: dragging ? 'var(--accent)' : file ? 'var(--emerald)' : 'var(--border)',
+                    background: dragging ? 'color-mix(in srgb, var(--accent) 5%, transparent)' : 'var(--bg-elevated)',
+                  }}
+                >
+                  <input ref={fileRef} type="file" accept=".pdf" className="hidden" onChange={e => e.target.files?.[0] && handleFile(e.target.files[0])} />
+                  {file ? (
+                    <div className="flex items-center justify-center gap-3">
+                      <div className="w-10 h-10 rounded-lg flex items-center justify-center" style={{ background: 'color-mix(in srgb, var(--emerald) 15%, transparent)' }}>
+                        <FileText className="w-5 h-5" style={{ color: 'var(--emerald)' }} />
+                      </div>
+                      <div className="text-left">
+                        <div className="font-medium text-sm truncate max-w-xs" style={{ color: 'var(--text)' }}>{file.name}</div>
+                        <div className="text-xs" style={{ color: 'var(--text-dim)' }}>{(file.size / 1024).toFixed(0)} KB · PDF</div>
+                      </div>
+                      <button onClick={e => { e.stopPropagation(); setFile(null); }} className="ml-2">
+                        <X className="w-4 h-4" style={{ color: 'var(--text-dim)' }} />
+                      </button>
+                    </div>
+                  ) : (
+                    <div>
+                      <div className="w-12 h-12 rounded-xl flex items-center justify-center mx-auto mb-3" style={{ background: 'color-mix(in srgb, var(--text) 6%, transparent)' }}>
+                        <Upload className="w-6 h-6" style={{ color: 'var(--text-dim)' }} />
+                      </div>
+                      <p className="text-sm font-medium mb-1" style={{ color: 'var(--text)' }}>Drop your PDF here or tap to browse</p>
+                      <p className="text-xs" style={{ color: 'var(--text-dim)' }}>PDF only · Max 10MB · Statement from last 3 months</p>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {error && (
+                <div className="rounded-xl p-3 text-sm flex items-center gap-2" style={{ background: 'color-mix(in srgb, #ef4444 10%, transparent)', color: '#ef4444', border: '1px solid color-mix(in srgb, #ef4444 25%, transparent)' }}>
+                  <AlertCircle className="w-4 h-4 shrink-0" /> {error}
+                </div>
+              )}
+
+              <button
+                onClick={handleParse}
+                disabled={!file || loading}
+                className="btn-primary w-full text-base flex items-center justify-center gap-2"
+                style={{ opacity: !file || loading ? 0.6 : 1 }}
+              >
+                <Zap className="w-5 h-5" />
+                {loading ? 'Reading your statement...' : 'Extract my points balance'}
+              </button>
+
+              {/* Privacy note */}
+              <div className="rounded-xl p-4 border flex items-start gap-3" style={{ borderColor: 'var(--border)', background: 'var(--bg-elevated)' }}>
+                <Lock className="w-4 h-4 shrink-0 mt-0.5" style={{ color: 'var(--emerald)' }} />
+                <p className="text-xs leading-relaxed" style={{ color: 'var(--text-muted)' }}>
+                  <strong style={{ color: 'var(--text)' }}>Your statement is private.</strong> The PDF is sent directly to our AI parser and immediately discarded. We store only the extracted points balance — never the full statement. See our <Link href="/privacy" style={{ color: 'var(--accent)' }}>privacy policy</Link>.
+                </p>
+              </div>
+            </div>
+          ) : (
+            /* SUCCESS RESULT */
+            <div className="space-y-4">
+              <div className="rounded-2xl p-6 border" style={{ borderColor: 'color-mix(in srgb, var(--emerald) 30%, transparent)', background: 'color-mix(in srgb, var(--emerald) 6%, transparent)' }}>
+                <div className="flex items-center gap-3 mb-5">
+                  <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: 'color-mix(in srgb, var(--emerald) 15%, transparent)' }}>
+                    <CheckCircle className="w-6 h-6" style={{ color: 'var(--emerald)' }} />
+                  </div>
+                  <div>
+                    <div className="font-medium" style={{ color: 'var(--text)' }}>
+                      {result.customer_name ? `${result.customer_name}'s` : ''} {result.bank || selectedBank?.name} card
+                    </div>
+                    <div className="text-xs" style={{ color: 'var(--text-dim)' }}>
+                      {result.card_name}{result.card_last4 ? ` · ••••${result.card_last4}` : ''} · {result.confidence} confidence
+                    </div>
+                  </div>
+                </div>
+
+                {/* Main points figure */}
+                {result.points_balance != null && (
+                  <div className="mb-4 p-4 rounded-xl" style={{ background: 'var(--bg-elevated)', border: '1px solid var(--border)' }}>
+                    <div className="text-[10px] font-mono uppercase tracking-widest mb-1" style={{ color: 'var(--text-dim)' }}>
+                      {result.points_currency || 'Points'} balance
+                    </div>
+                    <div className="font-display text-4xl tabular" style={{ color: 'var(--accent)' }}>
+                      {result.points_balance.toLocaleString('en-IN')}
+                    </div>
+                    {result.points_expiry && (
+                      <div className="text-xs mt-1" style={{ color: 'var(--text-dim)' }}>Expires: {result.points_expiry}</div>
+                    )}
+                  </div>
+                )}
+
+                {/* Secondary stats */}
+                <div className="grid grid-cols-2 gap-3">
+                  {result.points_earned_this_month != null && (
+                    <div className="p-3 rounded-xl" style={{ background: 'var(--bg-elevated)', border: '1px solid var(--border)' }}>
+                      <div className="text-[10px] font-mono uppercase tracking-widest mb-1" style={{ color: 'var(--text-dim)' }}>Earned this month</div>
+                      <div className="font-display text-xl" style={{ color: 'var(--text)' }}>+{result.points_earned_this_month.toLocaleString('en-IN')}</div>
+                    </div>
+                  )}
+                  {result.cashback_balance != null && result.cashback_balance > 0 && (
+                    <div className="p-3 rounded-xl" style={{ background: 'var(--bg-elevated)', border: '1px solid var(--border)' }}>
+                      <div className="text-[10px] font-mono uppercase tracking-widest mb-1" style={{ color: 'var(--text-dim)' }}>Cashback balance</div>
+                      <div className="font-display text-xl" style={{ color: 'var(--emerald)' }}>₹{result.cashback_balance.toLocaleString('en-IN')}</div>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              <div className="flex flex-col sm:flex-row gap-3">
+                <button onClick={() => { setResult(null); setFile(null); }} className="btn-ghost flex-1 text-sm">
+                  Upload another card
+                </button>
+                <Link href={`/optimize?bank=${result.bank}&points=${result.points_balance}`} className="btn-primary flex-1 text-sm flex items-center justify-center gap-2">
+                  <Zap className="w-4 h-4" /> Optimize these points
+                </Link>
+              </div>
+              <Link href="/dashboard" className="block text-center text-sm" style={{ color: 'var(--accent)' }}>
+                View full dashboard <ArrowRight className="w-3.5 h-3.5 inline" />
+              </Link>
+            </div>
+          )}
+        </div>
+      </section>
+      <Footer />
+    </main>
+  );
+}
