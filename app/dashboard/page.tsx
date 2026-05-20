@@ -1,9 +1,11 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { createBrowserClient } from '@supabase/ssr';
+import { useRouter } from 'next/navigation';
 import { Header } from '@/components/Header';
 import { Footer } from '@/components/Footer';
-import { Plus, TrendingUp, Plane, ArrowRight, Zap, RefreshCw, Building2 } from 'lucide-react';
+import { Plus, TrendingUp, ArrowRight, Zap, RefreshCw, FileText, MessageSquare, LogOut } from 'lucide-react';
 import Link from 'next/link';
 
 const MOCK_LINKED_CARDS = [
@@ -20,9 +22,27 @@ const REDEMPTION_IDEAS = [
 ];
 
 export default function DashboardPage() {
+  const [user, setUser] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
   const [syncing, setSyncing] = useState(false);
-  const totalPoints = MOCK_LINKED_CARDS.reduce((s, c) => s + c.points, 0);
-  const totalValue = MOCK_LINKED_CARDS.reduce((s, c) => s + c.pointsValue, 0);
+  const router = useRouter();
+
+  const supabase = createBrowserClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+  );
+
+  useEffect(() => {
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      if (!user) router.replace('/login');
+      else { setUser(user); setLoading(false); }
+    });
+  }, []);
+
+  const signOut = async () => {
+    await supabase.auth.signOut();
+    router.replace('/');
+  };
 
   const handleSync = async () => {
     setSyncing(true);
@@ -30,47 +50,76 @@ export default function DashboardPage() {
     setSyncing(false);
   };
 
+  const totalPoints = MOCK_LINKED_CARDS.reduce((s, c) => s + c.points, 0);
+  const totalValue = MOCK_LINKED_CARDS.reduce((s, c) => s + c.pointsValue, 0);
+
+  if (loading) {
+    return (
+      <main className="min-h-screen flex items-center justify-center">
+        <div className="text-center space-y-3">
+          <div className="w-8 h-8 border-2 border-copper-400 border-t-transparent rounded-full animate-spin mx-auto" />
+          <p className="text-sm" style={{ color: 'var(--text-dim)' }}>Loading your portfolio...</p>
+        </div>
+      </main>
+    );
+  }
+
+  const firstName = user?.user_metadata?.full_name?.split(' ')[0] || user?.email?.split('@')[0] || 'there';
+
   return (
     <main className="min-h-screen" style={{ overflowX: 'hidden' }}>
       <Header />
       <section className="pt-20 pb-12 px-4 sm:px-6">
         <div className="max-w-5xl mx-auto">
 
-          {/* Trial banner */}
-          <div className="rounded-xl p-4 mb-5 flex items-start sm:items-center justify-between flex-wrap gap-3" style={{ background: 'color-mix(in srgb, var(--accent) 10%, transparent)', border: '1px solid color-mix(in srgb, var(--accent) 30%, transparent)' }}>
-            <div className="flex items-start gap-2">
-              <Zap className="w-4 h-4 mt-0.5 shrink-0" style={{ color: 'var(--accent)' }} />
-              <span className="text-sm" style={{ color: 'var(--text)' }}>
-                Free trial — <strong>7 days remaining.</strong> All premium features unlocked.
-              </span>
-            </div>
-            <Link href="/premium" className="btn-primary text-xs py-2 px-4 shrink-0" style={{ minHeight: 36 }}>
-              Upgrade to Premium →
-            </Link>
-          </div>
-
-          {/* Page header */}
-          <div className="flex items-start justify-between mb-5 gap-3 flex-wrap">
+          {/* User greeting */}
+          <div className="flex items-center justify-between mb-5 flex-wrap gap-3">
             <div>
-              <h1 className="font-display text-2xl sm:text-3xl" style={{ color: 'var(--text)' }}>My Card Portfolio</h1>
-              <p className="text-sm mt-1" style={{ color: 'var(--text-muted)' }}>All your cards. All your points. One view.</p>
+              <h1 className="font-display text-2xl sm:text-3xl" style={{ color: 'var(--text)' }}>
+                Hey {firstName} 👋
+              </h1>
+              <p className="text-sm mt-1" style={{ color: 'var(--text-muted)' }}>
+                {user?.email} · Your card portfolio
+              </p>
             </div>
             <div className="flex items-center gap-2">
               <button onClick={handleSync} disabled={syncing} className="btn-ghost text-sm py-2 px-3 flex items-center gap-1.5" style={{ minHeight: 40 }}>
                 <RefreshCw className={`w-3.5 h-3.5 ${syncing ? 'animate-spin' : ''}`} />
-                <span className="hidden sm:inline">{syncing ? 'Syncing...' : 'Sync all'}</span>
+                <span className="hidden sm:inline">Sync</span>
               </button>
-              <Link href="/link-card" className="btn-primary text-sm py-2 px-3 flex items-center gap-1.5" style={{ minHeight: 40 }}>
-                <Plus className="w-3.5 h-3.5" />
-                Link a card
-              </Link>
+              <button onClick={signOut} className="btn-ghost text-sm py-2 px-3 flex items-center gap-1.5" style={{ minHeight: 40 }}>
+                <LogOut className="w-3.5 h-3.5" />
+                <span className="hidden sm:inline">Sign out</span>
+              </button>
             </div>
           </div>
 
-          {/* Stats — 2x2 on mobile, 4-col on desktop */}
+          {/* Import points options */}
+          <div className="grid grid-cols-2 gap-3 mb-5">
+            <Link href="/upload-statement" className="rounded-xl border p-4 flex items-center gap-3 transition-all" style={{ borderColor: 'var(--border)', background: 'var(--bg-elevated)' }}>
+              <div className="w-9 h-9 rounded-lg flex items-center justify-center shrink-0" style={{ background: 'color-mix(in srgb, var(--accent) 12%, transparent)' }}>
+                <FileText className="w-4 h-4" style={{ color: 'var(--accent)' }} />
+              </div>
+              <div>
+                <div className="text-sm font-medium" style={{ color: 'var(--text)' }}>Upload statement</div>
+                <div className="text-xs" style={{ color: 'var(--text-dim)' }}>PDF → instant points</div>
+              </div>
+            </Link>
+            <Link href="/sms-import" className="rounded-xl border p-4 flex items-center gap-3 transition-all" style={{ borderColor: 'var(--border)', background: 'var(--bg-elevated)' }}>
+              <div className="w-9 h-9 rounded-lg flex items-center justify-center shrink-0" style={{ background: 'color-mix(in srgb, var(--accent) 12%, transparent)' }}>
+                <MessageSquare className="w-4 h-4" style={{ color: 'var(--accent)' }} />
+              </div>
+              <div>
+                <div className="text-sm font-medium" style={{ color: 'var(--text)' }}>Paste SMS</div>
+                <div className="text-xs" style={{ color: 'var(--text-dim)' }}>Bank SMS → points</div>
+              </div>
+            </Link>
+          </div>
+
+          {/* Stats */}
           <div className="grid grid-cols-2 gap-3 mb-5">
             <div className="rounded-xl p-4 border" style={{ borderColor: 'var(--border)', background: 'var(--bg-elevated)' }}>
-              <div className="text-[9px] font-mono uppercase tracking-widest mb-1" style={{ color: 'var(--text-dim)' }}>Total points (combined)</div>
+              <div className="text-[9px] font-mono uppercase tracking-widest mb-1" style={{ color: 'var(--text-dim)' }}>Total points</div>
               <div className="font-display text-2xl tabular" style={{ color: 'var(--accent)' }}>{totalPoints.toLocaleString('en-IN')}</div>
               <div className="text-xs mt-0.5" style={{ color: 'var(--text-dim)' }}>across all cards</div>
             </div>
@@ -80,7 +129,7 @@ export default function DashboardPage() {
               <div className="text-xs mt-0.5" style={{ color: 'var(--text-dim)' }}>at best redemption</div>
             </div>
             <div className="rounded-xl p-4 border" style={{ borderColor: 'var(--border)', background: 'var(--bg-elevated)' }}>
-              <div className="text-[9px] font-mono uppercase tracking-widest mb-1" style={{ color: 'var(--text-dim)' }}>Cards linked</div>
+              <div className="text-[9px] font-mono uppercase tracking-widest mb-1" style={{ color: 'var(--text-dim)' }}>Cards tracked</div>
               <div className="font-display text-2xl tabular" style={{ color: 'var(--text)' }}>{MOCK_LINKED_CARDS.length}</div>
               <div className="text-xs mt-0.5" style={{ color: 'var(--text-dim)' }}>active accounts</div>
             </div>
@@ -91,7 +140,7 @@ export default function DashboardPage() {
             </div>
           </div>
 
-          {/* Linked cards */}
+          {/* Cards */}
           <div className="text-[10px] font-mono uppercase tracking-widest mb-3" style={{ color: 'var(--text-dim)' }}>
             Linked cards · {MOCK_LINKED_CARDS.length} active
           </div>
@@ -112,37 +161,29 @@ export default function DashboardPage() {
                   </div>
                 </div>
                 <div className="px-4 pb-3 pt-2 flex items-center justify-between" style={{ borderTop: '1px solid var(--border)' }}>
-                  <div className="text-xs" style={{ color: 'var(--emerald)' }}>
-                    Best value: ₹{(card.pointsValue / 1000).toFixed(0)}K
-                  </div>
+                  <div className="text-xs" style={{ color: 'var(--emerald)' }}>Best value: ₹{(card.pointsValue / 1000).toFixed(0)}K</div>
                   <Link href={`/optimize?card=${card.cardId}&points=${card.points}`} className="text-xs flex items-center gap-1" style={{ color: 'var(--accent)' }}>
                     Optimize <ArrowRight className="w-3 h-3" />
                   </Link>
                 </div>
               </div>
             ))}
-
             <Link href="/link-card" className="rounded-xl border-2 border-dashed p-5 flex items-center justify-center gap-2 block" style={{ borderColor: 'var(--border)', color: 'var(--text-dim)' }}>
-              <Plus className="w-4 h-4" />
-              <span className="text-sm">Link another card</span>
+              <Plus className="w-4 h-4" /><span className="text-sm">Link another card</span>
             </Link>
           </div>
 
-          {/* Redemption opportunities */}
-          <div className="text-[10px] font-mono uppercase tracking-widest mb-3" style={{ color: 'var(--text-dim)' }}>
-            Top redemption opportunities
-          </div>
+          {/* Redemption */}
+          <div className="text-[10px] font-mono uppercase tracking-widest mb-3" style={{ color: 'var(--text-dim)' }}>Top redemption opportunities</div>
           <div className="space-y-3 mb-6">
             {REDEMPTION_IDEAS.map((r, i) => (
               <div key={i} className="rounded-xl border p-4" style={{ borderColor: 'var(--border)', background: 'var(--bg-elevated)' }}>
-                <div className="flex items-start justify-between gap-2 mb-3">
+                <div className="flex items-start justify-between gap-2 mb-2">
                   <div>
                     <div className="font-medium text-sm" style={{ color: 'var(--text)' }}>{r.title}</div>
                     <div className="text-xs mt-0.5" style={{ color: 'var(--text-dim)' }}>{r.bank}</div>
                   </div>
-                  <div className="text-[10px] font-mono uppercase px-2 py-1 rounded shrink-0" style={{ background: `${r.color}20`, color: r.color }}>
-                    {r.tag}
-                  </div>
+                  <div className="text-[10px] font-mono uppercase px-2 py-1 rounded shrink-0" style={{ background: `${r.color}20`, color: r.color }}>{r.tag}</div>
                 </div>
                 <div className="flex items-center justify-between mb-3">
                   <div className="text-xs font-mono" style={{ color: 'var(--text-dim)' }}>{r.points}</div>
@@ -161,9 +202,7 @@ export default function DashboardPage() {
               <TrendingUp className="w-4 h-4" style={{ color: 'var(--accent)' }} />
               <span className="text-sm font-medium" style={{ color: 'var(--text)' }}>Portfolio optimizer</span>
             </div>
-            <p className="text-xs mb-3" style={{ color: 'var(--text-muted)' }}>
-              Which card earns most on groceries, dining, fuel, travel? AI analyses your full card mix.
-            </p>
+            <p className="text-xs mb-3" style={{ color: 'var(--text-muted)' }}>Which card earns most on groceries, dining, fuel, travel? AI analyses your full card mix.</p>
             <Link href="/optimize" className="text-sm font-medium flex items-center gap-1" style={{ color: 'var(--accent)' }}>
               Run full analysis <ArrowRight className="w-3.5 h-3.5" />
             </Link>
