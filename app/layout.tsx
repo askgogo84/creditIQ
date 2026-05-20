@@ -1,4 +1,4 @@
-﻿import type { Metadata } from 'next';
+import type { Metadata } from 'next';
 import { GeistSans } from 'geist/font/sans';
 import { GeistMono } from 'geist/font/mono';
 import { Analytics } from '@vercel/analytics/react';
@@ -53,7 +53,7 @@ export const metadata: Metadata = {
     title: 'CreditIQ - Honest Credit Card Intelligence for India',
     description: 'Compare 93+ credit cards. Real annual value. Live devaluation tracking. Zero affiliate bias.',
     images: [`${BASE}/og-image.png`],
-    creator: '@CreditIQ_in',
+    creator: '@cardiq_in',
   },
   robots: {
     index: true,
@@ -70,7 +70,7 @@ export const metadata: Metadata = {
     canonical: BASE,
   },
   verification: {
-    google: 'add-your-google-verification-code-here',
+    google: 'google16ade07dfbdbb5a4',
   },
 };
 
@@ -109,4 +109,3 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     </html>
   );
 }
-
