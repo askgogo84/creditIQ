@@ -18,7 +18,9 @@ const TYPE_ICONS: Record<string, any> = {
 };
 
 function OptimizeContent() {
-  const allCards = SEED_CARDS.filter((c) => c.active);
+  const allCards = SEED_CARDS.filter((c) => c.active).sort((a, b) => a.name.localeCompare(b.name));
+  const [cardSearch, setCardSearch] = useState('');
+  const filteredCards = cardSearch.trim() ? allCards.filter(c => c.name.toLowerCase().includes(cardSearch.toLowerCase()) || c.bank.toLowerCase().includes(cardSearch.toLowerCase())) : allCards;
   const [selectedCardId, setSelectedCardId] = useState(allCards[0].id);
   const [points, setPoints] = useState(50000);
   const [preference, setPreference] = useState<'any' | 'cash' | 'travel' | 'shopping'>('any');
@@ -97,11 +99,18 @@ function OptimizeContent() {
             <aside className="space-y-4 lg:sticky lg:top-24 lg:self-start">
               <div className="bg-ink-900/40 border border-white/10 rounded-xl p-4 space-y-5">
 
-                {/* Card selector */}
+                {/* Card selector with search */}
                 <div>
                   <label className="text-[10px] font-mono uppercase tracking-widest text-ink-400 mb-1.5 block">
                     Select your card
                   </label>
+                  <input
+                    type="text"
+                    value={cardSearch}
+                    onChange={e => setCardSearch(e.target.value)}
+                    placeholder="Search card or bank..."
+                    style={{ width: '100%', padding: '8px 12px', marginBottom: 6, background: 'var(--bg-input)', border: '1px solid var(--border)', borderRadius: 8, fontSize: 13, color: 'var(--text)', outline: 'none' }}
+                  />
                   <select
                     value={selectedCardId}
                     onChange={(e) => { setSelectedCardId(e.target.value); setAiAdvice(''); }}
@@ -124,7 +133,7 @@ function OptimizeContent() {
                       maxWidth: '100%',
                     }}
                   >
-                    {allCards.map((c) => (
+                    {filteredCards.map((c) => (
                       <option key={c.id} value={c.id}>{c.name}</option>
                     ))}
                   </select>
