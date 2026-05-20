@@ -18,7 +18,7 @@ export default function LoginPage() {
     await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: {
-        redirectTo: `${window.location.origin}/auth/callback?next=/dashboard`,
+        redirectTo: `https://creditiq.app/auth/callback?next=/dashboard`,
         queryParams: { access_type: 'offline', prompt: 'consent' },
       },
     });
