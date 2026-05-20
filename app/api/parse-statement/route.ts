@@ -1,63 +1,33 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { exec } from 'child_process';
-import { promisify } from 'util';
-import { writeFile, readFile, unlink } from 'fs/promises';
-import { tmpdir } from 'os';
-import { join } from 'path';
-
-const execAsync = promisify(exec);
 
 export const runtime = 'nodejs';
 export const maxDuration = 30;
 
-async function decryptPdf(inputPath: string, outputPath: string, password: string): Promise<boolean> {
-  try {
-    // Try pikepdf (Python)
-    await execAsync(`python3 -c "
-import pikepdf, sys
-try:
-    pdf = pikepdf.open('${inputPath}', password='${password.replace(/'/g, "\\'")}')
-    pdf.save('${outputPath}')
-    print('ok')
-except Exception as e:
-    print('error:', e, file=sys.stderr)
-    sys.exit(1)
-"`);
-    return true;
-  } catch {
-    try {
-      // Fallback: qpdf
-      await execAsync(`qpdf --password='${password.replace(/'/g, "\\'")}' --decrypt '${inputPath}' '${outputPath}'`);
-      return true;
-    } catch {
-      return false;
-    }
-  }
-}
-
 function getPasswordHint(bank: string): string {
   const hints: Record<string, string> = {
-    HDFC: 'First 4 letters of your name (uppercase) + birth date DDMM. Example: name=Goverdhan, DOB=03-May → GOVE0305',
-    Axis: 'Your PAN card number in uppercase. Example: ABCDE1234F',
-    ICICI: 'Date of birth in DDMMYYYY format. Example: 03051985',
-    SBI: 'Date of birth in DDMMYYYY format. Example: 03051985',
-    AmEx: 'Date of birth in DDMMYYYY format. Example: 03051985',
-    Kotak: 'Date of birth in DDMMYYYY format. Example: 03051985',
+    HDFC: 'First 4 letters of name (uppercase) + DOB in DDMM. Example: GOVE0305',
+    Axis: 'PAN card number in uppercase. Example: ABCDE1234F',
+    ICICI: 'Date of birth DDMMYYYY. Example: 03051985',
+    SBI: 'Date of birth DDMMYYYY. Example: 03051985',
+    AmEx: 'Date of birth DDMMYYYY. Example: 03051985',
+    Kotak: 'Date of birth DDMMYYYY. Example: 03051985',
     IDFC: 'Registered mobile number (10 digits)',
-    Yes: 'Date of birth in DDMMYYYY format. Example: 03051985',
+    Yes: 'Date of birth DDMMYYYY. Example: 03051985',
   };
-  return hints[bank] || 'Check your bank welcome email for the statement password format';
+  return hints[bank] || 'Check your bank welcome email for the PDF password format';
+}
+
+async function isPdfEncrypted(buffer: Buffer): Promise<boolean> {
+  // Check PDF encryption flag in the file bytes
+  const str = buffer.slice(0, 2048).toString('binary');
+  return str.includes('/Encrypt') || str.includes('/encrypt');
 }
 
 export async function POST(req: NextRequest) {
-  const tmpInput = join(tmpdir(), `stmt_in_${Date.now()}.pdf`);
-  const tmpOutput = join(tmpdir(), `stmt_out_${Date.now()}.pdf`);
-
   try {
     const formData = await req.formData();
     const file = formData.get('file') as File;
     const bank = formData.get('bank') as string || 'Unknown';
-    const password = formData.get('password') as string || '';
 
     if (!file) return NextResponse.json({ error: 'No file uploaded' }, { status: 400 });
     if (file.size > 10 * 1024 * 1024) return NextResponse.json({ error: 'File too large (max 10MB)' }, { status: 400 });
@@ -66,44 +36,20 @@ export async function POST(req: NextRequest) {
     if (!apiKey) return NextResponse.json({ error: 'API not configured' }, { status: 500 });
 
     const bytes = await file.arrayBuffer();
-    await writeFile(tmpInput, Buffer.from(bytes));
+    const buffer = Buffer.from(bytes);
 
-    let pdfToUse = tmpInput;
-    let wasEncrypted = false;
-
-    // Check if encrypted and try to decrypt
-    if (password) {
-      const decrypted = await decryptPdf(tmpInput, tmpOutput, password);
-      if (!decrypted) {
-        return NextResponse.json({
-          error: 'Wrong password. Please check the format and try again.',
-          hint: getPasswordHint(bank),
-          needsPassword: true,
-        }, { status: 422 });
-      }
-      pdfToUse = tmpOutput;
-      wasEncrypted = true;
-    } else {
-      // Try without password first — some PDFs aren't encrypted
-      try {
-        await execAsync(`python3 -c "
-import pikepdf
-pdf = pikepdf.open('${tmpInput}')
-pdf.save('${tmpOutput}')
-"`);
-        pdfToUse = tmpOutput;
-      } catch {
-        // Encrypted — needs password
-        return NextResponse.json({
-          error: 'PDF is password protected',
-          hint: getPasswordHint(bank),
-          needsPassword: true,
-        }, { status: 422 });
-      }
+    // Check if PDF is encrypted
+    const encrypted = await isPdfEncrypted(buffer);
+    if (encrypted) {
+      return NextResponse.json({
+        error: 'PDF is password protected',
+        hint: getPasswordHint(bank),
+        needsPassword: true,
+        unlockUrl: 'https://www.ilovepdf.com/unlock_pdf',
+      }, { status: 422 });
     }
 
-    const pdfBuffer = await readFile(pdfToUse);
-    const base64 = pdfBuffer.toString('base64');
+    const base64 = buffer.toString('base64');
 
     const response = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
@@ -125,10 +71,10 @@ pdf.save('${tmpOutput}')
               text: `This is a ${bank} credit card statement. Extract ONLY these fields as JSON:
 {
   "bank": "bank name",
-  "card_name": "full card name",
+  "card_name": "full card product name",
   "card_last4": "last 4 digits",
   "points_balance": number or null,
-  "points_currency": "Reward Points / EDGE Miles / Membership Rewards / Cashback etc",
+  "points_currency": "Reward Points / EDGE Miles / Membership Rewards / Cashback / etc",
   "cashback_balance": number or null,
   "statement_date": "YYYY-MM-DD or null",
   "points_expiry": "date string or null",
@@ -136,7 +82,7 @@ pdf.save('${tmpOutput}')
   "customer_name": "first name only",
   "confidence": "high / medium / low"
 }
-Return ONLY the JSON. Use CLOSING BALANCE for points_balance.`
+Use CLOSING/TOTAL BALANCE for points_balance. Return ONLY the JSON.`
             }
           ]
         }],
@@ -150,7 +96,6 @@ Return ONLY the JSON. Use CLOSING BALANCE for points_balance.`
     let parsed: any = {};
     try { parsed = JSON.parse(text.replace(/```json|```/g, '').trim()); } catch {}
 
-    // Save to Supabase
     const sUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
     const sKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
     if (sUrl && sKey && parsed.points_balance) {
@@ -166,13 +111,9 @@ Return ONLY the JSON. Use CLOSING BALANCE for points_balance.`
       });
     }
 
-    return NextResponse.json({ success: true, data: parsed, wasEncrypted });
+    return NextResponse.json({ success: true, data: parsed });
 
   } catch (e: any) {
     return NextResponse.json({ error: e.message }, { status: 500 });
-  } finally {
-    // Clean up temp files
-    await unlink(tmpInput).catch(() => {});
-    await unlink(tmpOutput).catch(() => {});
   }
 }
