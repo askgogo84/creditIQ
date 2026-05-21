@@ -139,3 +139,15 @@ export function getTrackedCardIds(): string[] {
     .filter(([, url]) => url.includes("bitli.in"))
     .map(([id]) => id);
 }
+
+// Legacy alias used by app/api/apply/[cardId]/route.ts and components/CardTile.tsx
+// Returns { url, type } where type is 'affiliate' | 'direct'
+export function getApplyUrl(cardId: string | Record<string, unknown>): { url: string; type: 'affiliate' | 'direct' } {
+  const id = typeof cardId === 'string'
+    ? cardId
+    : String(cardId?.id ?? cardId?.slug ?? cardId?.name ?? '');
+  const normalized = id.toLowerCase().replace(/\s+/g, '-');
+  const url = AFFILIATE_LINKS[normalized] ?? DEFAULT_AFFILIATE_URL;
+  const type: 'affiliate' | 'direct' = url.includes('bitli.in') ? 'affiliate' : 'direct';
+  return { url, type };
+}
