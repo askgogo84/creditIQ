@@ -28,6 +28,7 @@ export async function POST(req: NextRequest) {
     const formData = await req.formData();
     const file = formData.get('file') as File;
     const bank = formData.get('bank') as string || 'Unknown';
+    const userId = formData.get('userId') as string || null;
 
     if (!file) return NextResponse.json({ error: 'No file uploaded' }, { status: 400 });
     if (file.size > 10 * 1024 * 1024) return NextResponse.json({ error: 'File too large (max 10MB)' }, { status: 400 });
@@ -102,7 +103,7 @@ Use CLOSING/TOTAL BALANCE for points_balance. Return ONLY the JSON.`
       const { createClient } = await import('@supabase/supabase-js');
       const sb = createClient(sUrl, sKey);
       await sb.from('statement_imports').upsert({
-        bank: parsed.bank || bank, card_name: parsed.card_name,
+        user_id: userId, bank: parsed.bank || bank, card_name: parsed.card_name,
         card_last4: parsed.card_last4, points_balance: parsed.points_balance,
         points_currency: parsed.points_currency, cashback_balance: parsed.cashback_balance,
         statement_date: parsed.statement_date, points_expiry: parsed.points_expiry,

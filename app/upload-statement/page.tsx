@@ -1,10 +1,11 @@
 'use client';
 
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { Header } from '@/components/Header';
 import { Footer } from '@/components/Footer';
 import { Upload, FileText, CheckCircle, AlertCircle, Zap, ArrowRight, Lock, X, ExternalLink } from 'lucide-react';
 import Link from 'next/link';
+import { createBrowserClient } from '@supabase/ssr';
 
 const BANKS = [
   { id: 'HDFC', name: 'HDFC Bank', color: '#004C8F', pwdHint: 'First 4 letters of name + DOB DDMM → e.g. GOVE0305' },
@@ -27,6 +28,13 @@ export default function UploadStatementPage() {
   const [needsPassword, setNeedsPassword] = useState(false);
   const [pwdHint, setPwdHint] = useState('');
   const fileRef = useRef<HTMLInputElement>(null);
+  const [userId, setUserId] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const sb = createBrowserClient(process.env.NEXT_PUBLIC_SUPABASE_URL || '', process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '');
+    sb.auth.getUser().then(({ data: { user } }) => { if (user) setUserId(user.id); });
+  }, []);
 
   const handleFile = (f: File) => {
     if (f.size > 10 * 1024 * 1024) { setError('File too large — max 10MB'); return; }
@@ -46,6 +54,7 @@ export default function UploadStatementPage() {
       const formData = new FormData();
       formData.append('file', file);
       formData.append('bank', selectedBank?.id || 'Unknown');
+      if (userId) formData.append('userId', userId);
 
       const res = await fetch('/api/parse-statement', { method: 'POST', body: formData });
       const data = await res.json();
