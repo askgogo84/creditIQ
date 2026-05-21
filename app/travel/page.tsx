@@ -71,40 +71,29 @@ export default function TravelPlannerPage() {
     setMessages(newMessages);
 
     try {
+      // Show thinking indicator
+      setMessages(prev => [...prev, { role: 'assistant', content: '...' }]);
+
       const res = await fetch('/api/travel-ai', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          messages: newMessages,
-          userCards,
-          totalPoints,
-          userId,
-        }),
+        body: JSON.stringify({ messages: newMessages, userCards, totalPoints, userId }),
       });
 
-      if (!res.ok) throw new Error('AI service unavailable');
+      const data = await res.json();
+      if (!res.ok || data.error) throw new Error(data.error || 'AI service unavailable');
 
-      const reader = res.body?.getReader();
-      const decoder = new TextDecoder();
-      let aiResponse = '';
-
-      setMessages(prev => [...prev, { role: 'assistant', content: '' }]);
-
-      if (reader) {
-        while (true) {
-          const { done, value } = await reader.read();
-          if (done) break;
-          const chunk = decoder.decode(value);
-          aiResponse += chunk;
-          setMessages(prev => {
-            const updated = [...prev];
-            updated[updated.length - 1] = { role: 'assistant', content: aiResponse };
-            return updated;
-          });
-        }
-      }
+      setMessages(prev => {
+        const updated = [...prev];
+        updated[updated.length - 1] = { role: 'assistant', content: data.response };
+        return updated;
+      });
     } catch (e: any) {
-      setMessages(prev => [...prev, { role: 'assistant', content: 'Sorry, something went wrong. Please try again.' }]);
+      setMessages(prev => {
+        const updated = [...prev];
+        updated[updated.length - 1] = { role: 'assistant', content: 'Sorry, something went wrong. Please try again.' };
+        return updated;
+      });
     }
     setLoading(false);
   };
