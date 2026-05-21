@@ -1,140 +1,119 @@
 import { NextRequest, NextResponse } from 'next/server';
-export const runtime = 'edge';
+export const runtime = 'nodejs';
 
-// Bank SMS patterns for reward points
 const SMS_PATTERNS = [
-  // HDFC
-  { bank: 'HDFC', pattern: /(\d[\d,]+)\s*(?:reward\s*points?|rp)\s*(?:credited|earned|added)/i, type: 'points' },
-  { bank: 'HDFC', pattern: /reward\s*points?\s*(?:balance|bal)[:\s]+(\d[\d,]+)/i, type: 'balance' },
-  { bank: 'HDFC', pattern: /(?:total|available)\s*(?:reward\s*)?points?[:\s]+(\d[\d,]+)/i, type: 'balance' },
-  // Axis
-  { bank: 'Axis', pattern: /(\d[\d,]+)\s*edge\s*(?:miles?|reward\s*points?)\s*(?:credited|earned|added)/i, type: 'points' },
-  { bank: 'Axis', pattern: /edge\s*(?:miles?|points?)\s*(?:balance|bal)[:\s]+(\d[\d,]+)/i, type: 'balance' },
-  // Axis Magnus specific
-  { bank: 'Axis', pattern: /(\d[\d,]+)\s*edge\s*miles?\s*(?:on|for)/i, type: 'earned' },
-  // ICICI
-  { bank: 'ICICI', pattern: /(\d[\d,]+)\s*(?:reward\s*points?|cashback)\s*(?:credited|earned|added)/i, type: 'points' },
-  { bank: 'ICICI', pattern: /payback\s*points?[:\s]+(\d[\d,]+)/i, type: 'balance' },
-  // Amex
-  { bank: 'AmEx', pattern: /(\d[\d,]+)\s*membership\s*rewards?\s*(?:points?)\s*(?:credited|earned|added)/i, type: 'points' },
-  { bank: 'AmEx', pattern: /mr\s*points?\s*(?:balance|bal)[:\s]+(\d[\d,]+)/i, type: 'balance' },
-  { bank: 'AmEx', pattern: /(\d[\d,]+)\s*(?:membership\s*rewards?|MR)\s*points?/i, type: 'points' },
-  // SBI
-  { bank: 'SBI', pattern: /(\d[\d,]+)\s*reward\s*points?\s*(?:credited|earned|added)/i, type: 'points' },
-  { bank: 'SBI', pattern: /cashback\s*(?:of\s*)?(?:rs\.?\s*|₹\s*)(\d[\d,.]+)\s*(?:credited|added)/i, type: 'cashback' },
-  // Kotak
-  { bank: 'Kotak', pattern: /(\d[\d,]+)\s*(?:reward\s*points?|kotak\s*points?)\s*(?:credited|earned)/i, type: 'points' },
-  // IDFC
-  { bank: 'IDFC', pattern: /(\d[\d,]+)\s*(?:reward\s*points?|cashpoints?)\s*(?:credited|earned|added)/i, type: 'points' },
-  // Generic patterns
-  { bank: 'Unknown', pattern: /(\d[\d,]+)\s*reward\s*points?\s*(?:credited|earned|added|for)/i, type: 'points' },
-  { bank: 'Unknown', pattern: /points?\s*(?:balance|bal)[:\s]+(\d[\d,]+)/i, type: 'balance' },
-  { bank: 'Unknown', pattern: /(?:earned|credited)\s*(\d[\d,]+)\s*points?/i, type: 'points' },
+  { bank: 'HDFC', senders: ['HDFCBK', 'HDFCCC', 'HDFC'], pattern: /(?:total|available)?\s*(?:reward\s*)?points?\s*(?:balance|bal)?[:\s]+(\d[\d,]+)/i, type: 'balance' },
+  { bank: 'HDFC', senders: ['HDFCBK', 'HDFCCC'], pattern: /(\d[\d,]+)\s*(?:reward\s*)?points?\s*(?:credited|earned|added)/i, type: 'earned' },
+  { bank: 'Axis', senders: ['AXISCC', 'AXISBK', 'AXIS'], pattern: /(?:total\s*)?edge\s*(?:miles?|points?)\s*[:\s]+(\d[\d,]+)/i, type: 'balance' },
+  { bank: 'Axis', senders: ['AXISCC'], pattern: /(\d[\d,]+)\s*edge\s*miles?\s*(?:credited|earned|added|on)/i, type: 'earned' },
+  { bank: 'AmEx', senders: ['AMEXIN', 'AMEX'], pattern: /mr\s*(?:points?)?\s*(?:balance|bal)[:\s]+(\d[\d,]+)/i, type: 'balance' },
+  { bank: 'AmEx', senders: ['AMEXIN'], pattern: /(\d[\d,]+)\s*membership\s*rewards?\s*points?\s*(?:have been\s*)?(?:added|earned|credited)/i, type: 'earned' },
+  { bank: 'ICICI', senders: ['ICICIB', 'ICICICC', 'ICICI'], pattern: /(?:total\s*)?(?:reward\s*)?points?\s*(?:balance|bal)?[:\s]+(\d[\d,]+)/i, type: 'balance' },
+  { bank: 'SBI', senders: ['SBICRD', 'SBICC', 'SBICRD'], pattern: /(?:reward\s*)?points?\s*(?:balance|bal)?[:\s]+(\d[\d,]+)/i, type: 'balance' },
+  { bank: 'Kotak', senders: ['KOTAKB', 'KOTAK'], pattern: /(?:reward\s*)?points?\s*(?:balance|bal)?[:\s]+(\d[\d,]+)/i, type: 'balance' },
+  { bank: 'IDFC', senders: ['IDFCBK', 'IDFC'], pattern: /(?:reward\s*)?points?\s*(?:balance|bal)?[:\s]+(\d[\d,]+)/i, type: 'balance' },
+  { bank: 'RBL', senders: ['RBLBNK', 'RBLCC'], pattern: /(?:reward\s*)?points?\s*(?:balance|bal)?[:\s]+(\d[\d,]+)/i, type: 'balance' },
+  { bank: 'IndusInd', senders: ['INDUSB', 'INDUCC'], pattern: /(?:reward\s*)?points?\s*(?:balance|bal)?[:\s]+(\d[\d,]+)/i, type: 'balance' },
+  { bank: 'Yes', senders: ['YESBNK', 'YESCC'], pattern: /(?:reward\s*)?points?\s*(?:balance|bal)?[:\s]+(\d[\d,]+)/i, type: 'balance' },
 ];
 
-// Card number patterns to extract masked card
-const CARD_PATTERNS = [
-  /(?:card|cc)\s*(?:ending|no\.?|number)?\s*(?:with|in|ending)?\s*(?:xx+|•+)?(\d{4})/i,
-  /(?:xx|••)+(\d{4})/i,
-  /\*+(\d{4})/i,
-];
+function extractMaskedCard(text: string): string | null {
+  const m = text.match(/[xX*]{2,4}(\d{4})/);
+  return m ? m[1] : null;
+}
 
-// Bank sender IDs
-const SENDER_BANKS: Record<string, string> = {
-  'HDFCBK': 'HDFC', 'HDFCCC': 'HDFC', 'HDFC': 'HDFC',
-  'AXISBK': 'Axis', 'AXISCC': 'Axis', 'AXIS': 'Axis',
-  'ICICIB': 'ICICI', 'ICICIC': 'ICICI', 'ICICI': 'ICICI',
-  'SBICRD': 'SBI', 'SBICC': 'SBI', 'SBIINB': 'SBI',
-  'KOTAKB': 'Kotak', 'KOTAK': 'Kotak',
-  'IDFCFB': 'IDFC', 'IDFC': 'IDFC',
-  'AMEXIN': 'AmEx', 'AMEX': 'AmEx',
-};
+function parseSms(messages: Array<{text: string; sender: string; date?: string}>) {
+  const cardMap = new Map<string, any>();
 
-function parseSms(smsText: string, sender?: string): {
-  bank: string; points: number; type: string; maskedCard?: string; raw: string;
-} | null {
-  const text = smsText.trim();
+  for (const msg of messages) {
+    const sender = (msg.sender || '').toUpperCase();
+    const text = msg.text || '';
+    const maskedCard = extractMaskedCard(text);
 
-  // Detect bank from sender
-  let detectedBank = 'Unknown';
-  if (sender) {
-    const senderUpper = sender.toUpperCase().replace(/[^A-Z]/g, '');
-    for (const [key, bank] of Object.entries(SENDER_BANKS)) {
-      if (senderUpper.includes(key)) { detectedBank = bank; break; }
-    }
-  }
+    for (const p of SMS_PATTERNS) {
+      const senderMatch = p.senders.some(s => sender.includes(s));
+      if (!senderMatch) continue;
 
-  // Try each pattern
-  for (const { bank, pattern, type } of SMS_PATTERNS) {
-    const match = text.match(pattern);
-    if (match) {
-      const pointsStr = match[1].replace(/,/g, '');
-      const points = parseInt(pointsStr, 10);
+      const match = text.match(p.pattern);
+      if (!match) continue;
+
+      const points = parseInt(match[1].replace(/,/g, ''), 10);
       if (isNaN(points) || points <= 0) continue;
 
-      // Extract masked card number
-      let maskedCard: string | undefined;
-      for (const cardPattern of CARD_PATTERNS) {
-        const cardMatch = text.match(cardPattern);
-        if (cardMatch) { maskedCard = `•••• ${cardMatch[1]}`; break; }
+      const key = `${p.bank}-${maskedCard || 'unknown'}`;
+
+      if (!cardMap.has(key)) {
+        cardMap.set(key, {
+          bank: p.bank,
+          card_last4: maskedCard,
+          points_balance: 0,
+          points_earned: 0,
+          points_currency: p.bank === 'Axis' ? 'EDGE Miles' : p.bank === 'AmEx' ? 'Membership Rewards' : 'Reward Points',
+          sms_count: 0,
+        });
       }
 
-      return {
-        bank: detectedBank !== 'Unknown' ? detectedBank : bank,
-        points,
-        type,
-        maskedCard,
-        raw: text.slice(0, 100),
-      };
+      const card = cardMap.get(key);
+      card.sms_count++;
+
+      if (p.type === 'balance') {
+        card.points_balance = Math.max(card.points_balance, points);
+      } else if (p.type === 'earned') {
+        card.points_earned += points;
+        if (card.points_balance === 0) card.points_balance = points;
+      }
+
+      break;
     }
   }
-  return null;
+
+  return Array.from(cardMap.values()).filter(c => c.points_balance > 0);
 }
 
 export async function POST(req: NextRequest) {
   try {
-    const { messages } = await req.json() as { messages: Array<{ text: string; sender?: string; date?: string }> };
+    const body = await req.json();
+    const { messages, userId } = body;
+
     if (!messages || !Array.isArray(messages)) {
       return NextResponse.json({ error: 'messages array required' }, { status: 400 });
     }
 
-    const results: any[] = [];
-    const cardMap: Record<string, { bank: string; points: number; earned: number; maskedCard?: string; transactions: number }> = {};
+    const cards = parseSms(messages);
 
-    for (const msg of messages) {
-      const parsed = parseSms(msg.text, msg.sender);
-      if (!parsed) continue;
-
-      const key = `${parsed.bank}-${parsed.maskedCard || 'unknown'}`;
-      if (!cardMap[key]) {
-        cardMap[key] = { bank: parsed.bank, points: 0, earned: 0, maskedCard: parsed.maskedCard, transactions: 0 };
-      }
-
-      if (parsed.type === 'balance') {
-        // Balance SMS = current total, use as authoritative if higher
-        if (parsed.points > cardMap[key].points) cardMap[key].points = parsed.points;
-      } else {
-        // Earned SMS = add to earned total
-        cardMap[key].earned += parsed.points;
-        cardMap[key].transactions++;
-        if (parsed.points > cardMap[key].points) cardMap[key].points = parsed.points;
-      }
-
-      results.push({ ...parsed, date: msg.date });
+    if (cards.length === 0) {
+      return NextResponse.json({ success: true, cards: [], message: 'No reward points found in these messages' });
     }
 
-    const cards = Object.values(cardMap).map(card => ({
-      ...card,
-      estimatedValue: Math.round(card.points * 0.25), // ₹0.25 per point conservative estimate
-    }));
+    // Save to Supabase if userId provided
+    if (userId) {
+      const sUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+      const sKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+      if (sUrl && sKey) {
+        const { createClient } = await import('@supabase/supabase-js');
+        const sb = createClient(sUrl, sKey);
+        for (const card of cards) {
+          await sb.from('statement_imports').upsert({
+            user_id: userId,
+            bank: card.bank,
+            card_name: `${card.bank} Credit Card`,
+            card_last4: card.card_last4,
+            points_balance: card.points_balance,
+            points_currency: card.points_currency,
+            points_earned: card.points_earned,
+            confidence: 'medium',
+            imported_at: new Date().toISOString(),
+          }, {
+            onConflict: 'user_id,card_last4',
+            ignoreDuplicates: false,
+          });
+        }
+      }
+    }
 
-    return NextResponse.json({
-      parsed: results.length,
-      total: messages.length,
-      cards,
-      totalPoints: cards.reduce((s, c) => s + c.points, 0),
-      totalEstimatedValue: cards.reduce((s, c) => s + c.estimatedValue, 0),
-    });
+    const totalPoints = cards.reduce((s, c) => s + c.points_balance, 0);
+    return NextResponse.json({ success: true, cards, totalPoints });
+
   } catch (e: any) {
     return NextResponse.json({ error: e.message }, { status: 500 });
   }

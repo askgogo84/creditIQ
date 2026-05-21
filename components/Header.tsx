@@ -11,6 +11,7 @@ const NAV = [
   { href: '/smart-match', label: 'Smart Match' },
   { href: '/optimize', label: 'Optimize Points' },
   { href: '/compare', label: 'Compare' },
+  { href: '/travel', label: '✈️ Travel AI' },
   { href: '/uae', label: '🇦🇪 UAE' },
   { href: '/about', label: 'Manifesto' },
   { href: '/dashboard', label: 'Dashboard' },
