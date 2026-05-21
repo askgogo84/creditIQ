@@ -115,7 +115,7 @@ export function getApplyUrl(
   const type: "affiliate" | "direct" = url.includes("bitli.in")
     ? "affiliate"
     : "direct";
-  return { url, type };
+  const label = type === "affiliate" ? "Apply & Earn" : "Apply Now";`n  return { url, type, label };
 }
 
 /**
@@ -135,3 +135,4 @@ export function getTrackedCardIds(): string[] {
     .filter(([, url]) => url.includes("bitli.in"))
     .map(([id]) => id);
 }
+
