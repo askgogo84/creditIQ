@@ -117,6 +117,9 @@ export function getAffiliateUrl(cardId: string): string {
   return AFFILIATE_LINKS[normalized] ?? DEFAULT_AFFILIATE_URL;
 }
 
+// Alias — existing code imports getApplyUrl
+export const getApplyUrl = getAffiliateUrl;
+
 /**
  * Returns true if we have a tracked EarnKaro affiliate link for this card.
  * Useful for showing a "Earn commission" badge in the admin panel.
