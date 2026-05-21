@@ -77,13 +77,13 @@ export function getAffiliateUrl(cardId: string): string {
   return AFFILIATE_LINKS[normalized] ?? DEFAULT_AFFILIATE_URL;
 }
 
-export function getApplyUrl(cardId: unknown): { url: string; type: "affiliate" | "direct"; label: string } {
+export function getApplyUrl(cardId: unknown): { url: string; type: "affiliate" | "direct" | "paisabazaar"; label: string } {
   const id = typeof cardId === "string"
     ? cardId
     : String((cardId as Record<string, unknown>)?.id ?? (cardId as Record<string, unknown>)?.slug ?? (cardId as Record<string, unknown>)?.name ?? "");
   const normalized = id.toLowerCase().replace(/\s+/g, "-");
   const url = AFFILIATE_LINKS[normalized] ?? DEFAULT_AFFILIATE_URL;
-  const type: "affiliate" | "direct" = url.includes("bitli.in") ? "affiliate" : "direct";
+  const type: "affiliate" | "direct" | "paisabazaar" = url.includes("bitli.in") ? "affiliate" : "direct";
   const label = type === "affiliate" ? "Apply & Earn" : "Apply Now";
   return { url, type, label };
 }
@@ -99,3 +99,4 @@ export function getTrackedCardIds(): string[] {
     .filter(([, url]) => url.includes("bitli.in"))
     .map(([id]) => id);
 }
+
