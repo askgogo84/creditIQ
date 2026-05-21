@@ -104,12 +104,12 @@ export function getAffiliateUrl(cardId: string): string {
  * Accepts a card ID string or card object, returns { url, type }.
  */
 export function getApplyUrl(
-  cardId: string | { id?: string; slug?: string; name?: string; [key: string]: unknown }
+  cardId: unknown
 ): { url: string; type: "affiliate" | "direct" } {
   const id =
     typeof cardId === "string"
       ? cardId
-      : String(cardId?.id ?? cardId?.slug ?? cardId?.name ?? "");
+      : String((cardId as Record<string, unknown>)?.id ?? (cardId as Record<string, unknown>)?.slug ?? (cardId as Record<string, unknown>)?.name ?? "");
   const normalized = id.toLowerCase().replace(/\s+/g, "-");
   const url = AFFILIATE_LINKS[normalized] ?? DEFAULT_AFFILIATE_URL;
   const type: "affiliate" | "direct" = url.includes("bitli.in")
