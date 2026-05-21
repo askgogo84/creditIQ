@@ -1,17 +1,17 @@
-'use client';
+﻿'use client';
 
 import { useState } from 'react';
-import Header from '@/components/Header';
+import { Header } from '@/components/Header';
 
 const CATEGORIES = [
-  { id: 'dining', label: 'Dining & Restaurants', icon: '🍽️', placeholder: '5000' },
-  { id: 'travel', label: 'Travel & Hotels', icon: '✈️', placeholder: '10000' },
-  { id: 'fuel', label: 'Fuel', icon: '⛽', placeholder: '4000' },
-  { id: 'shopping', label: 'Online Shopping', icon: '🛍️', placeholder: '8000' },
-  { id: 'grocery', label: 'Grocery & Supermarket', icon: '🛒', placeholder: '6000' },
-  { id: 'ott', label: 'OTT & Subscriptions', icon: '📺', placeholder: '1500' },
-  { id: 'utilities', label: 'Utilities & Bills', icon: '💡', placeholder: '3000' },
-  { id: 'international', label: 'International Spends', icon: '🌍', placeholder: '0' },
+  { id: 'dining', label: 'Dining & Restaurants', icon: 'ðŸ½ï¸', placeholder: '5000' },
+  { id: 'travel', label: 'Travel & Hotels', icon: 'âœˆï¸', placeholder: '10000' },
+  { id: 'fuel', label: 'Fuel', icon: 'â›½', placeholder: '4000' },
+  { id: 'shopping', label: 'Online Shopping', icon: 'ðŸ›ï¸', placeholder: '8000' },
+  { id: 'grocery', label: 'Grocery & Supermarket', icon: 'ðŸ›’', placeholder: '6000' },
+  { id: 'ott', label: 'OTT & Subscriptions', icon: 'ðŸ“º', placeholder: '1500' },
+  { id: 'utilities', label: 'Utilities & Bills', icon: 'ðŸ’¡', placeholder: '3000' },
+  { id: 'international', label: 'International Spends', icon: 'ðŸŒ', placeholder: '0' },
 ];
 
 interface SpendData {
@@ -59,10 +59,10 @@ export default function SpendOptimizerPage() {
     try {
       const spendSummary = CATEGORIES
         .filter(c => parseInt(spends[c.id] || '0') > 0)
-        .map(c => `${c.label}: ₹${parseInt(spends[c.id]).toLocaleString('en-IN')}/month`)
+        .map(c => `${c.label}: â‚¹${parseInt(spends[c.id]).toLocaleString('en-IN')}/month`)
         .join(', ');
 
-      const prompt = `You are CreditIQ's unbiased card recommendation engine for India. A user has the following monthly spends: ${spendSummary}. Total monthly spend: ₹${totalSpend.toLocaleString('en-IN')}.
+      const prompt = `You are CreditIQ's unbiased card recommendation engine for India. A user has the following monthly spends: ${spendSummary}. Total monthly spend: â‚¹${totalSpend.toLocaleString('en-IN')}.
 
 Analyze these spends and recommend the TOP 3 credit cards from Indian banks (HDFC, Axis, SBI, ICICI, Amex, IDFC First, Kotak, Yes Bank, AU, RBL, IndusInd) that will maximize their rewards.
 
@@ -128,13 +128,13 @@ Respond ONLY with valid JSON in this exact format, no markdown, no explanation o
             borderRadius: 20,
             marginBottom: 16,
             textTransform: 'uppercase',
-          }}>No affiliate bias · Pure AI analysis</div>
+          }}>No affiliate bias Â· Pure AI analysis</div>
           <h1 style={{ fontSize: 32, fontWeight: 800, color: '#1B3A5C', margin: '0 0 12px', lineHeight: 1.2 }}>
             Which card earns you<br />the most money?
           </h1>
           <p style={{ fontSize: 16, color: '#64748b', margin: 0, lineHeight: 1.6 }}>
             Tell us how you spend. Our AI analyzes 93 cards and shows you<br />
-            exactly how much each card earns — no bank bias, no hidden agenda.
+            exactly how much each card earns â€” no bank bias, no hidden agenda.
           </p>
         </div>
 
@@ -152,7 +152,7 @@ Respond ONLY with valid JSON in this exact format, no markdown, no explanation o
                 <div style={{ fontSize: 13, fontWeight: 600, color: '#1B3A5C', textTransform: 'uppercase', letterSpacing: 0.5 }}>
                   Your monthly spends
                 </div>
-                <div style={{ fontSize: 12, color: '#94a3b8', marginTop: 2 }}>Enter approximate amounts · Leave 0 if not applicable</div>
+                <div style={{ fontSize: 12, color: '#94a3b8', marginTop: 2 }}>Enter approximate amounts Â· Leave 0 if not applicable</div>
               </div>
 
               {CATEGORIES.map((cat, i) => (
@@ -169,7 +169,7 @@ Respond ONLY with valid JSON in this exact format, no markdown, no explanation o
                     <div style={{ fontSize: 14, fontWeight: 500, color: '#1e293b' }}>{cat.label}</div>
                   </div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                    <span style={{ fontSize: 14, color: '#94a3b8' }}>₹</span>
+                    <span style={{ fontSize: 14, color: '#94a3b8' }}>â‚¹</span>
                     <input
                       type="number"
                       placeholder={cat.placeholder}
@@ -205,7 +205,7 @@ Respond ONLY with valid JSON in this exact format, no markdown, no explanation o
               }}>
                 <span style={{ color: '#94a3b8', fontSize: 14 }}>Total monthly spend</span>
                 <span style={{ color: '#C9972E', fontSize: 22, fontWeight: 700 }}>
-                  ₹{totalSpend.toLocaleString('en-IN')}
+                  â‚¹{totalSpend.toLocaleString('en-IN')}
                 </span>
               </div>
             )}
@@ -232,14 +232,14 @@ Respond ONLY with valid JSON in this exact format, no markdown, no explanation o
               }}
             >
               {loading ? (
-                <span>Analyzing 93 cards — this takes ~10 seconds ⚡</span>
+                <span>Analyzing 93 cards â€” this takes ~10 seconds âš¡</span>
               ) : (
-                <span>Find My Perfect Card →</span>
+                <span>Find My Perfect Card â†’</span>
               )}
             </button>
 
             <p style={{ textAlign: 'center', fontSize: 12, color: '#94a3b8', marginTop: 12 }}>
-              No login required · No data stored · 100% unbiased
+              No login required Â· No data stored Â· 100% unbiased
             </p>
           </>
         )}
@@ -257,7 +257,7 @@ Respond ONLY with valid JSON in this exact format, no markdown, no explanation o
               gap: 12,
               alignItems: 'flex-start',
             }}>
-              <span style={{ fontSize: 20 }}>💡</span>
+              <span style={{ fontSize: 20 }}>ðŸ’¡</span>
               <div>
                 <div style={{ fontSize: 13, fontWeight: 600, color: '#92400e', marginBottom: 2 }}>AI insight</div>
                 <div style={{ fontSize: 13, color: '#78350f', lineHeight: 1.5 }}>{result.insight}</div>
@@ -317,7 +317,7 @@ Respond ONLY with valid JSON in this exact format, no markdown, no explanation o
                     </div>
                     <div style={{ textAlign: 'right' }}>
                       <div style={{ fontSize: 28, fontWeight: 800, color: '#16a34a' }}>
-                        ₹{card.monthlyEarnings.toLocaleString('en-IN')}
+                        â‚¹{card.monthlyEarnings.toLocaleString('en-IN')}
                       </div>
                       <div style={{ fontSize: 11, color: '#94a3b8' }}>per month</div>
                     </div>
@@ -334,15 +334,15 @@ Respond ONLY with valid JSON in this exact format, no markdown, no explanation o
                     padding: '14px 16px',
                   }}>
                     <div style={{ textAlign: 'center' }}>
-                      <div style={{ fontSize: 16, fontWeight: 700, color: '#16a34a' }}>₹{card.annualEarnings.toLocaleString('en-IN')}</div>
+                      <div style={{ fontSize: 16, fontWeight: 700, color: '#16a34a' }}>â‚¹{card.annualEarnings.toLocaleString('en-IN')}</div>
                       <div style={{ fontSize: 11, color: '#94a3b8' }}>Annual earnings</div>
                     </div>
                     <div style={{ textAlign: 'center', borderLeft: '1px solid #e2e8f0', borderRight: '1px solid #e2e8f0' }}>
-                      <div style={{ fontSize: 16, fontWeight: 700, color: '#dc2626' }}>₹{card.annualFee.toLocaleString('en-IN')}</div>
+                      <div style={{ fontSize: 16, fontWeight: 700, color: '#dc2626' }}>â‚¹{card.annualFee.toLocaleString('en-IN')}</div>
                       <div style={{ fontSize: 11, color: '#94a3b8' }}>Annual fee</div>
                     </div>
                     <div style={{ textAlign: 'center' }}>
-                      <div style={{ fontSize: 16, fontWeight: 700, color: '#1B3A5C' }}>₹{card.netAnnualValue.toLocaleString('en-IN')}</div>
+                      <div style={{ fontSize: 16, fontWeight: 700, color: '#1B3A5C' }}>â‚¹{card.netAnnualValue.toLocaleString('en-IN')}</div>
                       <div style={{ fontSize: 11, color: '#94a3b8' }}>Net value</div>
                     </div>
                   </div>
@@ -358,7 +358,7 @@ Respond ONLY with valid JSON in this exact format, no markdown, no explanation o
                         color: '#374151',
                         marginBottom: 6,
                       }}>
-                        <span style={{ color: '#16a34a', fontWeight: 700, fontSize: 16 }}>✓</span>
+                        <span style={{ color: '#16a34a', fontWeight: 700, fontSize: 16 }}>âœ“</span>
                         {h}
                       </div>
                     ))}
@@ -379,7 +379,7 @@ Respond ONLY with valid JSON in this exact format, no markdown, no explanation o
                       textDecoration: 'none',
                     }}
                   >
-                    Apply & Earn — {i === 0 ? 'Best match' : `Option ${i + 1}`} →
+                    Apply & Earn â€” {i === 0 ? 'Best match' : `Option ${i + 1}`} â†’
                   </a>
                 </div>
               </div>
@@ -401,7 +401,7 @@ Respond ONLY with valid JSON in this exact format, no markdown, no explanation o
                   cursor: 'pointer',
                 }}
               >
-                ← Adjust my spends
+                â† Adjust my spends
               </button>
               <a
                 href="/compare"
@@ -419,7 +419,7 @@ Respond ONLY with valid JSON in this exact format, no markdown, no explanation o
                   textDecoration: 'none',
                 }}
               >
-                Compare these cards →
+                Compare these cards â†’
               </a>
             </div>
           </>
@@ -428,3 +428,4 @@ Respond ONLY with valid JSON in this exact format, no markdown, no explanation o
     </div>
   );
 }
+
