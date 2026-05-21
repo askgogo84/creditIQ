@@ -104,7 +104,7 @@ export function getAffiliateUrl(cardId: string): string {
  * Accepts a card ID string or card object, returns { url, type }.
  */
 export function getApplyUrl(
-  cardId: string | Record<string, unknown>
+  cardId: string | { id?: string; slug?: string; name?: string; [key: string]: unknown }
 ): { url: string; type: "affiliate" | "direct" } {
   const id =
     typeof cardId === "string"
