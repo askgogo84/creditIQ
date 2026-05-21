@@ -2,7 +2,6 @@
 // Affiliate link registry for CreditIQ
 // Source: EarnKaro — ₹300–₹1500 commission per card activation
 // Last updated: 21 May 2026
-// To add new links: generate from earnkaro.com/search-retailers/credit+card
 
 const AFFILIATE_LINKS: Record<string, string> = {
   // ── HDFC Bank ─────────────────────────────────────────────────────────────
@@ -25,7 +24,7 @@ const AFFILIATE_LINKS: Record<string, string> = {
   "axis-airtel-rupay":         "https://bitli.in/Ub0HNdT",
   "axis-lic-signature":        "https://bitli.in/2wZCcR2",
   "axis-lic-platinum":         "https://bitli.in/5hcq2lD",
-  "axis-ace":                  "https://bitli.in/MQ6vAYP", // fallback to Magnus
+  "axis-ace":                  "https://bitli.in/MQ6vAYP",
   "axis-vistara":              "https://bitli.in/MQ6vAYP",
 
   // ── SBI Card ──────────────────────────────────────────────────────────────
@@ -65,64 +64,62 @@ const AFFILIATE_LINKS: Record<string, string> = {
   // ── NOMO ──────────────────────────────────────────────────────────────────
   "nomo":                      "https://bitli.in/P633SQj",
 
-  // ── Platinum / Legend / Tiger / Aura Edge (likely IndusInd or similar) ────
-  // TODO: Confirm which bank "Tiger", "Legend", "Platinum", "Platinum Aura Edge" belong to
-  // and map to correct card IDs in seed-cards.ts
+  // ── Tiger / Legend / Platinum / Aura Edge ────────────────────────────────
   "tiger-credit-card":         "https://bitli.in/dhbkHA6",
   "legend-credit-card":        "https://bitli.in/XV9120H",
   "platinum-credit-card":      "https://bitli.in/mU83w2n",
   "platinum-aura-edge":        "https://bitli.in/wobysVJ",
 
-  // ── Cards without EarnKaro links yet — fallback to generic apply pages ────
-  // ICICI Bank (not found on EarnKaro — use direct apply page)
+  // ── No EarnKaro link — fallback to direct bank pages ─────────────────────
   "icici-amazon-pay":          "https://www.icicibank.com/card/credit-cards/amazon-pay-credit-card",
   "icici-emeralde":            "https://www.icicibank.com/card/credit-cards",
   "icici-rubyx":               "https://www.icicibank.com/card/credit-cards",
   "icici-sapphiro":            "https://www.icicibank.com/card/credit-cards",
   "icici-coral":               "https://www.icicibank.com/card/credit-cards",
   "icici-mmt-signature":       "https://www.icicibank.com/card/credit-cards",
-
-  // Amex (not found on EarnKaro)
   "amex-platinum-travel":      "https://www.americanexpress.com/in/credit-cards/",
   "amex-gold":                 "https://www.americanexpress.com/in/credit-cards/",
   "amex-membership-rewards":   "https://www.americanexpress.com/in/credit-cards/",
-
-  // Kotak (not found on EarnKaro)
   "kotak-811":                 "https://www.kotak.com/en/personal-banking/cards/credit-cards.html",
   "kotak-white":               "https://www.kotak.com/en/personal-banking/cards/credit-cards.html",
   "kotak-royale-signature":    "https://www.kotak.com/en/personal-banking/cards/credit-cards.html",
-
-  // Yes Bank (not found on EarnKaro)
   "yes-first-exclusive":       "https://www.yesbank.in/personal-banking/yes-individual/loans-and-cards/credit-card",
   "yes-first-preferred":       "https://www.yesbank.in/personal-banking/yes-individual/loans-and-cards/credit-card",
-
-  // RBL Bank (not found on EarnKaro)
   "rbl-shoprite":              "https://www.rblbank.com/credit-cards",
   "rbl-world-safari":          "https://www.rblbank.com/credit-cards",
 };
 
-// Default fallback — Paisabazaar credit card listing
 const DEFAULT_AFFILIATE_URL = "https://www.paisabazaar.com/credit-card/";
 
 /**
- * Returns the affiliate Apply Now URL for a given card ID.
- * Falls back to Paisabazaar's credit card listing if no specific link exists.
- *
- * @param cardId - The card's slug/ID from seed-cards.ts (e.g. "hdfc-regalia")
- * @returns Affiliate URL string
+ * Primary function — returns plain affiliate URL string.
  */
 export function getAffiliateUrl(cardId: string): string {
-  // Normalize: lowercase, replace spaces with hyphens
   const normalized = cardId.toLowerCase().replace(/\s+/g, "-");
   return AFFILIATE_LINKS[normalized] ?? DEFAULT_AFFILIATE_URL;
 }
 
-// Alias — existing code imports getApplyUrl
-export const getApplyUrl = getAffiliateUrl;
+/**
+ * Used by app/api/apply/[cardId]/route.ts and components/CardTile.tsx
+ * Accepts a card ID string or card object, returns { url, type }.
+ */
+export function getApplyUrl(
+  cardId: string | Record<string, unknown>
+): { url: string; type: "affiliate" | "direct" } {
+  const id =
+    typeof cardId === "string"
+      ? cardId
+      : String(cardId?.id ?? cardId?.slug ?? cardId?.name ?? "");
+  const normalized = id.toLowerCase().replace(/\s+/g, "-");
+  const url = AFFILIATE_LINKS[normalized] ?? DEFAULT_AFFILIATE_URL;
+  const type: "affiliate" | "direct" = url.includes("bitli.in")
+    ? "affiliate"
+    : "direct";
+  return { url, type };
+}
 
 /**
  * Returns true if we have a tracked EarnKaro affiliate link for this card.
- * Useful for showing a "Earn commission" badge in the admin panel.
  */
 export function hasTrackedLink(cardId: string): boolean {
   const normalized = cardId.toLowerCase().replace(/\s+/g, "-");
@@ -132,22 +129,9 @@ export function hasTrackedLink(cardId: string): boolean {
 
 /**
  * Returns all card IDs that have tracked EarnKaro affiliate links.
- * Useful for analytics — which cards are monetized vs. fallback.
  */
 export function getTrackedCardIds(): string[] {
   return Object.entries(AFFILIATE_LINKS)
     .filter(([, url]) => url.includes("bitli.in"))
     .map(([id]) => id);
-}
-
-// Legacy alias used by app/api/apply/[cardId]/route.ts and components/CardTile.tsx
-// Returns { url, type } where type is 'affiliate' | 'direct'
-export function getApplyUrl(cardId: string | Record<string, unknown>): { url: string; type: 'affiliate' | 'direct' } {
-  const id = typeof cardId === 'string'
-    ? cardId
-    : String(cardId?.id ?? cardId?.slug ?? cardId?.name ?? '');
-  const normalized = id.toLowerCase().replace(/\s+/g, '-');
-  const url = AFFILIATE_LINKS[normalized] ?? DEFAULT_AFFILIATE_URL;
-  const type: 'affiliate' | 'direct' = url.includes('bitli.in') ? 'affiliate' : 'direct';
-  return { url, type };
 }
