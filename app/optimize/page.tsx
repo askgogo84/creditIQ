@@ -165,6 +165,7 @@ function OptimizeContent() {
                     type="text"
                     value={points.toLocaleString("en-IN")}
                     onChange={(e) => { const v = parseInt(e.target.value.replace(/,/g, "")) || 0; setPoints(v); }}
+                    style={{
                       width: '100%',
                       marginTop: 8,
                       background: '#0a0a0b',
