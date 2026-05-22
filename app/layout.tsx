@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import { GeistSans } from 'geist/font/sans';
 import { GeistMono } from 'geist/font/mono';
-import { Inter, Syne } from 'next/font/google';
+import { Inter, Syne, Fraunces } from 'next/font/google';
 import { Analytics } from '@vercel/analytics/react';
 import { ThemeProvider } from '@/components/ThemeProvider';
 import './globals.css';
@@ -18,6 +18,14 @@ const syne = Syne({
   variable: '--font-syne',
   display: 'swap',
   weight: ['500', '600', '700', '800'],
+});
+
+const fraunces = Fraunces({
+  subsets: ['latin'],
+  variable: '--font-fraunces',
+  display: 'swap',
+  weight: ['400', '500', '600', '700'],
+  style: ['normal', 'italic'],
 });
 
 const BASE = 'https://creditiq.app';
@@ -91,7 +99,7 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className={`${inter.variable} ${syne.variable} ${GeistSans.variable} ${GeistMono.variable} dark`}>
+    <html lang="en" className={`${inter.variable} ${syne.variable} ${fraunces.variable} ${GeistSans.variable} ${GeistMono.variable}`}>
       <head>
         <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
         <link rel="icon" href="/favicon.ico" sizes="any" />

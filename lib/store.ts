@@ -35,24 +35,31 @@ interface ThemeStore {
   setTheme: (t: 'dark' | 'light') => void;
 }
 
+function applyTheme(t: 'dark' | 'light') {
+  if (typeof document === 'undefined') return;
+  const root = document.documentElement;
+  if (t === 'dark') {
+    root.setAttribute('data-theme', 'dark');
+  } else {
+    root.removeAttribute('data-theme');
+  }
+  // keep legacy classes in sync for any older components that still check them
+  root.classList.toggle('dark', t === 'dark');
+  root.classList.toggle('light', t === 'light');
+}
+
 export const useTheme = create<ThemeStore>()(
   persist(
     (set, get) => ({
-      theme: 'dark',
+      theme: 'light',
       toggle: () => {
         const next = get().theme === 'dark' ? 'light' : 'dark';
         set({ theme: next });
-        if (typeof document !== 'undefined') {
-          document.documentElement.classList.toggle('dark', next === 'dark');
-          document.documentElement.classList.toggle('light', next === 'light');
-        }
+        applyTheme(next);
       },
       setTheme: (t) => {
         set({ theme: t });
-        if (typeof document !== 'undefined') {
-          document.documentElement.classList.toggle('dark', t === 'dark');
-          document.documentElement.classList.toggle('light', t === 'light');
-        }
+        applyTheme(t);
       },
     }),
     { name: 'CreditIQ-theme' }
