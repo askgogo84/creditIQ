@@ -1,11 +1,12 @@
 'use client';
 
+import type { ReactNode } from 'react';
 import { Reveal } from './Reveal';
 
 interface SectionHeaderProps {
   label?: string;
-  title: string;
-  subtitle?: string;
+  title: ReactNode;
+  subtitle?: ReactNode;
   align?: 'left' | 'center';
 }
 

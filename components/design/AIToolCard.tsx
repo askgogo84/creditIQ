@@ -6,8 +6,8 @@ import { Reveal } from './Reveal';
 
 interface AIToolCardProps {
   icon: ReactNode;
-  title: string;
-  desc: string;
+  title: ReactNode;
+  desc: ReactNode;
   badge?: { text: string; tone?: string };
   href: string;
 }

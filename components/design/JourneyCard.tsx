@@ -1,15 +1,15 @@
 'use client';
 
 import Link from 'next/link';
-import type { MouseEvent as ReactMouseEvent } from 'react';
+import type { MouseEvent as ReactMouseEvent, ReactNode } from 'react';
 import { Reveal } from './Reveal';
 
 type Accent = 'copper' | 'sage' | 'terracotta';
 
 interface JourneyCardProps {
-  eyebrow: string;
-  title: string;
-  subtitle: string;
+  eyebrow: ReactNode;
+  title: ReactNode;
+  subtitle: ReactNode;
   accent?: Accent;
   href: string;
 }
