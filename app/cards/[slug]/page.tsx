@@ -18,7 +18,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   if (!card) return {};
   return {
     title: `${card.name} Review 2026 — Fees, Rewards & Benefits | CreditIQ`,
-    description: `Unbiased ${card.name} review. Annual fee: Rs.${card.annual_fee ?? 0}. Reward rate, lounge access, joining benefits, who should apply — honest analysis with no affiliate bias.`,
+    description: `Unbiased ${card.name} review. Annual fee: Rs.${(card as any).annual_fee_inr ?? 0}. Reward rate, lounge access, joining benefits, who should apply — honest analysis with no affiliate bias.`,
     keywords: `${card.name}, ${card.name} review, ${card.name} benefits, ${card.name} annual fee, ${card.bank} credit card, best credit card India 2026`,
     openGraph: {
       title: `${card.name} — Honest Review 2026`,
@@ -34,13 +34,13 @@ export default function CardDetailPage({ params }: Props) {
   if (!card) notFound();
 
   const { url: applyUrl, label: applyLabel } = getApplyUrl(card.id);
-  const annualFee = card.annual_fee ?? 0;
-  const joiningFee = (card as any).joining_fee ?? annualFee;
+  const annualFee = (card as any).annual_fee_inr ?? 0;
+  const joiningFee = (card as any).joining_fee_inr ?? annualFee;
   const rewardRate = (card as any).reward_rate ?? (card as any).base_reward_rate ?? '1 point per Rs.100';
-  const features = (card as any).features ?? (card as any).benefits ?? [];
-  const minIncome = (card as any).min_income ?? (card as any).income_required ?? null;
+  const features = (card as any).key_features ?? (card as any).category_rewards?.map((r: any) => r.notes).filter(Boolean) ?? [];
+  const minIncome = (card as any).min_income_inr_monthly ?? null;
   const network = (card as any).network ?? 'Visa/Mastercard';
-  const category = (card as any).category ?? (card as any).type ?? 'Rewards';
+  const category = Array.isArray(card.category) ? (card.category[0] ?? 'Rewards') : ((card as any).category ?? 'Rewards');
 
   // Structured data for Google
   const structuredData = {
@@ -342,7 +342,7 @@ export default function CardDetailPage({ params }: Props) {
                     }}>
                       <div style={{ fontSize: 13, fontWeight: 600, color: '#1B3A5C' }}>{rc.name}</div>
                       <div style={{ fontSize: 12, color: '#94a3b8', marginTop: 2 }}>
-                        Rs.{(rc.annual_fee ?? 0).toLocaleString('en-IN')} annual fee
+                        Rs.{((rc as any).annual_fee_inr ?? 0).toLocaleString('en-IN')} annual fee
                       </div>
                     </Link>
                   ))}
