@@ -163,7 +163,6 @@ function OptimizeContent() {
                   </div>
                   <input
                     type="text"
-                    value={points}
                     value={points.toLocaleString("en-IN")}
                     onChange={(e) => { const v = parseInt(e.target.value.replace(/,/g, "")) || 0; setPoints(v); }}
                       width: '100%',
