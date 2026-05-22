@@ -1,10 +1,10 @@
-import { NextRequest, NextResponse } from 'next/server';
+﻿import { NextRequest, NextResponse } from 'next/server';
 import Anthropic from '@anthropic-ai/sdk';
 import { SEED_CARDS } from '@/lib/data/seed-cards';
 import { buildRedemptionPrompt } from '@/lib/redemption';
 import type { RedemptionRecommendation } from '@/lib/types';
 
-export const runtime = 'edge';
+export const runtime = 'nodejs';
 
 export async function POST(req: NextRequest) {
   try {
@@ -21,9 +21,9 @@ export async function POST(req: NextRequest) {
       // Fallback rule-based advice when no API key configured
       const best = recommendations[0];
       const worst = recommendations[recommendations.length - 1];
-      const fallback = `For ${points.toLocaleString('en-IN')} points on the ${card.name}, your best path is ${best?.option.partner || best?.option.type} at ₹${best?.inr_value.toLocaleString('en-IN')} — ${(best?.option.value_per_point_inr || 0).toFixed(2)}/point.
+      const fallback = `For ${points.toLocaleString('en-IN')} points on the ${card.name}, your best path is ${best?.option.partner || best?.option.type} at â‚¹${best?.inr_value.toLocaleString('en-IN')} â€” ${(best?.option.value_per_point_inr || 0).toFixed(2)}/point.
 
-Avoid ${worst?.option.partner || worst?.option.type} (only ₹${worst?.inr_value.toLocaleString('en-IN')}) — you'd lose ₹${((best?.inr_value || 0) - (worst?.inr_value || 0)).toLocaleString('en-IN')} versus the best option.
+Avoid ${worst?.option.partner || worst?.option.type} (only â‚¹${worst?.inr_value.toLocaleString('en-IN')}) â€” you'd lose â‚¹${((best?.inr_value || 0) - (worst?.inr_value || 0)).toLocaleString('en-IN')} versus the best option.
 
 ${best?.option.notes ?? ''}
 
@@ -50,3 +50,4 @@ ${best?.option.notes ?? ''}
     return NextResponse.json({ error: e.message }, { status: 500 });
   }
 }
+
