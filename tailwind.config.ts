@@ -9,10 +9,36 @@ const config: Config = {
     extend: {
       fontFamily: {
         display: ['var(--font-fraunces)', 'Georgia', 'serif'],
-        sans: ['var(--font-geist)', 'system-ui', 'sans-serif'],
+        sans: ['var(--font-inter)', 'var(--font-geist)', 'system-ui', 'sans-serif'],
+        inter: ['var(--font-inter)', 'system-ui', 'sans-serif'],
         mono: ['var(--font-geist-mono)', 'ui-monospace', 'monospace'],
       },
       colors: {
+        navy: {
+          50: '#eef2f7',
+          100: '#d6dfeb',
+          200: '#a8bcd3',
+          300: '#7a98bb',
+          400: '#4d76a4',
+          500: '#2f5783',
+          600: '#1B3A5C',
+          700: '#15314e',
+          800: '#0f2540',
+          900: '#0a1a2e',
+          950: '#06111f',
+        },
+        gold: {
+          50: '#fbf6e7',
+          100: '#f6ebc5',
+          200: '#ecd690',
+          300: '#e0bd5b',
+          400: '#d5a73f',
+          500: '#C9972E',
+          600: '#a87a23',
+          700: '#855e1c',
+          800: '#5e4314',
+          900: '#3d2c0e',
+        },
         ink: {
           50: '#f5f5f6',
           100: '#e7e7e9',
