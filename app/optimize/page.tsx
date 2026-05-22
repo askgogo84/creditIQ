@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { useState, useMemo, useEffect, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
@@ -79,7 +79,7 @@ function OptimizeContent() {
 
       {/* Hero */}
       <section className="pt-20 pb-6 px-4 grain relative" style={{ overflow: 'hidden' }}>
-        <div className="divider-rule mb-4 max-w-xs">— Points optimizer</div>
+        <div className="divider-rule mb-4 max-w-xs">â€” Points optimizer</div>
         <h1 className="font-display text-3xl sm:text-4xl md:text-5xl leading-[1.05] text-ink-50 mb-3">
           Don't let your points{' '}
           <em className="text-copper-400 not-italic display-italic">rot</em>{' '}
@@ -95,7 +95,7 @@ function OptimizeContent() {
           {/* On mobile: single column stack. On lg: two columns */}
           <div className="flex flex-col lg:grid lg:grid-cols-[400px,1fr] gap-6">
 
-            {/* ── CONFIGURATOR ── */}
+            {/* â”€â”€ CONFIGURATOR â”€â”€ */}
             <aside className="space-y-4 lg:sticky lg:top-24 lg:self-start">
               <div className="bg-ink-900/40 border border-white/10 rounded-xl p-4 space-y-5">
 
@@ -162,10 +162,10 @@ function OptimizeContent() {
                     <span>1K</span><span>5L</span>
                   </div>
                   <input
-                    type="number"
+                    type="text"
                     value={points}
-                    onChange={(e) => setPoints(parseInt(e.target.value) || 0)}
-                    style={{
+                    value={points.toLocaleString("en-IN")}
+                    onChange={(e) => { const v = parseInt(e.target.value.replace(/,/g, "")) || 0; setPoints(v); }}
                       width: '100%',
                       marginTop: 8,
                       background: '#0a0a0b',
@@ -225,7 +225,7 @@ function OptimizeContent() {
                 </button>
               </div>
 
-              {/* Card preview — hidden on mobile to save space */}
+              {/* Card preview â€” hidden on mobile to save space */}
               <div className="hidden sm:flex justify-center">
                 <div style={{ width: '80%', maxWidth: 280 }}>
                   <CardMockup card={card} size="md" />
@@ -233,7 +233,7 @@ function OptimizeContent() {
               </div>
             </aside>
 
-            {/* ── RESULTS ── */}
+            {/* â”€â”€ RESULTS â”€â”€ */}
             <div className="space-y-4 min-w-0">
 
               {/* Value spread */}
@@ -287,7 +287,7 @@ function OptimizeContent() {
               {/* Redemption paths */}
               <div>
                 <div className="text-[10px] font-mono uppercase tracking-widest text-ink-400 mb-3">
-                  All redemption paths · ranked by ₹ value
+                  All redemption paths Â· ranked by â‚¹ value
                 </div>
                 <div className="space-y-2">
                   {recommendations.map((r, i) => {
@@ -328,8 +328,8 @@ function OptimizeContent() {
                             </div>
                             <div className="text-[11px] text-ink-400 truncate">
                               {r.option.best_for ?? r.option.notes ?? `${r.option.type} redemption`}
-                              {' · '}
-                              <span className="font-mono">₹{r.option.value_per_point_inr.toFixed(2)}/pt</span>
+                              {' Â· '}
+                              <span className="font-mono">â‚¹{r.option.value_per_point_inr.toFixed(2)}/pt</span>
                             </div>
                           </div>
                           {/* Value */}
