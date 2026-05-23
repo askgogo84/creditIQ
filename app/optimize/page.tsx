@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import { useState, useMemo, useEffect, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
@@ -65,7 +65,7 @@ function OptimizeContent() {
         body: JSON.stringify({ cardId: card.id, points, recommendations: recommendations.slice(0, 5) }),
       });
       const data = await res.json();
-      setAiAdvice(data.advice || 'Configure ANTHROPIC_API_KEY for AI advice.');
+      setAiAdvice(data.advice || 'AI strategy unavailable. See redemption paths below.');
     } catch {
       setAiAdvice('AI suggestion failed. See redemption paths below.');
     } finally {
@@ -79,11 +79,11 @@ function OptimizeContent() {
 
       {/* Hero */}
       <section className="pt-20 pb-6 px-4 grain relative" style={{ overflow: 'hidden' }}>
-        <div className="divider-rule mb-4 max-w-xs">â€” Points optimizer</div>
+        <div className="divider-rule mb-4 max-w-xs">Points optimizer</div>
         <h1 className="font-display text-3xl sm:text-4xl md:text-5xl leading-[1.05] text-ink-50 mb-3">
-          Don't let your points{' '}
-          <em className="text-copper-400 not-italic display-italic">rot</em>{' '}
-          as statement credit.
+          {"Don't let your points "}
+          <em className="text-copper-400 not-italic display-italic">rot</em>
+          {" as statement credit."}
         </h1>
         <p className="text-sm sm:text-base text-ink-300 font-display leading-relaxed max-w-2xl">
           Pick your card. Enter your balance. We rank every redemption path by rupee value.
@@ -92,10 +92,9 @@ function OptimizeContent() {
 
       <section className="pb-16 px-4" style={{ maxWidth: '100vw', overflow: 'hidden' }}>
         <div className="max-w-7xl mx-auto">
-          {/* On mobile: single column stack. On lg: two columns */}
           <div className="flex flex-col lg:grid lg:grid-cols-[400px,1fr] gap-6">
 
-            {/* â”€â”€ CONFIGURATOR â”€â”€ */}
+            {/* CONFIGURATOR */}
             <aside className="space-y-4 lg:sticky lg:top-24 lg:self-start">
               <div className="bg-ink-900/40 border border-white/10 rounded-xl p-4 space-y-5">
 
@@ -163,8 +162,8 @@ function OptimizeContent() {
                   </div>
                   <input
                     type="text"
-                    value={points.toLocaleString("en-IN")}
-                    onChange={(e) => { const v = parseInt(e.target.value.replace(/,/g, "")) || 0; setPoints(v); }}
+                    value={points.toLocaleString('en-IN')}
+                    onChange={(e) => { const v = parseInt(e.target.value.replace(/,/g, '')) || 0; setPoints(v); }}
                     style={{
                       width: '100%',
                       marginTop: 8,
@@ -225,7 +224,7 @@ function OptimizeContent() {
                 </button>
               </div>
 
-              {/* Card preview â€” hidden on mobile to save space */}
+              {/* Card preview - hidden on mobile */}
               <div className="hidden sm:flex justify-center">
                 <div style={{ width: '80%', maxWidth: 280 }}>
                   <CardMockup card={card} size="md" />
@@ -233,7 +232,7 @@ function OptimizeContent() {
               </div>
             </aside>
 
-            {/* â”€â”€ RESULTS â”€â”€ */}
+            {/* RESULTS */}
             <div className="space-y-4 min-w-0">
 
               {/* Value spread */}
@@ -287,7 +286,7 @@ function OptimizeContent() {
               {/* Redemption paths */}
               <div>
                 <div className="text-[10px] font-mono uppercase tracking-widest text-ink-400 mb-3">
-                  All redemption paths Â· ranked by â‚¹ value
+                  All redemption paths &middot; ranked by value
                 </div>
                 <div className="space-y-2">
                   {recommendations.map((r, i) => {
@@ -302,7 +301,6 @@ function OptimizeContent() {
                         className="bg-ink-900/40 border border-white/10 rounded-lg overflow-hidden"
                         style={{ position: 'relative' }}
                       >
-                        {/* Background bar */}
                         <div
                           style={{
                             position: 'absolute',
@@ -313,26 +311,22 @@ function OptimizeContent() {
                           }}
                         />
                         <div className="relative flex items-center gap-3 p-3">
-                          {/* Rank */}
                           <div className="font-display text-lg text-ink-500 tabular w-6 shrink-0 text-center">
                             {i + 1}
                           </div>
-                          {/* Icon */}
                           <div className="w-8 h-8 rounded bg-white/5 border border-white/10 flex items-center justify-center text-copper-400 shrink-0">
                             <Icon className="w-3.5 h-3.5" />
                           </div>
-                          {/* Name + notes */}
                           <div className="flex-1 min-w-0">
                             <div className="text-sm font-medium text-ink-100 truncate">
                               {r.option.partner || r.option.type}
                             </div>
                             <div className="text-[11px] text-ink-400 truncate">
                               {r.option.best_for ?? r.option.notes ?? `${r.option.type} redemption`}
-                              {' Â· '}
-                              <span className="font-mono">â‚¹{r.option.value_per_point_inr.toFixed(2)}/pt</span>
+                              {' · '}
+                              <span className="font-mono">Rs.{r.option.value_per_point_inr.toFixed(2)}/pt</span>
                             </div>
                           </div>
-                          {/* Value */}
                           <div className="text-right shrink-0 ml-1">
                             <div className="font-display text-base sm:text-lg text-ink-50 tabular">
                               {formatINR(r.inr_value)}
