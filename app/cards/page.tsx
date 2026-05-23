@@ -1,13 +1,10 @@
 import { Metadata } from 'next';
-import Link from 'next/link';
 import { TopNav }         from '@/components/design/TopNav';
 import { SectionHeader }  from '@/components/design/SectionHeader';
 import { CopperCTA, GhostCTA } from '@/components/design/CTAs';
-import { CardTile, type TileCard } from '@/components/design/CardTile';
-import { type CardVariant } from '@/components/design/CreditCard3D';
 import { DesignFooter }   from '@/components/design/Footer';
 import { SEED_CARDS }     from '@/lib/data/seed-cards';
-import type { CreditCard } from '@/lib/types';
+import { CardsClient }    from './CardsClient';
 
 export const metadata: Metadata = {
   title: 'All Credit Cards in India 2026 — Compare 93 Cards | CreditIQ',
@@ -20,48 +17,6 @@ export const metadata: Metadata = {
     url: 'https://creditiq.app/cards',
   },
 };
-
-/* ============================================================
-   seed-cards → TileCard adapter  (shared with homepage)
-   ============================================================ */
-const VARIANT_ROTATION: CardVariant[] = ['obsidian', 'navy', 'plum', 'gold', 'iris', 'mint'];
-const NETWORK_BY_BANK: Record<string, string> = {
-  HDFC: 'VISA', AXIS: 'MASTERCARD', ICICI: 'AMEX',
-  SBI: 'VISA', AMEX: 'AMEX', AMERICAN: 'AMEX',
-  IDFC: 'VISA', RBL: 'MASTERCARD', YES: 'VISA', AU: 'VISA',
-};
-
-function tagline(tier?: string) {
-  switch (tier) {
-    case 'super-premium': return 'Reserve metal';
-    case 'premium':       return 'Premium';
-    case 'mid':           return 'Mid-tier';
-    case 'entry':         return 'Entry';
-    case 'starter':       return 'Starter';
-    default:              return 'Standard';
-  }
-}
-
-function toTileCard(c: CreditCard, i: number): TileCard {
-  const bank = c.bank.toUpperCase();
-  return {
-    bank,
-    name: c.name.replace(/^HDFC\s+|^AXIS\s+|^ICICI\s+|^SBI\s+|^AMEX\s+/i, '').replace(/ Credit Card$/i, ''),
-    tagline: tagline(c.tier),
-    tier: c.tier ? c.tier.toUpperCase().replace(/-/g, ' ') : 'CARD',
-    network: NETWORK_BY_BANK[bank.split(' ')[0]] || 'VISA',
-    variant: VARIANT_ROTATION[i % VARIANT_ROTATION.length],
-    tags: (c.category || []).slice(0, 2).map(s => s.replace(/-/g, ' ')),
-    fee: c.annual_fee_inr,
-    iqScore: Math.round((c.expert_rating ?? 8) * 10),
-  };
-}
-
-const CATEGORIES = [
-  'International Travel', 'Domestic Travel', 'Forex 0%', 'Lounge Access',
-  'Cashback', 'Online Shopping', 'Fuel', 'Dining',
-  'First Card', 'Lifetime Free', 'Business', 'Metal',
-];
 
 export default function CardsIndexPage() {
   const cards = SEED_CARDS.filter(c => c.active !== false);
@@ -94,53 +49,9 @@ export default function CardsIndexPage() {
         </section>
 
         {/* ============================================
-              CATEGORY PILLS
+              CATEGORY FILTER + CARDS  (interactive)
               ============================================ */}
-        <section className="section" style={{ paddingTop: 'clamp(40px, 6vw, 64px)', paddingBottom: 0 }}>
-          <div className="shell">
-            <div className="label" style={{ marginBottom: 18 }}>BROWSE BY CATEGORY</div>
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10 }}>
-              {CATEGORIES.map((c) => (
-                <Link key={c} href="/cards" className="chip" style={{ fontSize: 14 }}>
-                  {c}
-                </Link>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        {/* ============================================
-              CARDS BY BANK
-              ============================================ */}
-        <section className="section">
-          <div className="shell">
-            {banks.map((bank) => {
-              const bankCards = cards.filter(c => c.bank === bank);
-              return (
-                <div key={bank} style={{ marginBottom: 'clamp(48px, 7vw, 72px)' }}>
-                  <div style={{
-                    display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end',
-                    gap: 24, marginBottom: 'clamp(24px, 3vw, 32px)',
-                    paddingBottom: 16, borderBottom: '1px solid var(--line)',
-                  }}>
-                    <h2 style={{ fontSize: 'clamp(24px, 3vw, 34px)', letterSpacing: '-0.03em' }}>
-                      {bank} <span className="serif" style={{ color: 'var(--copper)' }}>Credit Cards</span>
-                    </h2>
-                    <span className="label" style={{ whiteSpace: 'nowrap' }}>{bankCards.length} cards</span>
-                  </div>
-
-                  <div style={{
-                    display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 24,
-                  }} className="grid-1-mobile">
-                    {bankCards.map((c, i) => (
-                      <CardTile key={c.id} card={toTileCard(c, i)} href={`/card/${c.slug}`} />
-                    ))}
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        </section>
+        <CardsClient />
 
         {/* ============================================
               FINAL CTA
