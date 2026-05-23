@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { useState, useMemo, useEffect, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
@@ -21,7 +21,8 @@ function OptimizeContent() {
   const allCards = SEED_CARDS.filter((c) => c.active).sort((a, b) => a.name.localeCompare(b.name));
   const [cardSearch, setCardSearch] = useState('');
   const filteredCards = cardSearch.trim() ? allCards.filter(c => c.name.toLowerCase().includes(cardSearch.toLowerCase()) || c.bank.toLowerCase().includes(cardSearch.toLowerCase())) : allCards;
-  const [selectedCardId, setSelectedCardId] = useState(allCards[0].id);
+  const defaultCard = allCards.find(c => c.id === 'hdfc-regalia-gold') ?? allCards.find(c => (c as any).bank === 'HDFC') ?? allCards[0];
+  const [selectedCardId, setSelectedCardId] = useState(defaultCard.id);
   const [points, setPoints] = useState(50000);
   const [preference, setPreference] = useState<'any' | 'cash' | 'travel' | 'shopping'>('any');
   const [aiAdvice, setAiAdvice] = useState<string>('');
@@ -323,7 +324,7 @@ function OptimizeContent() {
                             </div>
                             <div className="text-[11px] text-ink-400 truncate">
                               {r.option.best_for ?? r.option.notes ?? `${r.option.type} redemption`}
-                              {' · '}
+                              {' Â· '}
                               <span className="font-mono">Rs.{r.option.value_per_point_inr.toFixed(2)}/pt</span>
                             </div>
                           </div>
@@ -357,3 +358,4 @@ function OptimizeContent() {
 export default function OptimizePage() {
   return <Suspense fallback={null}><OptimizeContent /></Suspense>;
 }
+
