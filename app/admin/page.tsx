@@ -92,7 +92,7 @@ export default function AdminPage() {
       <Header />
       <section className="pt-32 pb-24">
         <div className="max-w-6xl mx-auto px-6">
-          <div className="divider-rule mb-6 max-w-xs">â€” Admin</div>
+          <div className="divider-rule mb-6 max-w-xs">- Admin</div>
           <h1 className="font-display text-5xl text-ink-50 leading-[1.05] mb-12">
             CreditIQ <span className="display-italic text-copper-400">control</span>
           </h1>
@@ -159,7 +159,7 @@ export default function AdminPage() {
                     {c.base_reward_rate}%
                   </div>
                   <div className="text-xs text-ink-400 font-mono">
-                    {c.last_verified ? new Date(c.last_verified).toLocaleDateString('en-IN') : 'â€”'}
+                    {c.last_verified ? new Date(c.last_verified).toLocaleDateString('en-IN') : '-'}
                   </div>
                 </div>
               ))}

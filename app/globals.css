@@ -898,7 +898,7 @@ code, pre, .font-mono, [class*="mono"] {
   font-family: var(--font-geist-mono), monospace !important;
 }
 /* ============================================
-   LIGHT MODE FIX â€” appended to globals.css
+   LIGHT MODE FIX - appended to globals.css
    Fixes white-on-white text and faded cards
    ============================================ */
 
@@ -1007,7 +1007,7 @@ html.dark .border-white\/10 {
   border-color: rgba(255,255,255,0.1) !important;
 }
 
-/* Smart Match card fix â€” light mode */
+/* Smart Match card fix - light mode */
 [class*="card"], .card {
   background: var(--bg-elevated, #fff);
   color: var(--text, #0f172a);
