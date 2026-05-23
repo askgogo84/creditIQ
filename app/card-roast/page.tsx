@@ -93,7 +93,7 @@ export default function CardRoastPage() {
 
         {/* Hero */}
         <div style={{ textAlign: 'center', marginBottom: 28 }}>
-          <div style={{ fontSize: 48, marginBottom: 12 }}>&#128293;</div>
+          <div style={{ fontSize: 48, marginBottom: 12 }}>🔥</div>
           <h1 style={{ fontSize: 30, fontWeight: 800, color: '#1B3A5C', margin: '0 0 10px', lineHeight: 1.2 }}>
             Roast my credit card
           </h1>
@@ -177,7 +177,7 @@ export default function CardRoastPage() {
                 cursor: loading || !selectedCardId ? 'not-allowed' : 'pointer',
               }}
             >
-              {loading ? 'Roasting your card... &#128293;' : '&#128293; Roast My Card'}
+              {loading ? 'Roasting your card... 🔥' : '🔥 Roast My Card'}
             </button>
           </div>
         ) : (
@@ -263,7 +263,7 @@ export default function CardRoastPage() {
               fontWeight: 700, color: copied ? '#fff' : '#1B3A5C', cursor: 'pointer',
               marginBottom: 10, transition: 'all 0.2s',
             }}>
-              {copied ? '&#10003; Copied to clipboard!' : '&#128257; Share my card grade'}
+              {copied ? '✓ Copied to clipboard!' : '🔁 Share my card grade'}
             </button>
 
             <button onClick={() => setResult(null)} style={{

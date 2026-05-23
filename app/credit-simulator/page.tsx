@@ -131,7 +131,7 @@ export default function CreditSimulatorPage() {
           <div style={{ fontSize: 11, fontWeight: 700, color: '#C9972E', textTransform: 'uppercase', letterSpacing: 1.5, marginBottom: 8 }}>
             Credit Score Simulator
           </div>
-          <h1 style={{ fontSize: 'clamp(26px, 4vw, 44px)', fontWeight: 900, color: 'var(--text, #f0f0ff)', margin: '0 0 10px', letterSpacing: -0.5 }}>
+          <h1 style={{ fontSize: 'clamp(26px, 4vw, 44px)', fontWeight: 900, color: 'var(--text, #0f172a)', margin: '0 0 10px', letterSpacing: -0.5 }}>
             See your score before you act.
           </h1>
           <p style={{ fontSize: 15, color: 'var(--text-muted, #8888AA)', margin: 0 }}>
@@ -144,7 +144,7 @@ export default function CreditSimulatorPage() {
           {/* Left — Score display */}
           <div>
             {/* Current score input */}
-            <div style={{ background: 'var(--bg-card, #111118)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 20, padding: 24, marginBottom: 16 }}>
+            <div style={{ background: 'var(--bg-card, #fff)', border: '1px solid var(--border, #e2e8f0)', borderRadius: 20, padding: 24, marginBottom: 16 }}>
               <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-muted, #8888AA)', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 12 }}>
                 Your current CIBIL score
               </div>
@@ -167,8 +167,8 @@ export default function CreditSimulatorPage() {
 
             {/* Simulated score */}
             <div style={{
-              background: scoreDelta > 0 ? 'rgba(34,197,94,0.08)' : scoreDelta < 0 ? 'rgba(239,68,68,0.08)' : 'var(--bg-card, #111118)',
-              border: `1px solid ${scoreDelta > 0 ? 'rgba(34,197,94,0.25)' : scoreDelta < 0 ? 'rgba(239,68,68,0.25)' : 'rgba(255,255,255,0.08)'}`,
+              background: scoreDelta > 0 ? 'rgba(34,197,94,0.08)' : scoreDelta < 0 ? 'rgba(239,68,68,0.08)' : 'var(--bg-card, #fff)',
+              border: `1px solid ${scoreDelta > 0 ? 'rgba(34,197,94,0.25)' : scoreDelta < 0 ? 'rgba(239,68,68,0.25)' : 'var(--border, #e2e8f0)'}`,
               borderRadius: 20, padding: 24,
             }}>
               <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-muted, #8888AA)', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 12 }}>
@@ -189,7 +189,7 @@ export default function CreditSimulatorPage() {
 
               {/* Score bar */}
               <div style={{ marginTop: 16 }}>
-                <div style={{ height: 8, background: 'rgba(255,255,255,0.06)', borderRadius: 8, overflow: 'hidden', position: 'relative' }}>
+                <div style={{ height: 8, background: 'var(--border, #e2e8f0)', borderRadius: 8, overflow: 'hidden', position: 'relative' }}>
                   <div style={{
                     position: 'absolute', top: 0, left: 0, height: '100%',
                     width: `${((baseScore - 300) / 600) * 100}%`,
@@ -212,9 +212,9 @@ export default function CreditSimulatorPage() {
 
           {/* Right — Actions */}
           <div>
-            <div style={{ background: 'var(--bg-card, #111118)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 20, padding: 24, marginBottom: 16 }}>
+            <div style={{ background: 'var(--bg-card, #fff)', border: '1px solid var(--border, #e2e8f0)', borderRadius: 20, padding: 24, marginBottom: 16 }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
-                <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--text, #f0f0ff)' }}>Simulated actions</div>
+                <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--text, #0f172a)' }}>Simulated actions</div>
                 <button onClick={() => setShowAddAction(true)} style={{
                   padding: '6px 14px', background: 'rgba(201,151,46,0.15)', border: '1px solid rgba(201,151,46,0.3)',
                   borderRadius: 8, fontSize: 12, fontWeight: 700, color: '#C9972E', cursor: 'pointer',
@@ -233,13 +233,13 @@ export default function CreditSimulatorPage() {
                   return (
                     <div key={i} style={{
                       display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-                      padding: '10px 14px', background: 'rgba(255,255,255,0.03)',
-                      border: '1px solid rgba(255,255,255,0.06)', borderRadius: 10,
+                      padding: '10px 14px', background: 'var(--bg-input, #f8fafc)',
+                      border: '1px solid var(--border, #e2e8f0)', borderRadius: 10,
                     }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                         <span style={{ fontSize: 18 }}>{action.icon}</span>
                         <div>
-                          <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text, #f0f0ff)' }}>{action.label}</div>
+                          <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text, #0f172a)' }}>{action.label}</div>
                           <div style={{ fontSize: 11, color: impact > 0 ? '#22c55e' : '#ef4444', fontWeight: 700 }}>
                             {impact > 0 ? '+' : ''}{impact} points
                           </div>
@@ -258,22 +258,22 @@ export default function CreditSimulatorPage() {
 
             {/* Action picker */}
             {showAddAction && (
-              <div style={{ background: 'var(--bg-card, #111118)', border: '1px solid rgba(201,151,46,0.3)', borderRadius: 20, padding: 20 }}>
-                <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--text, #f0f0ff)', marginBottom: 12 }}>Choose an action</div>
+              <div style={{ background: 'var(--bg-card, #fff)', border: '1px solid rgba(201,151,46,0.3)', borderRadius: 20, padding: 20 }}>
+                <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--text, #0f172a)', marginBottom: 12 }}>Choose an action</div>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
                   {ACTIONS.map(action => {
                     const impact = action.impact(baseScore, tempParams);
                     return (
                       <button key={action.id} onClick={() => addAction(action)} style={{
-                        padding: '12px 14px', background: 'rgba(255,255,255,0.03)',
-                        border: '1px solid rgba(255,255,255,0.06)', borderRadius: 10,
+                        padding: '12px 14px', background: 'var(--bg-input, #f8fafc)',
+                        border: '1px solid var(--border, #e2e8f0)', borderRadius: 10,
                         cursor: 'pointer', textAlign: 'left' as const, transition: 'all 0.15s',
                       }}>
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                             <span style={{ fontSize: 16 }}>{action.icon}</span>
                             <div>
-                              <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text, #f0f0ff)' }}>{action.label}</div>
+                              <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text, #0f172a)' }}>{action.label}</div>
                               <div style={{ fontSize: 11, color: 'var(--text-muted, #8888AA)' }}>{action.description}</div>
                             </div>
                           </div>
@@ -287,7 +287,7 @@ export default function CreditSimulatorPage() {
                 </div>
                 <button onClick={() => setShowAddAction(false)} style={{
                   width: '100%', marginTop: 12, padding: '10px', background: 'transparent',
-                  border: '1px solid rgba(255,255,255,0.08)', borderRadius: 10,
+                  border: '1px solid var(--border, #e2e8f0)', borderRadius: 10,
                   color: 'var(--text-muted, #8888AA)', fontSize: 13, cursor: 'pointer',
                 }}>Cancel</button>
               </div>

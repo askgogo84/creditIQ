@@ -145,7 +145,7 @@ export default function ApprovalOddsPage() {
           <div style={{ fontSize: 11, fontWeight: 700, color: '#C9972E', textTransform: 'uppercase', letterSpacing: 1.5, marginBottom: 8 }}>
             Approval Odds
           </div>
-          <h1 style={{ fontSize: 'clamp(26px, 4vw, 44px)', fontWeight: 900, color: 'var(--text, #f0f0ff)', margin: '0 0 10px', letterSpacing: -0.5 }}>
+          <h1 style={{ fontSize: 'clamp(26px, 4vw, 44px)', fontWeight: 900, color: 'var(--text, #0f172a)', margin: '0 0 10px', letterSpacing: -0.5 }}>
             Know before you apply.
           </h1>
           <p style={{ fontSize: 15, color: 'var(--text-muted, #8888AA)', margin: 0, lineHeight: 1.6 }}>
@@ -154,7 +154,7 @@ export default function ApprovalOddsPage() {
         </div>
 
         {/* Input form */}
-        <div style={{ background: 'var(--bg-card, #111118)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 20, padding: 24, marginBottom: 24 }}>
+        <div style={{ background: 'var(--bg-card, #fff)', border: '1px solid var(--border, #e2e8f0)', borderRadius: 20, padding: 24, marginBottom: 24 }}>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: 16, marginBottom: 20 }}>
 
             <div>
@@ -163,7 +163,7 @@ export default function ApprovalOddsPage() {
               </label>
               <input type="number" value={cibil} onChange={e => setCibil(e.target.value)}
                 min="300" max="900" placeholder="e.g. 750"
-                style={{ width: '100%', height: 44, padding: '0 14px', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 10, fontSize: 15, color: 'var(--text, #f0f0ff)', outline: 'none', boxSizing: 'border-box' as const }} />
+                style={{ width: '100%', height: 44, padding: '0 14px', background: 'var(--bg-input, #f8fafc)', border: '1px solid var(--border, #e2e8f0)', borderRadius: 10, fontSize: 15, color: 'var(--text, #0f172a)', outline: 'none', boxSizing: 'border-box' as const }} />
               <div style={{ fontSize: 11, color: 'var(--text-muted, #8888AA)', marginTop: 4 }}>
                 {parseInt(cibil) >= 750 ? '✓ Excellent' : parseInt(cibil) >= 700 ? '~ Good' : '✗ Needs work'}
               </div>
@@ -175,7 +175,7 @@ export default function ApprovalOddsPage() {
               </label>
               <input type="number" value={income} onChange={e => setIncome(e.target.value)}
                 placeholder="e.g. 100000"
-                style={{ width: '100%', height: 44, padding: '0 14px', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 10, fontSize: 15, color: 'var(--text, #f0f0ff)', outline: 'none', boxSizing: 'border-box' as const }} />
+                style={{ width: '100%', height: 44, padding: '0 14px', background: 'var(--bg-input, #f8fafc)', border: '1px solid var(--border, #e2e8f0)', borderRadius: 10, fontSize: 15, color: 'var(--text, #0f172a)', outline: 'none', boxSizing: 'border-box' as const }} />
               <div style={{ fontSize: 11, color: 'var(--text-muted, #8888AA)', marginTop: 4 }}>
                 Rs.{(parseInt(income) || 0).toLocaleString('en-IN')}/month
               </div>
@@ -186,8 +186,8 @@ export default function ApprovalOddsPage() {
                 Employment Type
               </label>
               <select value={employment} onChange={e => setEmployment(e.target.value)}
-                style={{ width: '100%', height: 44, padding: '0 14px', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 10, fontSize: 14, color: 'var(--text, #f0f0ff)', outline: 'none', cursor: 'pointer', boxSizing: 'border-box' as const }}>
-                {EMPLOYMENT_TYPES.map(e => <option key={e} value={e} style={{ background: '#111' }}>{e}</option>)}
+                style={{ width: '100%', height: 44, padding: '0 14px', background: 'var(--bg-input, #f8fafc)', border: '1px solid var(--border, #e2e8f0)', borderRadius: 10, fontSize: 14, color: 'var(--text, #0f172a)', outline: 'none', cursor: 'pointer', boxSizing: 'border-box' as const }}>
+                {EMPLOYMENT_TYPES.map(e => <option key={e} value={e} style={{ background: 'var(--bg-input, #f8fafc)', color: 'var(--text, #0f172a)' }}>{e}</option>)}
               </select>
             </div>
 
@@ -196,8 +196,8 @@ export default function ApprovalOddsPage() {
                 Existing Credit Cards
               </label>
               <select value={existing} onChange={e => setExisting(e.target.value)}
-                style={{ width: '100%', height: 44, padding: '0 14px', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 10, fontSize: 14, color: 'var(--text, #f0f0ff)', outline: 'none', cursor: 'pointer', boxSizing: 'border-box' as const }}>
-                {['0', '1', '2', '3', '4', '5+'].map(n => <option key={n} value={n} style={{ background: '#111' }}>{n} card{n !== '1' ? 's' : ''}</option>)}
+                style={{ width: '100%', height: 44, padding: '0 14px', background: 'var(--bg-input, #f8fafc)', border: '1px solid var(--border, #e2e8f0)', borderRadius: 10, fontSize: 14, color: 'var(--text, #0f172a)', outline: 'none', cursor: 'pointer', boxSizing: 'border-box' as const }}>
+                {['0', '1', '2', '3', '4', '5+'].map(n => <option key={n} value={n} style={{ background: 'var(--bg-input, #f8fafc)', color: 'var(--text, #0f172a)' }}>{n} card{n !== '1' ? 's' : ''}</option>)}
               </select>
             </div>
           </div>
@@ -236,8 +236,8 @@ export default function ApprovalOddsPage() {
                 const { url, label } = getApplyUrl(card.cardId);
                 return (
                   <div key={card.cardId} style={{
-                    background: 'var(--bg-card, #111118)',
-                    border: i === 0 ? '1px solid rgba(201,151,46,0.3)' : '1px solid rgba(255,255,255,0.06)',
+                    background: 'var(--bg-card, #fff)',
+                    border: i === 0 ? '1px solid rgba(201,151,46,0.3)' : '1px solid var(--border, #e2e8f0)',
                     borderRadius: 16, padding: '18px 20px',
                   }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 12 }}>
@@ -245,14 +245,14 @@ export default function ApprovalOddsPage() {
                         <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 6 }}>
                           <div style={{
                             width: 52, height: 28, borderRadius: 6,
-                            background: `conic-gradient(${card.gradeColor} ${card.approvalProbability}%, rgba(255,255,255,0.05) 0)`,
+                            background: `conic-gradient(${card.gradeColor} ${card.approvalProbability}%, var(--border, #e2e8f0) 0)`,
                             display: 'flex', alignItems: 'center', justifyContent: 'center',
                             fontSize: 11, fontWeight: 800, color: card.gradeColor,
                           }}>
                             {card.approvalProbability}%
                           </div>
                           <div>
-                            <div style={{ fontSize: 14, fontWeight: 700, color: 'var(--text, #f0f0ff)' }}>{card.cardName}</div>
+                            <div style={{ fontSize: 14, fontWeight: 700, color: 'var(--text, #0f172a)' }}>{card.cardName}</div>
                             <div style={{ fontSize: 12, color: 'var(--text-muted, #8888AA)' }}>{card.bank} · {card.annualFee === 0 ? 'Free' : `Rs.${card.annualFee.toLocaleString('en-IN')}/yr`}</div>
                           </div>
                         </div>
