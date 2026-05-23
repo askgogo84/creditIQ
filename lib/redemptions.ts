@@ -43,6 +43,7 @@ export function getSmartRedemptions(totalPoints: number, bank: string = 'HDFC'):
     canAfford: totalPoints >= opt.pointsNeeded,
     shortfall: Math.max(0, opt.pointsNeeded - totalPoints),
     cashValue: opt.cashValue,
+    tripPlannerQuery: opt.query,
   }));
 
   // Sort: can afford (highest value first), then can't afford (smallest gap first)
