@@ -1,288 +1,272 @@
 'use client';
 
-import { useCompare } from '@/lib/store';
-import { SEED_CARDS } from '@/lib/data/seed-cards';
+import { useState, useCallback } from 'react';
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { Header } from '@/components/Header';
 import { Footer } from '@/components/Footer';
-import { CompareTray } from '@/components/CompareTray';
-import { CardMockup } from '@/components/cards/CardMockup';
-import { calculateAnnualValue } from '@/lib/engine';
-import { formatINR } from '@/lib/utils';
-import { useState } from 'react';
-import Link from 'next/link';
-import { X, Check, AlertTriangle, ArrowLeft } from 'lucide-react';
+import { SEED_CARDS } from '@/lib/data/seed-cards';
+import { getApplyUrl } from '@/lib/affiliate';
+import { X, Plus, ChevronRight } from 'lucide-react';
+
+const ALL_CARDS = SEED_CARDS as any[];
+
+interface CompareCard {
+  id: string;
+  name: string;
+  bank: string;
+  annual_fee_inr: number;
+  base_reward_rate: number;
+  forex_markup_percent: number;
+  tier: string;
+  category: string[];
+  lounges: any[];
+  fuel_surcharge_waiver: boolean;
+  min_income_inr_monthly: number;
+}
 
 export default function ComparePage() {
-  const { cards, remove, clear } = useCompare();
-  const selected = cards.map((id) => SEED_CARDS.find((c) => c.id === id)).filter(Boolean) as any[];
-  const [monthlySpend, setMonthlySpend] = useState(50000);
+  const [selected, setSelected] = useState<string[]>([]);
+  const [search, setSearch] = useState('');
+  const [showPicker, setShowPicker] = useState(false);
+  const router = useRouter();
 
-  if (selected.length === 0) {
-    return (
-      <main className="min-h-screen">
-        <Header />
-        <section className="pt-40 pb-32 min-h-[70vh] flex items-center grain relative">
-          <div className="max-w-2xl mx-auto px-6 text-center">
-            <div className="divider-rule mb-6 max-w-xs mx-auto">— Compare</div>
-            <h1 className="font-display text-5xl text-ink-50 leading-[1.05] mb-6">
-              Pick cards to{' '}
-              <span className="display-italic text-copper-400">compare</span>.
-            </h1>
-            <p className="text-lg text-ink-300 font-display mb-8 leading-relaxed">
-              Add up to 4 cards from the catalog to see them side-by-side: real annual value,
-              fees, redemption paths, and devaluations.
-            </p>
-            <Link href="/" className="btn-primary inline-flex items-center gap-2">
-              <ArrowLeft className="w-4 h-4" /> Browse the catalog
-            </Link>
-          </div>
-        </section>
-        <Footer />
-      </main>
-    );
-  }
+  const selectedCards = selected.map(id => ALL_CARDS.find(c => c.id === id)).filter(Boolean) as CompareCard[];
 
-  const valueCalcs = selected.map((c) =>
-    calculateAnnualValue(c, { monthly_total_inr: monthlySpend })
-  );
+  const filtered = ALL_CARDS.filter(c =>
+    (c.name.toLowerCase().includes(search.toLowerCase()) ||
+     c.bank.toLowerCase().includes(search.toLowerCase())) &&
+    !selected.includes(c.id)
+  ).slice(0, 20);
 
-  const rows: { label: string; key: string; getValue: (card: any, idx: number) => any }[] = [
-    {
-      label: 'Annual fee',
-      key: 'fee',
-      getValue: (c) => (c.annual_fee_inr === 0 ? 'FREE' : formatINR(c.annual_fee_inr)),
-    },
-    {
-      label: 'Fee waiver at',
-      key: 'waiver',
-      getValue: (c) => (c.fee_waiver_spend_inr ? formatINR(c.fee_waiver_spend_inr) : '—'),
-    },
-    {
-      label: 'Joining fee',
-      key: 'joining',
-      getValue: (c) => (c.joining_fee_inr === 0 ? 'FREE' : formatINR(c.joining_fee_inr)),
-    },
-    {
-      label: 'Base reward rate',
-      key: 'base',
-      getValue: (c) => `${c.base_reward_rate}%`,
-    },
-    {
-      label: 'Welcome benefit',
-      key: 'welcome',
-      getValue: (c) => (c.welcome_benefit_inr ? formatINR(c.welcome_benefit_inr) : '—'),
-    },
-    {
-      label: 'Domestic lounges',
-      key: 'dom',
-      getValue: (c) => {
-        const l = c.lounges?.find((x: any) => x.type === 'domestic');
-        if (!l) return '—';
-        return l.visits_per_year ? `${l.visits_per_year}/yr` : l.visits_per_quarter ? `${l.visits_per_quarter}/qtr` : 'Unlimited';
-      },
-    },
-    {
-      label: 'International lounges',
-      key: 'intl',
-      getValue: (c) => {
-        const l = c.lounges?.find((x: any) => x.type === 'international');
-        if (!l) return '—';
-        return l.visits_per_year ? `${l.visits_per_year}/yr` : 'Unlimited';
-      },
-    },
-    {
-      label: 'Forex markup',
-      key: 'forex',
-      getValue: (c) => (c.forex_markup_percent !== undefined ? `${c.forex_markup_percent}%` : '—'),
-    },
-    {
-      label: 'Best redemption value',
-      key: 'redeem',
-      getValue: (c) => {
-        const best = Math.max(...c.redemption_options.map((r: any) => r.value_per_point_inr), 0);
-        return best ? `₹${best.toFixed(2)}/pt` : '—';
-      },
-    },
-    {
-      label: 'Expert rating',
-      key: 'rating',
-      getValue: (c) => (c.expert_rating ? `${c.expert_rating.toFixed(1)}/10` : '—'),
-    },
-    {
-      label: 'Min income',
-      key: 'income',
-      getValue: (c) => (c.min_income_inr_monthly ? `${formatINR(c.min_income_inr_monthly)}/mo` : '—'),
-    },
-    {
-      label: 'Recent devaluations',
-      key: 'devalue',
-      getValue: (c) => {
-        const recent = (c.devaluations ?? []).filter(
-          (d: any) => new Date(d.date) > new Date(Date.now() - 365 * 24 * 60 * 60 * 1000)
-        );
-        return recent.length > 0 ? `${recent.length} in past year` : 'None';
-      },
-    },
+  const addCard = (id: string) => {
+    if (selected.length < 4 && !selected.includes(id)) {
+      setSelected([...selected, id]);
+    }
+    setSearch('');
+  };
+
+  const removeCard = (id: string) => setSelected(selected.filter(s => s !== id));
+
+  const ROWS = [
+    { label: 'Annual fee', key: (c: CompareCard) => c.annual_fee_inr === 0 ? 'Lifetime Free' : `Rs.${(c.annual_fee_inr||0).toLocaleString('en-IN')}/yr`, best: (vals: any[]) => Math.min(...vals.map((v,i) => selectedCards[i]?.annual_fee_inr??999999)) },
+    { label: 'Base reward rate', key: (c: CompareCard) => `${c.base_reward_rate||1}%`, best: null },
+    { label: 'Forex markup', key: (c: CompareCard) => `${c.forex_markup_percent||3.5}%`, best: null },
+    { label: 'Lounge access', key: (c: CompareCard) => c.lounges?.length > 0 ? (c.lounges.find((l:any) => l.notes?.includes('Unlimited')) ? 'Unlimited' : `${c.lounges.length} networks`) : 'None', best: null },
+    { label: 'Fuel surcharge waiver', key: (c: CompareCard) => c.fuel_surcharge_waiver ? '✓ Yes' : '✗ No', best: null },
+    { label: 'Min income (monthly)', key: (c: CompareCard) => c.min_income_inr_monthly ? `Rs.${Math.round(c.min_income_inr_monthly/1000)}K` : 'Not specified', best: null },
+    { label: 'Card tier', key: (c: CompareCard) => c.tier || 'Standard', best: null },
   ];
 
   return (
-    <main className="min-h-screen">
+    <div style={{ minHeight: '100vh', background: 'var(--bg, #f8f9fc)' }}>
       <Header />
 
-      <section className="pt-32 pb-12 grain">
-        <div className="max-w-7xl mx-auto px-6">
-          <Link href="/" className="inline-flex items-center gap-2 text-sm text-ink-300 hover:text-copper-300 mb-6">
-            <ArrowLeft className="w-4 h-4" /> Back
-          </Link>
+      <main style={{ maxWidth: 1100, margin: '0 auto', padding: '32px 20px 80px' }}>
 
-          <div className="flex items-end justify-between mb-10 flex-wrap gap-4">
-            <div>
-              <div className="divider-rule mb-4 max-w-xs">— Side by side</div>
-              <h1 className="font-display text-5xl text-ink-50 leading-[1.05]">
-                Comparing{' '}
-                <span className="display-italic text-copper-400">
-                  {selected.length} card{selected.length !== 1 ? 's' : ''}
-                </span>
-              </h1>
-            </div>
-            <button
-              onClick={clear}
-              className="text-xs font-mono uppercase tracking-widest text-ink-400 hover:text-crimson-400"
-            >
-              Clear all
-            </button>
+        {/* Hero */}
+        <div style={{ marginBottom: 32 }}>
+          <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--copper, #C9972E)', textTransform: 'uppercase', letterSpacing: 1.5, marginBottom: 8 }}>
+            Compare
           </div>
+          <h1 style={{ fontSize: 'clamp(28px, 4vw, 44px)', fontWeight: 800, margin: '0 0 8px', letterSpacing: -0.5 }}>
+            Pick cards to <span style={{ color: 'var(--copper, #C9972E)' }}>compare.</span>
+          </h1>
+          <p style={{ fontSize: 15, color: 'var(--text-muted, #64748b)', margin: 0 }}>
+            Add up to 4 cards. See fees, rewards, lounge access side by side.
+          </p>
+        </div>
 
-          {/* Spend slider */}
-          <div className="bg-ink-900/40 border border-white/10 rounded-xl p-5 mb-8 flex flex-wrap items-center gap-6">
-            <div className="flex-1 min-w-[200px]">
-              <div className="flex justify-between items-baseline mb-2">
-                <label className="text-xs font-mono uppercase tracking-widest text-ink-400">
-                  Your monthly spend (for live value calc)
-                </label>
-                <span className="font-display text-xl text-copper-300 tabular">
-                  {formatINR(monthlySpend)}
-                </span>
-              </div>
-              <input
-                type="range"
-                min={5000}
-                max={500000}
-                step={5000}
-                value={monthlySpend}
-                onChange={(e) => setMonthlySpend(parseInt(e.target.value))}
-                className="w-full accent-copper-400"
-              />
-            </div>
-          </div>
-
-          {/* Card headers */}
-          <div
-            className="grid gap-4 mb-2"
-            style={{ gridTemplateColumns: `220px repeat(${selected.length}, minmax(240px, 1fr))` }}
-          >
-            <div />
-            {selected.map((card, i) => (
-              <div key={card.id} className="bg-ink-900/40 border border-white/10 rounded-xl p-4 relative">
-                <button
-                  onClick={() => remove(card.id)}
-                  className="absolute top-2 right-2 w-6 h-6 rounded-full bg-ink-950 border border-white/10 flex items-center justify-center text-ink-400 hover:text-crimson-400 hover:border-crimson-500"
-                >
-                  <X className="w-3 h-3" />
-                </button>
-                <div className="flex justify-center mb-3">
-                  <CardMockup card={card} size="sm" interactive={false} />
-                </div>
-                <div className="text-[10px] font-mono uppercase tracking-widest text-ink-400">
-                  {card.bank}
-                </div>
-                <div className="font-display text-base text-ink-50 leading-tight">{card.name}</div>
-                <div
-                  className={`font-display text-xl mt-2 tabular ${
-                    valueCalcs[i].net_value_inr > 0 ? 'text-emerald-300' : 'text-crimson-400'
-                  }`}
-                >
-                  {valueCalcs[i].net_value_inr > 0 ? '+' : ''}
-                  ₹{Math.abs(valueCalcs[i].net_value_inr).toLocaleString('en-IN')}
-                </div>
-                <div className="text-[10px] text-ink-400">est. net value/yr</div>
-                <Link
-                  href={`/card/${card.slug}`}
-                  className="mt-3 block text-xs font-mono uppercase tracking-widest text-copper-300 link-underline"
-                >
-                  Full details →
-                </Link>
-              </div>
-            ))}
-          </div>
-
-          {/* Comparison rows */}
-          <div className="bg-ink-900/40 border border-white/10 rounded-xl overflow-hidden">
-            {rows.map((row, rIdx) => (
-              <div
-                key={row.key}
-                className="grid gap-4 px-4 py-3 border-b border-white/5 last:border-0 hover:bg-white/[0.02]"
-                style={{ gridTemplateColumns: `220px repeat(${selected.length}, minmax(240px, 1fr))` }}
-              >
-                <div className="text-xs text-ink-300 font-medium self-center">{row.label}</div>
-                {selected.map((card, i) => (
-                  <div key={card.id} className="font-display text-base text-ink-100 tabular self-center">
-                    {row.getValue(card, i)}
-                  </div>
-                ))}
-              </div>
-            ))}
-          </div>
-
-          {/* Highlights */}
-          <div
-            className="grid gap-4 mt-8"
-            style={{ gridTemplateColumns: `220px repeat(${selected.length}, minmax(240px, 1fr))` }}
-          >
-            <div className="text-xs font-mono uppercase tracking-widest text-ink-400 self-start pt-2">
-              Highlights
-            </div>
-            {selected.map((card) => (
-              <div key={card.id} className="space-y-2">
-                {card.highlights.map((h: string, i: number) => (
-                  <div key={i} className="text-xs text-ink-200 flex items-start gap-2">
-                    <Check className="w-3 h-3 text-emerald-400 shrink-0 mt-0.5" />
-                    {h}
-                  </div>
-                ))}
-              </div>
-            ))}
-          </div>
-
-          {/* Drawbacks if any */}
-          {selected.some((c) => c.drawbacks && c.drawbacks.length > 0) && (
-            <div
-              className="grid gap-4 mt-8"
-              style={{ gridTemplateColumns: `220px repeat(${selected.length}, minmax(240px, 1fr))` }}
-            >
-              <div className="text-xs font-mono uppercase tracking-widest text-ink-400 self-start pt-2">
-                Drawbacks
-              </div>
-              {selected.map((card) => (
-                <div key={card.id} className="space-y-2">
-                  {(card.drawbacks ?? []).map((d: string, i: number) => (
-                    <div key={i} className="text-xs text-ink-200 flex items-start gap-2">
-                      <AlertTriangle className="w-3 h-3 text-crimson-400 shrink-0 mt-0.5" />
-                      {d}
+        {/* Card picker area */}
+        <div style={{
+          display: 'grid',
+          gridTemplateColumns: `repeat(${Math.max(selected.length + (selected.length < 4 ? 1 : 0), 2)}, 1fr)`,
+          gap: 12, marginBottom: 32,
+        }}>
+          {/* Selected cards */}
+          {selectedCards.map(card => {
+            const { url, label } = getApplyUrl(card.id);
+            const fee = card.annual_fee_inr ?? 0;
+            return (
+              <div key={card.id} style={{
+                background: 'var(--bg-card, #fff)',
+                border: '2px solid var(--copper, #C9972E)',
+                borderRadius: 16, overflow: 'hidden',
+                boxShadow: '0 4px 20px rgba(201,151,46,0.1)',
+              }}>
+                {/* Card visual */}
+                <div style={{
+                  background: 'linear-gradient(135deg, #1B3A5C 0%, #0d2240 100%)',
+                  padding: '20px', position: 'relative',
+                }}>
+                  <button onClick={() => removeCard(card.id)} style={{
+                    position: 'absolute', top: 10, right: 10,
+                    width: 24, height: 24, borderRadius: '50%',
+                    background: 'rgba(255,255,255,0.2)', border: 'none',
+                    color: '#fff', cursor: 'pointer', display: 'flex',
+                    alignItems: 'center', justifyContent: 'center', fontSize: 12,
+                  }}><X size={12} /></button>
+                  <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.5)', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 4 }}>{card.bank}</div>
+                  <div style={{ fontSize: 16, fontWeight: 700, color: '#fff', marginBottom: 12, lineHeight: 1.2 }}>{card.name}</div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
+                    <div>
+                      <div style={{ width: 32, height: 24, background: 'linear-gradient(135deg, #E8B84B, #C9972E)', borderRadius: 4 }} />
                     </div>
-                  ))}
-                  {(!card.drawbacks || card.drawbacks.length === 0) && (
-                    <div className="text-xs text-ink-500 italic">No major drawbacks</div>
-                  )}
+                    <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.6)', letterSpacing: 2 }}>VISA</div>
+                  </div>
                 </div>
-              ))}
+                {/* Card info */}
+                <div style={{ padding: '16px' }}>
+                  <div style={{ fontSize: 22, fontWeight: 800, color: fee === 0 ? '#16a34a' : 'var(--text, #0f172a)', marginBottom: 2 }}>
+                    {fee === 0 ? 'FREE' : `Rs.${fee.toLocaleString('en-IN')}`}
+                  </div>
+                  <div style={{ fontSize: 11, color: 'var(--text-muted, #64748b)', marginBottom: 14 }}>annual fee</div>
+                  <a href={url} target="_blank" rel="noopener noreferrer" style={{
+                    display: 'block', textAlign: 'center', padding: '10px',
+                    background: 'var(--copper, #C9972E)', color: '#fff',
+                    borderRadius: 10, fontSize: 13, fontWeight: 700, textDecoration: 'none',
+                    marginBottom: 8,
+                  }}>{label}</a>
+                  <Link href={`/cards/${card.id}`} style={{
+                    display: 'block', textAlign: 'center', padding: '8px',
+                    background: 'transparent', color: 'var(--navy, #1B3A5C)',
+                    borderRadius: 10, fontSize: 12, fontWeight: 600, textDecoration: 'none',
+                    border: '1px solid var(--border, #e2e8f0)',
+                  }}>Full review</Link>
+                </div>
+              </div>
+            );
+          })}
+
+          {/* Add card slot */}
+          {selected.length < 4 && (
+            <div
+              onClick={() => setShowPicker(true)}
+              style={{
+                background: 'var(--bg-card, #fff)',
+                border: '2px dashed var(--border, #e2e8f0)',
+                borderRadius: 16, padding: '32px 20px',
+                display: 'flex', flexDirection: 'column',
+                alignItems: 'center', justifyContent: 'center',
+                gap: 12, cursor: 'pointer', minHeight: 200,
+                transition: 'border-color 0.2s',
+              }}
+            >
+              <div style={{
+                width: 44, height: 44, borderRadius: '50%',
+                background: 'var(--bg-surface, #f1f5f9)',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+              }}>
+                <Plus size={20} color="var(--navy, #1B3A5C)" />
+              </div>
+              <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--text, #0f172a)' }}>Add a card</div>
+              <div style={{ fontSize: 12, color: 'var(--text-muted, #64748b)', textAlign: 'center' }}>
+                {4 - selected.length} slot{4 - selected.length !== 1 ? 's' : ''} remaining
+              </div>
             </div>
           )}
         </div>
-      </section>
 
+        {/* Search picker */}
+        {showPicker && (
+          <div style={{
+            background: 'var(--bg-card, #fff)', border: '1px solid var(--border, #e2e8f0)',
+            borderRadius: 16, padding: 20, marginBottom: 24,
+            boxShadow: '0 8px 32px rgba(0,0,0,0.1)',
+          }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 }}>
+              <div style={{ fontSize: 15, fontWeight: 700 }}>Search cards to add</div>
+              <button onClick={() => setShowPicker(false)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted, #64748b)' }}>
+                <X size={16} />
+              </button>
+            </div>
+            <input
+              autoFocus
+              value={search}
+              onChange={e => setSearch(e.target.value)}
+              placeholder="Search by card name or bank..."
+              style={{
+                width: '100%', padding: '10px 14px', borderRadius: 10,
+                border: '1.5px solid var(--border, #e2e8f0)', fontSize: 14,
+                outline: 'none', marginBottom: 12, boxSizing: 'border-box' as const,
+                background: 'var(--bg-surface, #f8fafc)',
+              }}
+            />
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: 8, maxHeight: 280, overflowY: 'auto' }}>
+              {filtered.map(card => (
+                <button key={card.id} onClick={() => addCard(card.id)} style={{
+                  padding: '10px 12px', borderRadius: 10, textAlign: 'left' as const,
+                  background: 'var(--bg-surface, #f8fafc)', border: '1px solid var(--border, #e2e8f0)',
+                  cursor: 'pointer', transition: 'all 0.15s',
+                }}>
+                  <div style={{ fontSize: 11, color: 'var(--text-muted, #64748b)', marginBottom: 2 }}>{card.bank}</div>
+                  <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text, #0f172a)', lineHeight: 1.3 }}>{card.name}</div>
+                  <div style={{ fontSize: 12, color: (card.annual_fee_inr ?? 0) === 0 ? '#16a34a' : 'var(--text-muted, #64748b)', marginTop: 4 }}>
+                    {(card.annual_fee_inr ?? 0) === 0 ? 'Free' : `Rs.${(card.annual_fee_inr ?? 0).toLocaleString('en-IN')}/yr`}
+                  </div>
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Comparison table */}
+        {selectedCards.length >= 2 && (
+          <div style={{ background: 'var(--bg-card, #fff)', borderRadius: 16, border: '1px solid var(--border, #e2e8f0)', overflow: 'hidden', marginBottom: 24 }}>
+            {/* Table header */}
+            <div style={{ display: 'grid', gridTemplateColumns: `180px repeat(${selectedCards.length}, 1fr)`, background: '#1B3A5C' }}>
+              <div style={{ padding: '14px 20px', fontSize: 11, fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: 0.8 }}>Feature</div>
+              {selectedCards.map(card => (
+                <div key={card.id} style={{ padding: '14px 16px', fontSize: 12, fontWeight: 700, color: '#C9972E', textAlign: 'center' as const }}>
+                  {card.name.split(' ').slice(-2).join(' ')}
+                </div>
+              ))}
+            </div>
+
+            {ROWS.map((row, i) => {
+              const values = selectedCards.map(row.key);
+              return (
+                <div key={i} style={{
+                  display: 'grid', gridTemplateColumns: `180px repeat(${selectedCards.length}, 1fr)`,
+                  borderBottom: i < ROWS.length - 1 ? '1px solid var(--border, #f8fafc)' : 'none',
+                  background: i % 2 === 0 ? 'var(--bg-card, #fff)' : 'var(--bg-surface, #fafbfc)',
+                }}>
+                  <div style={{ padding: '14px 20px', fontSize: 13, color: 'var(--text-muted, #64748b)', fontWeight: 500 }}>{row.label}</div>
+                  {values.map((val, j) => (
+                    <div key={j} style={{ padding: '14px 16px', fontSize: 13, fontWeight: 700, textAlign: 'center' as const, color: 'var(--text, #1e293b)' }}>
+                      {val}
+                    </div>
+                  ))}
+                </div>
+              );
+            })}
+          </div>
+        )}
+
+        {/* Empty state - goes to /cards not / */}
+        {selected.length === 0 && (
+          <div style={{ textAlign: 'center', padding: '48px 20px', background: 'var(--bg-card, #fff)', borderRadius: 20, border: '1px solid var(--border, #e2e8f0)' }}>
+            <div style={{ fontSize: 48, marginBottom: 16 }}>⚖️</div>
+            <h2 style={{ fontSize: 22, fontWeight: 700, marginBottom: 8 }}>No cards selected yet</h2>
+            <p style={{ fontSize: 15, color: 'var(--text-muted, #64748b)', marginBottom: 24 }}>
+              Add cards using the slot above, or browse our catalog to find cards to compare.
+            </p>
+            <div style={{ display: 'flex', gap: 12, justifyContent: 'center', flexWrap: 'wrap' as const }}>
+              <button onClick={() => setShowPicker(true)} style={{
+                padding: '12px 24px', background: '#1B3A5C', color: '#fff',
+                border: 'none', borderRadius: 12, fontSize: 14, fontWeight: 700, cursor: 'pointer',
+              }}>Add a card to compare</button>
+              <Link href="/cards" style={{
+                padding: '12px 24px', background: 'transparent', color: '#1B3A5C',
+                border: '1.5px solid #1B3A5C', borderRadius: 12, fontSize: 14, fontWeight: 600,
+                textDecoration: 'none', display: 'inline-block',
+              }}>Browse all 93 cards →</Link>
+            </div>
+          </div>
+        )}
+
+      </main>
       <Footer />
-      <CompareTray />
-    </main>
+    </div>
   );
 }

@@ -1,10 +1,10 @@
-import { Metadata } from 'next';
+﻿import { Metadata } from 'next';
 import Link from 'next/link';
 import { SEED_CARDS } from '@/lib/data/seed-cards';
 import { Header } from '@/components/Header';
 
 export const metadata: Metadata = {
-  title: 'All Credit Cards in India 2026 — Compare 93 Cards | CreditIQ',
+  title: 'All Credit Cards in India 2026 â€” Compare 93 Cards | CreditIQ',
   description: 'Compare all 93 credit cards in India. HDFC, Axis, SBI, ICICI, Amex, IDFC First and more. Honest reviews, real fees, no affiliate bias. Find the best card for your spends.',
   keywords: 'credit cards India 2026, best credit card India, HDFC credit card, Axis credit card, SBI credit card, compare credit cards India',
   alternates: { canonical: 'https://creditiq.app/cards' },
@@ -39,7 +39,7 @@ export default function CardsIndexPage() {
             All Credit Cards in India 2026
           </h1>
           <p style={{ fontSize: 16, color: '#94a3b8', margin: '0 0 24px', lineHeight: 1.6, maxWidth: 560 }}>
-            {totalCards} credit cards from {banks.length} banks — honest reviews, real annual fees, actual reward rates. Zero affiliate bias.
+            {totalCards} credit cards from {banks.length} banks â€” honest reviews, real annual fees, actual reward rates. Zero affiliate bias.
           </p>
           <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' as const }}>
             <Link href="/spend-optimizer" style={{
@@ -55,7 +55,7 @@ export default function CardsIndexPage() {
         </div>
       </div>
 
-      {/* Category quick links — SEO internal linking */}
+      {/* Category quick links â€” SEO internal linking */}
       <div style={{ backgroundColor: '#fff', borderBottom: '1px solid #e2e8f0', padding: '16px 20px', overflowX: 'auto' as const }}>
         <div style={{ maxWidth: 900, margin: '0 auto', display: 'flex', gap: 8, flexWrap: 'nowrap' as const, whiteSpace: 'nowrap' as const }}>
           {[
@@ -171,16 +171,17 @@ export default function CardsIndexPage() {
             Not sure which card to pick?
           </h2>
           <p style={{ fontSize: 15, color: '#94a3b8', margin: '0 0 20px', lineHeight: 1.6 }}>
-            Tell us your monthly spends — our AI analyzes all {totalCards} cards and shows exactly how much each earns you.
+            Tell us your monthly spends â€” our AI analyzes all {totalCards} cards and shows exactly how much each earns you.
           </p>
           <Link href="/spend-optimizer" style={{
             display: 'inline-block', padding: '13px 28px', backgroundColor: '#C9972E',
             color: '#fff', borderRadius: 12, fontSize: 15, fontWeight: 700, textDecoration: 'none',
           }}>
-            Find My Best Card — Free
+            Find My Best Card â€” Free
           </Link>
         </div>
       </main>
     </div>
   );
 }
+
