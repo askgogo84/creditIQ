@@ -897,3 +897,134 @@ input[type="range"]::-webkit-slider-thumb {
 code, pre, .font-mono, [class*="mono"] {
   font-family: var(--font-geist-mono), monospace !important;
 }
+/* ============================================
+   LIGHT MODE FIX â€” appended to globals.css
+   Fixes white-on-white text and faded cards
+   ============================================ */
+
+/* Force all text to be readable in light mode */
+:root {
+  --ink-50: #0f172a;
+  --ink-100: #1e293b;
+  --ink-200: #334155;
+  --ink-300: #475569;
+  --ink-400: #64748b;
+  --ink-500: #94a3b8;
+  --ink-600: #cbd5e1;
+  --ink-700: #e2e8f0;
+  --ink-800: #f1f5f9;
+  --ink-900: #f8fafc;
+  --copper-300: #C9972E;
+  --copper-400: #b8861f;
+  --copper-500: #a07318;
+  --emerald: #16a34a;
+  --crimson-400: #dc2626;
+  --accent: #C9972E;
+  --bg: #F5EFE6;
+  --bg-elevated: #fff;
+  --bg-input: #fff;
+  --text: #0f172a;
+  --text-muted: #475569;
+  --text-dim: #64748b;
+  --border: #e2e8f0;
+}
+
+/* Dark mode overrides */
+html[data-theme="dark"], html.dark {
+  --ink-50: #f0f0ff;
+  --ink-100: #e2e8f0;
+  --ink-200: #cbd5e1;
+  --ink-300: #94a3b8;
+  --ink-400: #64748b;
+  --ink-500: #475569;
+  --ink-600: #334155;
+  --ink-700: #1e293b;
+  --ink-800: #111118;
+  --ink-900: #08080e;
+  --copper-300: #E8B84B;
+  --copper-400: #C9972E;
+  --copper-500: #b8861f;
+  --emerald: #22c55e;
+  --crimson-400: #f87171;
+  --accent: #C9972E;
+  --bg: #08080E;
+  --bg-elevated: #111118;
+  --bg-input: #16161F;
+  --text: #f0f0ff;
+  --text-muted: #94a3b8;
+  --text-dim: #64748b;
+  --border: rgba(255,255,255,0.07);
+}
+
+/* Fix card backgrounds in light mode */
+.bg-ink-900\/40 {
+  background: rgba(241, 245, 249, 0.8) !important;
+  border-color: #e2e8f0 !important;
+}
+
+html[data-theme="dark"] .bg-ink-900\/40,
+html.dark .bg-ink-900\/40 {
+  background: rgba(17, 17, 24, 0.4) !important;
+  border-color: rgba(255,255,255,0.1) !important;
+}
+
+/* Fix text colors in light mode */
+.text-ink-50 { color: var(--ink-50) !important; }
+.text-ink-100 { color: var(--ink-100) !important; }
+.text-ink-200 { color: var(--ink-200) !important; }
+.text-ink-300 { color: var(--ink-300) !important; }
+.text-ink-400 { color: var(--ink-400) !important; }
+.text-ink-500 { color: var(--ink-500) !important; }
+.text-copper-300 { color: var(--copper-300) !important; }
+.text-copper-400 { color: var(--copper-400) !important; }
+.text-emerald-300 { color: var(--emerald) !important; }
+.text-crimson-400 { color: var(--crimson-400) !important; }
+
+/* Fix star ratings in light mode */
+.star-rating svg,
+[class*="star"] svg,
+input[type="range"] {
+  accent-color: var(--copper-300);
+}
+
+/* Stars visible in both modes */
+.text-yellow-400 { color: #eab308 !important; }
+.text-gray-300 { color: #d1d5db !important; }
+html[data-theme="dark"] .text-gray-300,
+html.dark .text-gray-300 { color: #4b5563 !important; }
+
+/* Fix journey cards / feature sections in light mode */
+.grain {
+  background: var(--bg) !important;
+}
+
+/* Fix border/white overlays */
+.border-white\/10 {
+  border-color: rgba(0,0,0,0.08) !important;
+}
+html[data-theme="dark"] .border-white\/10,
+html.dark .border-white\/10 {
+  border-color: rgba(255,255,255,0.1) !important;
+}
+
+/* Smart Match card fix â€” light mode */
+[class*="card"], .card {
+  background: var(--bg-elevated, #fff);
+  color: var(--text, #0f172a);
+}
+
+/* Fix btn-primary */
+.btn-primary {
+  background: var(--obsidian, #1B3A5C) !important;
+  color: #fff !important;
+}
+
+/* Fix range slider thumb */
+input[type="range"]::-webkit-slider-thumb {
+  background: var(--copper-300) !important;
+}
+
+/* Garbled middot fix */
+.text-ink-400 .font-mono {
+  font-family: var(--font-geist-mono), monospace !important;
+}

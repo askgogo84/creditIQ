@@ -1,53 +1,67 @@
-﻿import { NextRequest, NextResponse } from 'next/server';
-import Anthropic from '@anthropic-ai/sdk';
-import { SEED_CARDS } from '@/lib/data/seed-cards';
-import { buildRedemptionPrompt } from '@/lib/redemption';
-import type { RedemptionRecommendation } from '@/lib/types';
+import { NextRequest, NextResponse } from 'next/server';
 
 export const runtime = 'nodejs';
 
 export async function POST(req: NextRequest) {
   try {
-    const { cardId, points, recommendations } = (await req.json()) as {
-      cardId: string;
-      points: number;
-      recommendations: RedemptionRecommendation[];
-    };
-
-    const card = SEED_CARDS.find((c) => c.id === cardId);
-    if (!card) return NextResponse.json({ error: 'Card not found' }, { status: 404 });
+    const { cardId, points, recommendations } = await req.json();
 
     if (!process.env.ANTHROPIC_API_KEY) {
-      // Fallback rule-based advice when no API key configured
-      const best = recommendations[0];
-      const worst = recommendations[recommendations.length - 1];
-      const fallback = `For ${points.toLocaleString('en-IN')} points on the ${card.name}, your best path is ${best?.option.partner || best?.option.type} at â‚¹${best?.inr_value.toLocaleString('en-IN')} â€” ${(best?.option.value_per_point_inr || 0).toFixed(2)}/point.
-
-Avoid ${worst?.option.partner || worst?.option.type} (only â‚¹${worst?.inr_value.toLocaleString('en-IN')}) â€” you'd lose â‚¹${((best?.inr_value || 0) - (worst?.inr_value || 0)).toLocaleString('en-IN')} versus the best option.
-
-${best?.option.notes ?? ''}
-
-(Configure ANTHROPIC_API_KEY for full AI strategy with sweet-spot routes and partner promo intel.)`;
-      return NextResponse.json({ advice: fallback });
+      return NextResponse.json({ advice: 'Configure ANTHROPIC_API_KEY for AI advice.' });
     }
 
-    const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
-    const prompt = buildRedemptionPrompt(card, points, recommendations);
-
-    const message = await client.messages.create({
-      model: 'claude-haiku-4-5-20251001',
-      max_tokens: 800,
-      messages: [{ role: 'user', content: prompt }],
-    });
-
-    const advice = message.content
-      .filter((b) => b.type === 'text')
-      .map((b) => (b as any).text)
+    // Build ranked redemption context
+    const rankedPaths = recommendations
+      .slice(0, 5)
+      .map((r: any, i: number) => `${i + 1}. ${r.option.partner || r.option.type} — Rs.${r.inr_value.toLocaleString('en-IN')} (Rs.${r.option.value_per_point_inr.toFixed(2)}/pt)`)
       .join('\n');
 
+    const topOption = recommendations[0];
+    const topPartner = topOption?.option?.partner || topOption?.option?.type || 'unknown';
+    const topValue = topOption?.inr_value || 0;
+    const worstOption = recommendations[recommendations.length - 1];
+    const worstValue = worstOption?.inr_value || 0;
+    const valueDiff = topValue - worstValue;
+
+    const prompt = `You are CreditIQ's points strategy advisor. Give SPECIFIC, ACTIONABLE advice for THIS card and these exact points.
+
+Card: ${cardId}
+Points balance: ${points.toLocaleString('en-IN')} points
+
+Ranked redemption paths (from our data engine — these are the actual options available):
+${rankedPaths}
+
+CRITICAL RULES:
+1. The #1 ranked option above IS the mathematically best option. DO NOT contradict this ranking.
+2. If #1 is ${topPartner} at Rs.${topValue.toLocaleString('en-IN')}, your advice must align with this being the top choice.
+3. Give card-SPECIFIC advice — different cards have different transfer partners, expiry rules, and sweet spots.
+4. Be specific about this card's ecosystem (e.g. HDFC → SmartBuy/KrisFlyer/InterMiles, Axis → Vistara/EDGE Rewards, SBI → Air India, IDFC → no transfer partners, etc.)
+5. Mention the value difference of Rs.${valueDiff.toLocaleString('en-IN')} between best and worst option.
+6. Keep it to 3-4 focused paragraphs. No generic advice. No repeating the ranked list.
+7. End with ONE clear action to take right now.
+
+Write as a sharp, opinionated advisor who knows Indian credit card rewards deeply.`;
+
+    const response = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': process.env.ANTHROPIC_API_KEY,
+        'anthropic-version': '2023-06-01',
+      },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 600,
+        system: 'You are CreditIQ\'s points strategy advisor. You give sharp, card-specific, actionable advice. You NEVER contradict the ranked redemption data provided. Your top recommendation must always match the #1 ranked option in the data.',
+        messages: [{ role: 'user', content: prompt }],
+      }),
+    });
+
+    const data = await response.json();
+    const advice = data.content?.[0]?.text || 'Unable to generate strategy.';
     return NextResponse.json({ advice });
-  } catch (e: any) {
-    return NextResponse.json({ error: e.message }, { status: 500 });
+  } catch (err) {
+    console.error('Redemption AI error:', err);
+    return NextResponse.json({ advice: 'AI strategy unavailable. See redemption paths above for best option.' });
   }
 }
-
