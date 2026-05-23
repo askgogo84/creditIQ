@@ -243,7 +243,7 @@ export default function DashboardPage() {
                       <div className="text-xs font-mono" style={{ color: 'var(--text-dim)' }}>{r.points}</div>
                       <div className="font-display text-base" style={{ color: 'var(--emerald)' }}>{r.value}</div>
                     </div>
-                    <Link href={`/optimize?points=${totalPoints}&bank=${cards[0]?.bank}`}
+                    <Link href={`/optimize?points=${totalPoints}&bank=${cards[0]?.bank?.toLowerCase()?.replace(/ /g, '-')}`}
                       className="w-full py-2.5 rounded-lg text-xs font-medium flex items-center justify-center gap-1.5"
                       style={{ background: 'color-mix(in srgb, var(--accent) 12%, transparent)', color: 'var(--accent)', border: '1px solid color-mix(in srgb, var(--accent) 25%, transparent)' }}>
                       Check if my points cover this <ArrowRight className="w-3 h-3" />
