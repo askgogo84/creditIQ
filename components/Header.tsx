@@ -131,7 +131,7 @@ export function Header() {
               if ('href' in item) {
                 const active = (item.href ?? "") ===  '/' ? pathname === '/' : pathname.startsWith(item.href ?? '');
                 return (
-                  <Link key={item.href} href={item.href} style={{
+                  <Link key={item.href ?? ""} href={item.href ?? "/"} style={{
                     padding: '6px 12px', borderRadius: 8, fontSize: 13, fontWeight: active ? 600 : 400,
                     color: active ? '#fff' : 'rgba(255,255,255,0.5)',
                     background: active ? 'rgba(255,255,255,0.08)' : 'transparent',
@@ -226,7 +226,7 @@ export function Header() {
                 {section}
               </div>
               {MOBILE_ALL.filter(i => i.section === section).map(item => (
-                <Link key={item.href} href={item.href} onClick={() => setMenuOpen(false)} style={{
+                <Link key={item.href ?? ""} href={item.href ?? "/"} onClick={() => setMenuOpen(false)} style={{
                   display: 'block', padding: '13px 20px', fontSize: 14, fontWeight: 500,
                   color: pathname === item.href ? '#C9972E' : 'rgba(255,255,255,0.7)',
                   background: pathname === item.href ? 'rgba(201,151,46,0.08)' : 'transparent',
