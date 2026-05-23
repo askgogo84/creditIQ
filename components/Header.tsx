@@ -129,7 +129,7 @@ export function Header() {
           <nav ref={dropdownRef} style={{ display: 'flex', alignItems: 'center', gap: 2, flex: 1, justifyContent: 'center' }} className="hide-mobile">
             {NAV_ITEMS.map(item => {
               if ('href' in item) {
-                const active = item.href === '/' ? pathname === '/' : pathname.startsWith(item.href);
+                const active = (item.href ?? "") ===  '/' ? pathname === '/' : pathname.startsWith(item.href ?? '');
                 return (
                   <Link key={item.href} href={item.href} style={{
                     padding: '6px 12px', borderRadius: 8, fontSize: 13, fontWeight: active ? 600 : 400,
