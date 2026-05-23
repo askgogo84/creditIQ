@@ -17,6 +17,7 @@ const DESKTOP_NAV = [
   { href: '/smart-match', label: 'AI Tools' },
   { href: '/travel', label: 'Travel' },
   { href: '/compare', label: 'Compare' },
+  { href: '/dashboard', label: 'Dashboard' },
 ];
 
 const TABS = [
