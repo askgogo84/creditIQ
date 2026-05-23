@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { Reveal }         from '@/components/design/Reveal';
 import { StatNumber }     from '@/components/design/StatNumber';
-import { TopNav }         from '@/components/design/TopNav';
+import { Header }         from '@/components/Header';
 import { CreditCard3D, type CardVariant } from '@/components/design/CreditCard3D';
 import { SectionHeader }  from '@/components/design/SectionHeader';
 import { CopperCTA, GhostCTA } from '@/components/design/CTAs';
@@ -91,7 +91,7 @@ export default function HomePage() {
 
   return (
     <>
-      <TopNav />
+      <Header />
       <div className="page-fade">
 
         {/* ============================================

@@ -142,7 +142,12 @@ export function Header() {
               const isOpen = openDropdown === item.label;
               const isActive = item.dropdown?.some(d => pathname.startsWith(d.href));
               return (
-                <div key={item.label} style={{ position: 'relative' }}>
+                <div
+                  key={item.label}
+                  style={{ position: 'relative' }}
+                  onMouseEnter={() => setOpenDropdown(item.label)}
+                  onMouseLeave={() => setOpenDropdown(null)}
+                >
                   <button
                     onClick={() => setOpenDropdown(isOpen ? null : item.label)}
                     style={{
@@ -159,10 +164,12 @@ export function Header() {
                   {isOpen && (
                     <div style={{
                       position: 'absolute', top: '100%', left: '50%', transform: 'translateX(-50%)',
-                      marginTop: 8, background: '#111118', border: '1px solid rgba(255,255,255,0.1)',
+                      paddingTop: 8, zIndex: 300,
+                    }}>
+                    <div style={{
+                      background: '#111118', border: '1px solid rgba(255,255,255,0.1)',
                       borderRadius: 14, padding: 8, minWidth: 240,
                       boxShadow: '0 20px 60px rgba(0,0,0,0.5)',
-                      zIndex: 300,
                     }}>
                       {item.dropdown?.map(d => (
                         <Link key={d.href} href={d.href} style={{
@@ -174,6 +181,7 @@ export function Header() {
                           <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.4)' }}>{d.desc}</div>
                         </Link>
                       ))}
+                    </div>
                     </div>
                   )}
                 </div>
