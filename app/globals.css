@@ -21,6 +21,7 @@
   --surface:      #FFFFFF;
   --surface-2:    #FBF7F0;
   --paper:        #FAF5EB;
+  --obsidian:     #0A0E1C;       /* theme-independent dark slab for feature bands */
 
   /* Ink (text) — navy-leaning to match logo */
   --ink:          #142950;       /* logo navy */

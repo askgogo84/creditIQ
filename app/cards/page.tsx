@@ -1,10 +1,16 @@
-﻿import { Metadata } from 'next';
+import { Metadata } from 'next';
 import Link from 'next/link';
-import { SEED_CARDS } from '@/lib/data/seed-cards';
-import { Header } from '@/components/Header';
+import { TopNav }         from '@/components/design/TopNav';
+import { SectionHeader }  from '@/components/design/SectionHeader';
+import { CopperCTA, GhostCTA } from '@/components/design/CTAs';
+import { CardTile, type TileCard } from '@/components/design/CardTile';
+import { type CardVariant } from '@/components/design/CreditCard3D';
+import { DesignFooter }   from '@/components/design/Footer';
+import { SEED_CARDS }     from '@/lib/data/seed-cards';
+import type { CreditCard } from '@/lib/types';
 
 export const metadata: Metadata = {
-  title: 'All Credit Cards in India 2026 â€” Compare 93 Cards | CreditIQ',
+  title: 'All Credit Cards in India 2026 — Compare 93 Cards | CreditIQ',
   description: 'Compare all 93 credit cards in India. HDFC, Axis, SBI, ICICI, Amex, IDFC First and more. Honest reviews, real fees, no affiliate bias. Find the best card for your spends.',
   keywords: 'credit cards India 2026, best credit card India, HDFC credit card, Axis credit card, SBI credit card, compare credit cards India',
   alternates: { canonical: 'https://creditiq.app/cards' },
@@ -15,173 +21,160 @@ export const metadata: Metadata = {
   },
 };
 
-const BANKS = ['All', 'HDFC', 'Axis', 'SBI', 'ICICI', 'Amex', 'IDFC First', 'Kotak', 'AU', 'Yes Bank', 'RBL'];
-const CATEGORIES = ['All', 'travel', 'cashback', 'rewards', 'premium', 'dining', 'fuel', 'shopping'];
+/* ============================================================
+   seed-cards → TileCard adapter  (shared with homepage)
+   ============================================================ */
+const VARIANT_ROTATION: CardVariant[] = ['obsidian', 'navy', 'plum', 'gold', 'iris', 'mint'];
+const NETWORK_BY_BANK: Record<string, string> = {
+  HDFC: 'VISA', AXIS: 'MASTERCARD', ICICI: 'AMEX',
+  SBI: 'VISA', AMEX: 'AMEX', AMERICAN: 'AMEX',
+  IDFC: 'VISA', RBL: 'MASTERCARD', YES: 'VISA', AU: 'VISA',
+};
+
+function tagline(tier?: string) {
+  switch (tier) {
+    case 'super-premium': return 'Reserve metal';
+    case 'premium':       return 'Premium';
+    case 'mid':           return 'Mid-tier';
+    case 'entry':         return 'Entry';
+    case 'starter':       return 'Starter';
+    default:              return 'Standard';
+  }
+}
+
+function toTileCard(c: CreditCard, i: number): TileCard {
+  const bank = c.bank.toUpperCase();
+  return {
+    bank,
+    name: c.name.replace(/^HDFC\s+|^AXIS\s+|^ICICI\s+|^SBI\s+|^AMEX\s+/i, '').replace(/ Credit Card$/i, ''),
+    tagline: tagline(c.tier),
+    tier: c.tier ? c.tier.toUpperCase().replace(/-/g, ' ') : 'CARD',
+    network: NETWORK_BY_BANK[bank.split(' ')[0]] || 'VISA',
+    variant: VARIANT_ROTATION[i % VARIANT_ROTATION.length],
+    tags: (c.category || []).slice(0, 2).map(s => s.replace(/-/g, ' ')),
+    fee: c.annual_fee_inr,
+    iqScore: Math.round((c.expert_rating ?? 8) * 10),
+  };
+}
+
+const CATEGORIES = [
+  'International Travel', 'Domestic Travel', 'Forex 0%', 'Lounge Access',
+  'Cashback', 'Online Shopping', 'Fuel', 'Dining',
+  'First Card', 'Lifetime Free', 'Business', 'Metal',
+];
 
 export default function CardsIndexPage() {
-  const cards = SEED_CARDS;
+  const cards = SEED_CARDS.filter(c => c.active !== false);
   const totalCards = cards.length;
-
-  // Group by bank for structured display
   const banks = [...new Set(cards.map(c => c.bank))].sort();
 
   return (
-    <div style={{ minHeight: '100vh', backgroundColor: '#f8fafc' }}>
-      <Header />
+    <>
+      <TopNav />
+      <div className="page-fade">
 
-      {/* Hero */}
-      <div style={{ backgroundColor: '#1B3A5C', padding: '48px 20px 40px' }}>
-        <div style={{ maxWidth: 900, margin: '0 auto' }}>
-          <div style={{ fontSize: 11, fontWeight: 700, color: '#C9972E', textTransform: 'uppercase' as const, letterSpacing: 1.5, marginBottom: 12 }}>
-            No affiliate bias &nbsp;&bull;&nbsp; Updated May 2026
-          </div>
-          <h1 style={{ fontSize: 36, fontWeight: 800, color: '#ffffff', margin: '0 0 12px', lineHeight: 1.2 }}>
-            All Credit Cards in India 2026
-          </h1>
-          <p style={{ fontSize: 16, color: '#94a3b8', margin: '0 0 24px', lineHeight: 1.6, maxWidth: 560 }}>
-            {totalCards} credit cards from {banks.length} banks â€” honest reviews, real annual fees, actual reward rates. Zero affiliate bias.
-          </p>
-          <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' as const }}>
-            <Link href="/spend-optimizer" style={{
-              padding: '10px 20px', backgroundColor: '#C9972E', color: '#fff',
-              borderRadius: 10, fontSize: 14, fontWeight: 700, textDecoration: 'none',
-            }}>Find my best card</Link>
-            <Link href="/compare" style={{
-              padding: '10px 20px', backgroundColor: 'rgba(255,255,255,0.1)', color: '#fff',
-              borderRadius: 10, fontSize: 14, fontWeight: 600, textDecoration: 'none',
-              border: '1px solid rgba(255,255,255,0.2)',
-            }}>Compare cards side by side</Link>
-          </div>
-        </div>
-      </div>
+        {/* ============================================
+              HERO
+              ============================================ */}
+        <section style={{ position: 'relative', paddingTop: 'clamp(120px, 18vw, 160px)' }}>
+          <div className="aurora" style={{ top: -120, right: -100, width: 540, height: 540,
+            background: 'radial-gradient(circle, rgba(212,163,115,0.55), transparent 60%)' }} />
 
-      {/* Category quick links â€” SEO internal linking */}
-      <div style={{ backgroundColor: '#fff', borderBottom: '1px solid #e2e8f0', padding: '16px 20px', overflowX: 'auto' as const }}>
-        <div style={{ maxWidth: 900, margin: '0 auto', display: 'flex', gap: 8, flexWrap: 'nowrap' as const, whiteSpace: 'nowrap' as const }}>
-          {[
-            { href: '/best-cards/travel', label: 'Best Travel Cards' },
-            { href: '/best-cards/cashback', label: 'Best Cashback Cards' },
-            { href: '/best-cards/dining', label: 'Best Dining Cards' },
-            { href: '/best-cards/no-fee', label: 'Lifetime Free Cards' },
-            { href: '/best-cards/premium', label: 'Premium Cards' },
-            { href: '/best-cards/fuel', label: 'Best Fuel Cards' },
-            { href: '/best-cards/shopping', label: 'Best Shopping Cards' },
-            { href: '/best-cards/beginners', label: 'Cards for Beginners' },
-          ].map((cat, i) => (
-            <Link key={i} href={cat.href} style={{
-              padding: '7px 14px', backgroundColor: '#f1f5f9', color: '#1B3A5C',
-              borderRadius: 100, fontSize: 13, fontWeight: 600, textDecoration: 'none',
-              border: '1px solid #e2e8f0', flexShrink: 0,
-            }}>{cat.label}</Link>
-          ))}
-        </div>
-      </div>
+          <div className="shell" style={{ position: 'relative', zIndex: 2, paddingBottom: 8 }}>
+            <SectionHeader
+              label={`THE FULL CATALOG · ${totalCards} CARDS · ${banks.length} BANKS`}
+              title={<>Every card in India, <span className="serif" style={{ color: 'var(--copper)' }}>ranked honestly</span>.</>}
+              subtitle="Real annual value, live devaluation tracking and IQ scores for all 93 cards. No affiliate bias — no bank pays us to move a card up the list." />
 
-      <main style={{ maxWidth: 900, margin: '0 auto', padding: '32px 20px 80px' }}>
-
-        {/* Stats row */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 12, marginBottom: 32 }}>
-          {[
-            { value: `${totalCards}+`, label: 'Cards reviewed' },
-            { value: `${banks.length}`, label: 'Banks covered' },
-            { value: '0%', label: 'Affiliate bias' },
-            { value: 'May 2026', label: 'Last updated' },
-          ].map((stat, i) => (
-            <div key={i} style={{
-              backgroundColor: '#fff', borderRadius: 12, padding: '16px 20px',
-              border: '1px solid #e2e8f0', textAlign: 'center' as const,
-            }}>
-              <div style={{ fontSize: 22, fontWeight: 800, color: '#1B3A5C' }}>{stat.value}</div>
-              <div style={{ fontSize: 12, color: '#94a3b8', marginTop: 2 }}>{stat.label}</div>
+            <div style={{ marginTop: 'clamp(28px, 4vw, 40px)', display: 'flex', gap: 14, flexWrap: 'wrap' }} className="stack-mobile">
+              <CopperCTA href="/smart-match">Find my perfect card</CopperCTA>
+              <GhostCTA href="/compare">Compare side by side</GhostCTA>
             </div>
-          ))}
-        </div>
+          </div>
+        </section>
 
-        {/* Cards by bank */}
-        {banks.map(bank => {
-          const bankCards = cards.filter(c => c.bank === bank);
-          return (
-            <div key={bank} style={{ marginBottom: 36 }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 }}>
-                <h2 style={{ fontSize: 20, fontWeight: 700, color: '#1B3A5C', margin: 0 }}>
-                  {bank} Credit Cards
-                </h2>
-                <span style={{ fontSize: 13, color: '#94a3b8' }}>{bankCards.length} cards</span>
-              </div>
+        {/* ============================================
+              CATEGORY PILLS
+              ============================================ */}
+        <section className="section" style={{ paddingTop: 'clamp(40px, 6vw, 64px)', paddingBottom: 0 }}>
+          <div className="shell">
+            <div className="label" style={{ marginBottom: 18 }}>BROWSE BY CATEGORY</div>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10 }}>
+              {CATEGORIES.map((c) => (
+                <Link key={c} href="/cards" className="chip" style={{ fontSize: 14 }}>
+                  {c}
+                </Link>
+              ))}
+            </div>
+          </div>
+        </section>
 
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 12 }}>
-                {bankCards.map(card => {
-                  const annualFee = (card as any).annual_fee_inr ?? 0;
-                  const tier = (card as any).tier ?? 'standard';
-                  const cats = Array.isArray(card.category) ? card.category : [(card as any).category ?? 'rewards'];
+        {/* ============================================
+              CARDS BY BANK
+              ============================================ */}
+        <section className="section">
+          <div className="shell">
+            {banks.map((bank) => {
+              const bankCards = cards.filter(c => c.bank === bank);
+              return (
+                <div key={bank} style={{ marginBottom: 'clamp(48px, 7vw, 72px)' }}>
+                  <div style={{
+                    display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end',
+                    gap: 24, marginBottom: 'clamp(24px, 3vw, 32px)',
+                    paddingBottom: 16, borderBottom: '1px solid var(--line)',
+                  }}>
+                    <h2 style={{ fontSize: 'clamp(24px, 3vw, 34px)', letterSpacing: '-0.03em' }}>
+                      {bank} <span className="serif" style={{ color: 'var(--copper)' }}>Credit Cards</span>
+                    </h2>
+                    <span className="label" style={{ whiteSpace: 'nowrap' }}>{bankCards.length} cards</span>
+                  </div>
 
-                  return (
-                    <Link key={card.id} href={`/cards/${card.id}`} style={{ textDecoration: 'none' }}>
-                      <div style={{
-                        backgroundColor: '#fff', borderRadius: 14, border: '1px solid #e2e8f0',
-                        padding: '18px 20px', transition: 'box-shadow 0.2s',
-                        cursor: 'pointer',
-                      }}>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 10 }}>
-                          <div style={{ fontSize: 15, fontWeight: 700, color: '#1e293b', lineHeight: 1.3, flex: 1, marginRight: 8 }}>
-                            {card.name}
-                          </div>
-                          {tier === 'super-premium' && (
-                            <span style={{ fontSize: 10, fontWeight: 700, color: '#C9972E', backgroundColor: '#fef3c7', padding: '2px 8px', borderRadius: 100, flexShrink: 0 }}>
-                              PREMIUM
-                            </span>
-                          )}
-                        </div>
+                  <div style={{
+                    display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 24,
+                  }} className="grid-1-mobile">
+                    {bankCards.map((c, i) => (
+                      <CardTile key={c.id} card={toTileCard(c, i)} href={`/card/${c.slug}`} />
+                    ))}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </section>
 
-                        <div style={{ display: 'flex', gap: 8, marginBottom: 12, flexWrap: 'wrap' as const }}>
-                          {cats.slice(0, 2).map((cat: string, j: number) => (
-                            <span key={j} style={{
-                              fontSize: 11, color: '#1B3A5C', backgroundColor: '#eff6ff',
-                              padding: '2px 8px', borderRadius: 100, textTransform: 'capitalize' as const,
-                            }}>{cat}</span>
-                          ))}
-                        </div>
+        {/* ============================================
+              FINAL CTA
+              ============================================ */}
+        <section className="section" style={{ paddingBottom: 120, position: 'relative' }}>
+          <div className="aurora" style={{ bottom: -200, left: '20%', width: 800, height: 600,
+            background: 'radial-gradient(circle, rgba(212,163,115,0.30), transparent 60%)' }} />
 
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                          <div>
-                            <div style={{ fontSize: 14, fontWeight: 700, color: annualFee === 0 ? '#16a34a' : '#1e293b' }}>
-                              {annualFee === 0 ? 'Lifetime Free' : `Rs. ${annualFee.toLocaleString('en-IN')}/yr`}
-                            </div>
-                            <div style={{ fontSize: 11, color: '#94a3b8' }}>Annual fee</div>
-                          </div>
-                          <div style={{
-                            fontSize: 13, fontWeight: 600, color: '#1B3A5C',
-                            display: 'flex', alignItems: 'center', gap: 4,
-                          }}>
-                            View review &rarr;
-                          </div>
-                        </div>
-                      </div>
-                    </Link>
-                  );
-                })}
+          <div className="shell" style={{ position: 'relative' }}>
+            <div style={{ textAlign: 'center', maxWidth: 1000, margin: '0 auto' }}>
+              <div className="label-copper" style={{ marginBottom: 24 }}>NOT SURE WHICH ONE?</div>
+              <h2 style={{
+                fontSize: 'clamp(36px, 5vw, 64px)', letterSpacing: '-0.035em', lineHeight: 1.04,
+                fontWeight: 800,
+              }}>
+                Tell us how you spend — we&apos;ll do the{' '}
+                <span className="shimmer-text">maths</span>.
+              </h2>
+              <p style={{
+                marginTop: 32, fontSize: 'clamp(16px, 1.3vw, 19px)',
+                color: 'var(--ink-2)', maxWidth: 540, margin: '32px auto 0',
+              }}>
+                Our AI analyses all {totalCards} cards against your real spending pattern. No sign-up, no email.
+              </p>
+              <div style={{ marginTop: 44, display: 'flex', gap: 14, justifyContent: 'center', flexWrap: 'wrap' }} className="stack-mobile">
+                <CopperCTA href="/smart-match">Find my best card</CopperCTA>
+                <GhostCTA href="/card/hdfc-infinia">See a sample card</GhostCTA>
               </div>
             </div>
-          );
-        })}
+          </div>
+        </section>
 
-        {/* Bottom CTA */}
-        <div style={{ backgroundColor: '#1B3A5C', borderRadius: 16, padding: '32px', textAlign: 'center' as const, marginTop: 16 }}>
-          <h2 style={{ fontSize: 22, fontWeight: 700, color: '#fff', margin: '0 0 10px' }}>
-            Not sure which card to pick?
-          </h2>
-          <p style={{ fontSize: 15, color: '#94a3b8', margin: '0 0 20px', lineHeight: 1.6 }}>
-            Tell us your monthly spends â€” our AI analyzes all {totalCards} cards and shows exactly how much each earns you.
-          </p>
-          <Link href="/spend-optimizer" style={{
-            display: 'inline-block', padding: '13px 28px', backgroundColor: '#C9972E',
-            color: '#fff', borderRadius: 12, fontSize: 15, fontWeight: 700, textDecoration: 'none',
-          }}>
-            Find My Best Card â€” Free
-          </Link>
-        </div>
-      </main>
-    </div>
+        <DesignFooter />
+      </div>
+    </>
   );
 }
-

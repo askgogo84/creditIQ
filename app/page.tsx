@@ -1,5 +1,6 @@
 'use client';
 
+import type { CSSProperties } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { Reveal }         from '@/components/design/Reveal';
@@ -54,6 +55,33 @@ function toTileCard(c: CreditCard, i: number): TileCard {
 }
 
 const CARDS = SEED_CARDS.filter(c => c.active !== false);
+
+/* ============================================================
+   Dark feature-band override.
+   Re-maps the theme tokens to their dark-mode values *locally*,
+   so the Journey + AI-Tools sections render as premium obsidian
+   slabs (white text on dark) regardless of the global light/dark
+   theme. Every child that reads var(--ink)/var(--surface)/etc.
+   inherits these without any per-component change.
+   ============================================================ */
+const DARK_BAND = {
+  '--bg':          '#0A1226',
+  '--bg-2':        '#101A36',
+  '--bg-3':        '#142547',
+  '--surface':     '#142950',
+  '--surface-2':   '#1A3260',
+  '--paper':       '#102140',
+  '--ink':         '#F5EFE6',
+  '--ink-2':       '#DCD2C0',
+  '--ink-3':       '#A89C8A',
+  '--ink-4':       '#807464',
+  '--line':        'rgba(245,239,230,0.10)',
+  '--line-strong': 'rgba(245,239,230,0.20)',
+  '--copper':      '#D89B2A',
+  '--copper-2':    '#E5AC3B',
+  '--copper-3':    '#F2C658',
+  background:      'var(--obsidian)',
+} as CSSProperties;
 
 /* ============================================================
    Page
@@ -248,7 +276,7 @@ export default function HomePage() {
         {/* ============================================
               START HERE — Three journeys
               ============================================ */}
-        <section className="section">
+        <section className="section" style={{ ...DARK_BAND, borderTop: '1px solid var(--line)' }}>
           <div className="shell">
             <SectionHeader
               label="START HERE · 03 PATHS"
@@ -291,8 +319,7 @@ export default function HomePage() {
               AI TOOLS GRID
               ============================================ */}
         <section className="section" style={{
-          background: 'var(--bg-2)',
-          borderTop: '1px solid var(--line)',
+          ...DARK_BAND,
           borderBottom: '1px solid var(--line)',
           position: 'relative',
           overflow: 'hidden'
