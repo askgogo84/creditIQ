@@ -888,3 +888,11 @@ input[type="range"]::-webkit-slider-thumb {
 .stamp-sage { background: var(--sage); box-shadow: 0 6px 18px rgba(124, 137, 112, 0.35); }
 .stamp-plum { background: var(--plum); box-shadow: 0 6px 18px rgba(110, 74, 110, 0.35); }
 .stamp-terra { background: var(--terracotta); box-shadow: 0 6px 18px rgba(196, 106, 82, 0.35); }
+
+/* Geist font override - replaces all display fonts */
+*, *::before, *::after {
+  font-family: var(--font-geist-sans), system-ui, -apple-system, sans-serif !important;
+}
+code, pre, .font-mono, [class*="mono"] {
+  font-family: var(--font-geist-mono), monospace !important;
+}
