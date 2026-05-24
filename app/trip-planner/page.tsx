@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { Header } from '@/components/Header';
@@ -62,7 +62,7 @@ const QUICK_TRIPS = [
 
 const BANKS = ['HDFC', 'Axis', 'SBI', 'ICICI', 'IDFC', 'Amex', 'Kotak', 'AU', 'None'];
 
-export default function TripPlannerPage() {
+function TripPlannerPageInner() {
   const [query, setQuery] = useState('');
   const [points, setPoints] = useState('');
   const searchParams = useSearchParams();
@@ -360,3 +360,10 @@ export default function TripPlannerPage() {
   );
 }
 
+export default function TripPlannerPage() {
+  return (
+    <Suspense fallback={<div />}>
+      <TripPlannerPageInner />
+    </Suspense>
+  );
+}
