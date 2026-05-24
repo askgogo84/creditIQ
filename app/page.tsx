@@ -95,7 +95,7 @@ export default function HomePage() {
       <div className="page-fade">
 
         {/* ============================================
-              HERO â€” editorial slab w/ floating card
+              HERO "” editorial slab w/ floating card
               ============================================ */}
         <section style={{ position: 'relative', paddingTop: 'clamp(120px, 18vw, 160px)' }}>
           <div className="aurora" style={{ top: -120, right: -100, width: 540, height: 540,
@@ -110,10 +110,10 @@ export default function HomePage() {
               <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
                 <span style={{ width: 8, height: 8, borderRadius: 999, background: 'var(--green)',
                   boxShadow: '0 0 12px var(--green)' }} />
-                <span className="label">Live Â· 93 cards across 24 banks</span>
+                <span className="label">Live . 93 cards across 24 banks</span>
               </div>
               <div className="label hide-mobile" style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
-                <span>EST. 2025</span><span>Â·</span><span>BENGALURU</span><span>Â·</span><span>v1.0</span>
+                <span>EST. 2025</span><span>.</span><span>BENGALURU</span><span>.</span><span>v1.0</span>
               </div>
             </Reveal>
 
@@ -170,7 +170,7 @@ export default function HomePage() {
                 }}>
                   {[
                   { val: 93,  suffix: '+',      label: 'Cards tracked' },
-                  { val: 4.2, suffix: 'L',      prefix: 'â‚¹', label: 'Avg. yearly waste', decimals: 1 },
+                  { val: 4.2, suffix: 'L',      prefix: 'Rs.', label: 'Avg. yearly waste', decimals: 1 },
                   { val: 7,   suffix: ' DAYS',  label: 'Data refresh' }].
                   map((s, i) =>
                   <div key={i} style={{ borderLeft: '1px solid var(--line)', paddingLeft: 14 }}>
@@ -265,21 +265,21 @@ export default function HomePage() {
               DEVALUATION TICKER
               ============================================ */}
         <DevalTicker items={[
-        'AXIS Magnus devalued â€” Grab Vouchers capped at 1:0.4',
+        'AXIS Magnus devalued "” Grab Vouchers capped at 1:0.4',
         'HDFC SmartBuy halved on Cleartrip from May 2026',
         'ICICI Sapphiro removed all spend-based renewal benefits',
         'SBI Aurum to scrap Priority Pass guest visits',
         'AMEX MRCC reduced point earn on utility bills to 0',
-        'New Â· AU Bank Zenith+ launches with 10x on fuel']
+        'New . AU Bank Zenith+ launches with 10x on fuel']
         } />
 
         {/* ============================================
-              START HERE â€” Three journeys
+              START HERE "” Three journeys
               ============================================ */}
         <section className="section" style={{ ...DARK_BAND, borderTop: '1px solid var(--line)' }}>
           <div className="shell">
             <SectionHeader
-              label="START HERE Â· 03 PATHS"
+              label="START HERE . 03 PATHS"
               title={<>Three ways to <span className="serif" style={{ color: 'var(--copper)' }}>begin</span>.</>}
               subtitle="Most people don't know what they want until they see it. Pick the question that sounds most like you." />
 
@@ -291,21 +291,21 @@ export default function HomePage() {
               marginTop: 'clamp(40px, 6vw, 64px)'
             }} className="grid-1-mobile">
               <JourneyCard
-                eyebrow="01 Â· FIND"
+                eyebrow="01 . FIND"
                 title={<>Show me the <span className="serif" style={{ color: 'var(--copper)' }}>right</span> card for me.</>}
                 subtitle="Tell us how you spend. Get one card recommendation backed by maths, not commissions."
                 accent="copper"
                 href="/smart-match" />
 
               <JourneyCard
-                eyebrow="02 Â· ROAST"
+                eyebrow="02 . ROAST"
                 title={<>Tell me if my card <span className="serif" style={{ color: 'var(--terracotta)' }}>sucks</span>.</>}
-                subtitle="Drop your current card and a sample month of spending. We grade it brutally â€” A through F."
+                subtitle="Drop your current card and a sample month of spending. We grade it brutally "” A through F."
                 accent="terracotta"
                 href="/card-roast" />
 
               <JourneyCard
-                eyebrow="03 Â· TRAVEL"
+                eyebrow="03 . TRAVEL"
                 title={<>Which card flies me <span className="serif" style={{ color: 'var(--sage)' }}>further</span>?</>}
                 subtitle="Pick a route, your hotel chain, your loyalty programs. Get the card that maximises that exact trip."
                 accent="sage"
@@ -333,7 +333,7 @@ export default function HomePage() {
               gap: 40, marginBottom: 'clamp(40px, 6vw, 64px)'
             }} className="stack-mobile">
               <SectionHeader
-                label="AI TOOLBOX Â· 06 TOOLS"
+                label="AI TOOLBOX . 06 TOOLS"
                 title={<>The arsenal.<br /><span className="serif" style={{ color: 'var(--copper)' }}>Built for spenders</span>, not banks.</>}
                 subtitle={null} />
 
@@ -357,7 +357,7 @@ export default function HomePage() {
               <AIToolCard
                 icon="âœ¦"
                 title="Card Roast"
-                desc="Brutal Aâ€“F grade on your current card. Shareable. Probably mean. Definitely accurate."
+                desc="Brutal A"“F grade on your current card. Shareable. Probably mean. Definitely accurate."
                 badge={{ text: 'NEW', tone: 'badge-plum' }}
                 href="/card-roast" />
 
@@ -391,7 +391,7 @@ export default function HomePage() {
         </section>
 
         {/* ============================================
-              MANIFESTO BLOCK â€” big editorial
+              MANIFESTO BLOCK "” big editorial
               ============================================ */}
         <section className="section">
           <div className="shell">
@@ -409,7 +409,7 @@ export default function HomePage() {
                   background: 'radial-gradient(circle, rgba(212,163,115,0.45), transparent 60%)'
                 }} />
 
-                <div className="label-copper" style={{ marginBottom: 24 }}>OUR PROMISE Â· MANIFESTO</div>
+                <div className="label-copper" style={{ marginBottom: 24 }}>OUR PROMISE . MANIFESTO</div>
 
                 <h2 style={{
                   fontSize: 'clamp(28px, 4vw, 48px)',
@@ -462,7 +462,7 @@ export default function HomePage() {
         </section>
 
         {/* ============================================
-              CARD SHOWCASE â€” Top deck
+              CARD SHOWCASE "” Top deck
               ============================================ */}
         <section className="section">
           <div className="shell">
@@ -471,9 +471,9 @@ export default function HomePage() {
               gap: 40, marginBottom: 'clamp(40px, 6vw, 56px)', flexWrap: 'wrap'
             }}>
               <SectionHeader
-                label="THE TOP DECK Â· RANKED"
+                label="THE TOP DECK . RANKED"
                 title={<>Cards that <span className="serif" style={{ color: 'var(--copper)' }}>actually</span> earn their fee.</>}
-                subtitle="Ranked by effective reward rate on a â‚¹6Lâ€“â‚¹15L annual spend, after fees." />
+                subtitle="Ranked by effective reward rate on a Rs.6L"“Rs.15L annual spend, after fees." />
 
               <Reveal>
                 <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>

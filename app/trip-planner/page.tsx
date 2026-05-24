@@ -110,7 +110,7 @@ export default function TripPlannerPage() {
             Where are you going?
           </h1>
           <p style={{ fontSize: 15, color: 'var(--text-muted, #64748b)', margin: 0, lineHeight: 1.6, maxWidth: 480, marginInline: 'auto' }}>
-            Tell us your trip. We'll find the best way to pay using your credit card points â€” flights, hotels, everything.
+            Tell us your trip. We'll find the best way to pay using your credit card points "” flights, hotels, everything.
           </p>
         </div>
 
@@ -234,7 +234,7 @@ export default function TripPlannerPage() {
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap' as const, gap: 16, marginBottom: 16 }}>
                 <div>
                   <div style={{ fontSize: 11, fontWeight: 700, color: '#C9972E', textTransform: 'uppercase' as const, letterSpacing: 1.5, marginBottom: 6 }}>
-                    âœˆï¸ {result.destination} Â· {result.duration} Â· {result.tripType}
+                    âœˆï¸ {result.destination} . {result.duration} . {result.tripType}
                   </div>
                   <div style={{ fontSize: 20, fontWeight: 800, color: '#fff', marginBottom: 4 }}>{result.summary}</div>
                   <div style={{ fontSize: 13, color: 'rgba(255,255,255,0.4)' }}>{result.dates}</div>
@@ -251,7 +251,7 @@ export default function TripPlannerPage() {
                     {result.canAfford ? 'âœ“ Your points cover this trip' : `âš ï¸ Need ${result.pointsGap.toLocaleString('en-IN')} more points`}
                   </div>
                   <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.4)', marginTop: 2 }}>
-                    Need {result.totalPointsNeeded.toLocaleString('en-IN')} pts Â· You have {(parseInt(points.replace(/,/g, '')) || 0).toLocaleString('en-IN')} pts
+                    Need {result.totalPointsNeeded.toLocaleString('en-IN')} pts . You have {(parseInt(points.replace(/,/g, '')) || 0).toLocaleString('en-IN')} pts
                   </div>
                 </div>
                 {!result.canAfford && (
@@ -275,7 +275,7 @@ export default function TripPlannerPage() {
                       <div style={{ flex: 1 }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
                           {i === 0 && <span style={{ fontSize: 9, fontWeight: 700, color: '#C9972E', background: 'rgba(201,151,46,0.1)', border: '1px solid rgba(201,151,46,0.3)', padding: '2px 8px', borderRadius: 100, textTransform: 'uppercase' as const }}>Best value</span>}
-                          <span style={{ fontSize: 14, fontWeight: 700, color: 'var(--text, #0f172a)' }}>{flight.airline} Â· {flight.class}</span>
+                          <span style={{ fontSize: 14, fontWeight: 700, color: 'var(--text, #0f172a)' }}>{flight.airline} . {flight.class}</span>
                         </div>
                         <div style={{ fontSize: 13, color: 'var(--text-muted, #64748b)', marginBottom: 12 }}>{flight.option} via {flight.transferPartner}</div>
                         <div style={{ display: 'flex', gap: 20, flexWrap: 'wrap' as const }}>
@@ -315,7 +315,7 @@ export default function TripPlannerPage() {
                           {i === 0 && <span style={{ fontSize: 9, fontWeight: 700, color: '#16a34a', background: 'rgba(34,197,94,0.1)', border: '1px solid rgba(34,197,94,0.3)', padding: '2px 8px', borderRadius: 100, textTransform: 'uppercase' as const }}>Best value</span>}
                           <span style={{ fontSize: 14, fontWeight: 700, color: 'var(--text, #0f172a)' }}>{hotel.name}</span>
                         </div>
-                        <div style={{ fontSize: 13, color: 'var(--text-muted, #64748b)', marginBottom: 12 }}>{hotel.chain} Â· {hotel.nights} nights</div>
+                        <div style={{ fontSize: 13, color: 'var(--text-muted, #64748b)', marginBottom: 12 }}>{hotel.chain} . {hotel.nights} nights</div>
                         <div style={{ display: 'flex', gap: 20, flexWrap: 'wrap' as const }}>
                           {[
                             { lbl: 'Points needed', val: hotel.pointsNeeded.toLocaleString('en-IN'), col: '#C9972E' },
