@@ -1,14 +1,28 @@
-import { NextRequest, NextResponse } from 'next/server';
+﻿import { NextRequest, NextResponse } from 'next/server'
+import { retrieveRelevantCards, buildRagSystemPrompt } from '@/lib/rag'
 
-export const runtime = 'edge';
+export const runtime = 'nodejs'
 
 export async function POST(req: NextRequest) {
   try {
-    const { prompt, spends, totalSpend } = await req.json();
+    const { prompt, spends, totalSpend } = await req.json()
+    if (!prompt) return NextResponse.json({ error: 'Missing prompt' }, { status: 400 })
 
-    if (!prompt) {
-      return NextResponse.json({ error: 'Missing prompt' }, { status: 400 });
-    }
+    // Detect intent from prompt
+    const promptLower = prompt.toLowerCase()
+    let intent: any = 'general'
+    if (promptLower.includes('travel') || promptLower.includes('flight') || promptLower.includes('lounge')) intent = 'travel'
+    else if (promptLower.includes('cashback') || promptLower.includes('cash back')) intent = 'cashback'
+    else if (promptLower.includes('dining') || promptLower.includes('restaurant')) intent = 'dining'
+    else if (promptLower.includes('fuel') || promptLower.includes('petrol')) intent = 'fuel'
+
+    const { context, devaluations } = await retrieveRelevantCards(prompt, {
+      topK: 10,
+      intent,
+      maxFee: spends?.maxFee,
+    })
+
+    const systemPrompt = buildRagSystemPrompt(context, devaluations)
 
     const response = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
@@ -20,39 +34,24 @@ export async function POST(req: NextRequest) {
       body: JSON.stringify({
         model: 'claude-sonnet-4-20250514',
         max_tokens: 2000,
-        system: `You are CreditIQ's unbiased AI card recommendation engine for India. You have deep knowledge of all major Indian credit cards — HDFC, Axis, SBI, ICICI, Amex, IDFC First, Kotak, Yes Bank, AU Small Finance, RBL, IndusInd.
-
-You always respond with ONLY valid JSON — no markdown, no explanation, no text outside the JSON object. Your reward estimates are realistic and based on actual published card reward rates. You are never biased toward any bank.`,
-        messages: [
-          {
-            role: 'user',
-            content: prompt,
-          },
-        ],
+        system: systemPrompt,
+        messages: [{ role: 'user', content: prompt }],
       }),
-    });
+    })
 
     if (!response.ok) {
-      const err = await response.text();
-      console.error('Anthropic error:', err);
-      return NextResponse.json({ error: 'AI analysis failed' }, { status: 500 });
+      const err = await response.text()
+      console.error('Anthropic error:', err)
+      return NextResponse.json({ error: 'AI analysis failed' }, { status: 500 })
     }
 
-    const data = await response.json();
-    const text = data.content?.[0]?.text ?? '';
-
-    let parsed;
-    try {
-      const clean = text.replace(/```json|```/g, '').trim();
-      parsed = JSON.parse(clean);
-    } catch {
-      console.error('JSON parse error:', text);
-      return NextResponse.json({ error: 'Failed to parse AI response' }, { status: 500 });
-    }
-
-    return NextResponse.json(parsed);
+    const data = await response.json()
+    const text = data.content?.[0]?.text ?? ''
+    const clean = text.replace(/\\\json|\\\/g, '').trim()
+    const parsed = JSON.parse(clean)
+    return NextResponse.json(parsed)
   } catch (err) {
-    console.error('Spend optimizer error:', err);
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+    console.error('Spend optimizer error:', err)
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }

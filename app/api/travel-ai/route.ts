@@ -1,19 +1,28 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server'
+import { retrieveRelevantCards, buildRagSystemPrompt } from '@/lib/rag'
 
-export const runtime = 'edge';
-
-interface Message {
-  role: 'user' | 'assistant';
-  content: string;
-}
+export const runtime = 'nodejs'
 
 export async function POST(req: NextRequest) {
   try {
-    const { messages } = await req.json();
+    const { message, history } = await req.json()
+    if (!message) return NextResponse.json({ error: 'Missing message' }, { status: 400 })
 
-    if (!messages || !Array.isArray(messages)) {
-      return NextResponse.json({ error: 'Missing messages' }, { status: 400 });
-    }
+    const { context, devaluations } = await retrieveRelevantCards(message, {
+      topK: 8,
+      intent: 'travel',
+    })
+
+    const systemPrompt = buildRagSystemPrompt(context, devaluations) +
+      '\n\nYou are also a travel expert. Help users plan trips using credit card points and miles. ' +
+      'Always suggest specific cards from the database for travel benefits. ' +
+      'For flight/hotel redemptions, use the redemption values from the card data. ' +
+      'Respond in conversational JSON: { "message": "your response", "cards": ["card-slug-1"], "tip": "optional pro tip" }'
+
+    const messages = [
+      ...(history || []),
+      { role: 'user', content: message },
+    ]
 
     const response = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
@@ -24,36 +33,23 @@ export async function POST(req: NextRequest) {
       },
       body: JSON.stringify({
         model: 'claude-sonnet-4-20250514',
-        max_tokens: 2000,
-        system: `You are CreditIQ's Travel AI advisor — an expert on Indian credit card travel benefits, award redemptions, airline miles, hotel points, and lounge access.
-
-You help users maximize their credit card points for travel. You know HDFC, Axis, SBI, ICICI, Amex, IDFC First, Kotak cards inside out — their reward rates, transfer partners, lounge access policies, forex markup fees.
-
-Be specific, actionable, and honest. Use real numbers. Format responses clearly with headings and bullet points for easy reading. Always mention the best and worst options so users can make informed decisions.`,
-        messages: messages.map((m: Message) => ({
-          role: m.role,
-          content: m.content,
-        })),
+        max_tokens: 1500,
+        system: systemPrompt,
+        messages,
       }),
-    });
+    })
 
-    if (!response.ok) {
-      const err = await response.text();
-      console.error('Anthropic error:', err);
-      return NextResponse.json({ error: 'AI request failed' }, { status: 500 });
+    const data = await response.json()
+    const text = data.content?.[0]?.text ?? ''
+    try {
+      const clean = text.replace(/```json|```/g, '').trim()
+      const parsed = JSON.parse(clean)
+      return NextResponse.json(parsed)
+    } catch {
+      return NextResponse.json({ message: text, cards: [], tip: null })
     }
-
-    const data = await response.json();
-    const reply = data.content?.[0]?.text;
-
-    if (!reply) {
-      return NextResponse.json({ error: 'Empty response from AI' }, { status: 500 });
-    }
-
-    return NextResponse.json({ reply });
-
   } catch (err) {
-    console.error('Travel AI error:', err);
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+    console.error('Travel AI error:', err)
+    return NextResponse.json({ error: 'Travel AI failed' }, { status: 500 })
   }
 }
