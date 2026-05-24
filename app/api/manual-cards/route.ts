@@ -1,12 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { createClient } from '@supabase/supabase-js';
 
-export const runtime = 'edge';
+export const runtime = 'nodejs';
 
-async function getClient() {
+function getClient() {
   const sUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const sKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
   if (!sUrl || !sKey) throw new Error('Missing Supabase env vars');
-  const { createClient } = await import('@supabase/supabase-js');
   return createClient(sUrl, sKey);
 }
 
@@ -14,25 +14,27 @@ export async function GET(req: NextRequest) {
   const userId = new URL(req.url).searchParams.get('userId');
   if (!userId) return NextResponse.json({ cards: [] });
   try {
-    const sb = await getClient();
+    const sb = getClient();
     const { data } = await sb
       .from('manual_cards')
       .select('*')
       .eq('user_id', userId)
       .order('imported_at', { ascending: false });
     return NextResponse.json({ cards: data || [] });
-  } catch {
+  } catch (e: any) {
+    console.error('manual-cards GET error:', e.message);
     return NextResponse.json({ cards: [] });
   }
 }
 
 export async function POST(req: NextRequest) {
   try {
-    const { userId, bank, cardName, cardLast4, pointsBalance, pointsCurrency } = await req.json();
+    const body = await req.json();
+    const { userId, bank, cardName, cardLast4, pointsBalance, pointsCurrency } = body;
     if (!userId || !bank || !cardName) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
     }
-    const sb = await getClient();
+    const sb = getClient();
     const { data, error } = await sb
       .from('manual_cards')
       .insert({
@@ -45,9 +47,13 @@ export async function POST(req: NextRequest) {
       })
       .select()
       .single();
-    if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+    if (error) {
+      console.error('manual-cards POST error:', error.message);
+      return NextResponse.json({ error: error.message }, { status: 500 });
+    }
     return NextResponse.json({ card: data });
   } catch (err: any) {
+    console.error('manual-cards POST exception:', err.message);
     return NextResponse.json({ error: err.message }, { status: 500 });
   }
 }
@@ -58,7 +64,7 @@ export async function DELETE(req: NextRequest) {
     if (!userId || !cardId) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
     }
-    const sb = await getClient();
+    const sb = getClient();
     const { error } = await sb
       .from('manual_cards')
       .delete()
