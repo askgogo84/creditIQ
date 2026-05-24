@@ -41,7 +41,7 @@ function DropdownMenu({ items, open }: { items: { label: string; href: string }[
   )
 }
 
-export default function Header() {
+export function Header() {
   const pathname = usePathname()
   const [aiOpen, setAiOpen] = useState(false)
   const [travelOpen, setTravelOpen] = useState(false)
