@@ -19,7 +19,7 @@ import { SEED_CARDS }     from '@/lib/data/seed-cards';
 import type { CreditCard } from '@/lib/types';
 
 /* ============================================================
-   seed-cards â†’ TileCard adapter
+   seed-cards -> TileCard adapter
    ============================================================ */
 const VARIANT_ROTATION: CardVariant[] = ['obsidian', 'navy', 'plum', 'gold', 'iris', 'mint'];
 const NETWORK_BY_BANK: Record<string, string> = {
@@ -256,7 +256,7 @@ export default function HomePage() {
           {/* Scroll cue */}
           <div style={{ textAlign: 'center', paddingBottom: 30 }}>
             <span className="label" style={{ display: 'inline-block', animation: 'float-y 2.5s ease-in-out infinite' }}>
-              â†“ &nbsp; KEEP SCROLLING
+              â†" &nbsp; KEEP SCROLLING
             </span>
           </div>
         </section>
@@ -338,7 +338,7 @@ export default function HomePage() {
                 subtitle={null} />
 
               <Reveal>
-                <GhostCTA href="/smart-match">Open the toolbox â†’</GhostCTA>
+                <GhostCTA href="/smart-match">Open the toolbox â†'</GhostCTA>
               </Reveal>
             </div>
 
@@ -348,7 +348,7 @@ export default function HomePage() {
               gap: 20
             }} className="grid-1-mobile">
               <AIToolCard
-                icon="â—"
+                icon="â--"
                 title="Card Match"
                 desc="Type how you spend in plain English. We pick one card. No top-10 lists, no rankings sold to the highest bidder."
                 badge={{ text: 'POPULAR', tone: 'badge-copper' }}
@@ -357,12 +357,12 @@ export default function HomePage() {
               <AIToolCard
                 icon="âœ¦"
                 title="Card Roast"
-                desc="Brutal A"“F grade on your current card. Shareable. Probably mean. Definitely accurate."
+                desc="Brutal A""F grade on your current card. Shareable. Probably mean. Definitely accurate."
                 badge={{ text: 'NEW', tone: 'badge-plum' }}
                 href="/card-roast" />
 
               <AIToolCard
-                icon="â—‡"
+                icon="â--‡"
                 title="Statement Truth"
                 desc="Upload your statement. We tell you if your card is doing what the brochure promised."
                 href="/statement-truth" />
@@ -381,7 +381,7 @@ export default function HomePage() {
                 href="/travel" />
 
               <AIToolCard
-                icon="â—‰"
+                icon="â--‰"
                 title="Lounge Tracker"
                 desc="Never get turned away at the gate. Tracks free visits across every card you carry."
                 href="/lounge-tracker" />
@@ -473,7 +473,7 @@ export default function HomePage() {
               <SectionHeader
                 label="THE TOP DECK . RANKED"
                 title={<>Cards that <span className="serif" style={{ color: 'var(--copper)' }}>actually</span> earn their fee.</>}
-                subtitle="Ranked by effective reward rate on a Rs.6L"“Rs.15L annual spend, after fees." />
+                subtitle="Ranked by effective reward rate on a Rs.6L""Rs.15L annual spend, after fees." />
 
               <Reveal>
                 <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
@@ -493,7 +493,7 @@ export default function HomePage() {
             </div>
 
             <Reveal style={{ marginTop: 56, textAlign: 'center' }}>
-              <GhostCTA href="/cards">See all 93 cards â†’</GhostCTA>
+              <GhostCTA href="/cards">See all 93 cards â†'</GhostCTA>
             </Reveal>
           </div>
         </section>
