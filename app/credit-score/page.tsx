@@ -15,8 +15,8 @@ const SCORE_RANGES = [
 
 const FREE_SERVICES = [
   { name: 'CIBIL Free Score', url: 'https://www.cibil.com/freecibil', desc: 'Official CIBIL score "” free once a year', org: 'TransUnion CIBIL' },
-  { name: 'Paisabazaar Free Score', url: 'https://www.paisabazaar.com, desc: 'Free CIBIL score with monthly updates', org: 'Paisabazaar' },
-  { name: 'BankBazaar Free Score', url: 'https://www.bankbazaar.com, desc: 'Free Experian score + CIBIL', org: 'BankBazaar' },
+  { name: 'Paisabazaar Free Score', url: 'https://www.paisabazaar.com', desc: 'Free CIBIL score with monthly updates', org: 'Paisabazaar' },
+  { name: 'BankBazaar Free Score', url: 'https://www.bankbazaar.com', desc: 'Free Experian score + CIBIL', org: 'BankBazaar' },
   { name: 'OneScore App', url: 'https://www.onescore.app/', desc: 'Free CIBIL score with detailed analysis', org: 'OneScore' },
 ];
 
