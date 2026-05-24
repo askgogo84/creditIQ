@@ -82,7 +82,7 @@ export function Logo({ size = 'md', showWordmark = true }: LogoProps) {
           <line x1="18" y1="18" x2="18" y2="35" stroke="rgba(0,0,0,0.12)" strokeWidth="0.5" />
           <line x1="24" y1="18" x2="24" y2="35" stroke="rgba(0,0,0,0.12)" strokeWidth="0.5" />
 
-          {/* 4-point sparkle — main */}
+          {/* 4-point sparkle -- main */}
           <path d="M76,6 L78.5,13 L86,15.5 L78.5,18 L76,25 L73.5,18 L66,15.5 L73.5,13 Z" fill="#C9972E" />
           {/* secondary small sparkle */}
           <path d="M88,2 L89.5,6.5 L94,8 L89.5,9.5 L88,14 L86.5,9.5 L82,8 L86.5,6.5 Z" fill="#C9972E" opacity="0.65" />
