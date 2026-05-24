@@ -146,7 +146,7 @@ export default function StatementTruthPage() {
             {/* Card name input */}
             <div style={{ backgroundColor: '#fff', borderRadius: 16, border: '1px solid #e2e8f0', padding: '20px 24px', marginBottom: 16 }}>
               <label style={{ fontSize: 13, fontWeight: 600, color: '#374151', display: 'block', marginBottom: 8 }}>
-                Card name (optional — helps with accuracy)
+                Card name (optional -- helps with accuracy)
               </label>
               <input
                 type="text"

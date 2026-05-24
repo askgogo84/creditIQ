@@ -15,7 +15,7 @@ export default function TermsPage() {
             Terms of Service
           </h1>
           <p style={{ color: 'var(--text-muted, #64748b)', fontSize: 14 }}>
-            Last updated: May 24, 2026 &nbsp;·&nbsp; Effective: May 24, 2026
+            Last updated: May 24, 2026 &nbsp;.&nbsp; Effective: May 24, 2026
           </p>
         </div>
 
@@ -49,7 +49,7 @@ export default function TermsPage() {
           <section style={{ marginBottom: 36 }}>
             <h2 style={{ fontSize: 20, fontWeight: 700, color: 'var(--text, #0f172a)', marginBottom: 12 }}>4. Affiliate Disclosure</h2>
             <p>CreditIQ participates in affiliate programs. When you click "Apply Now" or "Apply & Earn" links, we may earn a commission from the card issuer or affiliate network (such as EarnKaro) if you are approved for the card.</p>
-            <p style={{ marginTop: 12 }}>Our rankings and recommendations are based solely on card value for your spending pattern — not on commission rates. Cards with higher commissions are not ranked higher. All affiliate links are clearly marked.</p>
+            <p style={{ marginTop: 12 }}>Our rankings and recommendations are based solely on card value for your spending pattern -- not on commission rates. Cards with higher commissions are not ranked higher. All affiliate links are clearly marked.</p>
           </section>
 
           <section style={{ marginBottom: 36 }}>
@@ -79,7 +79,7 @@ export default function TermsPage() {
 
           <section style={{ marginBottom: 36 }}>
             <h2 style={{ fontSize: 20, fontWeight: 700, color: 'var(--text, #0f172a)', marginBottom: 12 }}>7. Intellectual Property</h2>
-            <p>All content on CreditIQ — including our scoring methodology, AI models, card database, visual design, and written content — is owned by Nexus AI Ventures and protected by applicable intellectual property laws.</p>
+            <p>All content on CreditIQ -- including our scoring methodology, AI models, card database, visual design, and written content -- is owned by Nexus AI Ventures and protected by applicable intellectual property laws.</p>
             <p style={{ marginTop: 12 }}>You may not reproduce, distribute, or create derivative works from our content without express written permission.</p>
           </section>
 

@@ -7,7 +7,7 @@ import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
   title: 'Best Credit Cards UAE 2026 | CreditIQ',
-  description: 'Compare the best credit cards in UAE. ENBD, FAB, Mashreq, ADCB, Citi, HSBC — honest rankings, zero affiliate bias. Find your perfect UAE credit card.',
+  description: 'Compare the best credit cards in UAE. ENBD, FAB, Mashreq, ADCB, Citi, HSBC -- honest rankings, zero affiliate bias. Find your perfect UAE credit card.',
   keywords: ['best credit card UAE 2026', 'UAE credit card comparison', 'ENBD credit card', 'FAB cashback card', 'best cashback card UAE'],
 };
 
@@ -47,7 +47,7 @@ export default function UAEPage() {
             <div>
               <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border mb-6" style={{ background: 'color-mix(in srgb, var(--accent) 10%, transparent)', borderColor: 'color-mix(in srgb, var(--accent) 25%, transparent)' }}>
                 <Shield className="w-3.5 h-3.5" style={{ color: 'var(--accent)' }} />
-                <span className="text-[11px] font-mono uppercase tracking-widest" style={{ color: 'var(--accent)' }}>Zero affiliate bias · UAE edition</span>
+                <span className="text-[11px] font-mono uppercase tracking-widest" style={{ color: 'var(--accent)' }}>Zero affiliate bias . UAE edition</span>
               </div>
               <h1 className="font-display text-5xl sm:text-6xl leading-tight mb-6" style={{ color: 'var(--text)' }}>
                 The honest credit card guide for{' '}
@@ -61,7 +61,7 @@ export default function UAEPage() {
                   <CreditCard className="w-4 h-4" /> Browse UAE cards
                 </Link>
                 <Link href="/smart-match" className="btn-ghost text-base flex items-center justify-center gap-2">
-                  Find my perfect card →
+                  Find my perfect card ->
                 </Link>
               </div>
               <div className="flex items-center gap-8 mt-10 pt-8 border-t" style={{ borderColor: 'var(--border)' }}>
@@ -83,7 +83,7 @@ export default function UAEPage() {
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="font-medium text-sm truncate" style={{ color: 'var(--text)' }}>{card.name}</div>
-                    <div className="text-xs" style={{ color: 'var(--text-dim)' }}>{card.annual_fee_aed === 0 ? 'Zero annual fee' : `AED ${card.annual_fee_aed}/year`} · {card.base_reward_rate}% rewards</div>
+                    <div className="text-xs" style={{ color: 'var(--text-dim)' }}>{card.annual_fee_aed === 0 ? 'Zero annual fee' : `AED ${card.annual_fee_aed}/year`} . {card.base_reward_rate}% rewards</div>
                   </div>
                   <div className="text-xs font-mono px-2 py-1 rounded shrink-0" style={{ background: 'color-mix(in srgb, var(--accent) 12%, transparent)', color: 'var(--accent)' }}>
                     {card.tier}
@@ -99,7 +99,7 @@ export default function UAEPage() {
       <section id="cards" className="py-16 px-4 sm:px-6" style={{ borderTop: '1px solid var(--border)' }}>
         <div className="max-w-7xl mx-auto">
           <h2 className="font-display text-3xl mb-2" style={{ color: 'var(--text)' }}>All UAE credit cards</h2>
-          <p className="mb-10" style={{ color: 'var(--text-muted)' }}>Ranked by value — not by what banks pay us.</p>
+          <p className="mb-10" style={{ color: 'var(--text-muted)' }}>Ranked by value -- not by what banks pay us.</p>
 
           {TIER_ORDER.map(tier => {
             const tierCards = UAE_CARDS.filter(c => c.tier === tier && c.active);
@@ -108,7 +108,7 @@ export default function UAEPage() {
 
             return (
               <div key={tier} className="mb-12">
-                <div className="text-[11px] font-mono uppercase tracking-widest mb-4" style={{ color: 'var(--text-dim)' }}>{tierLabel} — {tierCards.length} cards</div>
+                <div className="text-[11px] font-mono uppercase tracking-widest mb-4" style={{ color: 'var(--text-dim)' }}>{tierLabel} -- {tierCards.length} cards</div>
                 <div className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
                   {tierCards.map(card => (
                     <div key={card.id} className="rounded-xl border overflow-hidden transition-all hover:border-copper-500/30" style={{ borderColor: 'var(--border)', background: 'var(--bg-elevated)' }}>
@@ -119,7 +119,7 @@ export default function UAEPage() {
                           <div className="w-8 h-8 rounded flex items-center justify-center text-white text-[10px] font-bold shrink-0" style={{ background: card.color }}>
                             {card.bank.slice(0, 2)}
                           </div>
-                          <div className="text-[10px] font-mono uppercase tracking-widest" style={{ color: 'var(--text-dim)' }}>{card.bank} · {card.tier.replace('-', ' ')}</div>
+                          <div className="text-[10px] font-mono uppercase tracking-widest" style={{ color: 'var(--text-dim)' }}>{card.bank} . {card.tier.replace('-', ' ')}</div>
                         </div>
                         <h3 className="font-display text-base leading-tight mb-2" style={{ color: 'var(--text)' }}>{card.name}</h3>
                         <p className="text-xs mb-3 italic" style={{ color: 'var(--text-muted)' }}>{card.best_for}</p>
@@ -138,7 +138,7 @@ export default function UAEPage() {
                         <div className="space-y-1 mb-4">
                           {card.highlights.slice(0, 2).map(h => (
                             <div key={h} className="flex items-start gap-1.5 text-xs" style={{ color: 'var(--text-muted)' }}>
-                              <span style={{ color: 'var(--accent)' }}>·</span> {h}
+                              <span style={{ color: 'var(--accent)' }}>.</span> {h}
                             </div>
                           ))}
                         </div>
@@ -151,7 +151,7 @@ export default function UAEPage() {
 
                         <div className="flex gap-2">
                           <button className="flex-1 py-2 rounded text-xs font-medium" style={{ background: 'color-mix(in srgb, var(--accent) 12%, transparent)', color: 'var(--accent)', border: '1px solid color-mix(in srgb, var(--accent) 25%, transparent)' }}>
-                            Apply now →
+                            Apply now ->
                           </button>
                         </div>
                       </div>
@@ -170,14 +170,14 @@ export default function UAEPage() {
           <Plane className="w-8 h-8 mx-auto mb-4" style={{ color: 'var(--accent)' }} />
           <h2 className="font-display text-3xl mb-4" style={{ color: 'var(--text)' }}>Hold cards in India AND UAE?</h2>
           <p className="text-lg mb-8 max-w-2xl mx-auto" style={{ color: 'var(--text-muted)' }}>
-            3.5 million Indians live in UAE. CreditIQ is the only platform that helps you optimize points across both your Indian and UAE credit cards — combined, in one dashboard.
+            3.5 million Indians live in UAE. CreditIQ is the only platform that helps you optimize points across both your Indian and UAE credit cards -- combined, in one dashboard.
           </p>
           <div className="flex flex-col sm:flex-row gap-3 justify-center">
             <Link href="/dashboard" className="btn-primary flex items-center justify-center gap-2">
               <Star className="w-4 h-4" /> View my full portfolio
             </Link>
             <Link href="/" className="btn-ghost flex items-center justify-center gap-2">
-              Browse India cards →
+              Browse India cards ->
             </Link>
           </div>
         </div>

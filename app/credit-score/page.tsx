@@ -14,7 +14,7 @@ const SCORE_RANGES = [
 ];
 
 const FREE_SERVICES = [
-  { name: 'CIBIL Free Score', url: 'https://www.cibil.com/freecibil', desc: 'Official CIBIL score "” free once a year', org: 'TransUnion CIBIL' },
+  { name: 'CIBIL Free Score', url: 'https://www.cibil.com/freecibil', desc: 'Official CIBIL score "" free once a year', org: 'TransUnion CIBIL' },
   { name: 'Paisabazaar Free Score', url: 'https://www.paisabazaar.com', desc: 'Free CIBIL score with monthly updates', org: 'Paisabazaar' },
   { name: 'BankBazaar Free Score', url: 'https://www.bankbazaar.com', desc: 'Free Experian score + CIBIL', org: 'BankBazaar' },
   { name: 'OneScore App', url: 'https://www.onescore.app/', desc: 'Free CIBIL score with detailed analysis', org: 'OneScore' },
@@ -32,7 +32,7 @@ export default function CreditScorePage() {
             <span className="display-italic text-copper-400">Free.</span>
           </h1>
           <p className="text-ink-300 text-lg font-display leading-relaxed mb-8">
-            Your credit score determines which cards you can get approved for. Check it free "” no hard inquiry, no effect on your score.
+            Your credit score determines which cards you can get approved for. Check it free "" no hard inquiry, no effect on your score.
           </p>
           <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-emerald-500/10 border border-emerald-500/20 mb-12">
             <ShieldCheck className="w-4 h-4 text-emerald-400" />
@@ -91,7 +91,7 @@ export default function CreditScorePage() {
                 ['Keep utilisation below 30%', 'If your limit is Rs.1L, keep outstanding below Rs.30K. Ideally below 10%.'],
                 ['Don\'t apply for multiple cards at once', 'Each application is a hard inquiry and drops your score by 5-10 points.'],
                 ['Keep old cards open', 'Length of credit history matters. Don\'t close your oldest card.'],
-                ['Check for errors', 'Dispute any incorrect entries on your CIBIL report "” they take them seriously.'],
+                ['Check for errors', 'Dispute any incorrect entries on your CIBIL report "" they take them seriously.'],
               ].map(([title, desc]) => (
                 <div key={title} className="flex gap-3">
                   <div className="w-1.5 h-1.5 rounded-full bg-copper-400 shrink-0 mt-2" />

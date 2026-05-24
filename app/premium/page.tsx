@@ -18,8 +18,8 @@ const FREE_FEATURES = [
 
 const PREMIUM_FEATURES = [
   { icon: CreditCard, text: 'Link your actual credit cards', highlight: true },
-  { icon: TrendingUp, text: 'Live points balance — all cards in one view', highlight: true },
-  { icon: Zap, text: 'Multi-card point aggregator — combine HDFC + Axis + Amex', highlight: true },
+  { icon: TrendingUp, text: 'Live points balance -- all cards in one view', highlight: true },
+  { icon: Zap, text: 'Multi-card point aggregator -- combine HDFC + Axis + Amex', highlight: true },
   { icon: Plane, text: 'Redeem points for flights directly', highlight: true },
   { icon: Building2, text: 'Redeem points for hotel stays directly', highlight: true },
   { icon: Bell, text: 'Instant devaluation alerts via WhatsApp + email', highlight: false },
@@ -30,11 +30,11 @@ const PREMIUM_FEATURES = [
 ];
 
 const FAQS = [
-  { q: 'Is my card data safe?', a: 'Yes. We use the RBI-approved Account Aggregator framework — the same technology used by Zerodha, CRED, and Perfios. We never see your card credentials. You authorise access directly through your bank.' },
+  { q: 'Is my card data safe?', a: 'Yes. We use the RBI-approved Account Aggregator framework -- the same technology used by Zerodha, CRED, and Perfios. We never see your card credentials. You authorise access directly through your bank.' },
   { q: 'Can I cancel anytime?', a: 'Yes. Cancel from your dashboard with one click. You keep access until the end of your billing period. No questions asked.' },
   { q: 'Which banks are supported for card linking?', a: 'Currently HDFC, Axis, ICICI, SBI, Kotak, IDFC FIRST, and AmEx. We are adding more banks monthly. UAE and Singapore banks coming in 2026.' },
-  { q: 'What is the multi-card aggregator?', a: 'It combines points from all your linked cards into a single view and shows the optimal redemption strategy across your entire portfolio — not just one card at a time. For example: use 30,000 HDFC points + 20,000 Axis EDGE miles together for a business class ticket.' },
-  { q: 'How does direct booking work?', a: 'Once your cards are linked, you can search for flights and hotels directly on CreditIQ. We show options by points cost, not just cash price. We earn a small referral commission — your points value is unaffected.' },
+  { q: 'What is the multi-card aggregator?', a: 'It combines points from all your linked cards into a single view and shows the optimal redemption strategy across your entire portfolio -- not just one card at a time. For example: use 30,000 HDFC points + 20,000 Axis EDGE miles together for a business class ticket.' },
+  { q: 'How does direct booking work?', a: 'Once your cards are linked, you can search for flights and hotels directly on CreditIQ. We show options by points cost, not just cash price. We earn a small referral commission -- your points value is unaffected.' },
 ];
 
 export default function PremiumPage() {
@@ -96,7 +96,7 @@ export default function PremiumPage() {
             {/* Free */}
             <div className="rounded-2xl border p-8 text-left" style={{ borderColor: 'var(--border)', background: 'var(--bg-elevated)' }}>
               <div className="text-sm font-mono uppercase tracking-widest mb-4" style={{ color: 'var(--text-dim)' }}>Free forever</div>
-              <div className="font-display text-5xl mb-1" style={{ color: 'var(--text)' }}>₹0</div>
+              <div className="font-display text-5xl mb-1" style={{ color: 'var(--text)' }}>Rs.0</div>
               <div className="text-sm mb-8" style={{ color: 'var(--text-dim)' }}>No credit card required</div>
               <div className="space-y-3 mb-8">
                 {FREE_FEATURES.map(f => (
@@ -118,11 +118,11 @@ export default function PremiumPage() {
               </div>
               <div className="text-sm font-mono uppercase tracking-widest mb-4" style={{ color: '#d4a373' }}>Premium</div>
               <div className="flex items-baseline gap-2 mb-1">
-                <span className="font-display text-5xl text-white">₹{price}</span>
+                <span className="font-display text-5xl text-white">Rs.{price}</span>
                 <span className="text-white/60">/month</span>
               </div>
               {billing === 'annual' && (
-                <div className="text-sm mb-1" style={{ color: '#34d399' }}>Save ₹{saving}/year · billed ₹{price * 12} annually</div>
+                <div className="text-sm mb-1" style={{ color: '#34d399' }}>Save Rs.{saving}/year . billed Rs.{price * 12} annually</div>
               )}
               <div className="text-sm mb-8 text-white/50">Everything in free, plus:</div>
               <div className="space-y-3 mb-8">
@@ -138,7 +138,7 @@ export default function PremiumPage() {
                 className="block text-center py-3 rounded-lg text-sm font-bold transition-all"
                 style={{ background: '#d4a373', color: '#0a0a0b' }}
               >
-                Start free 7-day trial →
+                Start free 7-day trial ->
               </Link>
               <div className="text-center text-xs mt-3 text-white/40">No payment needed to start trial</div>
             </div>
@@ -155,8 +155,8 @@ export default function PremiumPage() {
           </div>
           <div className="grid sm:grid-cols-3 gap-6">
             {[
-              { icon: Zap, title: 'Multi-card aggregator', desc: 'See all your points in one place. HDFC Reward Points + Axis EDGE miles + Amex MR — combined, ranked, ready to redeem.', tag: 'Industry first in India' },
-              { icon: Plane, title: 'Direct booking', desc: 'Search flights and hotels by points cost, not cash. Book directly. We handle the redemption path — you get the seat.', tag: 'Coming soon' },
+              { icon: Zap, title: 'Multi-card aggregator', desc: 'See all your points in one place. HDFC Reward Points + Axis EDGE miles + Amex MR -- combined, ranked, ready to redeem.', tag: 'Industry first in India' },
+              { icon: Plane, title: 'Direct booking', desc: 'Search flights and hotels by points cost, not cash. Book directly. We handle the redemption path -- you get the seat.', tag: 'Coming soon' },
               { icon: TrendingUp, title: 'Portfolio optimizer', desc: 'Which card should you use for groceries? For dining? For fuel? AI analyses your full card portfolio and tells you the optimal card for every spend category.', tag: 'AI-powered' },
             ].map(({ icon: Icon, title, desc, tag }) => (
               <div key={title} className="rounded-xl p-6 border" style={{ borderColor: 'var(--border)', background: 'var(--bg-elevated)' }}>
@@ -207,9 +207,9 @@ export default function PremiumPage() {
           <p className="mb-8" style={{ color: 'var(--text-muted)' }}>No payment needed. Cancel anytime. All premium features unlocked from day one.</p>
           <Link href="/dashboard" className="btn-primary text-base px-8 inline-flex items-center gap-2">
             <Zap className="w-4 h-4" />
-            Get started — it's free for 7 days
+            Get started -- it's free for 7 days
           </Link>
-          <div className="mt-4 text-xs" style={{ color: 'var(--text-dim)' }}>Then ₹{price}/month · Cancel anytime</div>
+          <div className="mt-4 text-xs" style={{ color: 'var(--text-dim)' }}>Then Rs.{price}/month . Cancel anytime</div>
         </div>
       </section>
 

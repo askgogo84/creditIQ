@@ -5,7 +5,7 @@ import { Footer } from '@/components/Footer';
 
 export const metadata: Metadata = {
   title: 'Best Credit Cards in Singapore 2026 | CreditIQ',
-  description: 'Compare the best Singapore credit cards — DBS, OCBC, UOB, Citi, Amex. Miles, cashback, dining rewards. Zero affiliate bias.',
+  description: 'Compare the best Singapore credit cards -- DBS, OCBC, UOB, Citi, Amex. Miles, cashback, dining rewards. Zero affiliate bias.',
 };
 
 const SG_CARDS = [
@@ -40,13 +40,13 @@ export default function SingaporePage() {
         <div style={{ background: 'linear-gradient(135deg, #1B3A5C, #0d2240)', borderRadius: 20, padding: '40px 36px', marginBottom: 32, position: 'relative', overflow: 'hidden' }}>
           <div style={{ position: 'absolute', top: -20, right: -20, fontSize: 120, opacity: 0.08 }}>🇸🇬</div>
           <div style={{ fontSize: 11, fontWeight: 700, color: '#C9972E', textTransform: 'uppercase', letterSpacing: 1.5, marginBottom: 12 }}>
-            Singapore · {SG_CARDS.length} Cards · Zero affiliate bias
+            Singapore . {SG_CARDS.length} Cards . Zero affiliate bias
           </div>
           <h1 style={{ fontSize: 'clamp(26px, 4vw, 44px)', fontWeight: 900, color: '#fff', margin: '0 0 12px', letterSpacing: -0.5 }}>
             Best Credit Cards in Singapore 2026
           </h1>
           <p style={{ fontSize: 15, color: 'rgba(255,255,255,0.55)', margin: '0 0 24px', maxWidth: 520, lineHeight: 1.6 }}>
-            DBS, OCBC, UOB, Citi, Amex — compared honestly by miles rate, cashback, lounge access. No bank pays us to rank them.
+            DBS, OCBC, UOB, Citi, Amex -- compared honestly by miles rate, cashback, lounge access. No bank pays us to rank them.
           </p>
           <div style={{ display: 'flex', gap: 24, flexWrap: 'wrap' }}>
             {[
@@ -65,7 +65,7 @@ export default function SingaporePage() {
 
         {/* Market note */}
         <div style={{ background: 'rgba(201,151,46,0.08)', border: '1px solid rgba(201,151,46,0.2)', borderRadius: 12, padding: '14px 18px', marginBottom: 24, fontSize: 13, color: 'rgba(255,255,255,0.6)', lineHeight: 1.6 }}>
-          <strong style={{ color: '#C9972E' }}>🇸🇬 Singapore Miles (mpd)</strong> — Singapore cards use miles per dollar (mpd) instead of reward points. 1 mile ≈ SGD 0.015–0.025 when redeemed for business class flights. KrisFlyer (Singapore Airlines) is the dominant program.
+          <strong style={{ color: '#C9972E' }}>🇸🇬 Singapore Miles (mpd)</strong> -- Singapore cards use miles per dollar (mpd) instead of reward points. 1 mile ≈ SGD 0.015-0.025 when redeemed for business class flights. KrisFlyer (Singapore Airlines) is the dominant program.
         </div>
 
         {/* Cards grid */}
@@ -82,7 +82,7 @@ export default function SingaporePage() {
                   <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 }}>
                     {i === 0 && <span style={{ fontSize: 9, fontWeight: 700, color: '#C9972E', background: 'rgba(201,151,46,0.15)', border: '1px solid rgba(201,151,46,0.3)', padding: '2px 8px', borderRadius: 100, textTransform: 'uppercase', letterSpacing: 0.5 }}>Top pick</span>}
                     <span style={{ fontSize: 11, color: 'rgba(255,255,255,0.4)', textTransform: 'uppercase', letterSpacing: 0.5 }}>{card.bank}</span>
-                    <span style={{ fontSize: 11, color: 'rgba(255,255,255,0.25)' }}>·</span>
+                    <span style={{ fontSize: 11, color: 'rgba(255,255,255,0.25)' }}>.</span>
                     <span style={{ fontSize: 11, color: 'rgba(255,255,255,0.4)' }}>{card.network}</span>
                   </div>
                   <div style={{ fontSize: 18, fontWeight: 700, color: 'var(--text, #f0f0ff)', marginBottom: 6 }}>{card.name}</div>
@@ -138,7 +138,7 @@ export default function SingaporePage() {
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
             {[
               { label: 'Reward currency', india: 'Points (Rs. value)', sg: 'Miles (mpd)' },
-              { label: 'Best for miles', india: 'HDFC Infinia → KrisFlyer', sg: 'UOB PRVI Miles' },
+              { label: 'Best for miles', india: 'HDFC Infinia -> KrisFlyer', sg: 'UOB PRVI Miles' },
               { label: 'Free cards', india: 'IDFC First, Scapia', sg: 'OCBC 90°N, UOB ONE' },
               { label: 'Top lounge access', india: 'HDFC Infinia (unlimited)', sg: 'Amex Platinum (Centurion)' },
             ].map((row, i) => (
@@ -159,7 +159,7 @@ export default function SingaporePage() {
             border: '1px solid rgba(255,255,255,0.1)',
             borderRadius: 12, fontSize: 14, fontWeight: 600, color: 'var(--text, #f0f0ff)',
             textDecoration: 'none',
-          }}>Browse all 93 India cards →</Link>
+          }}>Browse all 93 India cards -></Link>
         </div>
 
       </main>

@@ -7,7 +7,7 @@ import { SEED_CARDS } from '@/lib/data/seed-cards';
 import type { CreditCard } from '@/lib/types';
 
 /* ============================================================
-   seed-cards → TileCard adapter  (shared with homepage)
+   seed-cards -> TileCard adapter  (shared with homepage)
    ============================================================ */
 const VARIANT_ROTATION: CardVariant[] = ['obsidian', 'navy', 'plum', 'gold', 'iris', 'mint'];
 const NETWORK_BY_BANK: Record<string, string> = {
@@ -43,7 +43,7 @@ function toTileCard(c: CreditCard, i: number): TileCard {
 }
 
 /* ============================================================
-   Category filters — label → predicate over SEED_CARDS
+   Category filters -- label -> predicate over SEED_CARDS
    ============================================================ */
 const CATEGORIES = [
   'International Travel', 'Domestic Travel', 'Forex 0%', 'Lounge Access',

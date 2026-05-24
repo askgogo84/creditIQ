@@ -98,7 +98,7 @@ export default function CardRoastPage() {
             Roast my credit card
           </h1>
           <p style={{ fontSize: 15, color: '#64748b', margin: 0, lineHeight: 1.6 }}>
-            Get an honest A–F grade on your card. Find out how much money you're leaving on the table every month.
+            Get an honest A-F grade on your card. Find out how much money you're leaving on the table every month.
           </p>
         </div>
 
@@ -121,7 +121,7 @@ export default function CardRoastPage() {
               >
                 <option value="">Select your card...</option>
                 {cards.map(c => (
-                  <option key={c.id} value={c.id}>{c.name} — {c.bank}</option>
+                  <option key={c.id} value={c.id}>{c.name} -- {c.bank}</option>
                 ))}
               </select>
             </div>
@@ -182,7 +182,7 @@ export default function CardRoastPage() {
           </div>
         ) : (
           <>
-            {/* Grade card — shareable */}
+            {/* Grade card -- shareable */}
             <div style={{
               backgroundColor: gradeStyle.bg, border: `2px solid ${gradeStyle.border}`,
               borderRadius: 20, padding: '32px', textAlign: 'center' as const, marginBottom: 20,
@@ -239,7 +239,7 @@ export default function CardRoastPage() {
                 Better alternative
               </div>
               <div style={{ fontSize: 15, color: '#cbd5e1', lineHeight: 1.6, marginBottom: 16 }}>
-                {result.betterCard} would earn you <strong style={{ color: '#C9972E' }}>Rs.{result.monthlyPotential.toLocaleString('en-IN')}/month</strong> — Rs.{result.moneyLeft.toLocaleString('en-IN')} more than your current card.
+                {result.betterCard} would earn you <strong style={{ color: '#C9972E' }}>Rs.{result.monthlyPotential.toLocaleString('en-IN')}/month</strong> -- Rs.{result.moneyLeft.toLocaleString('en-IN')} more than your current card.
               </div>
               <div style={{ display: 'flex', gap: 10 }}>
                 <a href={`/cards/${result.betterCardId}`} style={{
@@ -263,7 +263,7 @@ export default function CardRoastPage() {
               fontWeight: 700, color: copied ? '#fff' : '#1B3A5C', cursor: 'pointer',
               marginBottom: 10, transition: 'all 0.2s',
             }}>
-              {copied ? '✓ Copied to clipboard!' : '🔁 Share my card grade'}
+              {copied ? '(ok) Copied to clipboard!' : '🔁 Share my card grade'}
             </button>
 
             <button onClick={() => setResult(null)} style={{

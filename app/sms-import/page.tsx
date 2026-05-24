@@ -91,7 +91,7 @@ export default function SmsImportPage() {
           <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border mb-6" style={{ background: 'color-mix(in srgb, var(--accent) 10%, transparent)', borderColor: 'color-mix(in srgb, var(--accent) 25%, transparent)' }}>
             <MessageSquare className="w-3.5 h-3.5" style={{ color: 'var(--accent)' }} />
             <span className="text-[11px] font-mono uppercase tracking-widest" style={{ color: 'var(--accent)' }}>
-              Paste SMS · Points extracted instantly
+              Paste SMS . Points extracted instantly
             </span>
           </div>
 
@@ -109,7 +109,7 @@ export default function SmsImportPage() {
               <div>
                 <p className="text-sm font-medium mb-1" style={{ color: 'var(--text)' }}>Sign in to save points to dashboard</p>
                 <p className="text-xs mb-2" style={{ color: 'var(--text-muted)' }}>Extract without signing in, but points won't persist.</p>
-                <Link href="/login" className="text-xs font-medium" style={{ color: 'var(--accent)' }}>Sign in with Google →</Link>
+                <Link href="/login" className="text-xs font-medium" style={{ color: 'var(--accent)' }}>Sign in with Google -></Link>
               </div>
             </div>
           )}
@@ -121,7 +121,7 @@ export default function SmsImportPage() {
                 <CheckCircle className="w-4 h-4" style={{ color: 'var(--emerald)' }} />
                 <span className="text-sm" style={{ color: 'var(--text)' }}>{savedCount} card{savedCount !== 1 ? 's' : ''} already in your dashboard</span>
               </div>
-              <Link href="/dashboard" className="text-xs" style={{ color: 'var(--accent)' }}>View →</Link>
+              <Link href="/dashboard" className="text-xs" style={{ color: 'var(--accent)' }}>View -></Link>
             </div>
           )}
 
@@ -143,7 +143,7 @@ export default function SmsImportPage() {
               ))}
             </div>
             <p className="text-xs mt-3 pt-3" style={{ borderTop: '1px solid var(--border)', color: 'var(--text-dim)' }}>
-              Works with: {BANK_SENDERS.map(b => b.bank).join(' · ')} and more
+              Works with: {BANK_SENDERS.map(b => b.bank).join(' . ')} and more
             </p>
           </div>
 
@@ -206,7 +206,7 @@ You have earned 2,500 Reward Points on your HDFC Card XX4821. Total RP Balance: 
                       <div>
                         <div className="font-medium" style={{ color: 'var(--text)' }}>
                           {result.cards.length} card{result.cards.length !== 1 ? 's' : ''} found
-                          {userId && <span className="text-xs ml-2 px-2 py-0.5 rounded-full" style={{ background: 'color-mix(in srgb, var(--emerald) 15%, transparent)', color: 'var(--emerald)' }}>Saved to dashboard ✓</span>}
+                          {userId && <span className="text-xs ml-2 px-2 py-0.5 rounded-full" style={{ background: 'color-mix(in srgb, var(--emerald) 15%, transparent)', color: 'var(--emerald)' }}>Saved to dashboard (ok)</span>}
                         </div>
                         <div className="text-xs" style={{ color: 'var(--text-dim)' }}>
                           Total: {result.totalPoints?.toLocaleString('en-IN')} points across all cards
@@ -226,7 +226,7 @@ You have earned 2,500 Reward Points on your HDFC Card XX4821. Total RP Balance: 
                             <div className="font-medium text-sm" style={{ color: 'var(--text)' }}>{card.bank} Card</div>
                             <div className="text-xs" style={{ color: 'var(--text-dim)' }}>
                               {card.card_last4 ? `••••${card.card_last4}` : 'Card number not found'}
-                              {card.points_earned > 0 ? ` · +${card.points_earned.toLocaleString('en-IN')} earned` : ''}
+                              {card.points_earned > 0 ? ` . +${card.points_earned.toLocaleString('en-IN')} earned` : ''}
                             </div>
                           </div>
                           <div className="text-right shrink-0">

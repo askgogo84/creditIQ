@@ -110,7 +110,7 @@ export default function TripPlannerPage() {
             Where are you going?
           </h1>
           <p style={{ fontSize: 15, color: 'var(--text-muted, #64748b)', margin: 0, lineHeight: 1.6, maxWidth: 480, marginInline: 'auto' }}>
-            Tell us your trip. We'll find the best way to pay using your credit card points "” flights, hotels, everything.
+            Tell us your trip. We'll find the best way to pay using your credit card points "" flights, hotels, everything.
           </p>
         </div>
 
@@ -192,7 +192,7 @@ export default function TripPlannerPage() {
               cursor: loading || !query.trim() ? 'not-allowed' : 'pointer',
             }}
           >
-            {loading ? 'âœˆï¸ Planning your trip...' : 'âœˆï¸ Plan my trip with points â†’'}
+            {loading ? 'âœˆï¸ Planning your trip...' : 'âœˆï¸ Plan my trip with points â†''}
           </button>
         </div>
 
@@ -248,7 +248,7 @@ export default function TripPlannerPage() {
               <div style={{ background: result.canAfford ? 'rgba(34,197,94,0.15)' : 'rgba(239,68,68,0.15)', border: `1px solid ${result.canAfford ? 'rgba(34,197,94,0.3)' : 'rgba(239,68,68,0.3)'}`, borderRadius: 12, padding: '12px 16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap' as const, gap: 8 }}>
                 <div>
                   <div style={{ fontSize: 13, fontWeight: 700, color: result.canAfford ? '#22c55e' : '#ef4444' }}>
-                    {result.canAfford ? 'âœ“ Your points cover this trip' : `âš ï¸ Need ${result.pointsGap.toLocaleString('en-IN')} more points`}
+                    {result.canAfford ? 'âœ" Your points cover this trip' : `âš ï¸ Need ${result.pointsGap.toLocaleString('en-IN')} more points`}
                   </div>
                   <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.4)', marginTop: 2 }}>
                     Need {result.totalPointsNeeded.toLocaleString('en-IN')} pts . You have {(parseInt(points.replace(/,/g, '')) || 0).toLocaleString('en-IN')} pts
@@ -256,12 +256,12 @@ export default function TripPlannerPage() {
                 </div>
                 {!result.canAfford && (
                   <Link href={`/cards/${result.bestCardId}`} style={{ padding: '8px 16px', background: '#C9972E', color: '#0a0a0a', borderRadius: 10, fontSize: 12, fontWeight: 700, textDecoration: 'none' }}>
-                    Get {result.bestCard} â†’
+                    Get {result.bestCard} â†'
                   </Link>
                 )}
               </div>
 
-              {result.proTip && <div style={{ marginTop: 12, fontSize: 13, color: 'rgba(255,255,255,0.45)', lineHeight: 1.6, fontStyle: 'italic' as const }}>ðŸ’¡ {result.proTip}</div>}
+              {result.proTip && <div style={{ marginTop: 12, fontSize: 13, color: 'rgba(255,255,255,0.45)', lineHeight: 1.6, fontStyle: 'italic' as const }}>ðŸ'¡ {result.proTip}</div>}
             </div>
 
             {/* Flights */}

@@ -16,9 +16,9 @@ const BANK_COLORS: Record<string, string> = {
 };
 
 const REDEMPTION_IDEAS = [
-  { title: 'Singapore Business Class', points: '1,20,000 pts', value: '₹2.4L+', bank: 'HDFC → KrisFlyer', tag: 'Best value', color: '#059669' },
-  { title: 'Marriott Jaipur (2 nights)', points: '60,000 pts', value: '₹18,000', bank: 'HDFC → Marriott', tag: 'Hotel', color: '#0473ea' },
-  { title: 'Domestic flight (any route)', points: '15,000 pts', value: '₹4,500', bank: 'Axis EDGE Miles', tag: 'Flight', color: '#7c1d3a' },
+  { title: 'Singapore Business Class', points: '1,20,000 pts', value: 'Rs.2.4L+', bank: 'HDFC -> KrisFlyer', tag: 'Best value', color: '#059669' },
+  { title: 'Marriott Jaipur (2 nights)', points: '60,000 pts', value: 'Rs.18,000', bank: 'HDFC -> Marriott', tag: 'Hotel', color: '#0473ea' },
+  { title: 'Domestic flight (any route)', points: '15,000 pts', value: 'Rs.4,500', bank: 'Axis EDGE Miles', tag: 'Flight', color: '#7c1d3a' },
 ];
 
 interface SavedCard {
@@ -79,8 +79,8 @@ export default function DashboardPage() {
   };
 
   const totalPoints = cards.reduce((s, c) => s + (c.points_balance || 0), 0);
-  const bestValue = Math.round(totalPoints * 1.8); // optimistic ₹1.8/pt via travel
-  const conservativeValue = Math.round(totalPoints * 0.25); // ₹0.25/pt statement credit
+  const bestValue = Math.round(totalPoints * 1.8); // optimistic Rs.1.8/pt via travel
+  const conservativeValue = Math.round(totalPoints * 0.25); // Rs.0.25/pt statement credit
   const firstName = user?.user_metadata?.full_name?.split(' ')[0] || user?.email?.split('@')[0] || 'there';
 
   if (loading) return (
@@ -125,7 +125,7 @@ export default function DashboardPage() {
               <CreditCard className="w-12 h-12 mx-auto mb-4" style={{ color: 'var(--text-dim)' }} />
               <h2 className="font-display text-2xl mb-2" style={{ color: 'var(--text)' }}>No cards yet</h2>
               <p className="text-sm mb-6 max-w-sm mx-auto" style={{ color: 'var(--text-muted)' }}>
-                Upload your bank statement once. Your points stay here every time you log in — no re-upload needed.
+                Upload your bank statement once. Your points stay here every time you log in -- no re-upload needed.
               </p>
               <div className="flex flex-col sm:flex-row gap-3 justify-center">
                 <Link href="/upload-statement" className="btn-primary flex items-center justify-center gap-2">
@@ -150,17 +150,17 @@ export default function DashboardPage() {
                 </div>
                 <div className="rounded-xl p-4 border" style={{ borderColor: 'var(--border)', background: 'var(--bg-elevated)' }}>
                   <div className="text-[9px] font-mono uppercase tracking-widest mb-1" style={{ color: 'var(--text-dim)' }}>Best value</div>
-                  <div className="font-display text-2xl tabular" style={{ color: 'var(--emerald)' }}>₹{(bestValue / 1000).toFixed(0)}K+</div>
+                  <div className="font-display text-2xl tabular" style={{ color: 'var(--emerald)' }}>Rs.{(bestValue / 1000).toFixed(0)}K+</div>
                   <div className="text-xs mt-0.5" style={{ color: 'var(--text-dim)' }}>via travel redemption</div>
                 </div>
                 <div className="rounded-xl p-4 border" style={{ borderColor: 'var(--border)', background: 'var(--bg-elevated)' }}>
                   <div className="text-[9px] font-mono uppercase tracking-widest mb-1" style={{ color: 'var(--text-dim)' }}>Statement credit</div>
-                  <div className="font-display text-2xl tabular" style={{ color: 'var(--text)' }}>₹{(conservativeValue / 1000).toFixed(0)}K</div>
+                  <div className="font-display text-2xl tabular" style={{ color: 'var(--text)' }}>Rs.{(conservativeValue / 1000).toFixed(0)}K</div>
                   <div className="text-xs mt-0.5" style={{ color: 'var(--text-dim)' }}>worst redemption</div>
                 </div>
                 <div className="rounded-xl p-4 border" style={{ borderColor: 'var(--border)', background: 'var(--bg-elevated)' }}>
                   <div className="text-[9px] font-mono uppercase tracking-widest mb-1" style={{ color: 'var(--text-dim)' }}>Value gap</div>
-                  <div className="font-display text-2xl tabular" style={{ color: '#ef4444' }}>₹{((bestValue - conservativeValue) / 1000).toFixed(0)}K</div>
+                  <div className="font-display text-2xl tabular" style={{ color: '#ef4444' }}>Rs.{((bestValue - conservativeValue) / 1000).toFixed(0)}K</div>
                   <div className="text-xs mt-0.5" style={{ color: 'var(--text-dim)' }}>don't leave this</div>
                 </div>
               </div>
@@ -168,7 +168,7 @@ export default function DashboardPage() {
               {/* Card list */}
               <div className="flex items-center justify-between mb-3">
                 <div className="text-[10px] font-mono uppercase tracking-widest" style={{ color: 'var(--text-dim)' }}>
-                  Your cards · {cards.length} saved
+                  Your cards . {cards.length} saved
                 </div>
                 <Link href="/upload-statement" className="text-xs flex items-center gap-1" style={{ color: 'var(--accent)' }}>
                   <Plus className="w-3 h-3" /> Add card
@@ -189,7 +189,7 @@ export default function DashboardPage() {
                         </div>
                         <div className="text-xs" style={{ color: 'var(--text-dim)' }}>
                           {card.card_last4 ? `••••${card.card_last4}` : card.bank}
-                          {card.statement_date ? ` · ${new Date(card.statement_date).toLocaleDateString('en-IN', { month: 'short', year: 'numeric' })}` : ''}
+                          {card.statement_date ? ` . ${new Date(card.statement_date).toLocaleDateString('en-IN', { month: 'short', year: 'numeric' })}` : ''}
                         </div>
                       </div>
                       <div className="text-right shrink-0 ml-2">
@@ -264,7 +264,7 @@ export default function DashboardPage() {
               </div>
               <div>
                 <div className="text-sm font-medium" style={{ color: 'var(--text)' }}>Upload statement</div>
-                <div className="text-xs" style={{ color: 'var(--text-dim)' }}>PDF → saved points</div>
+                <div className="text-xs" style={{ color: 'var(--text-dim)' }}>PDF -> saved points</div>
               </div>
             </Link>
             <Link href="/sms-import" className="rounded-xl border p-4 flex items-center gap-3 transition-all"
@@ -275,7 +275,7 @@ export default function DashboardPage() {
               </div>
               <div>
                 <div className="text-sm font-medium" style={{ color: 'var(--text)' }}>Paste bank SMS</div>
-                <div className="text-xs" style={{ color: 'var(--text-dim)' }}>Bank SMS → points</div>
+                <div className="text-xs" style={{ color: 'var(--text-dim)' }}>Bank SMS -> points</div>
               </div>
             </Link>
           </div>
@@ -285,7 +285,7 @@ export default function DashboardPage() {
             <div className="rounded-xl p-5 border" style={{ borderColor: 'color-mix(in srgb, var(--accent) 25%, transparent)', background: 'color-mix(in srgb, var(--accent) 6%, transparent)' }}>
               <div className="flex items-center gap-2 mb-2">
                 <TrendingUp className="w-4 h-4" style={{ color: 'var(--accent)' }} />
-                <span className="font-medium text-sm" style={{ color: 'var(--text)' }}>Your {totalPoints.toLocaleString('en-IN')} points — full analysis</span>
+                <span className="font-medium text-sm" style={{ color: 'var(--text)' }}>Your {totalPoints.toLocaleString('en-IN')} points -- full analysis</span>
               </div>
               <p className="text-xs mb-3" style={{ color: 'var(--text-muted)' }}>
                 Best redemption, transfer partners, expiry risk, category-wise card usage.

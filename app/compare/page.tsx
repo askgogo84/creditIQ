@@ -53,7 +53,7 @@ export default function ComparePage() {
     { label: 'Base reward rate', key: (c: CompareCard) => `${c.base_reward_rate||1}%`, best: null },
     { label: 'Forex markup', key: (c: CompareCard) => `${c.forex_markup_percent||3.5}%`, best: null },
     { label: 'Lounge access', key: (c: CompareCard) => c.lounges?.length > 0 ? (c.lounges.find((l:any) => l.notes?.includes('Unlimited')) ? 'Unlimited' : `${c.lounges.length} networks`) : 'None', best: null },
-    { label: 'Fuel surcharge waiver', key: (c: CompareCard) => c.fuel_surcharge_waiver ? '✓ Yes' : '✗ No', best: null },
+    { label: 'Fuel surcharge waiver', key: (c: CompareCard) => c.fuel_surcharge_waiver ? '(ok) Yes' : '(x) No', best: null },
     { label: 'Min income (monthly)', key: (c: CompareCard) => c.min_income_inr_monthly ? `Rs.${Math.round(c.min_income_inr_monthly/1000)}K` : 'Not specified', best: null },
     { label: 'Card tier', key: (c: CompareCard) => c.tier || 'Standard', best: null },
   ];
@@ -260,7 +260,7 @@ export default function ComparePage() {
                 padding: '12px 24px', background: 'transparent', color: '#1B3A5C',
                 border: '1.5px solid #1B3A5C', borderRadius: 12, fontSize: 14, fontWeight: 600,
                 textDecoration: 'none', display: 'inline-block',
-              }}>Browse all 93 cards →</Link>
+              }}>Browse all 93 cards -></Link>
             </div>
           </div>
         )}

@@ -33,13 +33,13 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const c2 = SEED_CARDS.find(c => c.id === parsed.card2Id) as any;
   if (!c1 || !c2) return {};
   return {
-    title: `${c1.name} vs ${c2.name} — Honest Comparison 2026 | CreditIQ`,
+    title: `${c1.name} vs ${c2.name} -- Honest Comparison 2026 | CreditIQ`,
     description: `${c1.name} vs ${c2.name}: fees, rewards, lounge access, forex markup compared honestly. No affiliate bias. Which card is better for your spend pattern?`,
     keywords: `${c1.name} vs ${c2.name}, ${c1.name} comparison, ${c2.name} vs ${c1.name}, best credit card India 2026`,
     alternates: { canonical: `https://creditiq.app/compare/${params.slug}` },
     openGraph: {
-      title: `${c1.name} vs ${c2.name} — Which is Better?`,
-      description: `Honest comparison — fees, rewards, lounge access. No affiliate bias.`,
+      title: `${c1.name} vs ${c2.name} -- Which is Better?`,
+      description: `Honest comparison -- fees, rewards, lounge access. No affiliate bias.`,
     },
   };
 }

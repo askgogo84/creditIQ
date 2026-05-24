@@ -35,7 +35,7 @@ const TERMS = [
 ];
 
 export const metadata = {
-  title: 'Credit Card Glossary · CreditIQ',
+  title: 'Credit Card Glossary . CreditIQ',
   description: 'Plain-English definitions of every credit card term used in India.',
 };
 

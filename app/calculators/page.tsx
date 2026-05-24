@@ -71,9 +71,9 @@ export default function CalculatorsPage() {
               </div>
             ))}
             <div className="bg-ink-950 rounded-lg p-4 space-y-2 border border-white/5">
-              <div className="flex justify-between text-sm"><span className="text-ink-400">Monthly EMI</span><span className="font-display text-lg text-copper-400 tabular">₹{Math.round(emiMonthly).toLocaleString('en-IN')}</span></div>
-              <div className="flex justify-between text-sm"><span className="text-ink-400">Total payment</span><span className="font-mono tabular text-ink-100">₹{Math.round(emiTotal).toLocaleString('en-IN')}</span></div>
-              <div className="flex justify-between text-sm"><span className="text-ink-400">Total interest</span><span className="font-mono tabular text-crimson-400">₹{Math.round(emiInterest).toLocaleString('en-IN')}</span></div>
+              <div className="flex justify-between text-sm"><span className="text-ink-400">Monthly EMI</span><span className="font-display text-lg text-copper-400 tabular">Rs.{Math.round(emiMonthly).toLocaleString('en-IN')}</span></div>
+              <div className="flex justify-between text-sm"><span className="text-ink-400">Total payment</span><span className="font-mono tabular text-ink-100">Rs.{Math.round(emiTotal).toLocaleString('en-IN')}</span></div>
+              <div className="flex justify-between text-sm"><span className="text-ink-400">Total interest</span><span className="font-mono tabular text-crimson-400">Rs.{Math.round(emiInterest).toLocaleString('en-IN')}</span></div>
             </div>
           </div>
 
@@ -95,8 +95,8 @@ export default function CalculatorsPage() {
               </div>
             ))}
             <div className="bg-ink-950 rounded-lg p-4 space-y-2 border border-white/5">
-              <div className="flex justify-between text-sm"><span className="text-ink-400">Monthly interest</span><span className="font-display text-lg text-crimson-400 tabular">₹{Math.round(monthlyInterest).toLocaleString('en-IN')}</span></div>
-              <div className="flex justify-between text-sm"><span className="text-ink-400">Total interest ({months}mo)</span><span className="font-mono tabular text-crimson-400">₹{Math.round(totalInterest).toLocaleString('en-IN')}</span></div>
+              <div className="flex justify-between text-sm"><span className="text-ink-400">Monthly interest</span><span className="font-display text-lg text-crimson-400 tabular">Rs.{Math.round(monthlyInterest).toLocaleString('en-IN')}</span></div>
+              <div className="flex justify-between text-sm"><span className="text-ink-400">Total interest ({months}mo)</span><span className="font-mono tabular text-crimson-400">Rs.{Math.round(totalInterest).toLocaleString('en-IN')}</span></div>
               <div className="text-xs text-ink-500 mt-2">Always pay in full. This is what the bank earns from you.</div>
             </div>
           </div>
@@ -111,7 +111,7 @@ export default function CalculatorsPage() {
             {[
               { label: 'Monthly spend', val: spend, set: setSpend, min: 5000, max: 300000, step: 5000, fmt: formatINR },
               { label: 'Reward rate', val: rewardRate, set: setRewardRate, min: 0.25, max: 10, step: 0.25, fmt: (v: number) => `${v}%` },
-              { label: 'Value per point (₹)', val: pointValue, set: setPointValue, min: 0.10, max: 2.0, step: 0.05, fmt: (v: number) => `₹${v.toFixed(2)}` },
+              { label: 'Value per point (Rs.)', val: pointValue, set: setPointValue, min: 0.10, max: 2.0, step: 0.05, fmt: (v: number) => `Rs.${v.toFixed(2)}` },
             ].map(f => (
               <div key={f.label}>
                 <div className="flex justify-between text-xs mb-1"><span className="text-ink-400">{f.label}</span><span className="font-mono text-copper-400">{f.fmt(f.val)}</span></div>
@@ -119,8 +119,8 @@ export default function CalculatorsPage() {
               </div>
             ))}
             <div className="bg-ink-950 rounded-lg p-4 space-y-2 border border-white/5">
-              <div className="flex justify-between text-sm"><span className="text-ink-400">Monthly reward</span><span className="font-mono tabular text-ink-100">₹{Math.round(annualReward/12).toLocaleString('en-IN')}</span></div>
-              <div className="flex justify-between text-sm"><span className="text-ink-400">Annual reward value</span><span className="font-display text-lg text-emerald-400 tabular">₹{Math.round(annualReward).toLocaleString('en-IN')}</span></div>
+              <div className="flex justify-between text-sm"><span className="text-ink-400">Monthly reward</span><span className="font-mono tabular text-ink-100">Rs.{Math.round(annualReward/12).toLocaleString('en-IN')}</span></div>
+              <div className="flex justify-between text-sm"><span className="text-ink-400">Annual reward value</span><span className="font-display text-lg text-emerald-400 tabular">Rs.{Math.round(annualReward).toLocaleString('en-IN')}</span></div>
               <div className="text-xs text-ink-500 mt-2">Use Smart Match for personalised card recommendations.</div>
             </div>
           </div>
@@ -133,7 +133,7 @@ export default function CalculatorsPage() {
             </div>
             <p className="text-sm text-ink-400">How much you pay extra on international transactions.</p>
             {[
-              { label: 'International spend (₹)', val: forexAmt, set: setForexAmt, min: 10000, max: 1000000, step: 10000, fmt: formatINR },
+              { label: 'International spend (Rs.)', val: forexAmt, set: setForexAmt, min: 10000, max: 1000000, step: 10000, fmt: formatINR },
               { label: 'Your card\'s markup', val: markup, set: setMarkup, min: 0, max: 4, step: 0.5, fmt: (v: number) => `${v}%` },
             ].map(f => (
               <div key={f.label}>
@@ -142,8 +142,8 @@ export default function CalculatorsPage() {
               </div>
             ))}
             <div className="bg-ink-950 rounded-lg p-4 space-y-2 border border-white/5">
-              <div className="flex justify-between text-sm"><span className="text-ink-400">Forex charge paid</span><span className="font-display text-lg text-crimson-400 tabular">₹{Math.round(forexCharge).toLocaleString('en-IN')}</span></div>
-              <div className="flex justify-between text-sm"><span className="text-ink-400">Savings vs 1.5% card</span><span className="font-mono tabular text-emerald-400">₹{Math.round(forexSaving).toLocaleString('en-IN')}</span></div>
+              <div className="flex justify-between text-sm"><span className="text-ink-400">Forex charge paid</span><span className="font-display text-lg text-crimson-400 tabular">Rs.{Math.round(forexCharge).toLocaleString('en-IN')}</span></div>
+              <div className="flex justify-between text-sm"><span className="text-ink-400">Savings vs 1.5% card</span><span className="font-mono tabular text-emerald-400">Rs.{Math.round(forexSaving).toLocaleString('en-IN')}</span></div>
               <div className="text-xs text-ink-500 mt-2">YES Marquee and IDFC Wealth have 0% forex markup.</div>
             </div>
           </div>

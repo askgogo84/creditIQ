@@ -121,7 +121,7 @@ export default function AboutPage() {
                 <div>
                   <div className="text-sm text-ink-100">
                     <span className="font-medium">{d.cardName}</span>
-                    {' · '}
+                    {' . '}
                     <span className="text-ink-300">{d.description}</span>
                   </div>
                   <div className="text-[10px] font-mono uppercase tracking-widest text-ink-500 mt-1">

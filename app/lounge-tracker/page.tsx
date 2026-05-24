@@ -6,12 +6,12 @@ import { Header } from '@/components/Header';
 import { SEED_CARDS } from '@/lib/data/seed-cards';
 
 const LOUNGES_BY_AIRPORT = [
-  { airport: 'BOM — Mumbai (CSIA)', terminal: 'T2 International', lounges: ['Plaza Premium', 'Air India Maharaja', 'BIAL Lounge'] },
-  { airport: 'DEL — Delhi (IGI)', terminal: 'T3 International', lounges: ['Plaza Premium', 'Encalm Privé', 'Air India Maharaja'] },
-  { airport: 'BLR — Bangalore (KIA)', terminal: 'T1 & T2', lounges: ['BLR Lounges by Encalm', 'Plaza Premium'] },
-  { airport: 'HYD — Hyderabad (RGIA)', terminal: 'International', lounges: ['GMR Aero Lounge', 'Plaza Premium'] },
-  { airport: 'MAA — Chennai', terminal: 'International', lounges: ['Chennai International Lounge'] },
-  { airport: 'CCU — Kolkata', terminal: 'International', lounges: ['Netaji Subhash Lounge'] },
+  { airport: 'BOM -- Mumbai (CSIA)', terminal: 'T2 International', lounges: ['Plaza Premium', 'Air India Maharaja', 'BIAL Lounge'] },
+  { airport: 'DEL -- Delhi (IGI)', terminal: 'T3 International', lounges: ['Plaza Premium', 'Encalm Privé', 'Air India Maharaja'] },
+  { airport: 'BLR -- Bangalore (KIA)', terminal: 'T1 & T2', lounges: ['BLR Lounges by Encalm', 'Plaza Premium'] },
+  { airport: 'HYD -- Hyderabad (RGIA)', terminal: 'International', lounges: ['GMR Aero Lounge', 'Plaza Premium'] },
+  { airport: 'MAA -- Chennai', terminal: 'International', lounges: ['Chennai International Lounge'] },
+  { airport: 'CCU -- Kolkata', terminal: 'International', lounges: ['Netaji Subhash Lounge'] },
 ];
 
 interface CardLounge {
@@ -215,7 +215,7 @@ export default function LoungeTrackerPage() {
                         />
                         {quarterlySpend[card.cardId] && (
                           <span style={{ marginLeft: 8, fontSize: 12, color: parseInt(quarterlySpend[card.cardId]) >= card.spendRequired! ? '#16a34a' : '#dc2626' }}>
-                            {parseInt(quarterlySpend[card.cardId]) >= card.spendRequired! ? '✓ Lounge unlocked' : `Need Rs.${(card.spendRequired! - parseInt(quarterlySpend[card.cardId])).toLocaleString('en-IN')} more`}
+                            {parseInt(quarterlySpend[card.cardId]) >= card.spendRequired! ? '(ok) Lounge unlocked' : `Need Rs.${(card.spendRequired! - parseInt(quarterlySpend[card.cardId])).toLocaleString('en-IN')} more`}
                           </span>
                         )}
                       </div>

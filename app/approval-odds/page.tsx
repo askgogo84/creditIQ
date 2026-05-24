@@ -149,7 +149,7 @@ export default function ApprovalOddsPage() {
             Know before you apply.
           </h1>
           <p style={{ fontSize: 15, color: 'var(--text-muted, #8888AA)', margin: 0, lineHeight: 1.6 }}>
-            Hard inquiries hurt your CIBIL score. Check your approval odds first — only apply when you're likely to get it.
+            Hard inquiries hurt your CIBIL score. Check your approval odds first -- only apply when you're likely to get it.
           </p>
         </div>
 
@@ -165,7 +165,7 @@ export default function ApprovalOddsPage() {
                 min="300" max="900" placeholder="e.g. 750"
                 style={{ width: '100%', height: 44, padding: '0 14px', background: 'var(--bg-input, #f8fafc)', border: '1px solid var(--border, #e2e8f0)', borderRadius: 10, fontSize: 15, color: 'var(--text, #0f172a)', outline: 'none', boxSizing: 'border-box' as const }} />
               <div style={{ fontSize: 11, color: 'var(--text-muted, #8888AA)', marginTop: 4 }}>
-                {parseInt(cibil) >= 750 ? '✓ Excellent' : parseInt(cibil) >= 700 ? '~ Good' : '✗ Needs work'}
+                {parseInt(cibil) >= 750 ? '(ok) Excellent' : parseInt(cibil) >= 700 ? '~ Good' : '(x) Needs work'}
               </div>
             </div>
 
@@ -209,7 +209,7 @@ export default function ApprovalOddsPage() {
             border: 'none', borderRadius: 14, fontSize: 15, fontWeight: 800,
             cursor: loading ? 'not-allowed' : 'pointer',
           }}>
-            {loading ? 'Calculating odds...' : 'Check My Approval Odds →'}
+            {loading ? 'Calculating odds...' : 'Check My Approval Odds ->'}
           </button>
         </div>
 
@@ -218,18 +218,18 @@ export default function ApprovalOddsPage() {
           <>
             {/* Summary */}
             <div style={{ background: 'linear-gradient(135deg, #1B3A5C, #0d2240)', borderRadius: 16, padding: '20px 24px', marginBottom: 24, border: '1px solid rgba(201,151,46,0.2)' }}>
-              <div style={{ fontSize: 13, color: 'rgba(255,255,255,0.5)', marginBottom: 4 }}>Based on CIBIL {cibil} · Rs.{parseInt(income).toLocaleString('en-IN')}/mo · {employment}</div>
+              <div style={{ fontSize: 13, color: 'rgba(255,255,255,0.5)', marginBottom: 4 }}>Based on CIBIL {cibil} . Rs.{parseInt(income).toLocaleString('en-IN')}/mo . {employment}</div>
               <div style={{ fontSize: 20, fontWeight: 800, color: '#fff' }}>
                 {topCards.length} cards with {'>'}65% approval odds
               </div>
               <div style={{ fontSize: 13, color: 'rgba(255,255,255,0.5)', marginTop: 4 }}>
-                Sorted by approval probability — apply to top cards only to protect your CIBIL score
+                Sorted by approval probability -- apply to top cards only to protect your CIBIL score
               </div>
             </div>
 
             {/* Top recommended */}
             <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-muted, #8888AA)', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 12 }}>
-              Recommended — high approval odds
+              Recommended -- high approval odds
             </div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 24 }}>
               {topCards.map((card, i) => {
@@ -253,11 +253,11 @@ export default function ApprovalOddsPage() {
                           </div>
                           <div>
                             <div style={{ fontSize: 14, fontWeight: 700, color: 'var(--text, #0f172a)' }}>{card.cardName}</div>
-                            <div style={{ fontSize: 12, color: 'var(--text-muted, #8888AA)' }}>{card.bank} · {card.annualFee === 0 ? 'Free' : `Rs.${card.annualFee.toLocaleString('en-IN')}/yr`}</div>
+                            <div style={{ fontSize: 12, color: 'var(--text-muted, #8888AA)' }}>{card.bank} . {card.annualFee === 0 ? 'Free' : `Rs.${card.annualFee.toLocaleString('en-IN')}/yr`}</div>
                           </div>
                         </div>
                         {card.reasons.slice(0, 2).map((r, j) => (
-                          <div key={j} style={{ fontSize: 12, color: card.gradeColor, marginBottom: 2 }}>✓ {r}</div>
+                          <div key={j} style={{ fontSize: 12, color: card.gradeColor, marginBottom: 2 }}>(ok) {r}</div>
                         ))}
                       </div>
                       <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
@@ -277,7 +277,7 @@ export default function ApprovalOddsPage() {
                         <Link href={`/cards/${card.cardId}`} style={{
                           display: 'block', textAlign: 'center' as const, padding: '8px',
                           color: 'var(--text-muted, #8888AA)', fontSize: 12, textDecoration: 'none',
-                        }}>View full review →</Link>
+                        }}>View full review -></Link>
                       </div>
                     </div>
                   </div>

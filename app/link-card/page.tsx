@@ -90,7 +90,7 @@ export default function LinkCardPage() {
               <div key={i} className="flex items-center gap-1 flex-1">
                 <div className="flex items-center gap-2 shrink-0">
                   <div className="w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold transition-all" style={{ background: i < stepIndex ? 'var(--emerald)' : i === stepIndex ? 'var(--accent)' : 'var(--border)', color: i <= stepIndex ? 'white' : 'var(--text-dim)' }}>
-                    {i < stepIndex ? '✓' : i + 1}
+                    {i < stepIndex ? '(ok)' : i + 1}
                   </div>
                   <span className="text-xs hidden sm:block" style={{ color: i === stepIndex ? 'var(--text)' : 'var(--text-dim)' }}>{s}</span>
                 </div>
@@ -106,7 +106,7 @@ export default function LinkCardPage() {
               <p className="mb-2" style={{ color: 'var(--text-muted)' }}>Select your bank to securely connect via the RBI Account Aggregator framework.</p>
               <div className="flex items-center gap-2 mb-8 text-sm" style={{ color: 'var(--emerald)' }}>
                 <Shield className="w-4 h-4 shrink-0" />
-                <span>Bank-grade security · Read-only access · Revoke anytime from your bank app</span>
+                <span>Bank-grade security . Read-only access . Revoke anytime from your bank app</span>
               </div>
               <div className="grid grid-cols-2 gap-3 mb-8">
                 {SUPPORTED_BANKS.map(bank => (
@@ -126,7 +126,7 @@ export default function LinkCardPage() {
                 <div className="flex items-start gap-3">
                   <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" style={{ color: 'var(--text-dim)' }} />
                   <p className="text-xs leading-relaxed" style={{ color: 'var(--text-muted)' }}>
-                    <strong style={{ color: 'var(--text)' }}>Powered by RBI Account Aggregator (AA).</strong> Your bank sends data directly to CreditIQ — we never see your credentials, OTPs, or passwords. You authorise once from your bank app. Revoke access anytime.
+                    <strong style={{ color: 'var(--text)' }}>Powered by RBI Account Aggregator (AA).</strong> Your bank sends data directly to CreditIQ -- we never see your credentials, OTPs, or passwords. You authorise once from your bank app. Revoke access anytime.
                   </p>
                 </div>
               </div>
@@ -136,7 +136,7 @@ export default function LinkCardPage() {
           {/* STEP 2: Mobile number */}
           {step === 'mobile' && selectedBank && (
             <div>
-              <button onClick={() => setStep('select-bank')} className="text-sm mb-6 flex items-center gap-1" style={{ color: 'var(--text-dim)' }}>← Back</button>
+              <button onClick={() => setStep('select-bank')} className="text-sm mb-6 flex items-center gap-1" style={{ color: 'var(--text-dim)' }}><- Back</button>
               <div className="flex items-center gap-3 mb-6">
                 <div className="w-12 h-12 rounded-xl flex items-center justify-center text-white font-bold" style={{ background: selectedBank.color }}>{selectedBank.id.slice(0, 2).toUpperCase()}</div>
                 <div>
@@ -171,11 +171,11 @@ export default function LinkCardPage() {
           {/* STEP 3: Consent */}
           {step === 'consent' && selectedBank && (
             <div>
-              <button onClick={() => setStep('mobile')} className="text-sm mb-6 flex items-center gap-1" style={{ color: 'var(--text-dim)' }}>← Back</button>
+              <button onClick={() => setStep('mobile')} className="text-sm mb-6 flex items-center gap-1" style={{ color: 'var(--text-dim)' }}><- Back</button>
               <h1 className="font-display text-3xl mb-3" style={{ color: 'var(--text)' }}>Authorise {selectedBank.name}</h1>
               {isDemo && (
                 <div className="rounded-lg p-3 mb-4 text-xs" style={{ background: 'color-mix(in srgb, var(--accent) 10%, transparent)', border: '1px solid color-mix(in srgb, var(--accent) 25%, transparent)', color: 'var(--accent)' }}>
-                  Demo mode — using simulated data. Finvu API keys not yet configured.
+                  Demo mode -- using simulated data. Finvu API keys not yet configured.
                 </div>
               )}
               <p className="mb-8" style={{ color: 'var(--text-muted)' }}>

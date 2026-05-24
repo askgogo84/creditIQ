@@ -46,7 +46,7 @@ export function CardDetailClient({ card }: { card: CreditCard }) {
           <div className="grid lg:grid-cols-[1fr,1.1fr] gap-12 items-start">
             <div>
               <div className="text-xs font-mono uppercase tracking-widest text-copper-400 mb-3">
-                {card.bank} · {card.tier.replace('-', ' ')} tier
+                {card.bank} . {card.tier.replace('-', ' ')} tier
               </div>
               <h1 className="font-display text-5xl md:text-6xl text-ink-50 leading-[0.95] mb-4">
                 {card.name}
@@ -57,7 +57,7 @@ export function CardDetailClient({ card }: { card: CreditCard }) {
                 <Metric label="Joining fee" value={card.joining_fee_inr === 0 ? 'FREE' : formatINR(card.joining_fee_inr)} />
                 <Metric label="Annual fee" value={card.annual_fee_inr === 0 ? 'FREE' : formatINR(card.annual_fee_inr)} />
                 <Metric label="Base rate" value={`${card.base_reward_rate}%`} highlight />
-                <Metric label="Expert rating" value={`${card.expert_rating?.toFixed(1) ?? '—'}/10`} highlight />
+                <Metric label="Expert rating" value={`${card.expert_rating?.toFixed(1) ?? '--'}/10`} highlight />
               </div>
 
               <div className="flex gap-3">
@@ -91,7 +91,7 @@ export function CardDetailClient({ card }: { card: CreditCard }) {
       {/* Real Annual Value calculator */}
       <section className="py-16 bg-ink-900/40 border-y border-white/5">
         <div className="max-w-7xl mx-auto px-6">
-          <div className="divider-rule mb-6 max-w-xs">— Real annual value</div>
+          <div className="divider-rule mb-6 max-w-xs">-- Real annual value</div>
           <h2 className="font-display text-3xl md:text-4xl text-ink-50 mb-8 max-w-2xl">
             What's it actually worth{' '}
             <span className="display-italic text-copper-400">for you</span>?
@@ -161,7 +161,7 @@ export function CardDetailClient({ card }: { card: CreditCard }) {
                         v < 0 ? 'text-crimson-400' : 'text-emerald-300'
                       }`}
                     >
-                      {v < 0 ? '' : '+'}₹{Math.abs(v).toLocaleString('en-IN')}
+                      {v < 0 ? '' : '+'}Rs.{Math.abs(v).toLocaleString('en-IN')}
                     </span>
                   </div>
                 ))}
@@ -175,7 +175,7 @@ export function CardDetailClient({ card }: { card: CreditCard }) {
       <section className="py-16">
         <div className="max-w-7xl mx-auto px-6 grid md:grid-cols-2 gap-8">
           <div>
-            <div className="divider-rule mb-4 max-w-xs">— Highlights</div>
+            <div className="divider-rule mb-4 max-w-xs">-- Highlights</div>
             <ul className="space-y-3">
               {card.highlights.map((h, i) => (
                 <li key={i} className="flex items-start gap-3 text-sm text-ink-100">
@@ -187,7 +187,7 @@ export function CardDetailClient({ card }: { card: CreditCard }) {
           </div>
           {card.drawbacks && card.drawbacks.length > 0 && (
             <div>
-              <div className="divider-rule mb-4 max-w-xs">— Drawbacks</div>
+              <div className="divider-rule mb-4 max-w-xs">-- Drawbacks</div>
               <ul className="space-y-3">
                 {card.drawbacks.map((d, i) => (
                   <li key={i} className="flex items-start gap-3 text-sm text-ink-100">
@@ -204,7 +204,7 @@ export function CardDetailClient({ card }: { card: CreditCard }) {
       {/* Redemption table */}
       <section className="py-16 bg-ink-900/40 border-y border-white/5">
         <div className="max-w-7xl mx-auto px-6">
-          <div className="divider-rule mb-4 max-w-xs">— Redemption paths</div>
+          <div className="divider-rule mb-4 max-w-xs">-- Redemption paths</div>
           <h2 className="font-display text-3xl text-ink-50 mb-8">
             Every way to spend your {card.reward_currency.replace('-', ' ')}
           </h2>
@@ -231,7 +231,7 @@ export function CardDetailClient({ card }: { card: CreditCard }) {
                     </div>
                     <div className="text-right">
                       <div className="font-display text-lg text-emerald-300 tabular">
-                        ₹{r.value_per_point_inr.toFixed(2)}
+                        Rs.{r.value_per_point_inr.toFixed(2)}
                       </div>
                       <div className="text-[10px] font-mono text-ink-500 uppercase tracking-widest">
                         per point
@@ -246,7 +246,7 @@ export function CardDetailClient({ card }: { card: CreditCard }) {
             href={`/optimize?card=${card.id}`}
             className="mt-8 btn-primary inline-flex items-center gap-2"
           >
-            Optimize my balance →
+            Optimize my balance ->
           </Link>
         </div>
       </section>
@@ -255,7 +255,7 @@ export function CardDetailClient({ card }: { card: CreditCard }) {
       {card.category_rewards.length > 0 && (
         <section className="py-16">
           <div className="max-w-7xl mx-auto px-6">
-            <div className="divider-rule mb-4 max-w-xs">— Reward rates</div>
+            <div className="divider-rule mb-4 max-w-xs">-- Reward rates</div>
             <h2 className="font-display text-3xl text-ink-50 mb-8">Earn by category</h2>
             <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
               {card.category_rewards.map((cr, i) => (
@@ -290,10 +290,10 @@ export function CardDetailClient({ card }: { card: CreditCard }) {
           <div className="max-w-7xl mx-auto px-6">
             <div className="flex items-center gap-3 mb-4">
               <TrendingUp className="w-5 h-5 text-crimson-400 rotate-180" />
-              <div className="divider-rule max-w-xs">— Devaluation history</div>
+              <div className="divider-rule max-w-xs">-- Devaluation history</div>
             </div>
             <h2 className="font-display text-3xl text-ink-50 mb-8">
-              <span className="display-italic text-crimson-400">Beware</span> — this card has been devalued.
+              <span className="display-italic text-crimson-400">Beware</span> -- this card has been devalued.
             </h2>
             <div className="space-y-3">
               {card.devaluations.map((d, i) => (

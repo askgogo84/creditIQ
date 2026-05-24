@@ -8,18 +8,18 @@ import { Upload, FileText, CheckCircle, AlertCircle, Zap, ArrowRight, Lock, X, E
 import Link from 'next/link';
 
 const BANKS = [
-  { id: 'HDFC',  name: 'HDFC Bank',        color: '#004C8F', pwdHint: 'First 4 letters of name + DOB DDMM → e.g. GOVE0305' },
-  { id: 'Axis',  name: 'Axis Bank',         color: '#97144D', pwdHint: 'PAN card number → e.g. ABCDE1234F' },
-  { id: 'AmEx',  name: 'American Express',  color: '#006FCF', pwdHint: 'Date of birth DDMMYYYY → e.g. 03051985' },
-  { id: 'ICICI', name: 'ICICI Bank',        color: '#F58220', pwdHint: 'Date of birth DDMMYYYY → e.g. 03051985' },
-  { id: 'SBI',   name: 'SBI Card',          color: '#2C4C9C', pwdHint: 'Date of birth DDMMYYYY → e.g. 03051985' },
-  { id: 'Kotak', name: 'Kotak Bank',        color: '#EF3E23', pwdHint: 'Date of birth DDMMYYYY → e.g. 03051985' },
+  { id: 'HDFC',  name: 'HDFC Bank',        color: '#004C8F', pwdHint: 'First 4 letters of name + DOB DDMM -> e.g. GOVE0305' },
+  { id: 'Axis',  name: 'Axis Bank',         color: '#97144D', pwdHint: 'PAN card number -> e.g. ABCDE1234F' },
+  { id: 'AmEx',  name: 'American Express',  color: '#006FCF', pwdHint: 'Date of birth DDMMYYYY -> e.g. 03051985' },
+  { id: 'ICICI', name: 'ICICI Bank',        color: '#F58220', pwdHint: 'Date of birth DDMMYYYY -> e.g. 03051985' },
+  { id: 'SBI',   name: 'SBI Card',          color: '#2C4C9C', pwdHint: 'Date of birth DDMMYYYY -> e.g. 03051985' },
+  { id: 'Kotak', name: 'Kotak Bank',        color: '#EF3E23', pwdHint: 'Date of birth DDMMYYYY -> e.g. 03051985' },
   { id: 'IDFC',  name: 'IDFC FIRST Bank',   color: '#9B0C2C', pwdHint: 'Registered mobile number' },
-  { id: 'Yes',   name: 'YES Bank',          color: '#0C2461', pwdHint: 'Date of birth DDMMYYYY → e.g. 03051985' },
-  { id: 'RBL',   name: 'RBL Bank',          color: '#1D4ED8', pwdHint: 'Date of birth DDMMYYYY → e.g. 03051985' },
-  { id: 'IndusInd', name: 'IndusInd Bank',  color: '#312E81', pwdHint: 'Date of birth DDMMYYYY → e.g. 03051985' },
-  { id: 'SC',    name: 'Standard Chartered',color: '#0473EA', pwdHint: 'Date of birth DDMMYYYY → e.g. 03051985' },
-  { id: 'AU',    name: 'AU Small Finance',  color: '#7C2D12', pwdHint: 'Date of birth DDMMYYYY → e.g. 03051985' },
+  { id: 'Yes',   name: 'YES Bank',          color: '#0C2461', pwdHint: 'Date of birth DDMMYYYY -> e.g. 03051985' },
+  { id: 'RBL',   name: 'RBL Bank',          color: '#1D4ED8', pwdHint: 'Date of birth DDMMYYYY -> e.g. 03051985' },
+  { id: 'IndusInd', name: 'IndusInd Bank',  color: '#312E81', pwdHint: 'Date of birth DDMMYYYY -> e.g. 03051985' },
+  { id: 'SC',    name: 'Standard Chartered',color: '#0473EA', pwdHint: 'Date of birth DDMMYYYY -> e.g. 03051985' },
+  { id: 'AU',    name: 'AU Small Finance',  color: '#7C2D12', pwdHint: 'Date of birth DDMMYYYY -> e.g. 03051985' },
 ];
 
 export default function UploadStatementPage() {
@@ -53,7 +53,7 @@ export default function UploadStatementPage() {
   }, []);
 
   const handleFile = (f: File) => {
-    if (f.size > 10 * 1024 * 1024) { setError('File too large — max 10MB'); return; }
+    if (f.size > 10 * 1024 * 1024) { setError('File too large -- max 10MB'); return; }
     setFile(f); setError(''); setResult(null); setNeedsPassword(false);
   };
 
@@ -109,7 +109,7 @@ export default function UploadStatementPage() {
             Upload your <em className="not-italic" style={{ color: 'var(--accent)' }}>statement</em>
           </h1>
           <p className="text-lg mb-4" style={{ color: 'var(--text-muted)' }}>
-            Download your monthly PDF from your bank app. Upload here. Points saved to your account — never upload again.
+            Download your monthly PDF from your bank app. Upload here. Points saved to your account -- never upload again.
           </p>
 
           {/* Login nudge if not logged in */}
@@ -119,7 +119,7 @@ export default function UploadStatementPage() {
               <div>
                 <p className="text-sm font-medium mb-1" style={{ color: 'var(--text)' }}>Sign in to save your points</p>
                 <p className="text-xs mb-2" style={{ color: 'var(--text-muted)' }}>You can upload without signing in but points won't be saved to your dashboard.</p>
-                <Link href="/login" className="text-xs font-medium" style={{ color: 'var(--accent)' }}>Sign in with Google →</Link>
+                <Link href="/login" className="text-xs font-medium" style={{ color: 'var(--accent)' }}>Sign in with Google -></Link>
               </div>
             </div>
           )}
@@ -131,7 +131,7 @@ export default function UploadStatementPage() {
                 <CheckCircle className="w-4 h-4" style={{ color: 'var(--emerald)' }} />
                 <span className="text-sm" style={{ color: 'var(--text)' }}>{savedCount} card{savedCount !== 1 ? 's' : ''} already saved to your dashboard</span>
               </div>
-              <Link href="/dashboard" className="text-xs" style={{ color: 'var(--accent)' }}>View dashboard →</Link>
+              <Link href="/dashboard" className="text-xs" style={{ color: 'var(--accent)' }}>View dashboard -></Link>
             </div>
           )}
 
@@ -184,7 +184,7 @@ export default function UploadStatementPage() {
                     <div>
                       <Upload className="w-6 h-6 mx-auto mb-3" style={{ color: 'var(--text-dim)' }} />
                       <p className="text-sm font-medium mb-1" style={{ color: 'var(--text)' }}>Drop PDF here or tap to browse</p>
-                      <p className="text-xs" style={{ color: 'var(--text-dim)' }}>Must be unlocked (password removed) · Max 10MB</p>
+                      <p className="text-xs" style={{ color: 'var(--text-dim)' }}>Must be unlocked (password removed) . Max 10MB</p>
                     </div>
                   )}
                 </div>
@@ -222,7 +222,7 @@ export default function UploadStatementPage() {
                   </div>
                   <div>
                     <h3 className="font-display text-xl mb-1" style={{ color: 'var(--text)' }}>PDF is password protected</h3>
-                    <p className="text-sm" style={{ color: 'var(--text-muted)' }}>Remove the password first using ilovepdf — takes 30 seconds.</p>
+                    <p className="text-sm" style={{ color: 'var(--text-muted)' }}>Remove the password first using ilovepdf -- takes 30 seconds.</p>
                   </div>
                 </div>
 
@@ -236,7 +236,7 @@ export default function UploadStatementPage() {
                 <div className="space-y-3 mb-5">
                   {[
                     'Open your statement PDF and note the password (format above)',
-                    'Go to ilovepdf.com/unlock_pdf — free, no account needed',
+                    'Go to ilovepdf.com/unlock_pdf -- free, no account needed',
                     'Upload your PDF, enter the password, click Unlock PDF',
                     'Download the unlocked PDF and upload it here',
                   ].map((s, i) => (
@@ -253,7 +253,7 @@ export default function UploadStatementPage() {
                 </a>
               </div>
               <button onClick={() => { setNeedsPassword(false); setFile(null); }} className="btn-ghost w-full text-sm">
-                ← Upload a different file
+                <- Upload a different file
               </button>
             </div>
           )}
@@ -267,10 +267,10 @@ export default function UploadStatementPage() {
                   <div>
                     <div className="font-medium" style={{ color: 'var(--text)' }}>
                       {result.customer_name ? `${result.customer_name}'s ` : ''}{result.bank || selectedBank?.name}
-                      {userId && <span className="text-xs ml-2 px-2 py-0.5 rounded-full" style={{ background: 'color-mix(in srgb, var(--emerald) 15%, transparent)', color: 'var(--emerald)' }}>Saved ✓</span>}
+                      {userId && <span className="text-xs ml-2 px-2 py-0.5 rounded-full" style={{ background: 'color-mix(in srgb, var(--emerald) 15%, transparent)', color: 'var(--emerald)' }}>Saved (ok)</span>}
                     </div>
                     <div className="text-xs" style={{ color: 'var(--text-dim)' }}>
-                      {result.card_name}{result.card_last4 ? ` · ••••${result.card_last4}` : ''} · {result.confidence} confidence
+                      {result.card_name}{result.card_last4 ? ` . ••••${result.card_last4}` : ''} . {result.confidence} confidence
                     </div>
                   </div>
                 </div>

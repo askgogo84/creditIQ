@@ -4,7 +4,7 @@ import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
   title: 'Privacy Policy | CreditIQ',
-  description: 'CreditIQ privacy policy — how we collect, use, and protect your data. DPDP Act 2023 compliant.',
+  description: 'CreditIQ privacy policy -- how we collect, use, and protect your data. DPDP Act 2023 compliant.',
 };
 
 const LAST_UPDATED = 'May 20, 2026';
@@ -47,10 +47,10 @@ SMS data (if you use SMS import): Raw SMS content is processed to extract points
                 title: '3. How we use your data',
                 content: `We use your data for the following purposes only:
 
-— To provide the CreditIQ service (card comparison, points tracking, devaluation alerts)
-— To send devaluation alerts you have explicitly subscribed to
-— To improve our card recommendation algorithms (anonymised, aggregated)
-— To comply with legal obligations
+-- To provide the CreditIQ service (card comparison, points tracking, devaluation alerts)
+-- To send devaluation alerts you have explicitly subscribed to
+-- To improve our card recommendation algorithms (anonymised, aggregated)
+-- To comply with legal obligations
 
 We do not use your data for advertising profiling. We do not sell your data to any third party. We do not share your data with banks or card issuers without your explicit consent.`
               },
@@ -82,12 +82,12 @@ We do not share data with any other party. We do not use Google Analytics, Faceb
                 title: '6. Your rights (DPDP Act 2023)',
                 content: `Under India's Digital Personal Data Protection Act 2023, you have the right to:
 
-— Access your personal data held by us
-— Correct inaccurate personal data
-— Erase your personal data (right to be forgotten)
-— Withdraw consent for data processing
-— Nominate a person to exercise your rights on your behalf
-— Raise a grievance with the Data Protection Board of India
+-- Access your personal data held by us
+-- Correct inaccurate personal data
+-- Erase your personal data (right to be forgotten)
+-- Withdraw consent for data processing
+-- Nominate a person to exercise your rights on your behalf
+-- Raise a grievance with the Data Protection Board of India
 
 To exercise any right, email privacy@creditiq.app or WhatsApp +91 83104 41698. We will respond within 72 hours.
 
@@ -109,12 +109,12 @@ We do not retain data beyond these periods.`
                 title: '8. Security',
                 content: `We protect your data using:
 
-— AES-256 encryption at rest for all stored data
-— TLS 1.3 encryption in transit
-— Row-level security (RLS) on all database tables
-— No storage of card credentials, PINs, or sensitive authentication data
-— Regular security audits via Sentry error monitoring
-— Access controls — only the founding team can access production data
+-- AES-256 encryption at rest for all stored data
+-- TLS 1.3 encryption in transit
+-- Row-level security (RLS) on all database tables
+-- No storage of card credentials, PINs, or sensitive authentication data
+-- Regular security audits via Sentry error monitoring
+-- Access controls -- only the founding team can access production data
 
 We hold SOC 2 alignment and are working toward full certification.`
               },

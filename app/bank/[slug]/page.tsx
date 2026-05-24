@@ -29,8 +29,8 @@ export async function generateStaticParams() {
 
 export async function generateMetadata({ params }: { params: { slug: string } }) {
   const bank = BANK_INFO[params.slug];
-  if (!bank) return { title: 'Bank not found · CardIQ' };
-  return { title: `${bank.name} Credit Cards · CardIQ`, description: bank.desc };
+  if (!bank) return { title: 'Bank not found . CardIQ' };
+  return { title: `${bank.name} Credit Cards . CardIQ`, description: bank.desc };
 }
 
 export default function BankPage({ params }: { params: { slug: string } }) {
@@ -75,7 +75,7 @@ export default function BankPage({ params }: { params: { slug: string } }) {
       </section>
       <section className="pb-24">
         <div className="max-w-7xl mx-auto px-4 sm:px-6">
-          <div className="divider-rule mb-8 max-w-xs">— {cards.length} cards tracked</div>
+          <div className="divider-rule mb-8 max-w-xs">-- {cards.length} cards tracked</div>
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
             {cards.map((card, i) => <CardTile key={card.id} card={card} rank={i + 1} />)}
           </div>

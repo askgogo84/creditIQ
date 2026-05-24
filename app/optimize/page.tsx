@@ -324,7 +324,7 @@ function OptimizeContent() {
                             </div>
                             <div className="text-[11px] text-ink-400 truncate">
                               {r.option.best_for ?? r.option.notes ?? `${r.option.type} redemption`}
-                              {' · '}
+                              {' . '}
                               <span className="font-mono">Rs.{r.option.value_per_point_inr.toFixed(2)}/pt</span>
                             </div>
                           </div>

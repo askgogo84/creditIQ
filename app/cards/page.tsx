@@ -7,7 +7,7 @@ import { SEED_CARDS }     from '@/lib/data/seed-cards';
 import { CardsClient }    from './CardsClient';
 
 export const metadata: Metadata = {
-  title: 'All Credit Cards in India 2026 — Compare 93 Cards | CreditIQ',
+  title: 'All Credit Cards in India 2026 -- Compare 93 Cards | CreditIQ',
   description: 'Compare all 93 credit cards in India. HDFC, Axis, SBI, ICICI, Amex, IDFC First and more. Honest reviews, real fees, no affiliate bias. Find the best card for your spends.',
   keywords: 'credit cards India 2026, best credit card India, HDFC credit card, Axis credit card, SBI credit card, compare credit cards India',
   alternates: { canonical: 'https://creditiq.app/cards' },
@@ -37,9 +37,9 @@ export default function CardsIndexPage() {
 
           <div className="shell" style={{ position: 'relative', zIndex: 2, paddingBottom: 8 }}>
             <SectionHeader
-              label={`THE FULL CATALOG · ${totalCards} CARDS · ${banks.length} BANKS`}
+              label={`THE FULL CATALOG . ${totalCards} CARDS . ${banks.length} BANKS`}
               title={<>Every card in India, <span className="serif" style={{ color: 'var(--copper)' }}>ranked honestly</span>.</>}
-              subtitle="Real annual value, live devaluation tracking and IQ scores for all 93 cards. No affiliate bias — no bank pays us to move a card up the list." />
+              subtitle="Real annual value, live devaluation tracking and IQ scores for all 93 cards. No affiliate bias -- no bank pays us to move a card up the list." />
 
             <div style={{ marginTop: 'clamp(28px, 4vw, 40px)', display: 'flex', gap: 14, flexWrap: 'wrap' }} className="stack-mobile">
               <CopperCTA href="/smart-match">Find my perfect card</CopperCTA>
@@ -67,7 +67,7 @@ export default function CardsIndexPage() {
                 fontSize: 'clamp(36px, 5vw, 64px)', letterSpacing: '-0.035em', lineHeight: 1.04,
                 fontWeight: 800,
               }}>
-                Tell us how you spend — we&apos;ll do the{' '}
+                Tell us how you spend -- we&apos;ll do the{' '}
                 <span className="shimmer-text">maths</span>.
               </h2>
               <p style={{

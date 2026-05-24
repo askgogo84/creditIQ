@@ -60,7 +60,7 @@ export default function SmartMatchPage() {
 
         <div className="max-w-7xl mx-auto px-6">
           <div className="max-w-3xl mb-12">
-            <div className="divider-rule mb-6 max-w-xs">— Smart Match</div>
+            <div className="divider-rule mb-6 max-w-xs">-- Smart Match</div>
             <h1 className="font-display text-5xl md:text-6xl leading-[1.05] text-ink-50">
               Tell us how you{' '}
               <span className="display-italic text-copper-400">spend</span>.

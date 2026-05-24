@@ -22,9 +22,9 @@ function parseMarkdown(text: string): string {
 
 const SUGGESTIONS = [
   'Best way to use 52,164 HDFC points for Singapore?',
-  'Axis Magnus lounge access — how many visits per year?',
+  'Axis Magnus lounge access -- how many visits per year?',
   'Which card gives best forex rates for international travel?',
-  'Transfer HDFC points to KrisFlyer or Avios — which is better?',
+  'Transfer HDFC points to KrisFlyer or Avios -- which is better?',
 ];
 
 export default function TravelPage() {
@@ -75,7 +75,7 @@ export default function TravelPage() {
       {/* Page wrapper */}
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column', maxWidth: 700, width: '100%', margin: '0 auto', padding: '0 16px' }}>
 
-        {/* Hero — only when empty */}
+        {/* Hero -- only when empty */}
         {empty && (
           <div style={{ padding: '36px 0 24px', textAlign: 'center' }}>
             <div style={{

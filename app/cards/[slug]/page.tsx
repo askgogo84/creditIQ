@@ -17,11 +17,11 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const card = SEED_CARDS.find(c => c.id === params.slug);
   if (!card) return {};
   return {
-    title: `${card.name} Review 2026 — Fees, Rewards & Benefits | CreditIQ`,
-    description: `Unbiased ${card.name} review. Annual fee: Rs.${(card as any).annual_fee_inr ?? 0}. Reward rate, lounge access, joining benefits, who should apply — honest analysis with no affiliate bias.`,
+    title: `${card.name} Review 2026 -- Fees, Rewards & Benefits | CreditIQ`,
+    description: `Unbiased ${card.name} review. Annual fee: Rs.${(card as any).annual_fee_inr ?? 0}. Reward rate, lounge access, joining benefits, who should apply -- honest analysis with no affiliate bias.`,
     keywords: `${card.name}, ${card.name} review, ${card.name} benefits, ${card.name} annual fee, ${card.bank} credit card, best credit card India 2026`,
     openGraph: {
-      title: `${card.name} — Honest Review 2026`,
+      title: `${card.name} -- Honest Review 2026`,
       description: `Reward rate, fees, benefits and who should apply for ${card.name}. No affiliate bias.`,
       url: `https://creditiq.app/cards/${card.id}`,
     },
@@ -133,7 +133,7 @@ export default function CardDetailPage({ params }: Props) {
 
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 320px', gap: 24, alignItems: 'start' }}>
 
-            {/* Left — main content */}
+            {/* Left -- main content */}
             <div>
 
               {/* Quick verdict */}
@@ -180,7 +180,7 @@ export default function CardDetailPage({ params }: Props) {
                   { label: 'Interest Rate', value: `${(card as any).apr_percent ?? 40}% per annum (3.33% per month)` },
                   { label: 'Forex Markup', value: (card as any).forex_markup ?? '3.5% on international transactions' },
                   { label: 'Cash Advance', value: '2.5% of amount (min Rs. 500)' },
-                  { label: 'Late Payment', value: 'Rs. 0 – Rs. 1,300 (based on outstanding)' },
+                  { label: 'Late Payment', value: 'Rs. 0 - Rs. 1,300 (based on outstanding)' },
                 ].map((row, i) => (
                   <div key={i} style={{
                     display: 'flex', justifyContent: 'space-between', alignItems: 'center',
@@ -240,7 +240,7 @@ export default function CardDetailPage({ params }: Props) {
                   {
                     '@type': 'Question',
                     name: `What is the annual fee of ${card.name}?`,
-                    acceptedAnswer: { '@type': 'Answer', text: annualFee === 0 ? `${card.name} has no annual fee — it is a lifetime free credit card.` : `The annual fee for ${card.name} is Rs.${annualFee} + GST.` }
+                    acceptedAnswer: { '@type': 'Answer', text: annualFee === 0 ? `${card.name} has no annual fee -- it is a lifetime free credit card.` : `The annual fee for ${card.name} is Rs.${annualFee} + GST.` }
                   },
                   {
                     '@type': 'Question',
@@ -285,7 +285,7 @@ export default function CardDetailPage({ params }: Props) {
 
             </div>
 
-            {/* Right sidebar — sticky apply box */}
+            {/* Right sidebar -- sticky apply box */}
             <div style={{ position: 'sticky', top: 88 }}>
               <div style={{
                 backgroundColor: '#fff', borderRadius: 16, border: '2px solid #C9972E',
@@ -296,7 +296,7 @@ export default function CardDetailPage({ params }: Props) {
                   Applying via CreditIQ
                 </div>
                 <div style={{ fontSize: 13, color: '#64748b', marginBottom: 20, lineHeight: 1.5 }}>
-                  Zero affiliate bias. We show all cards equally — ranked by value, not commission.
+                  Zero affiliate bias. We show all cards equally -- ranked by value, not commission.
                 </div>
                 <a href={applyUrl} target="_blank" rel="noopener noreferrer" style={{
                   display: 'block', backgroundColor: '#C9972E', color: '#fff',
@@ -351,7 +351,7 @@ export default function CardDetailPage({ params }: Props) {
             </div>
           </div>
 
-          {/* Internal linking — category pages */}
+          {/* Internal linking -- category pages */}
           <div style={{ backgroundColor: '#1B3A5C', borderRadius: 16, padding: '24px', marginTop: 8 }}>
             <div style={{ fontSize: 13, fontWeight: 700, color: '#C9972E', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 14 }}>
               Explore more

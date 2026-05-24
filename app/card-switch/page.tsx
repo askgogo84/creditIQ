@@ -39,7 +39,7 @@ interface Recommendation {
   monthlySaving?: number;
 }
 
-/* shared style tokens — same design system as /approval-odds */
+/* shared style tokens -- same design system as /approval-odds */
 const CARD: CSSProperties = {
   background: 'var(--bg-card, #fff)',
   border: '1px solid var(--border, #e2e8f0)',
@@ -155,7 +155,7 @@ export default function CardSwitchPage() {
           ))}
         </div>
 
-        {/* Step 1 — Current card */}
+        {/* Step 1 -- Current card */}
         {step === 'current' && (
           <div style={CARD}>
             <h2 style={{ fontSize: 18, fontWeight: 800, color: 'var(--text, #0f172a)', margin: '0 0 6px' }}>
@@ -171,7 +171,7 @@ export default function CardSwitchPage() {
             >
               <option value="" style={{ background: 'var(--bg-input, #f8fafc)', color: 'var(--text, #0f172a)' }}>Select your card...</option>
               {CARD_OPTIONS.map(c => (
-                <option key={c.id} value={c.id} style={{ background: 'var(--bg-input, #f8fafc)', color: 'var(--text, #0f172a)' }}>{c.name} — {c.bank}</option>
+                <option key={c.id} value={c.id} style={{ background: 'var(--bg-input, #f8fafc)', color: 'var(--text, #0f172a)' }}>{c.name} -- {c.bank}</option>
               ))}
             </select>
 
@@ -203,12 +203,12 @@ export default function CardSwitchPage() {
                 cursor: currentCardId ? 'pointer' : 'not-allowed',
               }}
             >
-              Continue →
+              Continue ->
             </button>
           </div>
         )}
 
-        {/* Step 2 — Reasons */}
+        {/* Step 2 -- Reasons */}
         {step === 'reason' && (
           <div style={CARD}>
             <h2 style={{ fontSize: 18, fontWeight: 800, color: 'var(--text, #0f172a)', margin: '0 0 6px' }}>
@@ -251,13 +251,13 @@ export default function CardSwitchPage() {
                   cursor: selectedReasons.length > 0 ? 'pointer' : 'not-allowed',
                 }}
               >
-                Continue →
+                Continue ->
               </button>
             </div>
           </div>
         )}
 
-        {/* Step 3 — Debt / balance transfer */}
+        {/* Step 3 -- Debt / balance transfer */}
         {step === 'debt' && (
           <div style={CARD}>
             <h2 style={{ fontSize: 18, fontWeight: 800, color: 'var(--text, #0f172a)', margin: '0 0 6px' }}>
@@ -321,16 +321,16 @@ export default function CardSwitchPage() {
                   cursor: loading ? 'not-allowed' : 'pointer',
                 }}
               >
-                {loading ? 'Finding best cards...' : 'Find My Switch Options →'}
+                {loading ? 'Finding best cards...' : 'Find My Switch Options ->'}
               </button>
             </div>
           </div>
         )}
 
-        {/* Step 4 — Results */}
+        {/* Step 4 -- Results */}
         {step === 'result' && result && (
           <>
-            {/* Summary — feature band (stays dark in both themes) */}
+            {/* Summary -- feature band (stays dark in both themes) */}
             <div style={{
               background: 'linear-gradient(135deg, #1B3A5C, #0d2240)', borderRadius: 16,
               padding: '20px 24px', marginBottom: 20, border: '1px solid rgba(201,151,46,0.2)',
@@ -378,7 +378,7 @@ export default function CardSwitchPage() {
                     <div style={{ flex: 1 }}>
                       <div style={{ fontSize: 19, fontWeight: 800, color: 'var(--text, #0f172a)', marginBottom: 6 }}>{card.name}</div>
                       {card.reasons.map((r, j) => (
-                        <div key={j} style={{ fontSize: 13, color: '#16a34a', marginBottom: 2 }}>✓ {r}</div>
+                        <div key={j} style={{ fontSize: 13, color: '#16a34a', marginBottom: 2 }}>(ok) {r}</div>
                       ))}
                     </div>
                     <div style={{ textAlign: 'right', flexShrink: 0 }}>
@@ -400,7 +400,7 @@ export default function CardSwitchPage() {
                       background: 'var(--bg-input, #f8fafc)', color: 'var(--text, #0f172a)',
                       border: '1px solid var(--border, #e2e8f0)', borderRadius: 10,
                       fontSize: 13, fontWeight: 600, textDecoration: 'none',
-                    }}>Full review →</Link>
+                    }}>Full review -></Link>
                   </div>
                 </div>
               );

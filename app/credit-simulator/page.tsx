@@ -17,7 +17,7 @@ const ACTIONS: SimAction[] = [
   {
     id: 'payoff',
     label: 'Pay off credit card balance',
-    description: 'Reduces credit utilization — biggest single score booster',
+    description: 'Reduces credit utilization -- biggest single score booster',
     icon: '💳',
     impact: (score, p) => {
       const util = parseInt(p.utilization) || 30;
@@ -38,7 +38,7 @@ const ACTIONS: SimAction[] = [
   {
     id: 'missed-payment',
     label: 'Miss a payment',
-    description: 'Single biggest negative event — avoid at all costs',
+    description: 'Single biggest negative event -- avoid at all costs',
     icon: '❌',
     impact: () => -85,
     params: [],
@@ -46,7 +46,7 @@ const ACTIONS: SimAction[] = [
   {
     id: 'close-card',
     label: 'Close an old credit card',
-    description: 'Reduces available credit and credit age — hurts score',
+    description: 'Reduces available credit and credit age -- hurts score',
     icon: '🚫',
     impact: () => -22,
     params: [],
@@ -62,7 +62,7 @@ const ACTIONS: SimAction[] = [
   {
     id: 'dispute',
     label: 'Remove an error from credit report',
-    description: 'Errors are common — removing them can boost score significantly',
+    description: 'Errors are common -- removing them can boost score significantly',
     icon: '🔍',
     impact: () => 45,
     params: [],
@@ -141,7 +141,7 @@ export default function CreditSimulatorPage() {
 
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20 }}>
 
-          {/* Left — Score display */}
+          {/* Left -- Score display */}
           <div>
             {/* Current score input */}
             <div style={{ background: 'var(--bg-card, #fff)', border: '1px solid var(--border, #e2e8f0)', borderRadius: 20, padding: 24, marginBottom: 16 }}>
@@ -160,7 +160,7 @@ export default function CreditSimulatorPage() {
                 </div>
                 <div style={{ textAlign: 'right' as const }}>
                   <div style={{ fontSize: 11, color: 'var(--text-muted, #8888AA)', marginBottom: 4 }}>Range</div>
-                  <div style={{ fontSize: 13, color: 'var(--text-muted, #8888AA)' }}>300 – 900</div>
+                  <div style={{ fontSize: 13, color: 'var(--text-muted, #8888AA)' }}>300 - 900</div>
                 </div>
               </div>
             </div>
@@ -210,7 +210,7 @@ export default function CreditSimulatorPage() {
             </div>
           </div>
 
-          {/* Right — Actions */}
+          {/* Right -- Actions */}
           <div>
             <div style={{ background: 'var(--bg-card, #fff)', border: '1px solid var(--border, #e2e8f0)', borderRadius: 20, padding: 24, marginBottom: 16 }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>

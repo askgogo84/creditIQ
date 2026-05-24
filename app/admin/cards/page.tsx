@@ -135,7 +135,7 @@ export default function AdminCardsPage() {
                   <div key={card.slug} className="p-4 flex items-start gap-4 flex-wrap sm:flex-nowrap">
                     <div className="flex-1 min-w-0">
                       <div className="font-medium text-ink-100">{card.name}</div>
-                      <div className="text-xs text-ink-400 mt-0.5 font-mono">{card.bank} · {card.tier} · Rs.{card.annual_fee_inr}/year · {card.apr_percent}% APR</div>
+                      <div className="text-xs text-ink-400 mt-0.5 font-mono">{card.bank} . {card.tier} . Rs.{card.annual_fee_inr}/year . {card.apr_percent}% APR</div>
                       <div className="text-xs text-ink-300 mt-1">{card.best_for}</div>
                       <div className="text-[10px] text-ink-500 mt-1 font-mono">Discovered: {new Date(card.discovered_at).toLocaleDateString('en-IN')} via {card.source}</div>
                     </div>

@@ -13,8 +13,8 @@ export async function generateStaticParams() {
 export async function generateMetadata({ params }: { params: { slug: string } }) {
   const card = SEED_CARDS.find((c) => c.slug === params.slug);
   if (!card) return { title: 'Card not found | CardIQ' };
-  const fee = card.annual_fee_inr === 0 ? 'zero annual fee' : `₹${card.annual_fee_inr} annual fee`;
-  const desc = `${card.name} review — ${card.best_for}. ${fee}, ${card.base_reward_rate}% base reward rate. Compare with other ${card.bank} credit cards on CardIQ.`;
+  const fee = card.annual_fee_inr === 0 ? 'zero annual fee' : `Rs.${card.annual_fee_inr} annual fee`;
+  const desc = `${card.name} review -- ${card.best_for}. ${fee}, ${card.base_reward_rate}% base reward rate. Compare with other ${card.bank} credit cards on CardIQ.`;
   return {
     title: `${card.name} Review 2026 | CardIQ`,
     description: desc,
