@@ -5,52 +5,74 @@ export const runtime = 'nodejs'
 
 export async function POST(req: NextRequest) {
   try {
-    const { destination, origin, travelers, budget, userCards } = await req.json()
-    if (!destination) return NextResponse.json({ error: 'Missing destination' }, { status: 400 })
+    const { query, userPoints, cardBank, destination, origin, travelers, budget } = await req.json()
 
-    const query = 'travel cards for ' + (origin || 'India') + ' to ' + destination + ' trip'
-    const { context, devaluations } = await retrieveRelevantCards(query, {
+    // Support both calling conventions
+    const tripQuery = query || ('travel to ' + (destination || 'unknown'))
+    if (!tripQuery.trim()) return NextResponse.json({ error: 'Missing trip query' }, { status: 400 })
+
+    const { context, devaluations } = await retrieveRelevantCards(tripQuery, {
       topK: 8,
       intent: 'travel',
     })
 
     const systemPrompt = buildRagSystemPrompt(context, devaluations)
 
-    const userPrompt = `Plan a trip and recommend the best credit cards to maximize value.
-
-TRIP DETAILS:
-From: ${origin || 'India'}
-To: ${destination}
-Travelers: ${travelers || 1}
-Budget: ${budget ? 'Rs.' + budget : 'Not specified'}
-User already has: ${userCards?.join(', ') || 'No cards specified'}
-
-Analyze which cards from the database will give maximum value for this trip (flights, hotels, forex, lounge access).
-
-Respond ONLY with valid JSON:
-{
-  "destination": "${destination}",
-  "estimatedCost": {
-    "flights": 45000,
-    "hotel": 30000,
-    "total": 75000
-  },
-  "bestCards": [
-    {
-      "cardId": "card-slug",
-      "cardName": "Card Name",
-      "bank": "Bank Name",
-      "whyBest": "Specific reason with numbers from the card data",
-      "pointsEarned": 5000,
-      "pointsValue": 8000,
-      "keyBenefit": "e.g. 4 international lounge visits + 0% forex markup"
-    }
-  ],
-  "redemptionTip": "Specific tip on how to redeem points for this destination",
-  "loungeAlert": "Which cards give lounge access at departure/arrival airport if known",
-  "forexTip": "Which card has lowest forex markup for this destination currency",
-  "totalSavings": 12000
-}`
+    const userPrompt = 'Plan a trip and recommend the best credit cards to maximize value.\n\n' +
+      'TRIP REQUEST: ' + tripQuery + '\n' +
+      'User points balance: ' + (userPoints || 0) + ' points\n' +
+      'Primary card bank: ' + (cardBank || 'Any') + '\n' +
+      (travelers ? 'Travelers: ' + travelers + '\n' : '') +
+      (budget ? 'Budget: Rs.' + budget + '\n' : '') +
+      '\nAnalyze which cards from the database give maximum value for this trip.\n\n' +
+      'Respond ONLY with valid JSON matching this exact structure:\n' +
+      '{\n' +
+      '  "destination": "Bangkok",\n' +
+      '  "dates": "Next month",\n' +
+      '  "duration": "5 nights",\n' +
+      '  "tripType": "Leisure",\n' +
+      '  "summary": "Brief trip summary with card strategy",\n' +
+      '  "proTip": "Specific tip to maximize points for this trip",\n' +
+      '  "totalPointsNeeded": 120000,\n' +
+      '  "totalCashPrice": 85000,\n' +
+      '  "totalPointsValue": 95000,\n' +
+      '  "totalSaving": 10000,\n' +
+      '  "bestCard": "HDFC Infinia",\n' +
+      '  "bestCardId": "hdfc-infinia",\n' +
+      '  "userPoints": ' + (userPoints || 0) + ',\n' +
+      '  "pointsGap": 0,\n' +
+      '  "canAfford": true,\n' +
+      '  "flights": [\n' +
+      '    {\n' +
+      '      "option": "Economy return",\n' +
+      '      "airline": "IndiGo / Air Asia",\n' +
+      '      "class": "Economy",\n' +
+      '      "pointsNeeded": 60000,\n' +
+      '      "cashPrice": 45000,\n' +
+      '      "pointsValue": 52000,\n' +
+      '      "saving": 7000,\n' +
+      '      "cardNeeded": "HDFC Infinia",\n' +
+      '      "cardId": "hdfc-infinia",\n' +
+      '      "transferPartner": "InterMiles",\n' +
+      '      "bookingUrl": "https://intermiles.com",\n' +
+      '      "available": true\n' +
+      '    }\n' +
+      '  ],\n' +
+      '  "hotels": [\n' +
+      '    {\n' +
+      '      "name": "Marriott Bangkok",\n' +
+      '      "chain": "Marriott",\n' +
+      '      "pointsNeeded": 60000,\n' +
+      '      "cashPrice": 40000,\n' +
+      '      "pointsValue": 43000,\n' +
+      '      "saving": 3000,\n' +
+      '      "cardNeeded": "HDFC Infinia",\n' +
+      '      "cardId": "hdfc-infinia",\n' +
+      '      "nights": 5,\n' +
+      '      "available": true\n' +
+      '    }\n' +
+      '  ]\n' +
+      '}'
 
     const response = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
@@ -61,7 +83,7 @@ Respond ONLY with valid JSON:
       },
       body: JSON.stringify({
         model: 'claude-sonnet-4-20250514',
-        max_tokens: 1500,
+        max_tokens: 2000,
         system: systemPrompt,
         messages: [{ role: 'user', content: userPrompt }],
       }),
@@ -69,7 +91,7 @@ Respond ONLY with valid JSON:
 
     const data = await response.json()
     const text = data.content?.[0]?.text ?? ''
-    const clean = text.replace(/```json|```/g, '').trim()
+    const clean = text.replace(/```json/g, '').replace(/```/g, '').trim()
     const parsed = JSON.parse(clean)
     return NextResponse.json(parsed)
   } catch (err) {

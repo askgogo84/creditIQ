@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { useState } from 'react';
 import Link from 'next/link';
@@ -54,7 +54,7 @@ const QUICK_TRIPS = [
   { label: 'London 5 nights', icon: '🇬🇧', query: 'Business trip to London for 5 nights next month' },
   { label: 'Dubai weekend', icon: '🇦🇪', query: 'Weekend trip to Dubai 3 nights this month' },
   { label: 'Singapore 4 nights', icon: '🇸🇬', query: 'Holiday in Singapore for 4 nights next month' },
-  { label: 'Bangkok 5 nights', icon: '🇹🇭', query: 'Leisure trip Bangkok 5 nights' },
+  { label: 'Bangkok 5 nights', icon: '🇹🇭­', query: 'Leisure trip Bangkok 5 nights' },
   { label: 'Goa long weekend', icon: '🌴', query: 'Domestic trip Goa 3 nights long weekend' },
   { label: 'New York 7 nights', icon: '🇺🇸', query: 'Business trip New York 7 nights premium travel' },
 ];
@@ -110,7 +110,7 @@ export default function TripPlannerPage() {
             Where are you going?
           </h1>
           <p style={{ fontSize: 15, color: 'var(--text-muted, #64748b)', margin: 0, lineHeight: 1.6, maxWidth: 480, marginInline: 'auto' }}>
-            Tell us your trip. We'll find the best way to pay using your credit card points — flights, hotels, everything.
+            Tell us your trip. We'll find the best way to pay using your credit card points â€” flights, hotels, everything.
           </p>
         </div>
 
@@ -192,7 +192,7 @@ export default function TripPlannerPage() {
               cursor: loading || !query.trim() ? 'not-allowed' : 'pointer',
             }}
           >
-            {loading ? '✈️ Planning your trip...' : '✈️ Plan my trip with points →'}
+            {loading ? 'âœˆï¸ Planning your trip...' : 'âœˆï¸ Plan my trip with points â†’'}
           </button>
         </div>
 
@@ -217,7 +217,7 @@ export default function TripPlannerPage() {
 
         {loading && (
           <div style={{ textAlign: 'center', padding: '48px 0' }}>
-            <div style={{ fontSize: 48, marginBottom: 16 }}>✈️</div>
+            <div style={{ fontSize: 48, marginBottom: 16 }}>âœˆï¸</div>
             <div style={{ fontSize: 16, fontWeight: 700, color: 'var(--text, #0f172a)', marginBottom: 8 }}>Finding the best options...</div>
             <div style={{ fontSize: 13, color: 'var(--text-muted, #64748b)' }}>Checking flights, hotels, transfer partners and pricing</div>
           </div>
@@ -234,7 +234,7 @@ export default function TripPlannerPage() {
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap' as const, gap: 16, marginBottom: 16 }}>
                 <div>
                   <div style={{ fontSize: 11, fontWeight: 700, color: '#C9972E', textTransform: 'uppercase' as const, letterSpacing: 1.5, marginBottom: 6 }}>
-                    ✈️ {result.destination} · {result.duration} · {result.tripType}
+                    âœˆï¸ {result.destination} Â· {result.duration} Â· {result.tripType}
                   </div>
                   <div style={{ fontSize: 20, fontWeight: 800, color: '#fff', marginBottom: 4 }}>{result.summary}</div>
                   <div style={{ fontSize: 13, color: 'rgba(255,255,255,0.4)' }}>{result.dates}</div>
@@ -248,25 +248,25 @@ export default function TripPlannerPage() {
               <div style={{ background: result.canAfford ? 'rgba(34,197,94,0.15)' : 'rgba(239,68,68,0.15)', border: `1px solid ${result.canAfford ? 'rgba(34,197,94,0.3)' : 'rgba(239,68,68,0.3)'}`, borderRadius: 12, padding: '12px 16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap' as const, gap: 8 }}>
                 <div>
                   <div style={{ fontSize: 13, fontWeight: 700, color: result.canAfford ? '#22c55e' : '#ef4444' }}>
-                    {result.canAfford ? '✓ Your points cover this trip' : `⚠️ Need ${result.pointsGap.toLocaleString('en-IN')} more points`}
+                    {result.canAfford ? 'âœ“ Your points cover this trip' : `âš ï¸ Need ${result.pointsGap.toLocaleString('en-IN')} more points`}
                   </div>
                   <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.4)', marginTop: 2 }}>
-                    Need {result.totalPointsNeeded.toLocaleString('en-IN')} pts · You have {(parseInt(points.replace(/,/g, '')) || 0).toLocaleString('en-IN')} pts
+                    Need {result.totalPointsNeeded.toLocaleString('en-IN')} pts Â· You have {(parseInt(points.replace(/,/g, '')) || 0).toLocaleString('en-IN')} pts
                   </div>
                 </div>
                 {!result.canAfford && (
                   <Link href={`/cards/${result.bestCardId}`} style={{ padding: '8px 16px', background: '#C9972E', color: '#0a0a0a', borderRadius: 10, fontSize: 12, fontWeight: 700, textDecoration: 'none' }}>
-                    Get {result.bestCard} →
+                    Get {result.bestCard} â†’
                   </Link>
                 )}
               </div>
 
-              {result.proTip && <div style={{ marginTop: 12, fontSize: 13, color: 'rgba(255,255,255,0.45)', lineHeight: 1.6, fontStyle: 'italic' as const }}>💡 {result.proTip}</div>}
+              {result.proTip && <div style={{ marginTop: 12, fontSize: 13, color: 'rgba(255,255,255,0.45)', lineHeight: 1.6, fontStyle: 'italic' as const }}>ðŸ’¡ {result.proTip}</div>}
             </div>
 
             {/* Flights */}
             <div style={{ marginBottom: 20 }}>
-              <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-muted, #64748b)', textTransform: 'uppercase' as const, letterSpacing: 1, marginBottom: 12 }}>✈️ Flight options</div>
+              <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-muted, #64748b)', textTransform: 'uppercase' as const, letterSpacing: 1, marginBottom: 12 }}>âœˆï¸ Flight options</div>
               {result.flights.map((flight, i) => {
                 const { url, label } = getApplyUrl(flight.cardId);
                 return (
@@ -275,7 +275,7 @@ export default function TripPlannerPage() {
                       <div style={{ flex: 1 }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
                           {i === 0 && <span style={{ fontSize: 9, fontWeight: 700, color: '#C9972E', background: 'rgba(201,151,46,0.1)', border: '1px solid rgba(201,151,46,0.3)', padding: '2px 8px', borderRadius: 100, textTransform: 'uppercase' as const }}>Best value</span>}
-                          <span style={{ fontSize: 14, fontWeight: 700, color: 'var(--text, #0f172a)' }}>{flight.airline} · {flight.class}</span>
+                          <span style={{ fontSize: 14, fontWeight: 700, color: 'var(--text, #0f172a)' }}>{flight.airline} Â· {flight.class}</span>
                         </div>
                         <div style={{ fontSize: 13, color: 'var(--text-muted, #64748b)', marginBottom: 12 }}>{flight.option} via {flight.transferPartner}</div>
                         <div style={{ display: 'flex', gap: 20, flexWrap: 'wrap' as const }}>
@@ -304,7 +304,7 @@ export default function TripPlannerPage() {
 
             {/* Hotels */}
             <div style={{ marginBottom: 20 }}>
-              <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-muted, #64748b)', textTransform: 'uppercase' as const, letterSpacing: 1, marginBottom: 12 }}>🏨 Hotel options</div>
+              <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-muted, #64748b)', textTransform: 'uppercase' as const, letterSpacing: 1, marginBottom: 12 }}>ðŸ¨ Hotel options</div>
               {result.hotels.map((hotel, i) => {
                 const { url, label } = getApplyUrl(hotel.cardId);
                 return (
@@ -315,7 +315,7 @@ export default function TripPlannerPage() {
                           {i === 0 && <span style={{ fontSize: 9, fontWeight: 700, color: '#16a34a', background: 'rgba(34,197,94,0.1)', border: '1px solid rgba(34,197,94,0.3)', padding: '2px 8px', borderRadius: 100, textTransform: 'uppercase' as const }}>Best value</span>}
                           <span style={{ fontSize: 14, fontWeight: 700, color: 'var(--text, #0f172a)' }}>{hotel.name}</span>
                         </div>
-                        <div style={{ fontSize: 13, color: 'var(--text-muted, #64748b)', marginBottom: 12 }}>{hotel.chain} · {hotel.nights} nights</div>
+                        <div style={{ fontSize: 13, color: 'var(--text-muted, #64748b)', marginBottom: 12 }}>{hotel.chain} Â· {hotel.nights} nights</div>
                         <div style={{ display: 'flex', gap: 20, flexWrap: 'wrap' as const }}>
                           {[
                             { lbl: 'Points needed', val: hotel.pointsNeeded.toLocaleString('en-IN'), col: '#C9972E' },
@@ -351,3 +351,4 @@ export default function TripPlannerPage() {
     </div>
   );
 }
+
