@@ -1,4 +1,4 @@
-﻿import type { Metadata } from 'next';
+import type { Metadata } from 'next';
 export const metadata: Metadata = {
   title: 'Points Optimizer - Maximize Credit Card Rewards India',
   description: 'Maximize your HDFC, Axis, Amex, ICICI credit card points. CreditIQ ranks every redemption by rupee value - KrisFlyer Business Class vs statement credit.',

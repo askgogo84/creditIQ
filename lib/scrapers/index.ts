@@ -1,4 +1,4 @@
-﻿// Scraper architecture for CreditIQ
+// Scraper architecture for CreditIQ
 // Each bank has an adapter that:
 //  1. Lists the bank's credit card catalog URL(s)
 //  2. Scrapes each card detail page

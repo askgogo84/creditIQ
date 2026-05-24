@@ -1,4 +1,4 @@
-﻿import { createClient } from '@supabase/supabase-js'
+import { createClient } from '@supabase/supabase-js'
 import type { CreditCard } from './types'
 import { SEED_CARDS } from './data/seed-cards'
 

@@ -1,4 +1,4 @@
-﻿import type { Metadata } from 'next';
+import type { Metadata } from 'next';
 export const metadata: Metadata = {
   title: 'Credit Card Calculators - EMI, Interest, Rewards & Forex India',
   description: 'Free credit card calculators for India. EMI calculator, interest cost calculator, annual reward value, forex markup savings. Know what you pay and earn.',

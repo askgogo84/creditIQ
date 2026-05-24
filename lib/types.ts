@@ -1,4 +1,4 @@
-﻿// Core domain types for CreditIQ
+// Core domain types for CreditIQ
 
 export type Bank =
   | 'HDFC' | 'SBI' | 'ICICI' | 'Axis' | 'Kotak' | 'Amex'

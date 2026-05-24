@@ -1,4 +1,4 @@
-﻿import type { Metadata } from 'next';
+import type { Metadata } from 'next';
 export const metadata: Metadata = {
   title: 'Credit Card Glossary India - Plain English Definitions',
   description: 'Every credit card term explained simply. APR, reward rate, forex markup, devaluation, milestone bonus, lounge access - 30+ terms for Indian credit cards.',

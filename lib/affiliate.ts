@@ -1,4 +1,4 @@
-﻿// lib/affiliate.ts
+// lib/affiliate.ts
 // Affiliate link registry for CreditIQ
 // Source: EarnKaro — ₹300–₹1500 commission per card activation
 // Last updated: 21 May 2026

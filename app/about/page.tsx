@@ -1,4 +1,4 @@
-﻿import { Header } from '@/components/Header';
+import { Header } from '@/components/Header';
 import { Footer } from '@/components/Footer';
 import { CompareTray } from '@/components/CompareTray';
 import { SEED_CARDS } from '@/lib/data/seed-cards';

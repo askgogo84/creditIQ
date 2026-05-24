@@ -1,4 +1,4 @@
-﻿import { getAllCards, getDevaluationEvents } from './supabase'
+import { getAllCards, getDevaluationEvents } from './supabase'
 import type { CreditCard } from './types'
 
 export function cardToText(card: any): string {
