@@ -109,7 +109,7 @@ export default function SmsImportPage() {
               <div>
                 <p className="text-sm font-medium mb-1" style={{ color: 'var(--text)' }}>Sign in to save points to dashboard</p>
                 <p className="text-xs mb-2" style={{ color: 'var(--text-muted)' }}>Extract without signing in, but points won't persist.</p>
-                <Link href="/login" className="text-xs font-medium" style={{ color: 'var(--accent)' }}>Sign in with Google -></Link>
+                <Link href="/login" className="text-xs font-medium" style={{ color: 'var(--accent)' }}>Sign in with Google →</Link>
               </div>
             </div>
           )}
@@ -121,7 +121,7 @@ export default function SmsImportPage() {
                 <CheckCircle className="w-4 h-4" style={{ color: 'var(--emerald)' }} />
                 <span className="text-sm" style={{ color: 'var(--text)' }}>{savedCount} card{savedCount !== 1 ? 's' : ''} already in your dashboard</span>
               </div>
-              <Link href="/dashboard" className="text-xs" style={{ color: 'var(--accent)' }}>View -></Link>
+              <Link href="/dashboard" className="text-xs" style={{ color: 'var(--accent)' }}>View →</Link>
             </div>
           )}
 

@@ -96,7 +96,7 @@ export function DevaluationAlerts() {
                 type="submit"
                 className="w-full btn-primary text-sm"
               >
-                Continue  --  pick your cards ->
+                Continue  --  pick your cards →
               </button>
             </motion.form>
           ) : (
@@ -137,7 +137,7 @@ export function DevaluationAlerts() {
                   onClick={() => setStep('email')}
                   className="btn-ghost text-sm flex-1"
                 >
-                  <- Back
+                  ← Back
                 </button>
                 <button
                   onClick={handleSubmit}

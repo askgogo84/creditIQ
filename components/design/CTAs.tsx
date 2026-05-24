@@ -16,7 +16,7 @@ function CTAInner({ children, arrow = true }: { children: ReactNode; arrow?: boo
   return (
     <>
       {children}
-      {arrow && <span className="arrow">-></span>}
+      {arrow && <span className="arrow">→</span>}
     </>
   );
 }

@@ -136,7 +136,7 @@ export default function LinkCardPage() {
           {/* STEP 2: Mobile number */}
           {step === 'mobile' && selectedBank && (
             <div>
-              <button onClick={() => setStep('select-bank')} className="text-sm mb-6 flex items-center gap-1" style={{ color: 'var(--text-dim)' }}><- Back</button>
+              <button onClick={() => setStep('select-bank')} className="text-sm mb-6 flex items-center gap-1" style={{ color: 'var(--text-dim)' }}>← Back</button>
               <div className="flex items-center gap-3 mb-6">
                 <div className="w-12 h-12 rounded-xl flex items-center justify-center text-white font-bold" style={{ background: selectedBank.color }}>{selectedBank.id.slice(0, 2).toUpperCase()}</div>
                 <div>
@@ -171,7 +171,7 @@ export default function LinkCardPage() {
           {/* STEP 3: Consent */}
           {step === 'consent' && selectedBank && (
             <div>
-              <button onClick={() => setStep('mobile')} className="text-sm mb-6 flex items-center gap-1" style={{ color: 'var(--text-dim)' }}><- Back</button>
+              <button onClick={() => setStep('mobile')} className="text-sm mb-6 flex items-center gap-1" style={{ color: 'var(--text-dim)' }}>← Back</button>
               <h1 className="font-display text-3xl mb-3" style={{ color: 'var(--text)' }}>Authorise {selectedBank.name}</h1>
               {isDemo && (
                 <div className="rounded-lg p-3 mb-4 text-xs" style={{ background: 'color-mix(in srgb, var(--accent) 10%, transparent)', border: '1px solid color-mix(in srgb, var(--accent) 25%, transparent)', color: 'var(--accent)' }}>

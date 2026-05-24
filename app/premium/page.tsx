@@ -138,7 +138,8 @@ export default function PremiumPage() {
                 className="block text-center py-3 rounded-lg text-sm font-bold transition-all"
                 style={{ background: '#d4a373', color: '#0a0a0b' }}
               >
-                Start free 7-day trial ->
+                Start free 7-day trial →
+
               </Link>
               <div className="text-center text-xs mt-3 text-white/40">No payment needed to start trial</div>
             </div>

@@ -68,7 +68,7 @@ export function AIToolCard({ icon, title, desc, badge, href }: AIToolCardProps) 
           }}
         >
           <span>Open tool</span>
-          <span className="arrow">-></span>
+          <span className="arrow">→</span>
         </div>
       </Link>
     </Reveal>

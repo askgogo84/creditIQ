@@ -264,7 +264,7 @@ export default function DashboardPage() {
               </div>
               <div>
                 <div className="text-sm font-medium" style={{ color: 'var(--text)' }}>Upload statement</div>
-                <div className="text-xs" style={{ color: 'var(--text-dim)' }}>PDF -> saved points</div>
+                <div className="text-xs" style={{ color: 'var(--text-dim)' }}>PDF → saved points</div>
               </div>
             </Link>
             <Link href="/sms-import" className="rounded-xl border p-4 flex items-center gap-3 transition-all"
@@ -275,7 +275,7 @@ export default function DashboardPage() {
               </div>
               <div>
                 <div className="text-sm font-medium" style={{ color: 'var(--text)' }}>Paste bank SMS</div>
-                <div className="text-xs" style={{ color: 'var(--text-dim)' }}>Bank SMS -> points</div>
+                <div className="text-xs" style={{ color: 'var(--text-dim)' }}>Bank SMS → points</div>
               </div>
             </Link>
           </div>

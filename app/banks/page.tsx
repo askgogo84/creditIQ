@@ -42,7 +42,7 @@ export default function BanksPage() {
                       <div className="text-xs text-ink-400 font-mono">{count} card{count !== 1 ? 's' : ''} tracked</div>
                     </div>
                   </div>
-                  <div className="text-xs text-copper-400 font-mono">View all cards -></div>
+                  <div className="text-xs text-copper-400 font-mono">View all cards →</div>
                 </Link>
               );
             })}

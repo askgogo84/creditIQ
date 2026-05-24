@@ -96,7 +96,7 @@ export function Features() {
                   href={f.href}
                   className="link-underline inline-block text-xs font-mono uppercase tracking-widest text-copper-300 pt-2"
                 >
-                  {f.cta} ->
+                  {f.cta} →
                 </Link>
               </div>
             </motion.div>

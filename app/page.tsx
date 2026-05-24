@@ -357,7 +357,7 @@ export default function HomePage() {
               <AIToolCard
                 icon=""
                 title="Card Roast"
-                desc="Brutal A""F grade on your current card. Shareable. Probably mean. Definitely accurate."
+                desc="Brutal A-F grade on your current card. Shareable. Probably mean. Definitely accurate."
                 badge={{ text: 'NEW', tone: 'badge-plum' }}
                 href="/card-roast" />
 
@@ -473,7 +473,7 @@ export default function HomePage() {
               <SectionHeader
                 label="THE TOP DECK . RANKED"
                 title={<>Cards that <span className="serif" style={{ color: 'var(--copper)' }}>actually</span> earn their fee.</>}
-                subtitle="Ranked by effective reward rate on a Rs.6L""Rs.15L annual spend, after fees." />
+                subtitle="Ranked by effective reward rate on a Rs.6L-Rs.15L annual spend, after fees." />
 
               <Reveal>
                 <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>

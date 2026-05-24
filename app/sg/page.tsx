@@ -31,9 +31,9 @@ export default function SGPage() {
           </p>
           <div className="flex flex-col sm:flex-row gap-3 justify-center mb-8">
             <input type="email" placeholder="your@email.com" style={{ flex: 1, maxWidth: 280, padding: '12px 16px', background: 'var(--bg-input)', border: '1px solid var(--border)', borderRadius: 8, fontSize: 14, color: 'var(--text)', outline: 'none' }} />
-            <button className="btn-primary">Notify me -></button>
+            <button className="btn-primary">Notify me →</button>
           </div>
-          <Link href="/uae" style={{ color: 'var(--accent)', fontSize: 14 }}>Browse UAE cards instead -></Link>
+          <Link href="/uae" style={{ color: 'var(--accent)', fontSize: 14 }}>Browse UAE cards instead →</Link>
         </div>
       </section>
       <Footer />

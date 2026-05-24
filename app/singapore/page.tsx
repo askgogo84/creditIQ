@@ -159,7 +159,7 @@ export default function SingaporePage() {
             border: '1px solid rgba(255,255,255,0.1)',
             borderRadius: 12, fontSize: 14, fontWeight: 600, color: 'var(--text, #f0f0ff)',
             textDecoration: 'none',
-          }}>Browse all 93 India cards -></Link>
+          }}>Browse all 93 India cards →</Link>
         </div>
 
       </main>

@@ -277,7 +277,7 @@ export default function ApprovalOddsPage() {
                         <Link href={`/cards/${card.cardId}`} style={{
                           display: 'block', textAlign: 'center' as const, padding: '8px',
                           color: 'var(--text-muted, #8888AA)', fontSize: 12, textDecoration: 'none',
-                        }}>View full review -></Link>
+                        }}>View full review →</Link>
                       </div>
                     </div>
                   </div>

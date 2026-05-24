@@ -53,7 +53,7 @@ export function TopNav() {
             className="btn btn-primary nav__cta hide-mobile"
             style={{ padding: '10px 18px', fontSize: 13.5, minHeight: 40 }}
           >
-            Find my card <span className="arrow">-></span>
+            Find my card <span className="arrow">→</span>
           </Link>
           <button
             className="menu-btn"
@@ -83,7 +83,7 @@ export function TopNav() {
               className={l.match(pathname) ? 'active' : ''}
               onClick={() => setOpen(false)}
             >
-              {l.label} <span className="arrow">-></span>
+              {l.label} <span className="arrow">→</span>
             </Link>
           ))}
           <Link
@@ -92,7 +92,7 @@ export function TopNav() {
             style={{ marginTop: 12 }}
             onClick={() => setOpen(false)}
           >
-            Find my card <span className="arrow">-></span>
+            Find my card <span className="arrow">→</span>
           </Link>
         </div>
       )}

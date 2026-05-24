@@ -119,7 +119,7 @@ export default function UploadStatementPage() {
               <div>
                 <p className="text-sm font-medium mb-1" style={{ color: 'var(--text)' }}>Sign in to save your points</p>
                 <p className="text-xs mb-2" style={{ color: 'var(--text-muted)' }}>You can upload without signing in but points won't be saved to your dashboard.</p>
-                <Link href="/login" className="text-xs font-medium" style={{ color: 'var(--accent)' }}>Sign in with Google -></Link>
+                <Link href="/login" className="text-xs font-medium" style={{ color: 'var(--accent)' }}>Sign in with Google →</Link>
               </div>
             </div>
           )}
@@ -131,7 +131,7 @@ export default function UploadStatementPage() {
                 <CheckCircle className="w-4 h-4" style={{ color: 'var(--emerald)' }} />
                 <span className="text-sm" style={{ color: 'var(--text)' }}>{savedCount} card{savedCount !== 1 ? 's' : ''} already saved to your dashboard</span>
               </div>
-              <Link href="/dashboard" className="text-xs" style={{ color: 'var(--accent)' }}>View dashboard -></Link>
+              <Link href="/dashboard" className="text-xs" style={{ color: 'var(--accent)' }}>View dashboard →</Link>
             </div>
           )}
 
@@ -253,7 +253,7 @@ export default function UploadStatementPage() {
                 </a>
               </div>
               <button onClick={() => { setNeedsPassword(false); setFile(null); }} className="btn-ghost w-full text-sm">
-                <- Upload a different file
+                ← Upload a different file
               </button>
             </div>
           )}

@@ -246,7 +246,8 @@ export function CardDetailClient({ card }: { card: CreditCard }) {
             href={`/optimize?card=${card.id}`}
             className="mt-8 btn-primary inline-flex items-center gap-2"
           >
-            Optimize my balance ->
+            Optimize my balance →
+
           </Link>
         </div>
       </section>

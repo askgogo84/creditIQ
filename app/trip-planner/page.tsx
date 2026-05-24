@@ -192,7 +192,7 @@ export default function TripPlannerPage() {
               cursor: loading || !query.trim() ? 'not-allowed' : 'pointer',
             }}
           >
-            {loading ? ' Planning your trip...' : ' Plan my trip with points ''}
+            {loading ? ' Planning your trip...' : ' Plan my trip with points →'}
           </button>
         </div>
 
