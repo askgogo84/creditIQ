@@ -62,7 +62,7 @@ export function CardMockup({ card, size = 'md', className, interactive = true }:
           fontSize: isSmall ? '7px' : '11px',
           letterSpacing: isSmall ? '0.08em' : '0.15em',
         }}>
-          •••• •••• •••• {card.id.slice(-4).toUpperCase()}
+          .... .... .... {card.id.slice(-4).toUpperCase()}
         </div>
 
         {/* Bottom: cardholder + card name */}

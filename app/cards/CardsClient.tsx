@@ -170,7 +170,7 @@ export function CardsClient() {
                   className="label"
                   style={{ whiteSpace: 'nowrap', background: 'none', border: 'none', cursor: 'pointer', color: 'var(--copper)' }}
                 >
-                  CLEAR FILTER ✕
+                  CLEAR FILTER 
                 </button>
               </div>
 

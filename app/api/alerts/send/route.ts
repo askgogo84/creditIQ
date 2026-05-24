@@ -12,7 +12,7 @@ export async function POST(req: NextRequest) {
     }
 
     const subject = changeType === 'devaluation'
-      ? `⚠️ ${cardName} points devalued — act before ${new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toLocaleDateString('en-IN', { month: 'long', day: 'numeric' })}`
+      ? `(!!) ${cardName} points devalued  --  act before ${new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toLocaleDateString('en-IN', { month: 'long', day: 'numeric' })}`
       : `📢 ${cardName} reward rate update`;
 
     const html = `
@@ -35,11 +35,11 @@ export async function POST(req: NextRequest) {
                 <tr>
                   <td>
                     <span style="color:#C9972E;font-size:20px;font-weight:700;letter-spacing:-0.5px;">Credit</span><span style="color:#ffffff;font-size:20px;font-weight:700;letter-spacing:-0.5px;">IQ</span>
-                    <span style="color:#C9972E;font-size:16px;margin-left:2px;">✦</span>
+                    <span style="color:#C9972E;font-size:16px;margin-left:2px;"></span>
                   </td>
                   <td align="right">
                     <span style="background:#C9972E;color:#ffffff;font-size:11px;font-weight:600;padding:4px 10px;border-radius:20px;text-transform:uppercase;letter-spacing:0.5px;">
-                      ${changeType === 'devaluation' ? '⚠️ Devaluation Alert' : '📢 Rate Update'}
+                      ${changeType === 'devaluation' ? '(!!) Devaluation Alert' : '📢 Rate Update'}
                     </span>
                   </td>
                 </tr>
@@ -63,7 +63,7 @@ export async function POST(req: NextRequest) {
                           <div style="color:#6b7280;font-size:11px;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:6px;">Before</div>
                           <div style="color:#1B3A5C;font-size:24px;font-weight:700;">${oldValue}</div>
                         </td>
-                        <td style="padding:0 16px;color:#C9972E;font-size:24px;">→</td>
+                        <td style="padding:0 16px;color:#C9972E;font-size:24px;">-></td>
                         <td style="text-align:center;padding:0 16px;">
                           <div style="color:#6b7280;font-size:11px;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:6px;">After</div>
                           <div style="color:${changeType === 'devaluation' ? '#dc2626' : '#16a34a'};font-size:24px;font-weight:700;">${newValue}</div>
@@ -83,7 +83,7 @@ export async function POST(req: NextRequest) {
               ` : ''}
 
               <a href="https://creditiq.app/optimize" style="display:block;background:#1B3A5C;color:#ffffff;text-decoration:none;text-align:center;padding:14px 24px;border-radius:8px;font-weight:600;font-size:15px;margin-bottom:24px;">
-                Optimize My Points Now →
+                Optimize My Points Now ->
               </a>
 
               <p style="margin:0;color:#9ca3af;font-size:12px;line-height:1.6;">
@@ -97,7 +97,7 @@ export async function POST(req: NextRequest) {
           <tr>
             <td style="background:#f9fafb;border-top:1px solid #e5e7eb;padding:16px 32px;">
               <p style="margin:0;color:#9ca3af;font-size:11px;text-align:center;">
-                CreditIQ · India's affiliate-bias-free credit card platform · <a href="https://creditiq.app" style="color:#1B3A5C;">creditiq.app</a>
+                CreditIQ . India's affiliate-bias-free credit card platform . <a href="https://creditiq.app" style="color:#1B3A5C;">creditiq.app</a>
               </p>
             </td>
           </tr>

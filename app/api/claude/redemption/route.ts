@@ -13,7 +13,7 @@ export async function POST(req: NextRequest) {
     // Build ranked redemption context
     const rankedPaths = recommendations
       .slice(0, 5)
-      .map((r: any, i: number) => `${i + 1}. ${r.option.partner || r.option.type} — Rs.${r.inr_value.toLocaleString('en-IN')} (Rs.${r.option.value_per_point_inr.toFixed(2)}/pt)`)
+      .map((r: any, i: number) => `${i + 1}. ${r.option.partner || r.option.type}  --  Rs.${r.inr_value.toLocaleString('en-IN')} (Rs.${r.option.value_per_point_inr.toFixed(2)}/pt)`)
       .join('\n');
 
     const topOption = recommendations[0];
@@ -28,14 +28,14 @@ export async function POST(req: NextRequest) {
 Card: ${cardId}
 Points balance: ${points.toLocaleString('en-IN')} points
 
-Ranked redemption paths (from our data engine — these are the actual options available):
+Ranked redemption paths (from our data engine  --  these are the actual options available):
 ${rankedPaths}
 
 CRITICAL RULES:
 1. The #1 ranked option above IS the mathematically best option. DO NOT contradict this ranking.
 2. If #1 is ${topPartner} at Rs.${topValue.toLocaleString('en-IN')}, your advice must align with this being the top choice.
-3. Give card-SPECIFIC advice — different cards have different transfer partners, expiry rules, and sweet spots.
-4. Be specific about this card's ecosystem (e.g. HDFC → SmartBuy/KrisFlyer/InterMiles, Axis → Vistara/EDGE Rewards, SBI → Air India, IDFC → no transfer partners, etc.)
+3. Give card-SPECIFIC advice  --  different cards have different transfer partners, expiry rules, and sweet spots.
+4. Be specific about this card's ecosystem (e.g. HDFC -> SmartBuy/KrisFlyer/InterMiles, Axis -> Vistara/EDGE Rewards, SBI -> Air India, IDFC -> no transfer partners, etc.)
 5. Mention the value difference of Rs.${valueDiff.toLocaleString('en-IN')} between best and worst option.
 6. Keep it to 3-4 focused paragraphs. No generic advice. No repeating the ranked list.
 7. End with ONE clear action to take right now.

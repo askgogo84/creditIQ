@@ -20,7 +20,7 @@ export async function POST(req: NextRequest) {
         demo: true,
         consentHandle: `demo-${Date.now()}`,
         redirectUrl: null,
-        message: 'Demo mode — add FINVU_CLIENT_ID + FINVU_CLIENT_SECRET to Vercel env vars',
+        message: 'Demo mode  --  add FINVU_CLIENT_ID + FINVU_CLIENT_SECRET to Vercel env vars',
       });
     }
 

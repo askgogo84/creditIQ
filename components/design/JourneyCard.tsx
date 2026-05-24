@@ -91,7 +91,7 @@ export function JourneyCard({ eyebrow, title, subtitle, accent = 'copper', href 
               color: 'var(--ink)',
             }}
           >
-            Start here <span className="arrow">→</span>
+            Start here <span className="arrow">-></span>
           </div>
         </div>
       </Link>

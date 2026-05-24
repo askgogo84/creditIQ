@@ -160,7 +160,7 @@ export function CreditCard3D({
                 color: lowColor,
               }}
             >
-              {number || '•• •• •• ••'}
+              {number || '.. .. .. ..'}
             </div>
             <div
               style={{

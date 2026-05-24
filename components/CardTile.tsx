@@ -20,7 +20,7 @@ function getKeyFeatures(card: CreditCard) {
   if (card.annual_fee_inr === 0) {
     features.push({ icon: Shield, text: 'Zero annual fee', highlight: true });
   } else {
-    features.push({ icon: Shield, text: `₹${card.annual_fee_inr.toLocaleString('en-IN')}/year` });
+    features.push({ icon: Shield, text: `Rs.${card.annual_fee_inr.toLocaleString('en-IN')}/year` });
   }
   if (card.base_reward_rate >= 3) {
     features.push({ icon: Zap, text: `${card.base_reward_rate}% rewards`, highlight: true });
@@ -71,7 +71,7 @@ export function CardTile({ card, annualValue, reasoning, rank }: Props) {
 
       <div className="flex flex-col flex-1 p-4 space-y-3">
         <div className="text-[10px] font-mono uppercase tracking-widest text-ink-400">
-          {card.bank} · {card.tier.replace('-', ' ')}
+          {card.bank} . {card.tier.replace('-', ' ')}
         </div>
 
         <Link href={`/card/${card.slug}`}>
@@ -107,7 +107,7 @@ export function CardTile({ card, annualValue, reasoning, rank }: Props) {
         {annualValue !== undefined && (
           <div className="rounded-lg p-2.5" style={{ background: 'color-mix(in srgb, var(--emerald) 8%, transparent)', border: '1px solid color-mix(in srgb, var(--emerald) 20%, transparent)' }}>
             <div className="text-[9px] font-mono uppercase tracking-wider" style={{ color: 'var(--emerald)' }}>Est. annual value</div>
-            <div className="font-display text-lg tabular" style={{ color: 'var(--emerald)' }}>₹{annualValue.toLocaleString('en-IN')}</div>
+            <div className="font-display text-lg tabular" style={{ color: 'var(--emerald)' }}>Rs.{annualValue.toLocaleString('en-IN')}</div>
             {reasoning && <div className="text-[10px] text-ink-400 mt-1 line-clamp-1">{reasoning}</div>}
           </div>
         )}
@@ -145,7 +145,7 @@ export function CardTile({ card, annualValue, reasoning, rank }: Props) {
         {/* Affiliate transparency note */}
         {affiliateType === 'paisabazaar' && (
           <div className="text-[9px] text-center" style={{ color: 'var(--text-dim)' }}>
-            Via Paisabazaar · We may earn a commission
+            Via Paisabazaar . We may earn a commission
           </div>
         )}
       </div>

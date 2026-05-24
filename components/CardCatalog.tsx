@@ -7,14 +7,14 @@ import { cn } from '@/lib/utils';
 import { motion, AnimatePresence } from 'framer-motion';
 
 const CATEGORIES = [
-  { id: 'all', label: 'All cards', emoji: '◎' },
-  { id: 'cashback', label: 'Cashback', emoji: '₹' },
-  { id: 'travel', label: 'Travel', emoji: '✈' },
-  { id: 'premium', label: 'Premium', emoji: '◆' },
-  { id: 'rewards', label: 'Rewards', emoji: '★' },
-  { id: 'shopping', label: 'Shopping', emoji: '⌘' },
-  { id: 'zero-fee', label: 'Lifetime free', emoji: '∅' },
-  { id: 'entry-level', label: 'Entry-level', emoji: '◊' },
+  { id: 'all', label: 'All cards', emoji: 'o' },
+  { id: 'cashback', label: 'Cashback', emoji: 'Rs.' },
+  { id: 'travel', label: 'Travel', emoji: '' },
+  { id: 'premium', label: 'Premium', emoji: '' },
+  { id: 'rewards', label: 'Rewards', emoji: '' },
+  { id: 'shopping', label: 'Shopping', emoji: '' },
+  { id: 'zero-fee', label: 'Lifetime free', emoji: '' },
+  { id: 'entry-level', label: 'Entry-level', emoji: '' },
 ];
 
 export function CardCatalog() {
@@ -29,7 +29,7 @@ export function CardCatalog() {
       <div className="max-w-7xl mx-auto px-6">
         <div className="flex flex-wrap items-end justify-between gap-6 mb-12">
           <div className="max-w-xl">
-            <div className="divider-rule mb-4 max-w-xs">— The catalog</div>
+            <div className="divider-rule mb-4 max-w-xs"> --  The catalog</div>
             <h2 className="font-display text-4xl md:text-5xl text-ink-50 leading-[1.05]">
               Every card,{' '}
               <span className="display-italic text-copper-400">deeply scored</span>.

@@ -3,7 +3,7 @@
 //
 // Requires:
 //   NEXT_PUBLIC_SUPABASE_URL
-//   SUPABASE_SERVICE_ROLE_KEY (NOT the anon key — service role for writes)
+//   SUPABASE_SERVICE_ROLE_KEY (NOT the anon key  --  service role for writes)
 
 import { createClient } from '@supabase/supabase-js';
 import { SEED_CARDS } from '../lib/data/seed-cards';
@@ -24,9 +24,9 @@ async function main() {
   for (const card of SEED_CARDS) {
     const { error } = await supabase.from('cards').upsert(card, { onConflict: 'slug' });
     if (error) {
-      console.error(`  ✗ ${card.name}: ${error.message}`);
+      console.error(`   ${card.name}: ${error.message}`);
     } else {
-      console.log(`  ✓ ${card.name}`);
+      console.log(`  (ok) ${card.name}`);
     }
   }
 

@@ -82,7 +82,7 @@ export function CardTile({ card, href, rank }: CardTileProps) {
           <div>
             <div className="label" style={{ fontSize: 9 }}>Annual fee</div>
             <div className="mono" style={{ fontSize: 18, marginTop: 4, color: 'var(--ink)' }}>
-              ₹{card.fee.toLocaleString('en-IN')}
+              Rs.{card.fee.toLocaleString('en-IN')}
             </div>
           </div>
           <div style={{ textAlign: 'right' }}>

@@ -3,7 +3,7 @@
 //  1. Lists the bank's credit card catalog URL(s)
 //  2. Scrapes each card detail page
 //  3. Returns raw HTML chunks
-// A separate parser (parser.ts) uses Claude to convert raw HTML â†’ CreditCard JSON.
+// A separate parser (parser.ts) uses Claude to convert raw HTML ' CreditCard JSON.
 
 import type { CreditCard } from '../types';
 
@@ -35,7 +35,7 @@ export interface BankAdapter {
   scrapeCard: (url: string) => Promise<ScrapeResult>;
 }
 
-// Adapter list â€” populated from individual bank files
+// Adapter list " populated from individual bank files
 export const ADAPTERS: Record<string, () => Promise<BankAdapter>> = {
   HDFC: () => import('./hdfc').then((m) => m.hdfcAdapter),
   SBI: () => import('./sbi').then((m) => m.sbiAdapter),
@@ -53,7 +53,7 @@ export const ADAPTERS: Record<string, () => Promise<BankAdapter>> = {
 
 /**
  * Run scraper across all (or selected) banks.
- * Returns array of raw HTML results â€” feed to parser to convert to CreditCard[].
+ * Returns array of raw HTML results " feed to parser to convert to CreditCard[].
  */
 export async function runScrapers(banks: string[] = Object.keys(ADAPTERS)): Promise<ScrapeResult[]> {
   const results: ScrapeResult[] = [];

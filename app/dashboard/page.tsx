@@ -188,7 +188,7 @@ export default function DashboardPage() {
                           {card.card_name || `${card.bank} Card`}
                         </div>
                         <div className="text-xs" style={{ color: 'var(--text-dim)' }}>
-                          {card.card_last4 ? `••••${card.card_last4}` : card.bank}
+                          {card.card_last4 ? `....${card.card_last4}` : card.bank}
                           {card.statement_date ? ` . ${new Date(card.statement_date).toLocaleDateString('en-IN', { month: 'short', year: 'numeric' })}` : ''}
                         </div>
                       </div>

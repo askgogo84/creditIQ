@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 
 export const runtime = 'edge';
 
-// Simple in-memory store for demo — in production use Supabase
+// Simple in-memory store for demo  --  in production use Supabase
 // Ratings stored as { cardId: { total: number, count: number } }
 
 export async function POST(req: NextRequest) {

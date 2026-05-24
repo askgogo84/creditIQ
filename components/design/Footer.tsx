@@ -87,7 +87,7 @@ export function DesignFooter() {
                 letterSpacing: '0.2em',
               }}
             >
-              MADE IN INDIA · EST. 2025
+              MADE IN INDIA . EST. 2025
             </p>
           </div>
           {COLS.map(col => (
@@ -134,8 +134,8 @@ export function DesignFooter() {
             gap: 12,
           }}
         >
-          <span className="mono">© 2026 CREDITIQ INTELLIGENCE PVT LTD</span>
-          <span className="mono">PRIVACY · TERMS · DISCLOSURES</span>
+          <span className="mono">(c) 2026 CREDITIQ INTELLIGENCE PVT LTD</span>
+          <span className="mono">PRIVACY . TERMS . DISCLOSURES</span>
         </div>
       </div>
     </footer>

@@ -4,7 +4,7 @@ import { parseScrapedCard } from '@/lib/scrapers/parser';
 import { createClient } from '@supabase/supabase-js';
 
 // Vercel cron will call this weekly
-export const maxDuration = 300; // 5 min — adjust if using Hobby (60s max)
+export const maxDuration = 300; // 5 min  --  adjust if using Hobby (60s max)
 
 export async function GET(req: NextRequest) {
   // Auth: Vercel cron sends Authorization: Bearer ${CRON_SECRET}
@@ -17,7 +17,7 @@ export async function GET(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
-  // Manual trigger from admin panel — requires admin session
+  // Manual trigger from admin panel  --  requires admin session
   // (In production, add stricter check)
   const url = new URL(req.url);
   const bank = url.searchParams.get('bank');

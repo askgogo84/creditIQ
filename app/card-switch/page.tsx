@@ -13,12 +13,12 @@ type Step = 'current' | 'reason' | 'debt' | 'result';
 const SWITCH_REASONS = [
   { id: 'high-fee', label: 'Annual fee too high', icon: '💸' },
   { id: 'low-rewards', label: 'Rewards not matching my spends', icon: '📉' },
-  { id: 'no-lounge', label: 'No airport lounge access', icon: '✈️' },
+  { id: 'no-lounge', label: 'No airport lounge access', icon: '' },
   { id: 'bad-forex', label: 'High forex markup for travel', icon: '🌍' },
   { id: 'debt', label: 'Want to transfer outstanding balance', icon: '🔄' },
-  { id: 'upgrade', label: 'Ready to upgrade to premium', icon: '⭐' },
+  { id: 'upgrade', label: 'Ready to upgrade to premium', icon: '' },
   { id: 'cashback', label: 'Want simple cashback instead', icon: '💰' },
-  { id: 'dining', label: 'Better dining / food rewards', icon: '🍽️' },
+  { id: 'dining', label: 'Better dining / food rewards', icon: '🍽' },
 ];
 
 const CARD_OPTIONS = SEED_CARDS.slice(0, 30).map(c => ({

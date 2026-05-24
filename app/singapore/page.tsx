@@ -11,7 +11,7 @@ export const metadata: Metadata = {
 const SG_CARDS = [
   { id: 'dbs-altitude', name: 'DBS Altitude Visa', bank: 'DBS', annualFee: 192.60, feeWaiver: 'Waived 1st year', network: 'Visa', tier: 'Premium', category: ['travel', 'miles'], baseRate: '1.2 mpd', bonusRate: '3 mpd overseas', lounges: 'Priority Pass (2/yr)', minIncome: 30000, bestFor: 'Miles collectors, frequent flyers', isFree: false, highlight: 'Best entry-level miles card' },
   { id: 'uob-prvi', name: 'UOB PRVI Miles', bank: 'UOB', annualFee: 256.80, feeWaiver: 'Waived 1st year', network: 'Visa/Amex', tier: 'Premium', category: ['travel', 'miles'], baseRate: '1.4 mpd', bonusRate: '2.4 mpd overseas', lounges: 'Included', minIncome: 30000, bestFor: 'High spenders wanting miles', isFree: false, highlight: 'Highest base miles rate' },
-  { id: 'ocbc-90n', name: 'OCBC 90°N Card', bank: 'OCBC', annualFee: 0, feeWaiver: 'Lifetime free', network: 'Mastercard', tier: 'Standard', category: ['cashback', 'miles'], baseRate: '1.3 mpd', bonusRate: '2.1 mpd overseas', lounges: 'None', minIncome: 30000, bestFor: 'No-fee miles card', isFree: true, highlight: 'Best free miles card SG' },
+  { id: 'ocbc-90n', name: 'OCBC 90 degrees N Card', bank: 'OCBC', annualFee: 0, feeWaiver: 'Lifetime free', network: 'Mastercard', tier: 'Standard', category: ['cashback', 'miles'], baseRate: '1.3 mpd', bonusRate: '2.1 mpd overseas', lounges: 'None', minIncome: 30000, bestFor: 'No-fee miles card', isFree: true, highlight: 'Best free miles card SG' },
   { id: 'citi-prestige-sg', name: 'Citi Prestige Card', bank: 'Citibank', annualFee: 535, feeWaiver: 'No waiver', network: 'Mastercard', tier: 'Ultra Premium', category: ['travel', 'premium'], baseRate: '1.3 mpd', bonusRate: '5 mpd on hotels', lounges: 'Unlimited Priority Pass', minIncome: 120000, bestFor: 'Ultra premium, hotel lovers', isFree: false, highlight: '4th night free on hotels' },
   { id: 'dbs-womens', name: "DBS Woman's World Card", bank: 'DBS', annualFee: 162.18, feeWaiver: 'Waived 1st year', network: 'Mastercard', tier: 'Standard', category: ['cashback', 'shopping'], baseRate: '1 mpd', bonusRate: '10X on online shopping', lounges: 'None', minIncome: 30000, bestFor: 'Online shoppers', isFree: false, highlight: '10X miles on online spend' },
   { id: 'uob-one', name: 'UOB ONE Card', bank: 'UOB', annualFee: 0, feeWaiver: 'Lifetime free', network: 'Visa', tier: 'Standard', category: ['cashback'], baseRate: '3.33% cashback', bonusRate: '5% on UOB EVOL', lounges: 'None', minIncome: 30000, bestFor: 'Cashback seekers', isFree: true, highlight: 'Up to 10% cashback with UOB account' },
@@ -23,11 +23,11 @@ const SG_CARDS = [
 
 const CATEGORIES = [
   { id: 'all', label: 'All Cards' },
-  { id: 'miles', label: '✈️ Miles' },
+  { id: 'miles', label: ' Miles' },
   { id: 'cashback', label: '💰 Cashback' },
   { id: 'premium', label: '👑 Premium' },
   { id: 'free', label: '🎁 No Annual Fee' },
-  { id: 'dining', label: '🍽️ Dining' },
+  { id: 'dining', label: '🍽 Dining' },
 ];
 
 export default function SingaporePage() {
@@ -65,7 +65,7 @@ export default function SingaporePage() {
 
         {/* Market note */}
         <div style={{ background: 'rgba(201,151,46,0.08)', border: '1px solid rgba(201,151,46,0.2)', borderRadius: 12, padding: '14px 18px', marginBottom: 24, fontSize: 13, color: 'rgba(255,255,255,0.6)', lineHeight: 1.6 }}>
-          <strong style={{ color: '#C9972E' }}>🇸🇬 Singapore Miles (mpd)</strong> -- Singapore cards use miles per dollar (mpd) instead of reward points. 1 mile ≈ SGD 0.015-0.025 when redeemed for business class flights. KrisFlyer (Singapore Airlines) is the dominant program.
+          <strong style={{ color: '#C9972E' }}>🇸🇬 Singapore Miles (mpd)</strong> -- Singapore cards use miles per dollar (mpd) instead of reward points. 1 mile  SGD 0.015-0.025 when redeemed for business class flights. KrisFlyer (Singapore Airlines) is the dominant program.
         </div>
 
         {/* Cards grid */}
@@ -139,7 +139,7 @@ export default function SingaporePage() {
             {[
               { label: 'Reward currency', india: 'Points (Rs. value)', sg: 'Miles (mpd)' },
               { label: 'Best for miles', india: 'HDFC Infinia -> KrisFlyer', sg: 'UOB PRVI Miles' },
-              { label: 'Free cards', india: 'IDFC First, Scapia', sg: 'OCBC 90°N, UOB ONE' },
+              { label: 'Free cards', india: 'IDFC First, Scapia', sg: 'OCBC 90 degrees N, UOB ONE' },
               { label: 'Top lounge access', india: 'HDFC Infinia (unlimited)', sg: 'Amex Platinum (Centurion)' },
             ].map((row, i) => (
               <div key={i} style={{ background: 'rgba(255,255,255,0.02)', borderRadius: 10, padding: '12px 14px' }}>

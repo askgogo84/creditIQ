@@ -246,7 +246,7 @@ export default function ComparePage() {
         {/* Empty state - goes to /cards not / */}
         {selected.length === 0 && (
           <div style={{ textAlign: 'center', padding: '48px 20px', background: 'var(--bg-card, #fff)', borderRadius: 20, border: '1px solid var(--border, #e2e8f0)' }}>
-            <div style={{ fontSize: 48, marginBottom: 16 }}>⚖️</div>
+            <div style={{ fontSize: 48, marginBottom: 16 }}>=</div>
             <h2 style={{ fontSize: 22, fontWeight: 700, marginBottom: 8 }}>No cards selected yet</h2>
             <p style={{ fontSize: 15, color: 'var(--text-muted, #64748b)', marginBottom: 24 }}>
               Add cards using the slot above, or browse our catalog to find cards to compare.

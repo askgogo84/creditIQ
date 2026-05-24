@@ -52,7 +52,7 @@ export async function POST(req: NextRequest) {
     const cards = fiData.map((fi: any) => {
       const summary = fi.data?.Account?.Summary;
       return {
-        maskedNumber: fi.data?.Account?.maskedAccNumber || '•••• ????',
+        maskedNumber: fi.data?.Account?.maskedAccNumber || '.... ????',
         bank: fi.fipId,
         rewardPoints: summary?.rewardPoints || 0,
         cashbackBalance: summary?.cashbackBalance || 0,

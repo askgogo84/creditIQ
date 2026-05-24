@@ -8,7 +8,7 @@ import type { ScrapeResult } from './index';
  */
 export async function parseScrapedCard(scrape: ScrapeResult): Promise<Partial<CreditCard> | null> {
   if (!process.env.ANTHROPIC_API_KEY) {
-    console.warn('ANTHROPIC_API_KEY not set — skipping parse');
+    console.warn('ANTHROPIC_API_KEY not set  --  skipping parse');
     return null;
   }
   if (scrape.error || !scrape.html) return null;

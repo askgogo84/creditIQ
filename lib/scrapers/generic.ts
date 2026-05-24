@@ -14,7 +14,7 @@ export function makeGenericAdapter(bank: string, list_url: string): BankAdapter 
       return [list_url];
     },
     async scrapeCard(url: string): Promise<ScrapeResult> {
-      // Playwright is loaded lazily — only available when run from Node (script or cron)
+      // Playwright is loaded lazily  --  only available when run from Node (script or cron)
       let playwright: any;
       try {
         playwright = await import('playwright');
@@ -36,7 +36,7 @@ export function makeGenericAdapter(bank: string, list_url: string): BankAdapter 
         });
         const page = await ctx.newPage();
         await page.goto(url, { waitUntil: 'networkidle', timeout: 30000 });
-        // Extract main content — strip nav, footer, scripts
+        // Extract main content  --  strip nav, footer, scripts
         const html = await page.evaluate(() => {
           // Remove scripts, styles, navs, footers
           const clone = document.body.cloneNode(true) as HTMLElement;

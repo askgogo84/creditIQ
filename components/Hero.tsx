@@ -25,7 +25,7 @@ export function Hero() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 w-full">
         <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
 
-          {/* Left — copy */}
+          {/* Left  --  copy */}
           <div>
             <motion.div
               initial={{ opacity: 0, y: 16 }}
@@ -98,7 +98,7 @@ export function Hero() {
             </motion.div>
           </div>
 
-          {/* Right — card showcase */}
+          {/* Right  --  card showcase */}
           <motion.div
             initial={{ opacity: 0, x: 40 }}
             animate={{ opacity: 1, x: 0 }}
@@ -120,11 +120,11 @@ export function Hero() {
             </div>
             {/* Tap hint */}
             <div className="absolute bottom-0 right-1/4 text-[10px] font-mono uppercase tracking-widest" style={{ color: 'var(--text-dim)' }}>
-              ↑ Tap to inspect
+               Tap to inspect
             </div>
           </motion.div>
 
-          {/* Mobile card — single card centered */}
+          {/* Mobile card  --  single card centered */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}

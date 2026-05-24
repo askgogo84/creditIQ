@@ -41,7 +41,7 @@ async function main() {
   const { error } = await supabase.from('cards').upsert(cards, { onConflict: 'id' });
 
   if (error) { console.error('Error:', error); process.exit(1); }
-  console.log(`✅ Seeded ${cards.length} cards!`);
+  console.log(`(ok) Seeded ${cards.length} cards!`);
 }
 
 main();

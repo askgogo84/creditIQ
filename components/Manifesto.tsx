@@ -31,7 +31,7 @@ export function Manifesto() {
           transition={{ delay: 0.15 }}
           className="mt-8 text-lg text-ink-300 leading-relaxed max-w-3xl mx-auto font-display"
         >
-          Paisabazaar, BankBazaar, CardInsider — they earn ₹500–3,000 per approved application.
+          Paisabazaar, BankBazaar, CardInsider  --  they earn Rs.500 - 3,000 per approved application.
           Cards with higher affiliate payouts rank higher, even when they're objectively worse for you.
           We don't take affiliate commissions on rankings. We rank cards by your spending pattern alone.
         </motion.p>

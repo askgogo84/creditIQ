@@ -17,7 +17,7 @@ export function Footer() {
               <span style={{ color: 'var(--text-dim)' }}>93 cards tracked.</span>
             </p>
             <div className="text-xs font-mono uppercase tracking-widest mt-4" style={{ color: 'var(--text-dim)' }}>
-              © {new Date().getFullYear()} CreditIQ · Bengaluru
+              (c) {new Date().getFullYear()} CreditIQ . Bengaluru
             </div>
           </div>
           <div>
@@ -64,7 +64,7 @@ export function Footer() {
           </div>
         </div>
         <div className="mt-16 pt-8 border-t text-xs leading-relaxed max-w-3xl" style={{ borderColor: 'var(--border)', color: 'var(--text-dim)' }}>
-          Disclaimer: CreditIQ is an information service. We are not a financial advisor. Card terms change frequently — verify with the issuing bank before applying.
+          Disclaimer: CreditIQ is an information service. We are not a financial advisor. Card terms change frequently  --  verify with the issuing bank before applying.
         </div>
       </div>
     </footer>

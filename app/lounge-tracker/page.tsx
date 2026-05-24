@@ -7,7 +7,7 @@ import { SEED_CARDS } from '@/lib/data/seed-cards';
 
 const LOUNGES_BY_AIRPORT = [
   { airport: 'BOM -- Mumbai (CSIA)', terminal: 'T2 International', lounges: ['Plaza Premium', 'Air India Maharaja', 'BIAL Lounge'] },
-  { airport: 'DEL -- Delhi (IGI)', terminal: 'T3 International', lounges: ['Plaza Premium', 'Encalm Privé', 'Air India Maharaja'] },
+  { airport: 'DEL -- Delhi (IGI)', terminal: 'T3 International', lounges: ['Plaza Premium', 'Encalm Prive', 'Air India Maharaja'] },
   { airport: 'BLR -- Bangalore (KIA)', terminal: 'T1 & T2', lounges: ['BLR Lounges by Encalm', 'Plaza Premium'] },
   { airport: 'HYD -- Hyderabad (RGIA)', terminal: 'International', lounges: ['GMR Aero Lounge', 'Plaza Premium'] },
   { airport: 'MAA -- Chennai', terminal: 'International', lounges: ['Chennai International Lounge'] },
@@ -159,7 +159,7 @@ export default function LoungeTrackerPage() {
                     </div>
                     <div style={{ textAlign: 'right' as const }}>
                       <div style={{ fontSize: 22, fontWeight: 800, color: isUnlimited ? '#16a34a' : (card.visitsRemaining! > 0 ? '#1B3A5C' : '#dc2626') }}>
-                        {isUnlimited ? '∞' : card.visitsRemaining}
+                        {isUnlimited ? '' : card.visitsRemaining}
                       </div>
                       <div style={{ fontSize: 11, color: '#94a3b8' }}>
                         {isUnlimited ? 'unlimited' : 'visits left'}
@@ -202,7 +202,7 @@ export default function LoungeTrackerPage() {
                   {card.spendRequired && (
                     <div style={{ backgroundColor: '#fffbeb', border: '1px solid #fde68a', borderRadius: 10, padding: '10px 14px', marginBottom: 14 }}>
                       <div style={{ fontSize: 12, color: '#92400e' }}>
-                        ⚠️ Requires Rs.{card.spendRequired.toLocaleString('en-IN')} quarterly spend to unlock lounge access
+                        (!!) Requires Rs.{card.spendRequired.toLocaleString('en-IN')} quarterly spend to unlock lounge access
                       </div>
                       <div style={{ marginTop: 8 }}>
                         <label style={{ fontSize: 11, color: '#92400e' }}>My Q spend: Rs.</label>

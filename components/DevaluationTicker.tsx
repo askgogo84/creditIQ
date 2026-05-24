@@ -32,7 +32,7 @@ export function DevaluationTicker() {
                   {new Date(d.date).toLocaleDateString('en-IN', { month: 'short', day: '2-digit' })}
                 </span>
                 <span className="text-ink-100 font-medium">{d.cardName}</span>
-                <span className="text-ink-300">·</span>
+                <span className="text-ink-300">.</span>
                 <span className="text-ink-200">{d.description}</span>
                 {d.impact === 'high' && (
                   <span className="text-crimson-400 flex items-center gap-1">

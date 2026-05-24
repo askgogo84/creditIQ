@@ -225,7 +225,7 @@ You have earned 2,500 Reward Points on your HDFC Card XX4821. Total RP Balance: 
                           <div className="flex-1 min-w-0">
                             <div className="font-medium text-sm" style={{ color: 'var(--text)' }}>{card.bank} Card</div>
                             <div className="text-xs" style={{ color: 'var(--text-dim)' }}>
-                              {card.card_last4 ? `••••${card.card_last4}` : 'Card number not found'}
+                              {card.card_last4 ? `....${card.card_last4}` : 'Card number not found'}
                               {card.points_earned > 0 ? ` . +${card.points_earned.toLocaleString('en-IN')} earned` : ''}
                             </div>
                           </div>

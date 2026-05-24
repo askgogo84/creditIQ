@@ -39,7 +39,7 @@ const ACTIONS: SimAction[] = [
     id: 'missed-payment',
     label: 'Miss a payment',
     description: 'Single biggest negative event -- avoid at all costs',
-    icon: '❌',
+    icon: '(x)',
     impact: () => -85,
     params: [],
   },
@@ -55,7 +55,7 @@ const ACTIONS: SimAction[] = [
     id: 'on-time',
     label: 'Pay all bills on time for 6 months',
     description: 'Consistent on-time payments are the #1 score factor',
-    icon: '✅',
+    icon: '(ok)',
     impact: () => 35,
     params: [],
   },
@@ -249,7 +249,7 @@ export default function CreditSimulatorPage() {
                         width: 24, height: 24, borderRadius: '50%', background: 'rgba(239,68,68,0.15)',
                         border: '1px solid rgba(239,68,68,0.3)', color: '#ef4444',
                         cursor: 'pointer', fontSize: 12, display: 'flex', alignItems: 'center', justifyContent: 'center',
-                      }}>✕</button>
+                      }}></button>
                     </div>
                   );
                 })}

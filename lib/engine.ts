@@ -117,7 +117,7 @@ export function calculateAnnualValue(
     totalRewards += card.welcome_benefit_inr;
   }
 
-  // Lounge value estimation (₹2,000 per visit if user travels)
+  // Lounge value estimation (Rs.2,000 per visit if user travels)
   const annualLoungeVisits = (card.lounges ?? []).reduce((sum, l) => {
     if (l.spend_gated && (l.spend_threshold ?? 0) > monthlyTotal * 3) return sum;
     const visits = (l.visits_per_year ?? 0) + (l.visits_per_quarter ?? 0) * 4;
@@ -183,14 +183,14 @@ export function matchCards(
     const topReward = Object.entries(breakdown)
       .filter(([k]) => !k.includes('fee') && !k.includes('Welcome'))
       .sort((a, b) => (b[1] as number) - (a[1] as number))[0];
-    const reasoning = `Net ₹${net_value_inr.toLocaleString('en-IN')}/year. ${topReward ? `Top earn: ${topReward[0]}` : ''}`;
+    const reasoning = `Net Rs.${net_value_inr.toLocaleString('en-IN')}/year. ${topReward ? `Top earn: ${topReward[0]}` : ''}`;
 
     const warnings: string[] = [];
     if (card.devaluations && card.devaluations.length > 0) {
       const recent = card.devaluations.filter(d => new Date(d.date) > new Date(Date.now() - 365 * 24 * 60 * 60 * 1000));
       if (recent.length > 0) warnings.push(`${recent.length} devaluation(s) in past 12 months`);
     }
-    if (card.tier === 'invite-only') warnings.push('Invite-only — application not guaranteed');
+    if (card.tier === 'invite-only') warnings.push('Invite-only  --  application not guaranteed');
 
     results.push({ card, score, annual_value_inr: net_value_inr, reasoning, warnings });
   }

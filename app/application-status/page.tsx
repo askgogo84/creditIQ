@@ -25,8 +25,8 @@ const STATUS_TIPS = [
   { icon: '📞', tip: 'Call the bank\'s credit card helpline after 5 working days if no update.' },
   { icon: '📧', tip: 'Check your registered email -- most banks send status emails at each stage.' },
   { icon: '📱', tip: 'SMS your application reference number to the bank\'s SMS service.' },
-  { icon: '⚠️', tip: 'A "verification pending" status usually means a physical visit or document is needed.' },
-  { icon: '❌', tip: 'If rejected, wait 6 months before applying again -- multiple rejections hurt your score.' },
+  { icon: '(!!)', tip: 'A "verification pending" status usually means a physical visit or document is needed.' },
+  { icon: '(x)', tip: 'If rejected, wait 6 months before applying again -- multiple rejections hurt your score.' },
 ];
 
 export default function ApplicationStatusPage() {

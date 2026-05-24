@@ -33,7 +33,7 @@ async function main() {
     JSON.stringify(parsed, null, 2)
   );
 
-  console.log(`\n✓ Parsed ${parsed.length} cards. Output saved.`);
+  console.log(`\n(ok) Parsed ${parsed.length} cards. Output saved.`);
 }
 
 main().catch(console.error);
