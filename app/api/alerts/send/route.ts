@@ -5,7 +5,7 @@ import { NextRequest, NextResponse } from 'next/server';
 export async function POST(req: NextRequest) {
   try {
     const resend = new Resend(process.env.RESEND_API_KEY);
-    const { email, cardName, oldValue, newValue, changeType } = await req.json();
+        const { email, cardName, oldValue, newValue, changeType } = await req.json();
 
     if (!email || !cardName) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
