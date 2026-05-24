@@ -1,4 +1,4 @@
-import { getAllCards, getDevaluationEvents } from './supabase'
+﻿import { getAllCards, getDevaluationEvents } from './supabase'
 import type { CreditCard } from './types'
 
 export function cardToText(card: any): string {
@@ -77,7 +77,7 @@ export async function retrieveRelevantCards(
 
     if (intent === 'travel') {
       if (card.category?.includes('travel')) score += 30
-      if (card.lounges?.length > 0) score += 20
+      if ((card.lounges?.length ?? 0) > 0) score += 20
       if (card.forex_markup_percent !== undefined && card.forex_markup_percent < 2) score += 15
     }
     if (intent === 'cashback') {
