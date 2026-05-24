@@ -309,6 +309,12 @@ function TripPlannerPageInner() {
                         <a href={`https://www.google.com/flights?q=flights+to+${encodeURIComponent(result.destination)}`} target="_blank" rel="noopener noreferrer" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 5, padding: '8px', background: '#f0f4ff', color: '#4285F4', borderRadius: 10, fontSize: 11, fontWeight: 700, textDecoration: 'none', border: '1px solid #c7d2fe', marginTop: 4 }}>
                           Google Flights
                         </a>
+                        <a href={`https://www.makemytrip.com/flights/`} target="_blank" rel="noopener noreferrer" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 5, padding: '8px', background: '#fff0f0', color: '#E8122D', borderRadius: 10, fontSize: 11, fontWeight: 700, textDecoration: 'none', border: '1px solid #fecaca', marginTop: 4 }}>
+                          Search MakeMyTrip
+                        </a>
+                        <a href={`https://www.google.com/flights?q=flights+to+${encodeURIComponent(result.destination)}`} target="_blank" rel="noopener noreferrer" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 5, padding: '8px', background: '#f0f4ff', color: '#4285F4', borderRadius: 10, fontSize: 11, fontWeight: 700, textDecoration: 'none', border: '1px solid #c7d2fe', marginTop: 4 }}>
+                          Google Flights
+                        </a>
                       </div>
                     </div>
                   </div>

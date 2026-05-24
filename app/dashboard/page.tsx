@@ -6,7 +6,7 @@ import { createBrowserClient } from '@supabase/ssr';
 import { useRouter } from 'next/navigation';
 import { Header } from '@/components/Header';
 import { Footer } from '@/components/Footer';
-import { Plus, TrendingUp, ArrowRight, Zap, RefreshCw, FileText, MessageSquare, LogOut, CreditCard, Upload, Trash2, AlertCircle } from 'lucide-react';
+import { Plus, TrendingUp, ArrowRight, Zap, RefreshCw, FileText, MessageSquare, LogOut, CreditCard, Upload, Trash2, X, Check } from 'lucide-react';
 import Link from 'next/link';
 
 const BANK_COLORS: Record<string, string> = {
@@ -15,10 +15,12 @@ const BANK_COLORS: Record<string, string> = {
   RBL: '#1D4ED8', IndusInd: '#312E81', SC: '#0473EA', AU: '#7C2D12',
 };
 
+const BANKS = ['HDFC', 'Axis', 'ICICI', 'SBI', 'AmEx', 'Kotak', 'IDFC', 'Yes', 'RBL', 'IndusInd', 'SC', 'AU', 'Other'];
+
 const REDEMPTION_IDEAS = [
-  { title: 'Singapore Business Class', points: '1,20,000 pts', value: 'Rs.2.4L+', bank: 'HDFC -> KrisFlyer', tag: 'Best value', color: '#059669' },
-  { title: 'Marriott Jaipur (2 nights)', points: '60,000 pts', value: 'Rs.18,000', bank: 'HDFC -> Marriott', tag: 'Hotel', color: '#0473ea' },
-  { title: 'Domestic flight (any route)', points: '15,000 pts', value: 'Rs.4,500', bank: 'Axis EDGE Miles', tag: 'Flight', color: '#7c1d3a' },
+  { title: 'Singapore Business Class', points: 120000, value: 'Rs.2.4L+', bank: 'HDFC -> KrisFlyer', tag: 'Best value', color: '#059669' },
+  { title: 'Marriott Jaipur (2 nights)', points: 60000, value: 'Rs.18,000', bank: 'HDFC -> Marriott', tag: 'Hotel', color: '#0473ea' },
+  { title: 'Domestic flight (any route)', points: 15000, value: 'Rs.4,500', bank: 'Axis EDGE Miles', tag: 'Flight', color: '#7c1d3a' },
 ];
 
 interface SavedCard {
@@ -28,9 +30,18 @@ interface SavedCard {
   card_last4: string;
   points_balance: number;
   points_currency: string;
-  cashback_balance: number;
-  statement_date: string;
+  cashback_balance?: number;
+  statement_date?: string;
   imported_at: string;
+  source?: 'statement' | 'manual';
+}
+
+interface AddCardForm {
+  bank: string;
+  cardName: string;
+  cardLast4: string;
+  pointsBalance: string;
+  pointsCurrency: string;
 }
 
 export default function DashboardPage() {
@@ -39,6 +50,12 @@ export default function DashboardPage() {
   const [cards, setCards] = useState<SavedCard[]>([]);
   const [cardsLoading, setCardsLoading] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
+  const [showAddModal, setShowAddModal] = useState(false);
+  const [addForm, setAddForm] = useState<AddCardForm>({
+    bank: 'HDFC', cardName: '', cardLast4: '', pointsBalance: '', pointsCurrency: 'Points'
+  });
+  const [addLoading, setAddLoading] = useState(false);
+  const [addSuccess, setAddSuccess] = useState(false);
   const router = useRouter();
 
   useEffect(() => {
@@ -58,18 +75,58 @@ export default function DashboardPage() {
   const loadCards = async (userId: string) => {
     setCardsLoading(true);
     try {
-      const res = await fetch(`/api/user-cards?userId=${userId}`);
-      const data = await res.json();
-      setCards(data.cards || []);
+      const [stmtRes, manualRes] = await Promise.all([
+        fetch(`/api/user-cards?userId=${userId}`),
+        fetch(`/api/manual-cards?userId=${userId}`)
+      ]);
+      const stmtData = await stmtRes.json();
+      const manualData = await manualRes.json();
+      const stmtCards = (stmtData.cards || []).map((c: SavedCard) => ({ ...c, source: 'statement' as const }));
+      const manualCards = (manualData.cards || []).map((c: SavedCard) => ({ ...c, source: 'manual' as const }));
+      setCards([...stmtCards, ...manualCards]);
     } catch {}
     setCardsLoading(false);
   };
 
-  const handleRefresh = async () => {
+  const handleAddCard = async () => {
+    if (!user || !addForm.cardName || !addForm.pointsBalance) return;
+    setAddLoading(true);
+    try {
+      const res = await fetch('/api/manual-cards', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          userId: user.id,
+          bank: addForm.bank,
+          cardName: addForm.cardName,
+          cardLast4: addForm.cardLast4,
+          pointsBalance: addForm.pointsBalance,
+          pointsCurrency: addForm.pointsCurrency,
+        })
+      });
+      if (res.ok) {
+        setAddSuccess(true);
+        await loadCards(user.id);
+        setTimeout(() => {
+          setShowAddModal(false);
+          setAddSuccess(false);
+          setAddForm({ bank: 'HDFC', cardName: '', cardLast4: '', pointsBalance: '', pointsCurrency: 'Points' });
+        }, 1000);
+      }
+    } catch {}
+    setAddLoading(false);
+  };
+
+  const handleDeleteCard = async (cardId: string, source: string) => {
     if (!user) return;
-    setRefreshing(true);
+    if (source === 'manual') {
+      await fetch('/api/manual-cards', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId: user.id, cardId })
+      });
+    }
     await loadCards(user.id);
-    setRefreshing(false);
   };
 
   const signOut = async () => {
@@ -79,9 +136,10 @@ export default function DashboardPage() {
   };
 
   const totalPoints = cards.reduce((s, c) => s + (c.points_balance || 0), 0);
-  const bestValue = Math.round(totalPoints * 1.8); // optimistic Rs.1.8/pt via travel
-  const conservativeValue = Math.round(totalPoints * 0.25); // Rs.0.25/pt statement credit
+  const bestValue = Math.round(totalPoints * 1.8);
+  const conservativeValue = Math.round(totalPoints * 0.25);
   const firstName = user?.user_metadata?.full_name?.split(' ')[0] || user?.email?.split('@')[0] || 'there';
+  const primaryBank = cards[0]?.bank || 'HDFC';
 
   if (loading) return (
     <main className="min-h-screen flex items-center justify-center">
@@ -95,6 +153,73 @@ export default function DashboardPage() {
   return (
     <main className="min-h-screen" style={{ overflowX: 'hidden' }}>
       <Header />
+
+      {/* Add Card Modal */}
+      {showAddModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(4px)' }}>
+          <div className="w-full max-w-md rounded-2xl p-6" style={{ background: 'var(--surface, #fff)', border: '1px solid var(--line, rgba(20,41,80,0.1))' }}>
+            <div className="flex items-center justify-between mb-5">
+              <h3 className="font-semibold text-lg" style={{ color: 'var(--ink, #142950)' }}>Add card manually</h3>
+              <button onClick={() => setShowAddModal(false)} style={{ color: 'var(--ink-3)' }}>
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="space-y-4">
+              <div>
+                <label className="text-xs font-medium mb-1.5 block" style={{ color: 'var(--ink-3)' }}>Bank</label>
+                <select value={addForm.bank} onChange={e => setAddForm(f => ({ ...f, bank: e.target.value }))}
+                  className="w-full px-3 py-2.5 rounded-xl text-sm" style={{ border: '1px solid var(--line)', background: 'var(--surface-2, #f8f9fc)', color: 'var(--ink)' }}>
+                  {BANKS.map(b => <option key={b} value={b}>{b}</option>)}
+                </select>
+              </div>
+
+              <div>
+                <label className="text-xs font-medium mb-1.5 block" style={{ color: 'var(--ink-3)' }}>Card name</label>
+                <input type="text" placeholder="e.g. HDFC Regalia Gold" value={addForm.cardName}
+                  onChange={e => setAddForm(f => ({ ...f, cardName: e.target.value }))}
+                  className="w-full px-3 py-2.5 rounded-xl text-sm" style={{ border: '1px solid var(--line)', background: 'var(--surface-2, #f8f9fc)', color: 'var(--ink)', outline: 'none' }} />
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="text-xs font-medium mb-1.5 block" style={{ color: 'var(--ink-3)' }}>Last 4 digits (optional)</label>
+                  <input type="text" placeholder="1234" maxLength={4} value={addForm.cardLast4}
+                    onChange={e => setAddForm(f => ({ ...f, cardLast4: e.target.value.replace(/\D/g, '') }))}
+                    className="w-full px-3 py-2.5 rounded-xl text-sm" style={{ border: '1px solid var(--line)', background: 'var(--surface-2, #f8f9fc)', color: 'var(--ink)', outline: 'none' }} />
+                </div>
+                <div>
+                  <label className="text-xs font-medium mb-1.5 block" style={{ color: 'var(--ink-3)' }}>Points currency</label>
+                  <select value={addForm.pointsCurrency} onChange={e => setAddForm(f => ({ ...f, pointsCurrency: e.target.value }))}
+                    className="w-full px-3 py-2.5 rounded-xl text-sm" style={{ border: '1px solid var(--line)', background: 'var(--surface-2, #f8f9fc)', color: 'var(--ink)' }}>
+                    <option>Points</option>
+                    <option>Miles</option>
+                    <option>Rewards</option>
+                    <option>Cashback</option>
+                    <option>EDGE Miles</option>
+                    <option>InterMiles</option>
+                    <option>KrisFlyer</option>
+                  </select>
+                </div>
+              </div>
+
+              <div>
+                <label className="text-xs font-medium mb-1.5 block" style={{ color: 'var(--ink-3)' }}>Points balance</label>
+                <input type="number" placeholder="e.g. 52164" value={addForm.pointsBalance}
+                  onChange={e => setAddForm(f => ({ ...f, pointsBalance: e.target.value }))}
+                  className="w-full px-3 py-2.5 rounded-xl text-sm" style={{ border: '1px solid var(--line)', background: 'var(--surface-2, #f8f9fc)', color: 'var(--ink)', outline: 'none' }} />
+              </div>
+
+              <button onClick={handleAddCard} disabled={addLoading || !addForm.cardName || !addForm.pointsBalance}
+                className="w-full py-3 rounded-xl font-semibold text-sm flex items-center justify-center gap-2"
+                style={{ background: addSuccess ? '#059669' : '#C9972E', color: '#fff', opacity: addLoading ? 0.7 : 1 }}>
+                {addSuccess ? <><Check className="w-4 h-4" /> Card added!</> : addLoading ? 'Adding...' : 'Add card'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       <section className="pt-20 pb-16 px-4 sm:px-6">
         <div className="max-w-5xl mx-auto">
 
@@ -102,19 +227,21 @@ export default function DashboardPage() {
           <div className="flex items-start justify-between mb-6 flex-wrap gap-3">
             <div>
               <h1 className="font-display text-2xl sm:text-3xl" style={{ color: 'var(--text)' }}>
-                Hey {firstName} 👋
+                Hey {firstName}
               </h1>
               <p className="text-sm mt-1" style={{ color: 'var(--text-muted)' }}>{user?.email}</p>
             </div>
             <div className="flex items-center gap-2">
-              <button onClick={handleRefresh} disabled={refreshing}
+              <button onClick={() => setShowAddModal(true)}
+                className="btn-primary text-sm py-2 px-3 flex items-center gap-1.5" style={{ minHeight: 40 }}>
+                <Plus className="w-3.5 h-3.5" /> Add card
+              </button>
+              <button onClick={async () => { setRefreshing(true); await loadCards(user.id); setRefreshing(false); }}
                 className="btn-ghost text-sm py-2 px-3 flex items-center gap-1.5" style={{ minHeight: 40 }}>
                 <RefreshCw className={`w-3.5 h-3.5 ${refreshing ? 'animate-spin' : ''}`} />
-                <span className="hidden sm:inline">Refresh</span>
               </button>
               <button onClick={signOut} className="btn-ghost text-sm py-2 px-3 flex items-center gap-1.5" style={{ minHeight: 40 }}>
                 <LogOut className="w-3.5 h-3.5" />
-                <span className="hidden sm:inline">Sign out</span>
               </button>
             </div>
           </div>
@@ -125,14 +252,14 @@ export default function DashboardPage() {
               <CreditCard className="w-12 h-12 mx-auto mb-4" style={{ color: 'var(--text-dim)' }} />
               <h2 className="font-display text-2xl mb-2" style={{ color: 'var(--text)' }}>No cards yet</h2>
               <p className="text-sm mb-6 max-w-sm mx-auto" style={{ color: 'var(--text-muted)' }}>
-                Upload your bank statement once. Your points stay here every time you log in -- no re-upload needed.
+                Add your cards to see your combined points and plan trips.
               </p>
               <div className="flex flex-col sm:flex-row gap-3 justify-center">
-                <Link href="/upload-statement" className="btn-primary flex items-center justify-center gap-2">
-                  <Upload className="w-4 h-4" /> Upload statement PDF
-                </Link>
-                <Link href="/sms-import" className="btn-ghost flex items-center justify-center gap-2">
-                  <MessageSquare className="w-4 h-4" /> Paste bank SMS
+                <button onClick={() => setShowAddModal(true)} className="btn-primary flex items-center justify-center gap-2">
+                  <Plus className="w-4 h-4" /> Add card manually
+                </button>
+                <Link href="/upload-statement" className="btn-ghost flex items-center justify-center gap-2">
+                  <Upload className="w-4 h-4" /> Upload statement
                 </Link>
               </div>
             </div>
@@ -141,28 +268,52 @@ export default function DashboardPage() {
           {/* Cards loaded */}
           {cards.length > 0 && (
             <>
+              {/* Combined points hero */}
+              <div className="rounded-2xl p-5 mb-5" style={{ background: 'linear-gradient(135deg, #1B3A5C, #0d2240)', border: '1px solid rgba(201,151,46,0.2)' }}>
+                <div className="text-xs font-mono uppercase tracking-widest mb-1" style={{ color: 'rgba(201,151,46,0.8)' }}>
+                  Combined portfolio . {cards.length} card{cards.length !== 1 ? 's' : ''}
+                </div>
+                <div className="flex items-end justify-between gap-4 flex-wrap">
+                  <div>
+                    <div className="font-display text-4xl font-bold mb-1" style={{ color: '#C9972E' }}>
+                      {totalPoints.toLocaleString('en-IN')}
+                    </div>
+                    <div className="text-sm" style={{ color: 'rgba(255,255,255,0.5)' }}>total points across all cards</div>
+                  </div>
+                  <div className="text-right">
+                    <div className="text-xs mb-1" style={{ color: 'rgba(255,255,255,0.4)' }}>Best travel value</div>
+                    <div className="font-display text-2xl" style={{ color: '#22c55e' }}>Rs.{(bestValue/1000).toFixed(0)}K+</div>
+                    <div className="text-xs mt-1" style={{ color: 'rgba(255,255,255,0.3)' }}>vs Rs.{(conservativeValue/1000).toFixed(0)}K statement credit</div>
+                  </div>
+                </div>
+                <div className="mt-4 flex gap-2 flex-wrap">
+                  <Link href={`/optimize?points=${totalPoints}&bank=${primaryBank}`}
+                    className="px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-1.5"
+                    style={{ background: '#C9972E', color: '#0a0a0a' }}>
+                    <Zap className="w-3 h-3" /> Optimize all points
+                  </Link>
+                  <Link href={`/trip-planner?points=${totalPoints}&bank=${primaryBank}`}
+                    className="px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-1.5"
+                    style={{ background: 'rgba(255,255,255,0.1)', color: '#fff', border: '1px solid rgba(255,255,255,0.2)' }}>
+                    Plan a trip with all points
+                  </Link>
+                </div>
+              </div>
+
               {/* Stats grid */}
-              <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-6">
-                <div className="rounded-xl p-4 border" style={{ borderColor: 'var(--border)', background: 'var(--bg-elevated)' }}>
-                  <div className="text-[9px] font-mono uppercase tracking-widest mb-1" style={{ color: 'var(--text-dim)' }}>Total points</div>
-                  <div className="font-display text-2xl tabular" style={{ color: 'var(--accent)' }}>{totalPoints.toLocaleString('en-IN')}</div>
-                  <div className="text-xs mt-0.5" style={{ color: 'var(--text-dim)' }}>{cards.length} card{cards.length !== 1 ? 's' : ''}</div>
-                </div>
-                <div className="rounded-xl p-4 border" style={{ borderColor: 'var(--border)', background: 'var(--bg-elevated)' }}>
-                  <div className="text-[9px] font-mono uppercase tracking-widest mb-1" style={{ color: 'var(--text-dim)' }}>Best value</div>
-                  <div className="font-display text-2xl tabular" style={{ color: 'var(--emerald)' }}>Rs.{(bestValue / 1000).toFixed(0)}K+</div>
-                  <div className="text-xs mt-0.5" style={{ color: 'var(--text-dim)' }}>via travel redemption</div>
-                </div>
-                <div className="rounded-xl p-4 border" style={{ borderColor: 'var(--border)', background: 'var(--bg-elevated)' }}>
-                  <div className="text-[9px] font-mono uppercase tracking-widest mb-1" style={{ color: 'var(--text-dim)' }}>Statement credit</div>
-                  <div className="font-display text-2xl tabular" style={{ color: 'var(--text)' }}>Rs.{(conservativeValue / 1000).toFixed(0)}K</div>
-                  <div className="text-xs mt-0.5" style={{ color: 'var(--text-dim)' }}>worst redemption</div>
-                </div>
-                <div className="rounded-xl p-4 border" style={{ borderColor: 'var(--border)', background: 'var(--bg-elevated)' }}>
-                  <div className="text-[9px] font-mono uppercase tracking-widest mb-1" style={{ color: 'var(--text-dim)' }}>Value gap</div>
-                  <div className="font-display text-2xl tabular" style={{ color: '#ef4444' }}>Rs.{((bestValue - conservativeValue) / 1000).toFixed(0)}K</div>
-                  <div className="text-xs mt-0.5" style={{ color: 'var(--text-dim)' }}>don't leave this</div>
-                </div>
+              <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-5">
+                {[
+                  { label: 'Total points', value: totalPoints.toLocaleString('en-IN'), color: 'var(--accent)', sub: `${cards.length} cards` },
+                  { label: 'Best value', value: `Rs.${(bestValue/1000).toFixed(0)}K+`, color: 'var(--emerald)', sub: 'via travel' },
+                  { label: 'Statement credit', value: `Rs.${(conservativeValue/1000).toFixed(0)}K`, color: 'var(--text)', sub: 'worst option' },
+                  { label: 'Value gap', value: `Rs.${((bestValue-conservativeValue)/1000).toFixed(0)}K`, color: '#ef4444', sub: "don't leave this" },
+                ].map((s, i) => (
+                  <div key={i} className="rounded-xl p-4 border" style={{ borderColor: 'var(--border)', background: 'var(--bg-elevated)' }}>
+                    <div className="text-[9px] font-mono uppercase tracking-widest mb-1" style={{ color: 'var(--text-dim)' }}>{s.label}</div>
+                    <div className="font-display text-2xl tabular" style={{ color: s.color }}>{s.value}</div>
+                    <div className="text-xs mt-0.5" style={{ color: 'var(--text-dim)' }}>{s.sub}</div>
+                  </div>
+                ))}
               </div>
 
               {/* Card list */}
@@ -170,13 +321,13 @@ export default function DashboardPage() {
                 <div className="text-[10px] font-mono uppercase tracking-widest" style={{ color: 'var(--text-dim)' }}>
                   Your cards . {cards.length} saved
                 </div>
-                <Link href="/upload-statement" className="text-xs flex items-center gap-1" style={{ color: 'var(--accent)' }}>
+                <button onClick={() => setShowAddModal(true)} className="text-xs flex items-center gap-1" style={{ color: 'var(--accent)' }}>
                   <Plus className="w-3 h-3" /> Add card
-                </Link>
+                </button>
               </div>
 
               <div className="space-y-3 mb-6">
-                {cards.map((card, idx) => (
+                {cards.map((card) => (
                   <div key={card.id} className="rounded-xl border overflow-hidden" style={{ borderColor: 'var(--border)', background: 'var(--bg-elevated)' }}>
                     <div className="flex items-center gap-3 p-4">
                       <div className="w-10 h-10 rounded-lg shrink-0 flex items-center justify-center text-white text-xs font-bold"
@@ -184,8 +335,13 @@ export default function DashboardPage() {
                         {(card.bank || '??').slice(0, 2)}
                       </div>
                       <div className="flex-1 min-w-0">
-                        <div className="font-medium text-sm truncate" style={{ color: 'var(--text)' }}>
-                          {card.card_name || `${card.bank} Card`}
+                        <div className="flex items-center gap-2">
+                          <div className="font-medium text-sm truncate" style={{ color: 'var(--text)' }}>
+                            {card.card_name || `${card.bank} Card`}
+                          </div>
+                          {card.source === 'manual' && (
+                            <span className="text-[9px] px-1.5 py-0.5 rounded font-mono uppercase" style={{ background: 'rgba(201,151,46,0.1)', color: '#C9972E' }}>manual</span>
+                          )}
                         </div>
                         <div className="text-xs" style={{ color: 'var(--text-dim)' }}>
                           {card.card_last4 ? `....${card.card_last4}` : card.bank}
@@ -201,12 +357,17 @@ export default function DashboardPage() {
                     </div>
                     <div className="px-4 pb-3 pt-2 flex items-center justify-between gap-3" style={{ borderTop: '1px solid var(--border)' }}>
                       <div className="text-xs" style={{ color: 'var(--text-dim)' }}>
-                        Updated {new Date(card.imported_at).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })}
+                        {new Date(card.imported_at).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })}
                       </div>
                       <div className="flex items-center gap-3">
-                        <Link href={`/upload-statement`} className="text-xs" style={{ color: 'var(--text-dim)' }}>
-                          Update
-                        </Link>
+                        {card.source === 'manual' ? (
+                          <button onClick={() => handleDeleteCard(card.id, card.source || 'manual')}
+                            className="text-xs flex items-center gap-1" style={{ color: '#ef4444' }}>
+                            <Trash2 className="w-3 h-3" /> Remove
+                          </button>
+                        ) : (
+                          <Link href="/upload-statement" className="text-xs" style={{ color: 'var(--text-dim)' }}>Update</Link>
+                        )}
                         <Link href={`/optimize?bank=${card.bank}&points=${card.points_balance}`}
                           className="text-xs flex items-center gap-1 font-medium" style={{ color: 'var(--accent)' }}>
                           Optimize <ArrowRight className="w-3 h-3" />
@@ -216,45 +377,51 @@ export default function DashboardPage() {
                   </div>
                 ))}
 
-                <Link href="/upload-statement"
-                  className="rounded-xl border-2 border-dashed p-4 flex items-center justify-center gap-2 block transition-all"
+                <button onClick={() => setShowAddModal(true)}
+                  className="w-full rounded-xl border-2 border-dashed p-4 flex items-center justify-center gap-2 transition-all"
                   style={{ borderColor: 'var(--border)', color: 'var(--text-dim)' }}>
                   <Plus className="w-4 h-4" />
                   <span className="text-sm">Add another card</span>
-                </Link>
+                </button>
               </div>
 
               {/* Redemption opportunities */}
               <div className="text-[10px] font-mono uppercase tracking-widest mb-3" style={{ color: 'var(--text-dim)' }}>
-                Top redemption opportunities
+                Top redemption ideas for {totalPoints.toLocaleString('en-IN')} points
               </div>
               <div className="space-y-3 mb-6">
-                {REDEMPTION_IDEAS.map((r, i) => (
-                  <div key={i} className="rounded-xl border p-4" style={{ borderColor: 'var(--border)', background: 'var(--bg-elevated)' }}>
-                    <div className="flex items-start justify-between gap-2 mb-2">
-                      <div>
-                        <div className="font-medium text-sm" style={{ color: 'var(--text)' }}>{r.title}</div>
-                        <div className="text-xs mt-0.5" style={{ color: 'var(--text-dim)' }}>{r.bank}</div>
+                {REDEMPTION_IDEAS.map((r, i) => {
+                  const canAfford = totalPoints >= r.points;
+                  return (
+                    <div key={i} className="rounded-xl border p-4" style={{ borderColor: canAfford ? 'rgba(34,197,94,0.3)' : 'var(--border)', background: 'var(--bg-elevated)' }}>
+                      <div className="flex items-start justify-between gap-2 mb-2">
+                        <div>
+                          <div className="flex items-center gap-2">
+                            <div className="font-medium text-sm" style={{ color: 'var(--text)' }}>{r.title}</div>
+                            {canAfford && <span className="text-[9px] px-1.5 py-0.5 rounded font-mono uppercase" style={{ background: 'rgba(34,197,94,0.1)', color: '#059669' }}>you can afford this</span>}
+                          </div>
+                          <div className="text-xs mt-0.5" style={{ color: 'var(--text-dim)' }}>{r.bank}</div>
+                        </div>
+                        <div className="text-[10px] font-mono uppercase px-2 py-1 rounded shrink-0"
+                          style={{ background: `${r.color}20`, color: r.color }}>{r.tag}</div>
                       </div>
-                      <div className="text-[10px] font-mono uppercase px-2 py-1 rounded shrink-0"
-                        style={{ background: `${r.color}20`, color: r.color }}>{r.tag}</div>
+                      <div className="flex items-center justify-between mb-3">
+                        <div className="text-xs font-mono" style={{ color: 'var(--text-dim)' }}>{r.points.toLocaleString('en-IN')} pts needed</div>
+                        <div className="font-display text-base" style={{ color: 'var(--emerald)' }}>{r.value}</div>
+                      </div>
+                      <Link href={`/trip-planner?points=${totalPoints}&bank=${primaryBank}`}
+                        className="w-full py-2.5 rounded-lg text-xs font-medium flex items-center justify-center gap-1.5"
+                        style={{ background: 'color-mix(in srgb, var(--accent) 12%, transparent)', color: 'var(--accent)', border: '1px solid color-mix(in srgb, var(--accent) 25%, transparent)' }}>
+                        Plan this trip <ArrowRight className="w-3 h-3" />
+                      </Link>
                     </div>
-                    <div className="flex items-center justify-between mb-3">
-                      <div className="text-xs font-mono" style={{ color: 'var(--text-dim)' }}>{r.points}</div>
-                      <div className="font-display text-base" style={{ color: 'var(--emerald)' }}>{r.value}</div>
-                    </div>
-                    <Link href={`/optimize?points=${totalPoints}&bank=${cards[0]?.bank?.toLowerCase()?.replace(/ /g, '-')}`}
-                      className="w-full py-2.5 rounded-lg text-xs font-medium flex items-center justify-center gap-1.5"
-                      style={{ background: 'color-mix(in srgb, var(--accent) 12%, transparent)', color: 'var(--accent)', border: '1px solid color-mix(in srgb, var(--accent) 25%, transparent)' }}>
-                      Check if my points cover this <ArrowRight className="w-3 h-3" />
-                    </Link>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             </>
           )}
 
-          {/* Add cards CTA always visible */}
+          {/* Add cards CTA */}
           <div className="grid grid-cols-2 gap-3 mb-6">
             <Link href="/upload-statement" className="rounded-xl border p-4 flex items-center gap-3 transition-all"
               style={{ borderColor: 'var(--border)', background: 'var(--bg-elevated)' }}>
@@ -264,7 +431,7 @@ export default function DashboardPage() {
               </div>
               <div>
                 <div className="text-sm font-medium" style={{ color: 'var(--text)' }}>Upload statement</div>
-                <div className="text-xs" style={{ color: 'var(--text-dim)' }}>PDF → saved points</div>
+                <div className="text-xs" style={{ color: 'var(--text-dim)' }}>PDF - saved points</div>
               </div>
             </Link>
             <Link href="/sms-import" className="rounded-xl border p-4 flex items-center gap-3 transition-all"
@@ -275,22 +442,21 @@ export default function DashboardPage() {
               </div>
               <div>
                 <div className="text-sm font-medium" style={{ color: 'var(--text)' }}>Paste bank SMS</div>
-                <div className="text-xs" style={{ color: 'var(--text-dim)' }}>Bank SMS → points</div>
+                <div className="text-xs" style={{ color: 'var(--text-dim)' }}>Bank SMS - points</div>
               </div>
             </Link>
           </div>
 
-          {/* Portfolio optimizer CTA */}
           {cards.length > 0 && (
             <div className="rounded-xl p-5 border" style={{ borderColor: 'color-mix(in srgb, var(--accent) 25%, transparent)', background: 'color-mix(in srgb, var(--accent) 6%, transparent)' }}>
               <div className="flex items-center gap-2 mb-2">
                 <TrendingUp className="w-4 h-4" style={{ color: 'var(--accent)' }} />
-                <span className="font-medium text-sm" style={{ color: 'var(--text)' }}>Your {totalPoints.toLocaleString('en-IN')} points -- full analysis</span>
+                <span className="font-medium text-sm" style={{ color: 'var(--text)' }}>Full analysis - {totalPoints.toLocaleString('en-IN')} combined points</span>
               </div>
               <p className="text-xs mb-3" style={{ color: 'var(--text-muted)' }}>
-                Best redemption, transfer partners, expiry risk, category-wise card usage.
+                Best redemption path, transfer partners, expiry risk, category-wise card usage.
               </p>
-              <Link href={`/optimize?points=${totalPoints}`}
+              <Link href={`/optimize?points=${totalPoints}&bank=${primaryBank}`}
                 className="text-sm font-medium flex items-center gap-1.5" style={{ color: 'var(--accent)' }}>
                 Run full optimization <ArrowRight className="w-3.5 h-3.5" />
               </Link>
