@@ -1,4 +1,5 @@
 ﻿'use client'
+import { Logo } from '@/components/Logo'
 
 import { useState, useRef } from 'react'
 import Link from 'next/link'
@@ -57,14 +58,7 @@ export function Header() {
         <div className="max-w-7xl mx-auto px-4 h-full flex items-center justify-between">
           {/* Logo */}
           <Link href="/" className="flex items-center gap-2 flex-shrink-0">
-            <div className="w-8 h-8 rounded-lg bg-[#1B3A5C] flex items-center justify-center">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
-                <rect x="2" y="5" width="20" height="14" rx="2" fill="#C9972E" opacity="0.9"/>
-                <rect x="2" y="9" width="20" height="3" fill="#1B3A5C"/>
-                <rect x="5" y="14" width="5" height="2" rx="1" fill="white" opacity="0.6"/>
-              </svg>
-            </div>
-            <span className="font-bold text-base" style={{ color: 'var(--text, #fff)', fontFamily: 'Syne, sans-serif' }}>CreditIQ</span>
+            <Logo size="sm" showWordmark={true} />
           </Link>
 
           {/* Desktop Nav */}
@@ -142,3 +136,5 @@ export function Header() {
     </>
   )
 }
+
+
