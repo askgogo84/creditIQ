@@ -1,4 +1,4 @@
-﻿import type { Metadata } from "next";
+import type { Metadata } from "next";
 import { GeistSans } from "geist/font/sans";
 import { GeistMono } from "geist/font/mono";
 import "./globals.css";
@@ -6,11 +6,36 @@ import "./globals.css";
 export const metadata: Metadata = {
   title: "CreditIQ - India's Honest Credit Card Intelligence",
   description: "Find the best Indian credit card. AI-powered, zero affiliate bias. Compare 93 cards honestly.",
+  icons: {
+    icon: [
+      { url: '/favicon.svg', type: 'image/svg+xml' },
+    ],
+    shortcut: '/favicon.svg',
+    apple: '/favicon.svg',
+  },
+  openGraph: {
+    title: "CreditIQ - India's Honest Credit Card Intelligence",
+    description: "Find the best Indian credit card. AI-powered, zero affiliate bias. Compare 93 cards honestly.",
+    url: 'https://creditiq.app',
+    siteName: 'CreditIQ',
+    locale: 'en_IN',
+    type: 'website',
+  },
+  twitter: {
+    card: 'summary',
+    title: "CreditIQ - India's Honest Credit Card Intelligence",
+    description: "Find the best Indian credit card. AI-powered, zero affiliate bias.",
+  },
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en" className={`${GeistSans.variable} ${GeistMono.variable}`}>
+      <head>
+        <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+        <link rel="alternate icon" href="/favicon.svg" />
+        <meta name="theme-color" content="#1B3A5C" />
+      </head>
       <body style={{ fontFamily: "var(--font-geist-sans), system-ui, sans-serif" }}>
         {children}
       </body>
