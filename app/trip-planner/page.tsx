@@ -303,6 +303,12 @@ function TripPlannerPageInner() {
                         <div style={{ fontSize: 11, color: 'var(--text-muted, #64748b)', textAlign: 'center' as const }}>Best card: <strong>{flight.cardNeeded}</strong></div>
                         <a href={url} target="_blank" rel="noopener noreferrer" style={{ display: 'block', textAlign: 'center' as const, padding: '10px', background: 'linear-gradient(135deg, #C9972E, #E8B84B)', color: '#0a0a0a', borderRadius: 10, fontSize: 12, fontWeight: 700, textDecoration: 'none' }}>{label}</a>
                         {flight.bookingUrl && <a href={flight.bookingUrl} target="_blank" rel="noopener noreferrer" style={{ display: 'block', textAlign: 'center' as const, padding: '8px', background: 'var(--bg-surface, #f8fafc)', color: 'var(--text, #0f172a)', borderRadius: 10, fontSize: 11, fontWeight: 600, textDecoration: 'none', border: '1px solid var(--border, #e2e8f0)' }}>Book on {flight.transferPartner}</a>}
+                        <a href={`https://www.makemytrip.com/flights/`} target="_blank" rel="noopener noreferrer" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 5, padding: '8px', background: '#fff0f0', color: '#E8122D', borderRadius: 10, fontSize: 11, fontWeight: 700, textDecoration: 'none', border: '1px solid #fecaca', marginTop: 4 }}>
+                          Search MakeMyTrip
+                        </a>
+                        <a href={`https://www.google.com/flights?q=flights+to+${encodeURIComponent(result.destination)}`} target="_blank" rel="noopener noreferrer" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 5, padding: '8px', background: '#f0f4ff', color: '#4285F4', borderRadius: 10, fontSize: 11, fontWeight: 700, textDecoration: 'none', border: '1px solid #c7d2fe', marginTop: 4 }}>
+                          Google Flights
+                        </a>
                       </div>
                     </div>
                   </div>
