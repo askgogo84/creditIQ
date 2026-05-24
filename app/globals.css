@@ -1227,3 +1227,48 @@ html:not(.dark):not([data-theme="dark"]) header {
   background: var(--surface, #fff) !important;
   border-bottom-color: var(--line, rgba(20,41,80,0.08)) !important;
 }
+
+/* ============================================
+   CARD MOCKUP FIXES
+   ============================================ */
+
+/* Ensure inner div is positioned for absolute children */
+.card-mockup-inner {
+  position: relative !important;
+}
+
+/* Optimize page - make card preview larger and visible */
+.optimize-card-preview {
+  width: 100%;
+  padding: 16px 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.optimize-card-preview .card-mockup {
+  max-width: 100% !important;
+  width: 100% !important;
+  min-height: 160px;
+}
+
+/* Force card background to use the CSS variable */
+.card-mockup {
+  background: var(--card-color, #1B3A5C) !important;
+}
+
+/* Dark gradient overlay on card for depth */
+.card-mockup::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, rgba(255,255,255,0.08) 0%, transparent 60%, rgba(0,0,0,0.2) 100%);
+  pointer-events: none;
+  z-index: 1;
+}
+
+.card-mockup-inner {
+  z-index: 2;
+}
+
+/* Force card-mockup to use inline --card-color */.card-mockup { background-color: var(--card-color, #1B3A5C) !important; }
