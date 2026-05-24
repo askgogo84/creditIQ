@@ -1147,3 +1147,83 @@ input[type="range"]::-webkit-slider-thumb {
   max-width: 100%;
   width: 100%;
 }
+
+/* ============================================
+   AI TOOLS CARDS - TEXT CONTRAST FIX
+   ============================================ */
+
+/* Light mode - AI tool cards text must be dark */
+.ai-tool-card h3,
+.ai-tool-card p,
+.ai-tool-card span,
+[class*="AIToolCard"] h3,
+[class*="AIToolCard"] p {
+  color: var(--ink, #142950) !important;
+}
+
+/* Fix any card titles that are too light on cream background */
+html.light .card-title,
+html:not(.dark) .card-title {
+  color: var(--ink, #142950) !important;
+}
+
+/* Fix section with dark bg behind light cards */
+.section--dark .card-title,
+.section--dark h3 {
+  color: #fff !important;
+}
+
+/* ============================================
+   THEME TOGGLE BUTTON
+   ============================================ */
+.theme-toggle {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  border: 1px solid var(--line, rgba(20,41,80,0.1));
+  background: var(--surface-2, #FBF7F0);
+  color: var(--ink-3, #5A6A8A);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+}
+
+.theme-toggle:hover {
+  background: var(--bg-2, #EFE7D8);
+  color: var(--ink, #142950);
+  transform: scale(1.05);
+}
+
+html[data-theme="dark"] .theme-toggle,
+html.dark .theme-toggle {
+  background: rgba(255,255,255,0.06);
+  border-color: rgba(255,255,255,0.1);
+  color: rgba(255,255,255,0.6);
+}
+
+html[data-theme="dark"] .theme-toggle:hover,
+html.dark .theme-toggle:hover {
+  background: rgba(255,255,255,0.1);
+  color: #fff;
+}
+
+/* ============================================
+   NAV TEXT COLOR FIX - LIGHT MODE
+   ============================================ */
+html:not(.dark):not([data-theme="dark"]) .nav__link {
+  color: var(--ink-3, #5A6A8A) !important;
+}
+
+html:not(.dark):not([data-theme="dark"]) .nav__link:hover,
+html:not(.dark):not([data-theme="dark"]) .nav__link.active {
+  color: var(--ink, #142950) !important;
+}
+
+/* Fix header background in light mode */
+html:not(.dark):not([data-theme="dark"]) header {
+  background: var(--surface, #fff) !important;
+  border-bottom-color: var(--line, rgba(20,41,80,0.08)) !important;
+}
