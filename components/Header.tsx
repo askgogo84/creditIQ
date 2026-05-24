@@ -88,7 +88,7 @@ export function Header() {
                 style={{ color: 'var(--text-muted, rgba(255,255,255,0.6))' }}
               >
                 AI Tools
-                <svg width="12" height="12" viewBox="0 0 12 12" fill="currentColor" className={	ransition-transform }>
+                <svg width="12" height="12" viewBox="0 0 12 12" fill="currentColor" className={`transition-transform ${aiOpen ? "rotate-180" : ""}`}>
                   <path d="M2 4l4 4 4-4" stroke="currentColor" strokeWidth="1.5" fill="none" strokeLinecap="round"/>
                 </svg>
               </button>
@@ -107,7 +107,7 @@ export function Header() {
                 style={{ color: 'var(--text-muted, rgba(255,255,255,0.6))' }}
               >
                 Travel
-                <svg width="12" height="12" viewBox="0 0 12 12" fill="currentColor" className={	ransition-transform }>
+                <svg width="12" height="12" viewBox="0 0 12 12" fill="currentColor" className={`transition-transform ${aiOpen ? "rotate-180" : ""}`}>
                   <path d="M2 4l4 4 4-4" stroke="currentColor" strokeWidth="1.5" fill="none" strokeLinecap="round"/>
                 </svg>
               </button>
