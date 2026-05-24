@@ -1028,3 +1028,122 @@ input[type="range"]::-webkit-slider-thumb {
 .text-ink-400 .font-mono {
   font-family: var(--font-geist-mono), monospace !important;
 }
+
+/* ============================================
+   CARD MOCKUP COMPONENT
+   ============================================ */
+.card-mockup {
+  width: 100%;
+  max-width: 280px;
+  aspect-ratio: 1.586 / 1;
+  border-radius: 14px;
+  overflow: hidden;
+  position: relative;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.25), 0 2px 8px rgba(0,0,0,0.15);
+  background: var(--card-color, #1B3A5C);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  cursor: default;
+}
+
+.card-mockup:hover {
+  transform: translateY(-2px) rotate(0.5deg);
+  box-shadow: 0 16px 48px rgba(0,0,0,0.3), 0 4px 12px rgba(0,0,0,0.2);
+}
+
+.card-mockup-inner {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  position: relative;
+  z-index: 1;
+}
+
+.card-mockup-inner.metallic::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    135deg,
+    rgba(255,255,255,0.15) 0%,
+    rgba(255,255,255,0.05) 40%,
+    rgba(0,0,0,0.05) 60%,
+    rgba(0,0,0,0.1) 100%
+  );
+  pointer-events: none;
+  z-index: 0;
+}
+
+.card-mockup-inner.metallic::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 50%;
+  background: linear-gradient(
+    180deg,
+    rgba(255,255,255,0.08) 0%,
+    transparent 100%
+  );
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* Size variants */
+.card-mockup[data-size="sm"] {
+  max-width: 160px;
+  border-radius: 8px;
+}
+
+.card-mockup[data-size="lg"] {
+  max-width: 380px;
+  border-radius: 18px;
+}
+
+/* Chip */
+.card-chip {
+  width: 36px;
+  height: 26px;
+  background: linear-gradient(135deg, #d4af37 0%, #f5d78e 40%, #c9972e 70%, #a67c1e 100%);
+  border-radius: 4px;
+  position: relative;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+}
+
+.card-chip::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: rgba(0,0,0,0.2);
+  transform: translateY(-50%);
+}
+
+.card-chip::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  top: 0;
+  bottom: 0;
+  width: 1px;
+  background: rgba(0,0,0,0.2);
+  transform: translateX(-50%);
+}
+
+/* Optimize page card preview fix */
+.optimize-card-preview {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+}
+
+.optimize-card-preview .card-mockup {
+  max-width: 100%;
+  width: 100%;
+}
