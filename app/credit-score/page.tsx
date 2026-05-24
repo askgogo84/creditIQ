@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 import { Header } from '@/components/Header';
 import { Footer } from '@/components/Footer';
 import { CompareTray } from '@/components/CompareTray';
@@ -14,9 +14,9 @@ const SCORE_RANGES = [
 ];
 
 const FREE_SERVICES = [
-  { name: 'CIBIL Free Score', url: 'https://www.cibil.com/freecibil', desc: 'Official CIBIL score — free once a year', org: 'TransUnion CIBIL' },
-  { name: 'Paisabazaar Free Score', url: 'https://www.paisabazaar.com/cibil-score/', desc: 'Free CIBIL score with monthly updates', org: 'Paisabazaar' },
-  { name: 'BankBazaar Free Score', url: 'https://www.bankbazaar.com/cibil-score.html', desc: 'Free Experian score + CIBIL', org: 'BankBazaar' },
+  { name: 'CIBIL Free Score', url: 'https://www.cibil.com/freecibil', desc: 'Official CIBIL score â€” free once a year', org: 'TransUnion CIBIL' },
+  { name: 'the leading comparison platforms Free Score', url: 'https://www.the leading comparison platforms, desc: 'Free CIBIL score with monthly updates', org: 'the leading comparison platforms },
+  { name: 'comparison sites Free Score', url: 'https://www.comparison sites, desc: 'Free Experian score + CIBIL', org: 'comparison sites },
   { name: 'OneScore App', url: 'https://www.onescore.app/', desc: 'Free CIBIL score with detailed analysis', org: 'OneScore' },
 ];
 
@@ -32,7 +32,7 @@ export default function CreditScorePage() {
             <span className="display-italic text-copper-400">Free.</span>
           </h1>
           <p className="text-ink-300 text-lg font-display leading-relaxed mb-8">
-            Your credit score determines which cards you can get approved for. Check it free — no hard inquiry, no effect on your score.
+            Your credit score determines which cards you can get approved for. Check it free â€” no hard inquiry, no effect on your score.
           </p>
           <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-emerald-500/10 border border-emerald-500/20 mb-12">
             <ShieldCheck className="w-4 h-4 text-emerald-400" />
@@ -88,10 +88,10 @@ export default function CreditScorePage() {
             <div className="space-y-3 text-sm text-ink-200">
               {[
                 ['Pay on time, every time', 'Payment history is 35% of your score. Set auto-pay for the minimum at least.'],
-                ['Keep utilisation below 30%', 'If your limit is ₹1L, keep outstanding below ₹30K. Ideally below 10%.'],
+                ['Keep utilisation below 30%', 'If your limit is â‚¹1L, keep outstanding below â‚¹30K. Ideally below 10%.'],
                 ['Don\'t apply for multiple cards at once', 'Each application is a hard inquiry and drops your score by 5-10 points.'],
                 ['Keep old cards open', 'Length of credit history matters. Don\'t close your oldest card.'],
-                ['Check for errors', 'Dispute any incorrect entries on your CIBIL report — they take them seriously.'],
+                ['Check for errors', 'Dispute any incorrect entries on your CIBIL report â€” they take them seriously.'],
               ].map(([title, desc]) => (
                 <div key={title} className="flex gap-3">
                   <div className="w-1.5 h-1.5 rounded-full bg-copper-400 shrink-0 mt-2" />
@@ -108,3 +108,4 @@ export default function CreditScorePage() {
     </main>
   );
 }
+

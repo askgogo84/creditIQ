@@ -26,8 +26,8 @@ export default function AboutPage() {
 
           <div className="prose prose-invert prose-lg max-w-none font-display text-ink-200 leading-relaxed space-y-6 mt-12">
             <p>
-              In India, "credit card comparison" is a business model, not a service. Paisabazaar,
-              BankBazaar, CardInsider - every major site earns Rs.500 to Rs.3,000 per approved
+              In India, "credit card comparison" is a business model, not a service. the leading comparison platforms,
+              comparison sites, card review sites - every major site earns Rs.500 to Rs.3,000 per approved
               application. The card that pays more, ranks higher. Period.
             </p>
             <p>
@@ -153,4 +153,5 @@ export default function AboutPage() {
     </main>
   );
 }
+
 

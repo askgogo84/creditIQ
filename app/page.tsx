@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import type { CSSProperties } from 'react';
 import Link from 'next/link';
@@ -19,7 +19,7 @@ import { SEED_CARDS }     from '@/lib/data/seed-cards';
 import type { CreditCard } from '@/lib/types';
 
 /* ============================================================
-   seed-cards → TileCard adapter
+   seed-cards â†’ TileCard adapter
    ============================================================ */
 const VARIANT_ROTATION: CardVariant[] = ['obsidian', 'navy', 'plum', 'gold', 'iris', 'mint'];
 const NETWORK_BY_BANK: Record<string, string> = {
@@ -95,7 +95,7 @@ export default function HomePage() {
       <div className="page-fade">
 
         {/* ============================================
-              HERO — editorial slab w/ floating card
+              HERO â€” editorial slab w/ floating card
               ============================================ */}
         <section style={{ position: 'relative', paddingTop: 'clamp(120px, 18vw, 160px)' }}>
           <div className="aurora" style={{ top: -120, right: -100, width: 540, height: 540,
@@ -110,10 +110,10 @@ export default function HomePage() {
               <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
                 <span style={{ width: 8, height: 8, borderRadius: 999, background: 'var(--green)',
                   boxShadow: '0 0 12px var(--green)' }} />
-                <span className="label">Live · 93 cards across 24 banks</span>
+                <span className="label">Live Â· 93 cards across 24 banks</span>
               </div>
               <div className="label hide-mobile" style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
-                <span>EST. 2025</span><span>·</span><span>BENGALURU</span><span>·</span><span>v1.0</span>
+                <span>EST. 2025</span><span>Â·</span><span>BENGALURU</span><span>Â·</span><span>v1.0</span>
               </div>
             </Reveal>
 
@@ -170,7 +170,7 @@ export default function HomePage() {
                 }}>
                   {[
                   { val: 93,  suffix: '+',      label: 'Cards tracked' },
-                  { val: 4.2, suffix: 'L',      prefix: '₹', label: 'Avg. yearly waste', decimals: 1 },
+                  { val: 4.2, suffix: 'L',      prefix: 'â‚¹', label: 'Avg. yearly waste', decimals: 1 },
                   { val: 7,   suffix: ' DAYS',  label: 'Data refresh' }].
                   map((s, i) =>
                   <div key={i} style={{ borderLeft: '1px solid var(--line)', paddingLeft: 14 }}>
@@ -256,7 +256,7 @@ export default function HomePage() {
           {/* Scroll cue */}
           <div style={{ textAlign: 'center', paddingBottom: 30 }}>
             <span className="label" style={{ display: 'inline-block', animation: 'float-y 2.5s ease-in-out infinite' }}>
-              ↓ &nbsp; KEEP SCROLLING
+              â†“ &nbsp; KEEP SCROLLING
             </span>
           </div>
         </section>
@@ -265,21 +265,21 @@ export default function HomePage() {
               DEVALUATION TICKER
               ============================================ */}
         <DevalTicker items={[
-        'AXIS Magnus devalued — Grab Vouchers capped at 1:0.4',
+        'AXIS Magnus devalued â€” Grab Vouchers capped at 1:0.4',
         'HDFC SmartBuy halved on Cleartrip from May 2026',
         'ICICI Sapphiro removed all spend-based renewal benefits',
         'SBI Aurum to scrap Priority Pass guest visits',
         'AMEX MRCC reduced point earn on utility bills to 0',
-        'New · AU Bank Zenith+ launches with 10x on fuel']
+        'New Â· AU Bank Zenith+ launches with 10x on fuel']
         } />
 
         {/* ============================================
-              START HERE — Three journeys
+              START HERE â€” Three journeys
               ============================================ */}
         <section className="section" style={{ ...DARK_BAND, borderTop: '1px solid var(--line)' }}>
           <div className="shell">
             <SectionHeader
-              label="START HERE · 03 PATHS"
+              label="START HERE Â· 03 PATHS"
               title={<>Three ways to <span className="serif" style={{ color: 'var(--copper)' }}>begin</span>.</>}
               subtitle="Most people don't know what they want until they see it. Pick the question that sounds most like you." />
 
@@ -291,21 +291,21 @@ export default function HomePage() {
               marginTop: 'clamp(40px, 6vw, 64px)'
             }} className="grid-1-mobile">
               <JourneyCard
-                eyebrow="01 · FIND"
+                eyebrow="01 Â· FIND"
                 title={<>Show me the <span className="serif" style={{ color: 'var(--copper)' }}>right</span> card for me.</>}
                 subtitle="Tell us how you spend. Get one card recommendation backed by maths, not commissions."
                 accent="copper"
                 href="/smart-match" />
 
               <JourneyCard
-                eyebrow="02 · ROAST"
+                eyebrow="02 Â· ROAST"
                 title={<>Tell me if my card <span className="serif" style={{ color: 'var(--terracotta)' }}>sucks</span>.</>}
-                subtitle="Drop your current card and a sample month of spending. We grade it brutally — A through F."
+                subtitle="Drop your current card and a sample month of spending. We grade it brutally â€” A through F."
                 accent="terracotta"
                 href="/card-roast" />
 
               <JourneyCard
-                eyebrow="03 · TRAVEL"
+                eyebrow="03 Â· TRAVEL"
                 title={<>Which card flies me <span className="serif" style={{ color: 'var(--sage)' }}>further</span>?</>}
                 subtitle="Pick a route, your hotel chain, your loyalty programs. Get the card that maximises that exact trip."
                 accent="sage"
@@ -333,12 +333,12 @@ export default function HomePage() {
               gap: 40, marginBottom: 'clamp(40px, 6vw, 64px)'
             }} className="stack-mobile">
               <SectionHeader
-                label="AI TOOLBOX · 06 TOOLS"
+                label="AI TOOLBOX Â· 06 TOOLS"
                 title={<>The arsenal.<br /><span className="serif" style={{ color: 'var(--copper)' }}>Built for spenders</span>, not banks.</>}
                 subtitle={null} />
 
               <Reveal>
-                <GhostCTA href="/smart-match">Open the toolbox →</GhostCTA>
+                <GhostCTA href="/smart-match">Open the toolbox â†’</GhostCTA>
               </Reveal>
             </div>
 
@@ -348,40 +348,40 @@ export default function HomePage() {
               gap: 20
             }} className="grid-1-mobile">
               <AIToolCard
-                icon="◐"
+                icon="â—"
                 title="Card Match"
                 desc="Type how you spend in plain English. We pick one card. No top-10 lists, no rankings sold to the highest bidder."
                 badge={{ text: 'POPULAR', tone: 'badge-copper' }}
                 href="/smart-match" />
 
               <AIToolCard
-                icon="✦"
+                icon="âœ¦"
                 title="Card Roast"
-                desc="Brutal A–F grade on your current card. Shareable. Probably mean. Definitely accurate."
+                desc="Brutal Aâ€“F grade on your current card. Shareable. Probably mean. Definitely accurate."
                 badge={{ text: 'NEW', tone: 'badge-plum' }}
                 href="/card-roast" />
 
               <AIToolCard
-                icon="◇"
+                icon="â—‡"
                 title="Statement Truth"
                 desc="Upload your statement. We tell you if your card is doing what the brochure promised."
                 href="/statement-truth" />
 
               <AIToolCard
-                icon="↻"
+                icon="â†»"
                 title="Switch Wizard"
                 desc="Already have a card? See if there's a better one for the same spend pattern."
                 href="/card-switch" />
 
               <AIToolCard
-                icon="✈"
+                icon="âœˆ"
                 title="Travel AI"
                 desc="Chat with an AI that knows every airline, hotel and transfer ratio. Plans your trip + the card to fund it."
                 badge={{ text: 'BETA', tone: 'badge-amber' }}
                 href="/travel" />
 
               <AIToolCard
-                icon="◉"
+                icon="â—‰"
                 title="Lounge Tracker"
                 desc="Never get turned away at the gate. Tracks free visits across every card you carry."
                 href="/lounge-tracker" />
@@ -391,7 +391,7 @@ export default function HomePage() {
         </section>
 
         {/* ============================================
-              MANIFESTO BLOCK — big editorial
+              MANIFESTO BLOCK â€” big editorial
               ============================================ */}
         <section className="section">
           <div className="shell">
@@ -409,7 +409,7 @@ export default function HomePage() {
                   background: 'radial-gradient(circle, rgba(212,163,115,0.45), transparent 60%)'
                 }} />
 
-                <div className="label-copper" style={{ marginBottom: 24 }}>OUR PROMISE · MANIFESTO</div>
+                <div className="label-copper" style={{ marginBottom: 24 }}>OUR PROMISE Â· MANIFESTO</div>
 
                 <h2 style={{
                   fontSize: 'clamp(28px, 4vw, 48px)',
@@ -426,7 +426,7 @@ export default function HomePage() {
                   fontSize: 'clamp(16px, 1.3vw, 20px)',
                   color: 'var(--ink-2)', maxWidth: 760, lineHeight: 1.6
                 }}>
-                  Paisabazaar, BankBazaar, CardInsider — they earn ₹500–3,000 per approved application.
+                  Every major card comparison site in India earns Rs.500-3,000 per approved application. The card that pays them most appears at the top - not the card that is best for you.
                   Cards with higher payouts rank higher, even when they&apos;re objectively worse for you.
                   <span className="serif" style={{ color: 'var(--ink)' }}> We don&apos;t take affiliate commissions on rankings.</span>{' '}
                   We rank cards by your spending pattern alone.
@@ -462,7 +462,7 @@ export default function HomePage() {
         </section>
 
         {/* ============================================
-              CARD SHOWCASE — Top deck
+              CARD SHOWCASE â€” Top deck
               ============================================ */}
         <section className="section">
           <div className="shell">
@@ -471,9 +471,9 @@ export default function HomePage() {
               gap: 40, marginBottom: 'clamp(40px, 6vw, 56px)', flexWrap: 'wrap'
             }}>
               <SectionHeader
-                label="THE TOP DECK · RANKED"
+                label="THE TOP DECK Â· RANKED"
                 title={<>Cards that <span className="serif" style={{ color: 'var(--copper)' }}>actually</span> earn their fee.</>}
-                subtitle="Ranked by effective reward rate on a ₹6L–₹15L annual spend, after fees." />
+                subtitle="Ranked by effective reward rate on a â‚¹6Lâ€“â‚¹15L annual spend, after fees." />
 
               <Reveal>
                 <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
@@ -493,7 +493,7 @@ export default function HomePage() {
             </div>
 
             <Reveal style={{ marginTop: 56, textAlign: 'center' }}>
-              <GhostCTA href="/cards">See all 93 cards →</GhostCTA>
+              <GhostCTA href="/cards">See all 93 cards â†’</GhostCTA>
             </Reveal>
           </div>
         </section>
@@ -560,3 +560,4 @@ export default function HomePage() {
     </>
   );
 }
+
