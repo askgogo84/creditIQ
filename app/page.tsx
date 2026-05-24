@@ -95,7 +95,7 @@ export default function HomePage() {
       <div className="page-fade">
 
         {/* ============================================
-              HERO "” editorial slab w/ floating card
+              HERO -- editorial slab w/ floating card
               ============================================ */}
         <section style={{ position: 'relative', paddingTop: 'clamp(120px, 18vw, 160px)' }}>
           <div className="aurora" style={{ top: -120, right: -100, width: 540, height: 540,
@@ -265,7 +265,7 @@ export default function HomePage() {
               DEVALUATION TICKER
               ============================================ */}
         <DevalTicker items={[
-        'AXIS Magnus devalued "” Grab Vouchers capped at 1:0.4',
+        'AXIS Magnus devalued -- Grab Vouchers capped at 1:0.4',
         'HDFC SmartBuy halved on Cleartrip from May 2026',
         'ICICI Sapphiro removed all spend-based renewal benefits',
         'SBI Aurum to scrap Priority Pass guest visits',
@@ -274,7 +274,7 @@ export default function HomePage() {
         } />
 
         {/* ============================================
-              START HERE "” Three journeys
+              START HERE -- Three journeys
               ============================================ */}
         <section className="section" style={{ ...DARK_BAND, borderTop: '1px solid var(--line)' }}>
           <div className="shell">
@@ -300,7 +300,7 @@ export default function HomePage() {
               <JourneyCard
                 eyebrow="02 . ROAST"
                 title={<>Tell me if my card <span className="serif" style={{ color: 'var(--terracotta)' }}>sucks</span>.</>}
-                subtitle="Drop your current card and a sample month of spending. We grade it brutally "” A through F."
+                subtitle="Drop your current card and a sample month of spending. We grade it brutally -- A through F."
                 accent="terracotta"
                 href="/card-roast" />
 
@@ -391,7 +391,7 @@ export default function HomePage() {
         </section>
 
         {/* ============================================
-              MANIFESTO BLOCK "” big editorial
+              MANIFESTO BLOCK -- big editorial
               ============================================ */}
         <section className="section">
           <div className="shell">
@@ -462,7 +462,7 @@ export default function HomePage() {
         </section>
 
         {/* ============================================
-              CARD SHOWCASE "” Top deck
+              CARD SHOWCASE -- Top deck
               ============================================ */}
         <section className="section">
           <div className="shell">
