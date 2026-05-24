@@ -270,7 +270,7 @@ export default function UploadStatementPage() {
                       {userId && <span className="text-xs ml-2 px-2 py-0.5 rounded-full" style={{ background: 'color-mix(in srgb, var(--emerald) 15%, transparent)', color: 'var(--emerald)' }}>Saved (ok)</span>}
                     </div>
                     <div className="text-xs" style={{ color: 'var(--text-dim)' }}>
-                      {result.card_name}{result.card_last4 ? ` . ••••${result.card_last4}` : ''} . {result.confidence} confidence
+                      {result.card_name}{result.card_last4 ? ` . ${result.card_last4}` : ''} . {result.confidence} confidence
                     </div>
                   </div>
                 </div>

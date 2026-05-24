@@ -256,7 +256,7 @@ export default function HomePage() {
           {/* Scroll cue */}
           <div style={{ textAlign: 'center', paddingBottom: 30 }}>
             <span className="label" style={{ display: 'inline-block', animation: 'float-y 2.5s ease-in-out infinite' }}>
-              â†" &nbsp; KEEP SCROLLING
+              " &nbsp; KEEP SCROLLING
             </span>
           </div>
         </section>
@@ -338,7 +338,7 @@ export default function HomePage() {
                 subtitle={null} />
 
               <Reveal>
-                <GhostCTA href="/smart-match">Open the toolbox â†'</GhostCTA>
+                <GhostCTA href="/smart-match">Open the toolbox '</GhostCTA>
               </Reveal>
             </div>
 
@@ -348,40 +348,40 @@ export default function HomePage() {
               gap: 20
             }} className="grid-1-mobile">
               <AIToolCard
-                icon="â--"
+                icon="--"
                 title="Card Match"
                 desc="Type how you spend in plain English. We pick one card. No top-10 lists, no rankings sold to the highest bidder."
                 badge={{ text: 'POPULAR', tone: 'badge-copper' }}
                 href="/smart-match" />
 
               <AIToolCard
-                icon="âœ¦"
+                icon=""
                 title="Card Roast"
                 desc="Brutal A""F grade on your current card. Shareable. Probably mean. Definitely accurate."
                 badge={{ text: 'NEW', tone: 'badge-plum' }}
                 href="/card-roast" />
 
               <AIToolCard
-                icon="â--‡"
+                icon="--"
                 title="Statement Truth"
                 desc="Upload your statement. We tell you if your card is doing what the brochure promised."
                 href="/statement-truth" />
 
               <AIToolCard
-                icon="â†»"
+                icon=""
                 title="Switch Wizard"
                 desc="Already have a card? See if there's a better one for the same spend pattern."
                 href="/card-switch" />
 
               <AIToolCard
-                icon="âœˆ"
+                icon=""
                 title="Travel AI"
                 desc="Chat with an AI that knows every airline, hotel and transfer ratio. Plans your trip + the card to fund it."
                 badge={{ text: 'BETA', tone: 'badge-amber' }}
                 href="/travel" />
 
               <AIToolCard
-                icon="â--‰"
+                icon="--"
                 title="Lounge Tracker"
                 desc="Never get turned away at the gate. Tracks free visits across every card you carry."
                 href="/lounge-tracker" />
@@ -493,7 +493,7 @@ export default function HomePage() {
             </div>
 
             <Reveal style={{ marginTop: 56, textAlign: 'center' }}>
-              <GhostCTA href="/cards">See all 93 cards â†'</GhostCTA>
+              <GhostCTA href="/cards">See all 93 cards '</GhostCTA>
             </Reveal>
           </div>
         </section>

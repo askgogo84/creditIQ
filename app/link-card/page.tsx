@@ -183,7 +183,7 @@ export default function LinkCardPage() {
               </p>
               <div className="rounded-xl border p-6 mb-6 space-y-3" style={{ borderColor: 'var(--border)', background: 'var(--bg-elevated)' }}>
                 <div className="text-sm font-medium mb-3" style={{ color: 'var(--text)' }}>CreditIQ will only access:</div>
-                {[['✅', 'Reward points balance'], ['✅', 'Card names and last 4 digits'], ['✅', 'Points expiry dates'], ['❌', 'Card credentials or PINs'], ['❌', 'Transaction history'], ['❌', 'Ability to make payments']].map(([icon, text]) => (
+                {[['', 'Reward points balance'], ['', 'Card names and last 4 digits'], ['', 'Points expiry dates'], ['', 'Card credentials or PINs'], ['', 'Transaction history'], ['', 'Ability to make payments']].map(([icon, text]) => (
                   <div key={text} className="flex items-center gap-3 text-sm" style={{ color: 'var(--text-muted)' }}><span>{icon}</span><span>{text}</span></div>
                 ))}
               </div>

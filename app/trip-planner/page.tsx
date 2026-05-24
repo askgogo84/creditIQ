@@ -51,12 +51,12 @@ interface TripResult {
 }
 
 const QUICK_TRIPS = [
-  { label: 'London 5 nights', icon: '🇬🇧', query: 'Business trip to London for 5 nights next month' },
-  { label: 'Dubai weekend', icon: '🇦🇪', query: 'Weekend trip to Dubai 3 nights this month' },
-  { label: 'Singapore 4 nights', icon: '🇸🇬', query: 'Holiday in Singapore for 4 nights next month' },
-  { label: 'Bangkok 5 nights', icon: '🇹🇭­', query: 'Leisure trip Bangkok 5 nights' },
-  { label: 'Goa long weekend', icon: '🌴', query: 'Domestic trip Goa 3 nights long weekend' },
-  { label: 'New York 7 nights', icon: '🇺🇸', query: 'Business trip New York 7 nights premium travel' },
+  { label: 'London 5 nights', icon: '', query: 'Business trip to London for 5 nights next month' },
+  { label: 'Dubai weekend', icon: '', query: 'Weekend trip to Dubai 3 nights this month' },
+  { label: 'Singapore 4 nights', icon: '', query: 'Holiday in Singapore for 4 nights next month' },
+  { label: 'Bangkok 5 nights', icon: '', query: 'Leisure trip Bangkok 5 nights' },
+  { label: 'Goa long weekend', icon: '', query: 'Domestic trip Goa 3 nights long weekend' },
+  { label: 'New York 7 nights', icon: '', query: 'Business trip New York 7 nights premium travel' },
 ];
 
 const BANKS = ['HDFC', 'Axis', 'SBI', 'ICICI', 'IDFC', 'Amex', 'Kotak', 'AU', 'None'];
@@ -192,7 +192,7 @@ export default function TripPlannerPage() {
               cursor: loading || !query.trim() ? 'not-allowed' : 'pointer',
             }}
           >
-            {loading ? 'âœˆï¸ Planning your trip...' : 'âœˆï¸ Plan my trip with points â†''}
+            {loading ? ' Planning your trip...' : ' Plan my trip with points ''}
           </button>
         </div>
 
@@ -217,7 +217,7 @@ export default function TripPlannerPage() {
 
         {loading && (
           <div style={{ textAlign: 'center', padding: '48px 0' }}>
-            <div style={{ fontSize: 48, marginBottom: 16 }}>âœˆï¸</div>
+            <div style={{ fontSize: 48, marginBottom: 16 }}></div>
             <div style={{ fontSize: 16, fontWeight: 700, color: 'var(--text, #0f172a)', marginBottom: 8 }}>Finding the best options...</div>
             <div style={{ fontSize: 13, color: 'var(--text-muted, #64748b)' }}>Checking flights, hotels, transfer partners and pricing</div>
           </div>
@@ -234,7 +234,7 @@ export default function TripPlannerPage() {
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap' as const, gap: 16, marginBottom: 16 }}>
                 <div>
                   <div style={{ fontSize: 11, fontWeight: 700, color: '#C9972E', textTransform: 'uppercase' as const, letterSpacing: 1.5, marginBottom: 6 }}>
-                    âœˆï¸ {result.destination} . {result.duration} . {result.tripType}
+                     {result.destination} . {result.duration} . {result.tripType}
                   </div>
                   <div style={{ fontSize: 20, fontWeight: 800, color: '#fff', marginBottom: 4 }}>{result.summary}</div>
                   <div style={{ fontSize: 13, color: 'rgba(255,255,255,0.4)' }}>{result.dates}</div>
@@ -248,7 +248,7 @@ export default function TripPlannerPage() {
               <div style={{ background: result.canAfford ? 'rgba(34,197,94,0.15)' : 'rgba(239,68,68,0.15)', border: `1px solid ${result.canAfford ? 'rgba(34,197,94,0.3)' : 'rgba(239,68,68,0.3)'}`, borderRadius: 12, padding: '12px 16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap' as const, gap: 8 }}>
                 <div>
                   <div style={{ fontSize: 13, fontWeight: 700, color: result.canAfford ? '#22c55e' : '#ef4444' }}>
-                    {result.canAfford ? 'âœ" Your points cover this trip' : `âš ï¸ Need ${result.pointsGap.toLocaleString('en-IN')} more points`}
+                    {result.canAfford ? '" Your points cover this trip' : `  Need ${result.pointsGap.toLocaleString('en-IN')} more points`}
                   </div>
                   <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.4)', marginTop: 2 }}>
                     Need {result.totalPointsNeeded.toLocaleString('en-IN')} pts . You have {(parseInt(points.replace(/,/g, '')) || 0).toLocaleString('en-IN')} pts
@@ -256,17 +256,17 @@ export default function TripPlannerPage() {
                 </div>
                 {!result.canAfford && (
                   <Link href={`/cards/${result.bestCardId}`} style={{ padding: '8px 16px', background: '#C9972E', color: '#0a0a0a', borderRadius: 10, fontSize: 12, fontWeight: 700, textDecoration: 'none' }}>
-                    Get {result.bestCard} â†'
+                    Get {result.bestCard} '
                   </Link>
                 )}
               </div>
 
-              {result.proTip && <div style={{ marginTop: 12, fontSize: 13, color: 'rgba(255,255,255,0.45)', lineHeight: 1.6, fontStyle: 'italic' as const }}>ðŸ'¡ {result.proTip}</div>}
+              {result.proTip && <div style={{ marginTop: 12, fontSize: 13, color: 'rgba(255,255,255,0.45)', lineHeight: 1.6, fontStyle: 'italic' as const }}>' {result.proTip}</div>}
             </div>
 
             {/* Flights */}
             <div style={{ marginBottom: 20 }}>
-              <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-muted, #64748b)', textTransform: 'uppercase' as const, letterSpacing: 1, marginBottom: 12 }}>âœˆï¸ Flight options</div>
+              <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-muted, #64748b)', textTransform: 'uppercase' as const, letterSpacing: 1, marginBottom: 12 }}> Flight options</div>
               {result.flights.map((flight, i) => {
                 const { url, label } = getApplyUrl(flight.cardId);
                 return (
@@ -304,7 +304,7 @@ export default function TripPlannerPage() {
 
             {/* Hotels */}
             <div style={{ marginBottom: 20 }}>
-              <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-muted, #64748b)', textTransform: 'uppercase' as const, letterSpacing: 1, marginBottom: 12 }}>ðŸ¨ Hotel options</div>
+              <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-muted, #64748b)', textTransform: 'uppercase' as const, letterSpacing: 1, marginBottom: 12 }}> Hotel options</div>
               {result.hotels.map((hotel, i) => {
                 const { url, label } = getApplyUrl(hotel.cardId);
                 return (
