@@ -1,6 +1,7 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { Header } from '@/components/Header';
 import { Footer } from '@/components/Footer';
@@ -64,6 +65,13 @@ const BANKS = ['HDFC', 'Axis', 'SBI', 'ICICI', 'IDFC', 'Amex', 'Kotak', 'AU', 'N
 export default function TripPlannerPage() {
   const [query, setQuery] = useState('');
   const [points, setPoints] = useState('');
+  const searchParams = useSearchParams();
+  useEffect(() => {
+    const urlPoints = searchParams.get('points');
+    const urlBank = searchParams.get('bank');
+    if (urlPoints) setPoints(urlPoints);
+    if (urlBank) setCardBank(urlBank);
+  }, [searchParams]);
   const [cardBank, setCardBank] = useState('HDFC');
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<TripResult | null>(null);

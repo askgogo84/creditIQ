@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import { useState, useMemo, useEffect, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { Header } from '@/components/Header';
@@ -349,6 +350,58 @@ function OptimizeContent() {
         </div>
       </section>
 
+
+          {/* Trip Planner CTA */}
+          {bestValue > 0 && (
+            <div className="mt-6 rounded-2xl p-5 border" style={{ borderColor: 'rgba(201,151,46,0.3)', background: 'rgba(201,151,46,0.06)' }}>
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                <div>
+                  <div className="text-xs font-mono uppercase tracking-widest mb-1" style={{ color: '#C9972E' }}>
+                    Next step
+                  </div>
+                  <div className="font-semibold text-base" style={{ color: 'var(--text, #0f172a)' }}>
+                    Plan a trip with your {points.toLocaleString('en-IN')} points
+                  </div>
+                  <div className="text-sm mt-0.5" style={{ color: 'var(--text-muted, #64748b)' }}>
+                    Best value: {formatINR(bestValue)} via travel redemption
+                  </div>
+                </div>
+                <Link
+                  href={`/trip-planner?points=${points}&bank=${card?.bank || ''}`}
+                  className="shrink-0 px-5 py-2.5 rounded-xl font-semibold text-sm transition-all"
+                  style={{ background: '#C9972E', color: '#fff', whiteSpace: 'nowrap' }}
+                >
+                  Plan my trip →
+                </Link>
+              </div>
+            </div>
+          )}
+
+          {/* Trip Planner CTA */}
+          {bestValue > 0 && (
+            <div className="mt-6 rounded-2xl p-5 border" style={{ borderColor: 'rgba(201,151,46,0.3)', background: 'rgba(201,151,46,0.06)' }}>
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                <div>
+                  <div className="text-xs font-mono uppercase tracking-widest mb-1" style={{ color: '#C9972E' }}>
+                    Next step
+                  </div>
+                  <div className="font-semibold text-base" style={{ color: 'var(--text, #0f172a)' }}>
+                    Plan a trip with your {points.toLocaleString('en-IN')} points
+                  </div>
+                  <div className="text-sm mt-0.5" style={{ color: 'var(--text-muted, #64748b)' }}>
+                    Best value: {formatINR(bestValue)} via travel redemption
+                  </div>
+                </div>
+                <Link
+                  href={`/trip-planner?points=${points}&bank=${card?.bank || ''}`}
+                  className="shrink-0 px-5 py-2.5 rounded-xl font-semibold text-sm transition-all"
+                  style={{ background: '#C9972E', color: '#fff', whiteSpace: 'nowrap' }}
+                >
+                  Plan my trip →
+                </Link>
+              </div>
+            </div>
+          )}
       <Footer />
       <CompareTray />
     </main>
