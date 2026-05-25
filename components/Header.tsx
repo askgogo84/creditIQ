@@ -57,8 +57,6 @@ export function Header() {
   const travelRef = useRef<HTMLDivElement>(null)
   const aiTimer = useRef<ReturnType<typeof setTimeout>>()
   const travelTimer = useRef<ReturnType<typeof setTimeout>>()
-  const aiTimer = useRef<ReturnType<typeof setTimeout>>()
-  const travelTimer = useRef<ReturnType<typeof setTimeout>>()
 
   const navLinkStyle = {
     color: 'var(--ink-3, #5A6A8A)',
