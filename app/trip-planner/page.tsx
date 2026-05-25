@@ -354,6 +354,7 @@ function TripPlannerPageInner() {
                           style={{ width: '100%', padding: '11px', background: 'linear-gradient(135deg, #C9972E, #E8B84B)', color: '#0a0a0a', borderRadius: 10, fontSize: 12, fontWeight: 800, cursor: 'pointer', border: 'none' }}
                         >
                           How to book this →
+
                         </button>
                         <a href={url} target="_blank" rel="noopener noreferrer" style={{ display: 'block', textAlign: 'center' as const, padding: '9px', background: 'var(--bg-surface, #f8fafc)', color: 'var(--text, #0f172a)', borderRadius: 10, fontSize: 11, fontWeight: 700, textDecoration: 'none', border: '1px solid var(--border, #e2e8f0)' }}>{label}</a>
                         <a href={`https://www.makemytrip.com/flights/`} target="_blank" rel="noopener noreferrer" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 5, padding: '8px', background: '#fff0f0', color: '#E8122D', borderRadius: 10, fontSize: 11, fontWeight: 700, textDecoration: 'none', border: '1px solid #fecaca' }}>

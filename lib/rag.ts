@@ -25,9 +25,12 @@ export function cardToText(card: any): string {
 
   if (card.lounges?.length > 0) {
     const loungeStr = card.lounges
-      .map((l: any) =>
-        l.type + ' (' + (l.visits_per_year ?? (l.visits_per_quarter ?? 0) * 4) + ' visits/year via ' + l.network + ')'
-      )
+      .map((l: any) => {
+        const isUnlimited = l.notes?.toLowerCase().includes('unlimited') || (!l.visits_per_year && !l.visits_per_quarter)
+        const visitCount = isUnlimited ? 'Unlimited' : (l.visits_per_year ?? (l.visits_per_quarter ?? 0) * 4) + ' visits/year'
+        const spendNote = l.notes && !isUnlimited ? ' (' + l.notes + ')' : isUnlimited && l.notes ? ' (' + l.notes + ')' : ''
+        return l.type + ' lounge: ' + visitCount + ' via ' + l.network + spendNote
+      })
       .join(', ')
     parts.push('Lounge Access: ' + loungeStr)
   }

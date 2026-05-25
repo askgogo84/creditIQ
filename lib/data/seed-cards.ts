@@ -18,7 +18,7 @@ export const SEED_CARDS: CreditCard[] = [
     min_income_inr_monthly: 250000,
     credit_score_min: 750,
     reward_currency: 'reward-points',
-    base_reward_rate: 3.3,
+    base_reward_rate: 3.33, // 5pts per Rs.150 = 3.33%. SmartBuy 10X = 33.3%. Source: paisabazaar May 2026
     category_rewards: [
       { category: 'smartbuy', rate: 10, unit: 'multiplier', cap_inr_monthly: 15000, notes: '10X on SmartBuy partners (Amazon, Flipkart, Marriott)' },
       { category: 'dining', rate: 3.3, unit: 'percent', notes: '5 points per Rs.150' },
@@ -70,7 +70,7 @@ export const SEED_CARDS: CreditCard[] = [
     min_income_inr_monthly: 100000,
     credit_score_min: 750,
     reward_currency: 'reward-points',
-    base_reward_rate: 1.65, // After May 2026 devaluation: 5pts/Rs.200
+    base_reward_rate: 1.65, // 5pts/Rs.200 post May 2026 devaluation (was 4pts/Rs.150 = 1.65%). Lounge: 12 domestic + 6 intl/yr, spend-gated Rs.1L/quarter from Dec 2023
     category_rewards: [
       { category: 'travel', rate: 5, unit: 'multiplier', notes: '5X on Marriott, Myntra, Cult, Nykaa' },
     ],
@@ -174,7 +174,7 @@ export const SEED_CARDS: CreditCard[] = [
     last_verified: '2026-05-01',
   },
   {
-    id: 'sbi-elite',
+    id: 'sbi-elite', // VERIFIED May 2026: 2 domestic/qtr (8/yr) no spend gate + 6 intl Priority Pass (2/qtr). Reward: 0.5% base, 2.5% dining/grocery. Forex 1.99%
     slug: 'sbi-elite',
     name: 'SBI ELITE',
     bank: 'SBI',
