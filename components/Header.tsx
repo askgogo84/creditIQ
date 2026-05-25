@@ -190,6 +190,15 @@ export function Header() {
               </svg>
             </button>
 
+            {user ? (
+              <>
+                <Link href="/dashboard" className="ciq-theme-desktop" style={{ padding: '8px 16px', fontSize: 13, fontWeight: 600, color: 'var(--ink,#142950)', textDecoration: 'none', borderRadius: 100, border: '1px solid var(--line,rgba(20,41,80,0.15))' }}>Dashboard</Link>
+                <button onClick={signOut} className="ciq-theme-desktop" style={{ padding: '8px 16px', fontSize: 13, fontWeight: 600, color: '#fff', background: '#C9972E', border: 'none', borderRadius: 100, cursor: 'pointer' }}>Sign Out</button>
+              </>
+            ) : (
+              <Link href="/login" className="ciq-theme-desktop" style={{ padding: '8px 16px', fontSize: 13, fontWeight: 600, color: '#fff', background: '#C9972E', textDecoration: 'none', borderRadius: 100 }}>Sign In</Link>
+            )}
+
             <Link href="/smart-match" className="ciq-cta">
               Find my card
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">

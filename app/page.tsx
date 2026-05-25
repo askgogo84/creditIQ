@@ -338,7 +338,7 @@ export default function HomePage() {
                 subtitle={null} />
 
               <Reveal>
-                <GhostCTA href="/smart-match">Open the toolbox '</GhostCTA>
+                <GhostCTA href="/smart-match">Open the toolbox</GhostCTA>
               </Reveal>
             </div>
 
