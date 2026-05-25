@@ -12,6 +12,30 @@ export async function POST(req: NextRequest) {
     const currentCard = allCards.find((c: any) => c.id === currentCardId || c.slug === currentCardId) as any
     if (!currentCard) return NextResponse.json({ error: 'Card not found' }, { status: 400 })
 
+    // Build slug lookup map to fix Claude hallucinating wrong cardId order
+    const slugMap = new Map<string, string>()
+    for (const card of allCards as any[]) {
+      const slug: string = card.slug || card.id || ''
+      slugMap.set(slug.toLowerCase(), slug)
+      const parts = slug.split('-')
+      if (parts.length >= 2) {
+        slugMap.set(parts.slice(1).join('-') + '-' + parts[0], slug)
+      }
+      const nameKey = (card.name || '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/-+/g, '-').replace(/^-|-$/, '')
+      slugMap.set(nameKey, slug)
+    }
+
+    const resolveSlug = (cardId: string): string => {
+      if (!cardId) return ''
+      const key = cardId.toLowerCase()
+      if (slugMap.has(key)) return slugMap.get(key)!
+      const parts = key.split('-').filter((p: string) => p.length > 2)
+      for (const [k, v] of slugMap.entries()) {
+        if (parts.every((p: string) => k.includes(p))) return v
+      }
+      return cardId
+    }
+
     const { context, devaluations } = await retrieveRelevantCards(
       'best alternative to ' + currentCard.name + ' for ' + (spendProfile || 'general') + ' spending',
       { topK: 8 }
@@ -74,17 +98,21 @@ Respond ONLY with valid JSON:
     // Map alternatives to cards for frontend compatibility
     const response_data = {
       ...parsed,
-      cards: (parsed.alternatives || []).map((alt: any) => ({
-        id: alt.cardId,
-        name: alt.cardName,
-        bank: alt.bank,
-        monthlyValue: alt.monthlyValue,
-        annualUpgrade: alt.annualUpgrade,
-        keyUpgrade: alt.keyUpgrade,
-        tradeoff: alt.tradeoff,
-        annualFee: alt.annualFee,
-        reasons: [alt.keyUpgrade, alt.tradeoff].filter(Boolean),
-      })),
+      cards: (parsed.alternatives || []).map((alt: any) => {
+        const resolvedSlug = resolveSlug(alt.cardId || '')
+        return {
+          id: resolvedSlug,
+          slug: resolvedSlug,
+          name: alt.cardName,
+          bank: alt.bank,
+          monthlyValue: alt.monthlyValue,
+          annualUpgrade: alt.annualUpgrade,
+          keyUpgrade: alt.keyUpgrade,
+          tradeoff: alt.tradeoff,
+          annualFee: alt.annualFee,
+          reasons: [alt.keyUpgrade, alt.tradeoff].filter(Boolean),
+        }
+      }),
     }
     return NextResponse.json(response_data)
   } catch (err) {

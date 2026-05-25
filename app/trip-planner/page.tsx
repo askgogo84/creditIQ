@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { Header } from '@/components/Header';
 import { Footer } from '@/components/Footer';
 import { getApplyUrl } from '@/lib/affiliate';
+import { createBrowserClient } from '@supabase/ssr';
 
 interface TripResult {
   destination: string;
@@ -65,13 +66,51 @@ const BANKS = ['HDFC', 'Axis', 'SBI', 'ICICI', 'IDFC', 'Amex', 'Kotak', 'AU', 'N
 function TripPlannerPageInner() {
   const [query, setQuery] = useState('');
   const [points, setPoints] = useState('');
+  const [pointsLoaded, setPointsLoaded] = useState(false);
   const searchParams = useSearchParams();
+
+  useEffect(() => {
+    const loadUserPoints = async () => {
+      try {
+        const supabase = createBrowserClient(
+          process.env.NEXT_PUBLIC_SUPABASE_URL!,
+          process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+        );
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) return;
+        const [stmtRes, manualRes] = await Promise.all([
+          fetch('/api/user-cards?userId=' + user.id),
+          fetch('/api/manual-cards?userId=' + user.id),
+        ]);
+        let total = 0;
+        if (stmtRes.ok) {
+          const d = await stmtRes.json();
+          const arr = Array.isArray(d) ? d : (d.cards || []);
+          for (const c of arr) total += Number(c.points_balance) || 0;
+        }
+        if (manualRes.ok) {
+          const d = await manualRes.json();
+          const arr = Array.isArray(d) ? d : (d.cards || []);
+          for (const c of arr) total += Number(c.points_balance) || 0;
+        }
+        if (total > 0) {
+          setPoints(total.toLocaleString('en-IN'));
+          setPointsLoaded(true);
+        }
+      } catch {
+        // silently fail
+      }
+    };
+    loadUserPoints();
+  }, []);
+
   useEffect(() => {
     const urlPoints = searchParams.get('points');
     const urlBank = searchParams.get('bank');
-    if (urlPoints) setPoints(urlPoints);
+    if (urlPoints) { setPoints(urlPoints); setPointsLoaded(false); }
     if (urlBank) setCardBank(urlBank);
   }, [searchParams]);
+
   const [cardBank, setCardBank] = useState('HDFC');
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<TripResult | null>(null);
@@ -149,14 +188,19 @@ function TripPlannerPageInner() {
 
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 16 }}>
             <div>
-              <label style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-muted, #64748b)', textTransform: 'uppercase' as const, letterSpacing: 1, display: 'block', marginBottom: 8 }}>
+              <label style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-muted, #64748b)', textTransform: 'uppercase' as const, letterSpacing: 1, display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
                 Your points balance
+                {pointsLoaded && (
+                  <span style={{ fontSize: 9, fontWeight: 700, color: '#16a34a', background: 'rgba(34,197,94,0.1)', border: '1px solid rgba(34,197,94,0.3)', padding: '2px 8px', borderRadius: 100, textTransform: 'uppercase' as const, letterSpacing: 1 }}>
+                    Auto-loaded
+                  </span>
+                )}
               </label>
               <input
                 type="text"
                 value={points}
                 onChange={e => setPoints(e.target.value)}
-                placeholder="e.g. 52,164"
+                placeholder={pointsLoaded ? "" : "e.g. 52,164"}
                 style={{
                   width: '100%', height: 44, padding: '0 14px',
                   background: 'var(--bg-surface, #f8fafc)',

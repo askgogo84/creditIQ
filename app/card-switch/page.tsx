@@ -31,6 +31,7 @@ const CARD_OPTIONS = SEED_CARDS.slice(0, 30).map(c => ({
 
 interface Recommendation {
   id: string;
+  slug?: string;
   name: string;
   bank: string;
   annualFee: number;
@@ -208,6 +209,7 @@ export default function CardSwitchPage() {
 
 
 
+
             </button>
           </div>
         )}
@@ -256,6 +258,7 @@ export default function CardSwitchPage() {
                 }}
               >
                 Continue →
+
 
 
 
@@ -403,7 +406,7 @@ export default function CardSwitchPage() {
                       background: 'linear-gradient(135deg, #C9972E, #E8B84B)', color: '#0a0a0a',
                       borderRadius: 10, fontSize: 13, fontWeight: 700, textDecoration: 'none',
                     }}>{label}</a>
-                    <Link href={`/cards?search=${encodeURIComponent(card.name || "")}`} style={{
+                    <Link href={`/cards/${card.slug || card.id || ""}`} style={{
                       flex: 1, display: 'block', textAlign: 'center', padding: '10px 20px',
                       background: 'var(--bg-input, #f8fafc)', color: 'var(--text, #0f172a)',
                       border: '1px solid var(--border, #e2e8f0)', borderRadius: 10,
