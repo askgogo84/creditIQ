@@ -75,7 +75,7 @@ export function CreditIQAssistant() {
   return (
     <>
       {/* Chat bubble */}
-      <div style={{ position: 'fixed', bottom: 24, right: 24, zIndex: 1000 }}>
+      <div style={{ position: 'fixed', bottom: 'max(24px, calc(env(safe-area-inset-bottom, 0px) + 80px))', right: 16, zIndex: 1000 }}>
         {/* Tooltip */}
         {!open && pulse && (
           <div style={{
@@ -126,7 +126,7 @@ export function CreditIQAssistant() {
       {/* Chat panel */}
       {open && (
         <div style={{
-          position: 'fixed', bottom: 92, right: 24, zIndex: 999,
+          position: 'fixed', bottom: 'max(92px, calc(env(safe-area-inset-bottom, 0px) + 148px))', right: 16, zIndex: 999,
           width: 360, maxWidth: 'calc(100vw - 48px)',
           borderRadius: 20,
           background: 'var(--surface, #fff)',

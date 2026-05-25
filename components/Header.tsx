@@ -220,7 +220,7 @@ export function Header() {
           { label: 'Cards', href: '/cards', d1: 'M1 4h22v16a2 2 0 01-2 2H3a2 2 0 01-2-2V4z', d2: 'M1 10h22' },
           { label: 'Trip', href: '/trip-planner', d1: 'M22 2L11 13', d2: 'M22 2L15 22 11 13 2 9l20-7z' },
           { label: 'AI', href: '/smart-match', d1: 'M13 2L3 14h9l-1 8 10-12h-9l1-8z', d2: '' },
-          { label: user ? 'Me' : 'Login', href: user ? '/dashboard' : '/login', d1: 'M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2', d2: 'M12 3a4 4 0 100 8 4 4 0 000-8z' },
+          { label: 'My Cards', href: user ? '/dashboard' : '/login', d1: 'M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2', d2: 'M12 3a4 4 0 100 8 4 4 0 000-8z' },
         ] as { label: string; href: string; d1: string; d2: string }[]).map(tab => {
           const active = pathname === tab.href || (tab.href !== '/' && pathname.startsWith(tab.href))
           return (
