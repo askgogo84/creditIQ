@@ -249,7 +249,7 @@ export function TripComparison({ destination, origin = 'Bangalore', nights = 3, 
                 <span style={{ fontSize: 12, color: 'var(--text-muted, #64748b)' }}>{f.flightNo}</span>
               </div>
               <div style={{ fontSize: 13, color: 'var(--text-muted, #64748b)', marginBottom: 6 }}>
-                {f.departure} -> {f.arrival} . {f.duration} . {f.stops === 0 ? 'Non-stop' : `${f.stops} stop`}
+                {f.departure} {'→'} {f.arrival} {'·'} {f.duration} {'·'} {f.stops === 0 ? 'Non-stop' : `${f.stops} stop`}
               </div>
               {f.pointsOption && (
                 <div style={{ fontSize: 12, color: f.canAfford ? '#16a34a' : '#f59e0b', marginBottom: 8 }}>
@@ -293,7 +293,7 @@ export function TripComparison({ destination, origin = 'Bangalore', nights = 3, 
                 <Stars count={h.stars} />
               </div>
               <div style={{ fontSize: 13, color: 'var(--text-muted, #64748b)', marginBottom: 4 }}>
-                {h.chain} . {h.area}
+                {h.chain} {'·'} {h.area}
               </div>
               {h.includes && (
                 <div style={{ fontSize: 12, color: '#16a34a', marginBottom: 4 }}>(ok) {h.includes}</div>
