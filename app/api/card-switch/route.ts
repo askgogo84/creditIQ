@@ -71,7 +71,22 @@ Respond ONLY with valid JSON:
     const text = data.content?.[0]?.text ?? ''
     const clean = text.replace(/```json|```/g, '').trim()
     const parsed = JSON.parse(clean)
-    return NextResponse.json(parsed)
+    // Map alternatives to cards for frontend compatibility
+    const response_data = {
+      ...parsed,
+      cards: (parsed.alternatives || []).map((alt: any) => ({
+        id: alt.cardId,
+        name: alt.cardName,
+        bank: alt.bank,
+        monthlyValue: alt.monthlyValue,
+        annualUpgrade: alt.annualUpgrade,
+        keyUpgrade: alt.keyUpgrade,
+        tradeoff: alt.tradeoff,
+        annualFee: alt.annualFee,
+        reasons: [alt.keyUpgrade, alt.tradeoff].filter(Boolean),
+      })),
+    }
+    return NextResponse.json(response_data)
   } catch (err) {
     console.error('Card switch error:', err)
     return NextResponse.json({ error: 'Analysis failed' }, { status: 500 })
