@@ -348,40 +348,40 @@ export default function HomePage() {
               gap: 20
             }} className="grid-1-mobile">
               <AIToolCard
-                icon="--"
+                icon={<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/><path d="M6 15h4"/></svg>}
                 title="Card Match"
                 desc="Type how you spend in plain English. We pick one card. No top-10 lists, no rankings sold to the highest bidder."
                 badge={{ text: 'POPULAR', tone: 'badge-copper' }}
                 href="/smart-match" />
 
               <AIToolCard
-                icon=""
+                icon={<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M12 2c0 6-6 8-6 13a6 6 0 0 0 12 0c0-5-6-7-6-13z"/><path d="M12 22v-4"/></svg>}
                 title="Card Roast"
                 desc="Brutal A-F grade on your current card. Shareable. Probably mean. Definitely accurate."
                 badge={{ text: 'NEW', tone: 'badge-plum' }}
                 href="/card-roast" />
 
               <AIToolCard
-                icon="--"
+                icon={<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14,2 14,8 20,8"/><polyline points="9,15 11,17 15,13"/></svg>}
                 title="Statement Truth"
                 desc="Upload your statement. We tell you if your card is doing what the brochure promised."
                 href="/statement-truth" />
 
               <AIToolCard
-                icon=""
+                icon={<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><polyline points="1,4 1,10 7,10"/><polyline points="23,20 23,14 17,14"/><path d="M20.49 9A9 9 0 0 0 5.64 5.64L1 10m22 4l-4.64 4.36A9 9 0 0 1 3.51 15"/></svg>}
                 title="Switch Wizard"
                 desc="Already have a card? See if there's a better one for the same spend pattern."
                 href="/card-switch" />
 
               <AIToolCard
-                icon=""
+                icon={<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M17.8 19.2L16 11l3.5-3.5C21 6 21 4 19.5 2.5S18 2 16.5 3.5L13 7 4.8 5.2l-1.2 1.2 4.1 3.3-2.4 2.4-2.1-.7L2 12.3l2.8.9 1 2.8 1.1-1.1-.7-2.1 2.4-2.4z"/></svg>}
                 title="Travel AI"
                 desc="Chat with an AI that knows every airline, hotel and transfer ratio. Plans your trip + the card to fund it."
                 badge={{ text: 'BETA', tone: 'badge-amber' }}
                 href="/travel" />
 
               <AIToolCard
-                icon="--"
+                icon={<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18"/><path d="M9 21V9"/></svg>}
                 title="Lounge Tracker"
                 desc="Never get turned away at the gate. Tracks free visits across every card you carry."
                 href="/lounge-tracker" />
