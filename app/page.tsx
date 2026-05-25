@@ -169,14 +169,14 @@ export default function HomePage() {
                   maxWidth: 620
                 }}>
                   {[
-                  { val: 93,  suffix: '+',      label: 'Cards tracked' },
+                  { val: 100, suffix: '+',      label: 'Cards tracked' },
                   { val: 4.2, suffix: 'L',      prefix: 'Rs.', label: 'Avg. yearly waste', decimals: 1 },
-                  { val: 7,   suffix: ' DAYS',  label: 'Data refresh' }].
+                  { val: 7,   suffix: ' days',  label: 'Data refresh' }].
                   map((s, i) =>
-                  <div key={i} style={{ borderLeft: '1px solid var(--line)', paddingLeft: 14 }}>
+                  <div key={i} style={{ borderLeft: '1px solid var(--line)', paddingLeft: 14, minWidth: 0, flex: 1 }}>
                       <div style={{
                       fontFamily: 'var(--font-display)', fontWeight: 400,
-                      fontSize: 'clamp(28px, 4vw, 44px)', letterSpacing: '-0.03em', lineHeight: 1
+                      fontSize: 'clamp(24px, 4vw, 40px)', letterSpacing: '-0.03em', lineHeight: 1, whiteSpace: 'nowrap' as const
                     }}>
                         <StatNumber value={s.val} prefix={s.prefix || ''} suffix={s.suffix} decimals={s.decimals || 0} />
                       </div>
