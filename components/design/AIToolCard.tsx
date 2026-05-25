@@ -26,7 +26,7 @@ export function AIToolCard({ icon, title, desc, badge, href }: AIToolCardProps) 
           height: '100%',
           cursor: 'pointer',
           textDecoration: 'none',
-          color: 'var(--ink)',
+          color: 'var(--ink, #142950)',
         }}
       >
         <div
@@ -48,7 +48,7 @@ export function AIToolCard({ icon, title, desc, badge, href }: AIToolCardProps) 
         </div>
         <div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8, flexWrap: 'wrap' }}>
-            <h3 style={{ fontSize: 24, letterSpacing: '-0.02em' }}>{title}</h3>
+            <h3 style={{ fontSize: 24, letterSpacing: '-0.02em', color: 'var(--ink, #142950)' }}>{title}</h3>
             {badge && (
               <span className={`badge ${badge.tone || 'badge-copper'}`}>{badge.text}</span>
             )}
