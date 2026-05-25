@@ -5,8 +5,24 @@ export const runtime = 'nodejs'
 
 export async function POST(req: NextRequest) {
   try {
-    const { message, history } = await req.json()
-    if (!message) return NextResponse.json({ error: 'Missing message' }, { status: 400 })
+    const body = await req.json()
+
+    let message: string
+    let history: any[] = []
+
+    if (body.messages && Array.isArray(body.messages)) {
+      const msgs = body.messages
+      const lastUser = [...msgs].reverse().find((m: any) => m.role === 'user')
+      message = lastUser?.content ?? ''
+      history = msgs.slice(0, -1)
+    } else {
+      message = body.message ?? ''
+      history = body.history ?? []
+    }
+
+    if (!message.trim()) {
+      return NextResponse.json({ error: 'Missing message' }, { status: 400 })
+    }
 
     const { context, devaluations } = await retrieveRelevantCards(message, {
       topK: 8,
@@ -14,13 +30,11 @@ export async function POST(req: NextRequest) {
     })
 
     const systemPrompt = buildRagSystemPrompt(context, devaluations) +
-      '\n\nYou are also a travel expert. Help users plan trips using credit card points and miles. ' +
-      'Always suggest specific cards from the database for travel benefits. ' +
-      'For flight/hotel redemptions, use the redemption values from the card data. ' +
-      'Respond in conversational JSON: { "message": "your response", "cards": ["card-slug-1"], "tip": "optional pro tip" }'
+      '\n\nYou are a travel expert for Indian credit card holders. Help users plan trips using credit card points and miles. ' +
+      'Suggest specific cards for travel benefits. Keep answers concise and helpful. Plain text only, no JSON.'
 
     const messages = [
-      ...(history || []),
+      ...history,
       { role: 'user', content: message },
     ]
 
@@ -33,21 +47,16 @@ export async function POST(req: NextRequest) {
       },
       body: JSON.stringify({
         model: 'claude-sonnet-4-20250514',
-        max_tokens: 1500,
+        max_tokens: 600,
         system: systemPrompt,
         messages,
       }),
     })
 
     const data = await response.json()
-    const text = data.content?.[0]?.text ?? ''
-    try {
-      const clean = text.replace(/```json|```/g, '').trim()
-      const parsed = JSON.parse(clean)
-      return NextResponse.json(parsed)
-    } catch {
-      return NextResponse.json({ message: text, cards: [], tip: null })
-    }
+    const reply = data.content?.[0]?.text ?? 'Sorry, I could not get a response.'
+
+    return NextResponse.json({ reply, message: reply })
   } catch (err) {
     console.error('Travel AI error:', err)
     return NextResponse.json({ error: 'Travel AI failed' }, { status: 500 })
