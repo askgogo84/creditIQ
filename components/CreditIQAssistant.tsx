@@ -257,7 +257,7 @@ export function CreditIQAssistant() {
             display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
             background: 'rgba(37,211,102,0.04)',
           }}>
-            <a href="https://wa.me/918310441698?text=Hi%20CreditIQ%2C%20I%20need%20help%20with%20my%20credit%20card"
+            <a href="https://wa.me/15797006612?text=Hi%20AskGogo%2C%20I%20need%20help%20with%20my%20credit%20card"
               target="_blank" rel="noopener noreferrer"
               style={{
                 fontSize: 12, color: '#25D366', fontWeight: 600,
