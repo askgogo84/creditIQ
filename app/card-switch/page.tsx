@@ -402,7 +402,7 @@ export default function CardSwitchPage() {
                       background: 'var(--bg-input, #f8fafc)', color: 'var(--text, #0f172a)',
                       border: '1px solid var(--border, #e2e8f0)', borderRadius: 10,
                       fontSize: 13, fontWeight: 600, textDecoration: 'none',
-                    }}>Full review →</Link>
+                    }}>Full review -></Link>
                   </div>
                 </div>
               );

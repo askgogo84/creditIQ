@@ -55,6 +55,10 @@ export function Header() {
   const [travelOpen, setTravelOpen] = useState(false)
   const aiRef = useRef<HTMLDivElement>(null)
   const travelRef = useRef<HTMLDivElement>(null)
+  const aiTimer = useRef<ReturnType<typeof setTimeout>>()
+  const travelTimer = useRef<ReturnType<typeof setTimeout>>()
+  const aiTimer = useRef<ReturnType<typeof setTimeout>>()
+  const travelTimer = useRef<ReturnType<typeof setTimeout>>()
 
   const navLinkStyle = {
     color: 'var(--ink-3, #5A6A8A)',
@@ -101,8 +105,8 @@ export function Header() {
             <div
               ref={aiRef}
               className="relative"
-              onMouseEnter={() => setAiOpen(true)}
-              onMouseLeave={() => setAiOpen(false)}
+              onMouseEnter={() => { clearTimeout(aiTimer.current); setAiOpen(true); }}
+              onMouseLeave={() => { aiTimer.current = setTimeout(() => setAiOpen(false), 150); }}
             >
               <button
                 className="px-3 py-2 rounded-lg text-sm font-medium transition-colors hover:bg-black/5 flex items-center gap-1"
@@ -126,8 +130,8 @@ export function Header() {
             <div
               ref={travelRef}
               className="relative"
-              onMouseEnter={() => setTravelOpen(true)}
-              onMouseLeave={() => setTravelOpen(false)}
+              onMouseEnter={() => { clearTimeout(travelTimer.current); setTravelOpen(true); }}
+              onMouseLeave={() => { travelTimer.current = setTimeout(() => setTravelOpen(false), 150); }}
             >
               <button
                 className="px-3 py-2 rounded-lg text-sm font-medium transition-colors hover:bg-black/5 flex items-center gap-1"
