@@ -106,6 +106,27 @@ function TripPlannerPageInner() {
     loadUserPoints();
   }, []);
 
+  // Load user home city from profile/statement on mount
+  useEffect(() => {
+    const loadOriginCity = async () => {
+      try {
+        const supabase = createBrowserClient(
+          process.env.NEXT_PUBLIC_SUPABASE_URL!,
+          process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+        );
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) { setShowOriginPrompt(true); return; }
+        const res = await fetch('/api/user-city?userId=' + user.id);
+        if (res.ok) {
+          const d = await res.json();
+          if (d.city) { setOriginCity(d.city); setOriginIata(d.iata || 'BLR'); }
+          else setShowOriginPrompt(true);
+        }
+      } catch { setShowOriginPrompt(true); }
+    };
+    loadOriginCity();
+  }, []);
+
   useEffect(() => {
     const urlPoints = searchParams.get('points');
     const urlBank = searchParams.get('bank');
@@ -430,6 +451,7 @@ function TripPlannerPageInner() {
 
 
 
+
                         </button>
                         <a href={url} target="_blank" rel="noopener noreferrer" style={{ display: 'block', textAlign: 'center' as const, padding: '9px', background: 'var(--bg-surface, #f8fafc)', color: 'var(--text, #0f172a)', borderRadius: 10, fontSize: 11, fontWeight: 700, textDecoration: 'none', border: '1px solid var(--border, #e2e8f0)' }}>{label}</a>
                         <a href="https://bitli.in/cv7BwVU" target="_blank" rel="noopener noreferrer" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 5, padding: '8px', background: '#fff0f0', color: '#E8122D', borderRadius: 10, fontSize: 11, fontWeight: 700, textDecoration: 'none', border: '1px solid #fecaca' }}>
@@ -485,7 +507,7 @@ function TripPlannerPageInner() {
             {/* Live price comparison across platforms */}
             <TripComparison
               destination={result.destination}
-              origin="Bangalore"
+              origin={originCity}
               nights={parseInt(result.duration?.replace(/\D/g,'')) || 3}
               cabin={result.flights?.[0]?.class?.toLowerCase() || 'economy'}
               userPoints={parseInt((points || '0').replace(/,/g, '')) || 0}
