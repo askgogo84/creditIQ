@@ -1,9 +1,10 @@
 'use client'
 
-import { useState, useRef } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { Logo } from '@/components/Logo'
+import { createBrowserClient } from '@supabase/ssr'
 import { ThemeToggle } from '@/components/design/ThemeToggle'
 
 const aiTools = [
@@ -53,6 +54,30 @@ export function Header() {
   const pathname = usePathname()
   const [aiOpen, setAiOpen] = useState(false)
   const [travelOpen, setTravelOpen] = useState(false)
+  const [user, setUser] = useState<any>(null)
+
+  useEffect(() => {
+    const sb = createBrowserClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+    )
+    sb.auth.getSession().then(({ data: { session } }) => {
+      setUser(session?.user ?? null)
+    })
+    const { data: { subscription } } = sb.auth.onAuthStateChange((_event, session) => {
+      setUser(session?.user ?? null)
+    })
+    return () => subscription.unsubscribe()
+  }, [])
+
+  const signOut = async () => {
+    const sb = createBrowserClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+    )
+    await sb.auth.signOut()
+    window.location.href = '/'
+  }
   const aiRef = useRef<HTMLDivElement>(null)
   const travelRef = useRef<HTMLDivElement>(null)
   const aiTimer = useRef<ReturnType<typeof setTimeout>>()
@@ -168,13 +193,23 @@ export function Header() {
             >
               Dashboard
             </Link>
-            <Link
-              href="/login"
-              className="px-4 py-1.5 rounded-lg text-sm font-semibold transition-all"
-              style={{ background: '#C9972E', color: '#fff' }}
-            >
-              Sign In
-            </Link>
+            {user ? (
+              <button
+                onClick={signOut}
+                className="px-4 py-1.5 rounded-lg text-sm font-semibold transition-all"
+                style={{ background: 'rgba(201,151,46,0.1)', color: '#C9972E', border: '1px solid rgba(201,151,46,0.3)', cursor: 'pointer' }}
+              >
+                Sign Out
+              </button>
+            ) : (
+              <Link
+                href="/login"
+                className="px-4 py-1.5 rounded-lg text-sm font-semibold transition-all"
+                style={{ background: '#C9972E', color: '#fff' }}
+              >
+                Sign In
+              </Link>
+            )}
           </div>
         </div>
       </header>

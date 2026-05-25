@@ -1,5 +1,5 @@
 import { Metadata } from 'next';
-import { TopNav }         from '@/components/design/TopNav';
+import { Header } from '@/components/Header';
 import { SectionHeader }  from '@/components/design/SectionHeader';
 import { CopperCTA, GhostCTA } from '@/components/design/CTAs';
 import { DesignFooter }   from '@/components/design/Footer';
@@ -25,7 +25,7 @@ export default function CardsIndexPage() {
 
   return (
     <>
-      <TopNav />
+      <Header />
       <div className="page-fade">
 
         {/* ============================================
