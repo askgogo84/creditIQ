@@ -355,9 +355,10 @@ function TripPlannerPageInner() {
                         >
                           How to book this →
 
+
                         </button>
                         <a href={url} target="_blank" rel="noopener noreferrer" style={{ display: 'block', textAlign: 'center' as const, padding: '9px', background: 'var(--bg-surface, #f8fafc)', color: 'var(--text, #0f172a)', borderRadius: 10, fontSize: 11, fontWeight: 700, textDecoration: 'none', border: '1px solid var(--border, #e2e8f0)' }}>{label}</a>
-                        <a href={`https://www.makemytrip.com/flights/`} target="_blank" rel="noopener noreferrer" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 5, padding: '8px', background: '#fff0f0', color: '#E8122D', borderRadius: 10, fontSize: 11, fontWeight: 700, textDecoration: 'none', border: '1px solid #fecaca' }}>
+                        <a href="https://bitli.in/cv7BwVU" target="_blank" rel="noopener noreferrer" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 5, padding: '8px', background: '#fff0f0', color: '#E8122D', borderRadius: 10, fontSize: 11, fontWeight: 700, textDecoration: 'none', border: '1px solid #fecaca' }}>
                           MakeMyTrip
                         </a>
                         <a href={`https://www.google.com/flights?q=flights+to+${encodeURIComponent(result.destination)}`} target="_blank" rel="noopener noreferrer" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 5, padding: '8px', background: '#f0f4ff', color: '#4285F4', borderRadius: 10, fontSize: 11, fontWeight: 700, textDecoration: 'none', border: '1px solid #c7d2fe' }}>

@@ -63,7 +63,7 @@ function buildFlightSearchUrl(partner: string, destination: string): string {
   if (partner.includes('InterMiles')) return 'https://www.intermiles.com/flights/search?to=' + dest;
   if (partner.includes('KrisFlyer') || partner.includes('Singapore')) return 'https://www.singaporeair.com/en_UK/in/plan-travel/book-flights/';
   if (partner.includes('Vistara')) return 'https://www.airvistara.com/in/en/plan-your-travel/book/flight';
-  return 'https://www.makemytrip.com/flights/';
+  return "https://bitli.in/cv7BwVU";
 }
 
 function buildHotelUrl(chain: string, destination: string, nights: number): string {
@@ -247,14 +247,14 @@ export function BookingModal({ isOpen, onClose, destination, flight, hotel, user
           </div>
 
           <div style={{ display: 'flex', gap: 8, margin: '10px 0 24px' }}>
-            <a href="https://www.makemytrip.com/flights/" target="_blank" rel="noopener noreferrer" className="bm-pill" style={{ background: 'rgba(232,18,45,0.1)', border: '1px solid rgba(232,18,45,0.2)', color: '#ff6b7a' }}>
+            <a href="https://bitli.in/cv7BwVU" target="_blank" rel="noopener noreferrer" className="bm-pill" style={{ background: 'rgba(232,18,45,0.1)', border: '1px solid rgba(232,18,45,0.2)', color: '#ff6b7a' }}>
               MakeMyTrip
             </a>
             <a href={'https://www.google.com/flights?q=flights+to+' + encodeURIComponent(destination)} target="_blank" rel="noopener noreferrer" className="bm-pill" style={{ background: 'rgba(66,133,244,0.1)', border: '1px solid rgba(66,133,244,0.2)', color: '#60a5fa' }}>
               Google Flights
             </a>
             {hotel && (
-              <a href={'https://www.booking.com/searchresults.html?ss=' + encodeURIComponent(destination)} target="_blank" rel="noopener noreferrer" className="bm-pill" style={{ background: 'rgba(0,115,230,0.1)', border: '1px solid rgba(0,115,230,0.2)', color: '#60a5fa' }}>
+              <a href={"https://bitli.in/xc9tvmd"} target="_blank" rel="noopener noreferrer" className="bm-pill" style={{ background: 'rgba(0,115,230,0.1)', border: '1px solid rgba(0,115,230,0.2)', color: '#60a5fa' }}>
                 Booking.com
               </a>
             )}

@@ -61,14 +61,21 @@ const AFFILIATE_LINKS: Record<string, string> = {
   "amex-platinum-travel":      "https://www.americanexpress.com/in/credit-cards/",
   "amex-gold":                 "https://www.americanexpress.com/in/credit-cards/",
   "amex-membership-rewards":   "https://www.americanexpress.com/in/credit-cards/",
-  "kotak-811":                 "https://www.kotak.com/en/personal-banking/cards/credit-cards.html",
-  "kotak-white":               "https://www.kotak.com/en/personal-banking/cards/credit-cards.html",
-  "kotak-royale-signature":    "https://www.kotak.com/en/personal-banking/cards/credit-cards.html",
-  "yes-first-exclusive":       "https://www.yesbank.in/personal-banking/yes-individual/loans-and-cards/credit-card",
-  "yes-first-preferred":       "https://www.yesbank.in/personal-banking/yes-individual/loans-and-cards/credit-card",
-  "rbl-shoprite":              "https://www.rblbank.com/credit-cards",
-  "rbl-world-safari":          "https://www.rblbank.com/credit-cards",
+  "kotak-811":                   "https://bitli.in/glzF0Ff",
+  "kotak-white":                 "https://bitli.in/glzF0Ff",
+  "kotak-royale-signature":      "https://bitli.in/glzF0Ff",
+  "yes-first-exclusive":         "https://bitli.in/pe8xoQG",
+  "yes-first-preferred":         "https://bitli.in/pe8xoQG",
+  "rbl-shoprite":                "https://bitli.in/cnFgfO8",
+  "rbl-world-safari":            "https://bitli.in/cnFgfO8",
 };
+
+
+  //  Travel Bookings (EarnKaro affiliate) 
+  "mmt-hotels":                "https://bitli.in/VrZOzeR",
+  "mmt-flights":               "https://bitli.in/cv7BwVU",
+  "booking-com":               "https://bitli.in/xc9tvmd",
+  "kayak-flights":             "https://bitli.in/Pb5juMv",
 
 const DEFAULT_AFFILIATE_URL = "https://www.paisabazaar.com/credit-card/";
 
@@ -100,3 +107,21 @@ export function getTrackedCardIds(): string[] {
     .map(([id]) => id);
 }
 
+
+
+// Travel booking affiliate helpers
+export function getMmtHotelsUrl(destination: string): string {
+  return "https://bitli.in/VrZOzeR";
+}
+
+export function getMmtFlightsUrl(destination: string): string {
+  return "https://bitli.in/cv7BwVU";
+}
+
+export function getBookingUrl(destination: string): string {
+  return "https://bitli.in/xc9tvmd";
+}
+
+export function getKayakUrl(destination: string): string {
+  return "https://bitli.in/Pb5juMv";
+}
