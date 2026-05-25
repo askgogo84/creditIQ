@@ -118,6 +118,9 @@ function TripPlannerPageInner() {
   const [result, setResult] = useState<TripResult | null>(null);
   const [error, setError] = useState('');
   const [modalOpen, setModalOpen] = useState(false);
+  const [originCity, setOriginCity] = useState('Bangalore');
+  const [originIata, setOriginIata] = useState('BLR');
+  const [showOriginPrompt, setShowOriginPrompt] = useState(false);
   const [modalFlight, setModalFlight] = useState<TripResult['flights'][0] | null>(null);
   const [modalHotel, setModalHotel] = useState<TripResult['hotels'][0] | null>(null);
 
@@ -134,6 +137,7 @@ function TripPlannerPageInner() {
         body: JSON.stringify({
           query: tripQuery,
           userPoints: parseInt(points.replace(/,/g, '')) || 0,
+          origin: originCity,
           cardBank,
         }),
       });
@@ -236,6 +240,71 @@ function TripPlannerPageInner() {
               </select>
             </div>
           </div>
+
+          {/* Origin city - smart or user input */}
+          {showOriginPrompt && (
+            <div style={{ marginBottom: 16, padding: '12px 14px', background: 'rgba(201,151,46,0.08)', border: '1px solid rgba(201,151,46,0.2)', borderRadius: 12 }}>
+              <div style={{ fontSize: 11, fontWeight: 700, color: '#C9972E', marginBottom: 8, textTransform: 'uppercase' as const, letterSpacing: 1 }}>
+                Where do you usually fly from?
+              </div>
+              <div style={{ display: 'flex', gap: 8 }}>
+                <input
+                  type="text"
+                  value={originCity}
+                  onChange={e => setOriginCity(e.target.value)}
+                  placeholder="e.g. Bangalore, Mumbai, Delhi..."
+                  style={{
+                    flex: 1, height: 40, padding: '0 12px',
+                    background: 'var(--bg-surface, #f8fafc)',
+                    border: '1.5px solid var(--border, #e2e8f0)',
+                    borderRadius: 8, fontSize: 13,
+                    color: 'var(--text, #0f172a)', outline: 'none',
+                  }}
+                />
+                <button
+                  onClick={async () => {
+                    try {
+                      const supabase = createBrowserClient(
+                        process.env.NEXT_PUBLIC_SUPABASE_URL!,
+                        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+                      );
+                      const { data: { user } } = await supabase.auth.getUser();
+                      if (user) {
+                        await fetch('/api/user-city', {
+                          method: 'POST',
+                          headers: { 'Content-Type': 'application/json' },
+                          body: JSON.stringify({ userId: user.id, city: originCity }),
+                        });
+                      }
+                      setShowOriginPrompt(false);
+                    } catch { setShowOriginPrompt(false); }
+                  }}
+                  style={{
+                    padding: '0 16px', height: 40, borderRadius: 8,
+                    background: '#C9972E', color: '#0a0a0a',
+                    border: 'none', fontSize: 12, fontWeight: 700, cursor: 'pointer',
+                  }}
+                >
+                  Save
+                </button>
+              </div>
+              <div style={{ fontSize: 11, color: 'rgba(201,151,46,0.7)', marginTop: 6 }}>
+                We'll remember this for all your trip plans
+              </div>
+            </div>
+          )}
+          {!showOriginPrompt && (
+            <div style={{ marginBottom: 12, display: 'flex', alignItems: 'center', gap: 6 }}>
+              <span style={{ fontSize: 11, color: 'var(--text-muted, #64748b)' }}>Flying from:</span>
+              <span style={{ fontSize: 12, fontWeight: 700, color: 'var(--text, #0f172a)' }}>{originCity}</span>
+              <button
+                onClick={() => setShowOriginPrompt(true)}
+                style={{ fontSize: 11, color: '#C9972E', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
+              >
+                Change
+              </button>
+            </div>
+          )}
 
           <button
             onClick={() => plan()}
@@ -355,6 +424,7 @@ function TripPlannerPageInner() {
                           style={{ width: '100%', padding: '11px', background: 'linear-gradient(135deg, #C9972E, #E8B84B)', color: '#0a0a0a', borderRadius: 10, fontSize: 12, fontWeight: 800, cursor: 'pointer', border: 'none' }}
                         >
                           How to book this →
+
 
 
 
