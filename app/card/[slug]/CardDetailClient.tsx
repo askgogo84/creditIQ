@@ -273,6 +273,7 @@ export function CardDetailClient({ card }: { card: CreditCard }) {
 
 
 
+
           </Link>
         </div>
       </section>
