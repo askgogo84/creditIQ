@@ -7,7 +7,7 @@ import { Check, Zap, Shield, Star, CreditCard, TrendingUp, Bell, Plane, Building
 import Link from 'next/link';
 
 const FREE_FEATURES = [
-  '93+ cards across 17 banks',
+  '100+ cards across 17 banks',
   'Smart Match card finder',
   'Points optimizer (basic)',
   'Devaluation tracker',
@@ -139,6 +139,7 @@ export default function PremiumPage() {
                 style={{ background: '#d4a373', color: '#0a0a0b' }}
               >
                 Start free 7-day trial →
+
 
 
 

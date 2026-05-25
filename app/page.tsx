@@ -110,7 +110,7 @@ export default function HomePage() {
               <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
                 <span style={{ width: 8, height: 8, borderRadius: 999, background: 'var(--green)',
                   boxShadow: '0 0 12px var(--green)' }} />
-                <span className="label">Live . 93 cards across 24 banks</span>
+                <span className="label">Live . 100+ cards across 24 banks</span>
               </div>
               <div className="label hide-mobile" style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
                 <span>EST. 2025</span><span>.</span><span>BENGALURU</span><span>.</span><span>v1.0</span>
@@ -157,7 +157,7 @@ export default function HomePage() {
                   display: 'flex', gap: 14, flexWrap: 'wrap'
                 }} className="stack-mobile">
                   <CopperCTA href="/smart-match">Find my perfect card</CopperCTA>
-                  <GhostCTA href="/cards">Browse all 93 cards</GhostCTA>
+                  <GhostCTA href="/cards">Browse all 100+ cards</GhostCTA>
                 </Reveal>
 
                 {/* Mini stat row */}
@@ -493,7 +493,7 @@ export default function HomePage() {
             </div>
 
             <Reveal style={{ marginTop: 56, textAlign: 'center' }}>
-              <GhostCTA href="/cards">See all 93 cards '</GhostCTA>
+              <GhostCTA href="/cards">See all 100+ cards '</GhostCTA>
             </Reveal>
           </div>
         </section>

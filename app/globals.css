@@ -1374,14 +1374,19 @@ html.dark [style*="background: 'var(--bg-surface"] {
   }
 }
 
-/* ── CHAT WIDGET MOBILE FIX ── */
+/* ── CHAT WIDGET POSITION FIX ── */
+/* Move to left side on mobile so it doesn't cover bottom tab bar */
 @media (max-width: 640px) {
-  /* Push floating chat bubble above bottom tab bar */
-  [class*="CreditIQAssistant"],
-  [id*="chat-widget"],
-  .fixed.bottom-4.right-4,
-  button[aria-label*="chat"],
-  button[aria-label*="Chat"] {
+  /* Target the floating chat button - move left and up */
+  div[style*="position: fixed"][style*="bottom"][style*="right: 24px"],
+  div[style*="position: fixed"][style*="bottom"][style*="right: '24px'"] {
+    right: auto !important;
+    left: 16px !important;
+    bottom: 80px !important;
+  }
+  /* Also target by z-index pattern used by CreditIQ assistant */
+  div[style*="zIndex: 1000"][style*="bottom"],
+  div[style*="z-index: 1000"][style*="bottom"] {
     bottom: 80px !important;
   }
 }

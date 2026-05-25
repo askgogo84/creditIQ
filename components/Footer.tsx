@@ -14,7 +14,7 @@ export function Footer() {
             </div>
             <p className="text-sm font-display leading-relaxed" style={{ color: 'var(--text-muted)' }}>
               India's first affiliate-bias-free credit card intelligence platform. {' '}
-              <span style={{ color: 'var(--text-dim)' }}>93 cards tracked.</span>
+              <span style={{ color: 'var(--text-dim)' }}>100+ cards tracked.</span>
             </p>
             <div className="text-xs font-mono uppercase tracking-widest mt-4" style={{ color: 'var(--text-dim)' }}>
               (c) {new Date().getFullYear()} CreditIQ . Bengaluru

@@ -202,7 +202,7 @@ Respond ONLY with valid JSON, no markdown, no explanation:
                 letterSpacing: 0.2,
               }}
             >
-              {loading ? 'Analyzing 93 cards...' : 'Find My Best Card'}
+              {loading ? 'Analyzing 100+ cards...' : 'Find My Best Card'}
             </button>
             <p style={{ textAlign: 'center', fontSize: 12, color: '#94a3b8', marginTop: 10 }}>
               No login &nbsp;&bull;&nbsp; No data stored &nbsp;&bull;&nbsp; 100% unbiased

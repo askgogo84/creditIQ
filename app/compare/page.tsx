@@ -260,7 +260,7 @@ export default function ComparePage() {
                 padding: '12px 24px', background: 'transparent', color: '#1B3A5C',
                 border: '1.5px solid #1B3A5C', borderRadius: 12, fontSize: 14, fontWeight: 600,
                 textDecoration: 'none', display: 'inline-block',
-              }}>Browse all 93 cards →</Link>
+              }}>Browse all 100+ cards →</Link>
             </div>
           </div>
         )}

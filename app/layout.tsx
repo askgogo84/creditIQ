@@ -6,7 +6,7 @@ import { CreditIQAssistant } from "@/components/CreditIQAssistant";
 
 export const metadata: Metadata = {
   title: "CreditIQ - India's Honest Credit Card Intelligence",
-  description: "Find the best Indian credit card. AI-powered, zero affiliate bias. Compare 93 cards honestly.",
+  description: "Find the best Indian credit card. AI-powered, zero affiliate bias. Compare 100+ cards honestly.",
   icons: {
     icon: [
       { url: '/favicon.svg', type: 'image/svg+xml' },
@@ -16,7 +16,7 @@ export const metadata: Metadata = {
   },
   openGraph: {
     title: "CreditIQ - India's Honest Credit Card Intelligence",
-    description: "Find the best Indian credit card. AI-powered, zero affiliate bias. Compare 93 cards honestly.",
+    description: "Find the best Indian credit card. AI-powered, zero affiliate bias. Compare 100+ cards honestly.",
     url: 'https://creditiq.app',
     siteName: 'CreditIQ',
     locale: 'en_IN',
