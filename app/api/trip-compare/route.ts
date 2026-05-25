@@ -49,23 +49,41 @@ function getHotelRange(dest: string, tier: string): [number, number] {
 }
 
 function buildKayakUrl(origin: string, dest: string, depDate: string, retDate: string, cabin: string): string {
-  const cabinCode = cabin.toLowerCase().includes('business') ? 'business' : 'economy'
-  const o = origin.replace(/\s/g, '').substring(0, 3).toUpperCase()
-  const d = dest.replace(/\s/g, '').substring(0, 3).toUpperCase()
+  // Kayak India deep link with pre-filled search
+  const CITY_IATA: Record<string, string> = {
+    'bangalore': 'BLR', 'bengaluru': 'BLR', 'mumbai': 'BOM', 'delhi': 'DEL',
+    'hyderabad': 'HYD', 'chennai': 'MAA', 'kolkata': 'CCU', 'pune': 'PNQ',
+    'goa': 'GOI', 'jaipur': 'JAI', 'kochi': 'COK', 'ahmedabad': 'AMD',
+    'dubai': 'DXB', 'singapore': 'SIN', 'bangkok': 'BKK', 'london': 'LHR',
+    'new york': 'JFK', 'tokyo': 'NRT', 'paris': 'CDG', 'sydney': 'SYD',
+  }
+  const o = CITY_IATA[origin.toLowerCase()] || origin.toUpperCase().substring(0,3)
+  const d = CITY_IATA[dest.toLowerCase()] || dest.toUpperCase().substring(0,3)
   const dep = depDate || new Date(Date.now() + 30*24*60*60*1000).toISOString().split('T')[0]
   const ret = retDate || new Date(Date.now() + 37*24*60*60*1000).toISOString().split('T')[0]
-  return `https://bitli.in/Pb5juMv`
+  // Kayak deep link format
+  return `https://www.kayak.co.in/flights/${o}-${d}/${dep}/${ret}?cabin=${cabin.toLowerCase().includes('business') ? 'business' : 'economy'}`
 }
 
 function buildBookingUrl(dest: string, checkin: string, checkout: string): string {
   const destEnc = encodeURIComponent(dest)
   const cin = checkin || new Date(Date.now() + 30*24*60*60*1000).toISOString().split('T')[0]
   const cout = checkout || new Date(Date.now() + 33*24*60*60*1000).toISOString().split('T')[0]
-  return `https://bitli.in/xc9tvmd`
+  // Booking.com affiliate deep link with pre-filled destination + dates
+  return `https://www.booking.com/searchresults.html?ss=${destEnc}&checkin=${cin}&checkout=${cout}&group_adults=2&no_rooms=1&aid=2311236`
 }
 
 function buildMmtFlightUrl(origin: string, dest: string): string {
-  return `https://bitli.in/cv7BwVU`
+  const CITY_MMT: Record<string, string> = {
+    'bangalore': 'BLR', 'bengaluru': 'BLR', 'mumbai': 'BOM', 'delhi': 'DEL',
+    'hyderabad': 'HYD', 'chennai': 'MAA', 'kolkata': 'CCU', 'goa': 'GOI',
+    'jaipur': 'JAI', 'kochi': 'COK', 'pune': 'PNQ', 'ahmedabad': 'AMD',
+  }
+  const o = CITY_MMT[origin.toLowerCase()] || 'BLR'
+  const d = CITY_MMT[dest.toLowerCase()] || dest.toUpperCase().substring(0,3)
+  const dep = new Date(Date.now() + 30*24*60*60*1000).toISOString().split('T')[0].replace(/-/g,'')
+  // MMT affiliate deep link with pre-filled origin/dest
+  return `https://www.makemytrip.com/flights/domestic/?tripType=R&itinerary=${o}-${d}-${dep}&paxType=A-1_C-0_I-0&cabinClass=E&sTime=${Date.now()}&forwardFlowRequired=true&utm_source=CreditIQ`
 }
 
 function buildMmtHotelUrl(dest: string): string {

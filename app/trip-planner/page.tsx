@@ -411,6 +411,17 @@ function TripPlannerPageInner() {
               {result.proTip && <div style={{ marginTop: 12, fontSize: 13, color: 'rgba(255,255,255,0.45)', lineHeight: 1.6, fontStyle: 'italic' as const }}>' {result.proTip}</div>}
             </div>
 
+
+            {/* Live price comparison across platforms */}
+            <TripComparison
+              destination={result.destination}
+              origin={originCity}
+              nights={parseInt(result.duration?.replace(/\D/g,'')) || 3}
+              cabin={result.flights?.[0]?.class?.toLowerCase() || 'economy'}
+              userPoints={parseInt((points || '0').replace(/,/g, '')) || 0}
+              cardBank={cardBank}
+            />
+
             {/* Flights */}
             <div style={{ marginBottom: 20 }}>
               <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-muted, #64748b)', textTransform: 'uppercase' as const, letterSpacing: 1, marginBottom: 12 }}> Flight options</div>
@@ -445,6 +456,7 @@ function TripPlannerPageInner() {
                           style={{ width: '100%', padding: '11px', background: 'linear-gradient(135deg, #C9972E, #E8B84B)', color: '#0a0a0a', borderRadius: 10, fontSize: 12, fontWeight: 800, cursor: 'pointer', border: 'none' }}
                         >
                           How to book this →
+
 
 
 
@@ -504,15 +516,6 @@ function TripPlannerPageInner() {
               })}
             </div>
 
-            {/* Live price comparison across platforms */}
-            <TripComparison
-              destination={result.destination}
-              origin={originCity}
-              nights={parseInt(result.duration?.replace(/\D/g,'')) || 3}
-              cabin={result.flights?.[0]?.class?.toLowerCase() || 'economy'}
-              userPoints={parseInt((points || '0').replace(/,/g, '')) || 0}
-              cardBank={cardBank}
-            />
 
             <div style={{ textAlign: 'center' }}>
               <button onClick={() => { setResult(null); setQuery(''); }} style={{ padding: '12px 28px', background: 'var(--bg-card, #fff)', border: '1px solid var(--border, #e2e8f0)', borderRadius: 12, fontSize: 14, fontWeight: 600, color: 'var(--text, #0f172a)', cursor: 'pointer' }}>

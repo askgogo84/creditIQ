@@ -8,6 +8,7 @@ export const SEED_CARDS: CreditCard[] = [
   {
     id: 'hdfc-infinia',
     slug: 'hdfc-infinia',
+    image_url: 'https://asset21.ckassets.com/resources/image/stores/hdfc-infinia-metal-1765441194.png',
     name: 'HDFC Infinia Metal Edition',
     bank: 'HDFC',
     category: ['premium', 'travel', 'rewards'],
@@ -60,6 +61,7 @@ export const SEED_CARDS: CreditCard[] = [
   {
     id: 'hdfc-regalia-gold',
     slug: 'hdfc-regalia-gold',
+    image_url: 'https://upload.wikimedia.org/wikipedia/commons/thumb/2/2a/HDFC_Bank_Logo.svg/200px-HDFC_Bank_Logo.svg.png',
     name: 'HDFC Regalia Gold',
     bank: 'HDFC',
     category: ['premium', 'travel', 'rewards'],
@@ -142,6 +144,7 @@ export const SEED_CARDS: CreditCard[] = [
   {
     id: 'sbi-cashback',
     slug: 'sbi-cashback',
+    image_url: 'https://asset21.ckassets.com/resources/image/stores/sbi-cashback-2-new-1765441194.png',
     name: 'SBI Cashback Credit Card',
     bank: 'SBI',
     category: ['cashback', 'shopping'],
@@ -176,6 +179,7 @@ export const SEED_CARDS: CreditCard[] = [
   {
     id: 'sbi-elite', // VERIFIED May 2026: 2 domestic/qtr (8/yr) no spend gate + 6 intl Priority Pass (2/qtr). Reward: 0.5% base, 2.5% dining/grocery. Forex 1.99%
     slug: 'sbi-elite',
+    image_url: 'https://asset21.ckassets.com/resources/image/stores/sbi-elite-credit-card-store-1778234628.png',
     name: 'SBI ELITE',
     bank: 'SBI',
     category: ['premium', 'travel', 'lifestyle'],
@@ -214,6 +218,7 @@ export const SEED_CARDS: CreditCard[] = [
   {
     id: 'icici-amazon-pay',
     slug: 'icici-amazon-pay',
+    image_url: 'https://www.icicibank.com/content/dam/icicibank/india/assets/images/header/logo.png',
     name: 'Amazon Pay ICICI',
     bank: 'ICICI',
     category: ['cashback', 'shopping', 'zero-fee', 'entry-level'],
@@ -327,6 +332,7 @@ export const SEED_CARDS: CreditCard[] = [
   {
     id: 'axis-flipkart',
     slug: 'axis-flipkart',
+    image_url: 'https://asset21.ckassets.com/resources/image/stores/axis-flipkart-credit-card-store-1767871289.png',
     name: 'Flipkart Axis Bank Credit Card',
     bank: 'Axis',
     category: ['cashback', 'shopping', 'entry-level'],
@@ -500,6 +506,7 @@ export const SEED_CARDS: CreditCard[] = [
   {
     id: 'rbl-shoprite',
     slug: 'rbl-shoprite',
+    image_url: 'https://asset21.ckassets.com/resources/image/stores/rbl-bank-shoprite-credit-card-1765350334.png',
     name: 'RBL ShopRite',
     bank: 'RBL',
     category: ['shopping', 'entry-level'],
@@ -626,6 +633,7 @@ export const SEED_CARDS: CreditCard[] = [
   {
     id: 'hdfc-diners-black',
     slug: 'hdfc-diners-black',
+    image_url: 'https://asset21.ckassets.com/resources/image/stores/hdfc-diners-black-1765441194.png',
     name: 'HDFC Diners Club Black',
     bank: 'HDFC',
     category: ['premium', 'travel', 'rewards', 'lifestyle'],
@@ -708,11 +716,14 @@ export const SEED_CARDS: CreditCard[] = [
 const MORE_CARDS: CreditCard[] = [
   // ===== HDFC (more) =====
   { id: 'hdfc-moneyback-plus', slug: 'hdfc-moneyback-plus', name: 'HDFC MoneyBack+', bank: 'HDFC', category: ['cashback','entry-level'], tier: 'entry', joining_fee_inr: 500, annual_fee_inr: 500, fee_waiver_spend_inr: 50000, min_income_inr_monthly: 25000, reward_currency: 'cashback', base_reward_rate: 2, category_rewards: [{ category: 'online', rate: 10, unit: 'multiplier', notes: '10X on Amazon, Flipkart, BigBasket, Swiggy, Uber' }], lounges: [], fuel_surcharge_waiver: true, redemption_options: [{ type: 'cashback', value_per_point_inr: 0.20 }], color: '#166534', best_for: 'First credit card for salaried professionals', highlights: ['10X on top online brands','Low fee easy waiver'], expert_rating: 7.5, active: true, last_verified: '2026-05-01' },
-  { id: 'hdfc-swiggy', slug: 'hdfc-swiggy', name: 'Swiggy HDFC Bank Credit Card', bank: 'HDFC', category: ['cashback','dining','entry-level'], tier: 'entry', joining_fee_inr: 500, annual_fee_inr: 500, fee_waiver_spend_inr: 200000, min_income_inr_monthly: 25000, reward_currency: 'cashback', base_reward_rate: 1, category_rewards: [{ category: 'swiggy', rate: 10, unit: 'percent', notes: '10% on Swiggy Food, Instamart, Dineout, Genie' },{ category: 'online-others', rate: 5, unit: 'percent', notes: '5% on other online (cap Rs.1,500/month)' }], welcome_benefit_inr: 500, welcome_benefit_description: '3 months Swiggy One membership', lounges: [], fuel_surcharge_waiver: true, redemption_options: [{ type: 'cashback', value_per_point_inr: 1.0 }], color: '#e97316', best_for: 'Swiggy power users  --  food, groceries, dining', highlights: ['10% on all Swiggy platforms','Swiggy One membership','No cap on Swiggy cashback'], expert_rating: 8.1, active: true, last_verified: '2026-05-01' },
+  { id: 'hdfc-swiggy', slug: 'hdfc-swiggy',
+    image_url: 'https://asset21.ckassets.com/resources/image/stores/hdfc-swiggy-ornge-credit-card-1778234628.png', name: 'Swiggy HDFC Bank Credit Card', bank: 'HDFC', category: ['cashback','dining','entry-level'], tier: 'entry', joining_fee_inr: 500, annual_fee_inr: 500, fee_waiver_spend_inr: 200000, min_income_inr_monthly: 25000, reward_currency: 'cashback', base_reward_rate: 1, category_rewards: [{ category: 'swiggy', rate: 10, unit: 'percent', notes: '10% on Swiggy Food, Instamart, Dineout, Genie' },{ category: 'online-others', rate: 5, unit: 'percent', notes: '5% on other online (cap Rs.1,500/month)' }], welcome_benefit_inr: 500, welcome_benefit_description: '3 months Swiggy One membership', lounges: [], fuel_surcharge_waiver: true, redemption_options: [{ type: 'cashback', value_per_point_inr: 1.0 }], color: '#e97316', best_for: 'Swiggy power users  --  food, groceries, dining', highlights: ['10% on all Swiggy platforms','Swiggy One membership','No cap on Swiggy cashback'], expert_rating: 8.1, active: true, last_verified: '2026-05-01' },
   { id: 'hdfc-freedom', slug: 'hdfc-freedom', name: 'HDFC Freedom Credit Card', bank: 'HDFC', category: ['cashback','entry-level','zero-fee'], tier: 'entry', joining_fee_inr: 0, annual_fee_inr: 0, min_income_inr_monthly: 15000, reward_currency: 'cashback', base_reward_rate: 0.5, category_rewards: [{ category: 'emi', rate: 10, unit: 'multiplier', notes: '10X on EMI transactions' },{ category: 'dining-movies', rate: 5, unit: 'multiplier' }], lounges: [], fuel_surcharge_waiver: true, redemption_options: [{ type: 'cashback', value_per_point_inr: 0.25 }], color: '#0ea5e9', best_for: 'Students and first-timers wanting a free card', highlights: ['Lifetime free','10X on EMI purchases'], expert_rating: 6.5, active: true, last_verified: '2026-05-01' },
   // ===== ICICI =====
-  { id: 'icici-sapphiro', slug: 'icici-sapphiro', name: 'ICICI Bank Sapphiro Credit Card', bank: 'ICICI', category: ['premium','travel','lifestyle'], tier: 'premium', joining_fee_inr: 6500, annual_fee_inr: 3500, fee_waiver_spend_inr: 600000, min_income_inr_monthly: 120000, credit_score_min: 750, reward_currency: 'reward-points', base_reward_rate: 2, category_rewards: [{ category: 'international', rate: 4, unit: 'multiplier' },{ category: 'dining', rate: 2, unit: 'multiplier' }], welcome_benefit_inr: 9000, welcome_benefit_description: 'Gift vouchers worth Rs.9,000', lounges: [{ type: 'domestic', network: 'priority-pass', visits_per_year: 4 },{ type: 'international', network: 'priority-pass', visits_per_year: 4 }], forex_markup_percent: 3.5, redemption_options: [{ type: 'cashback', value_per_point_inr: 0.25 },{ type: 'voucher', value_per_point_inr: 0.35 }], color: '#1e40af', best_for: 'ICICI banking customers wanting premium benefits', highlights: ['Rs.9K welcome vouchers','Priority Pass lounges','4X international'], expert_rating: 7.3, active: true, last_verified: '2026-05-01' },
-  { id: 'icici-emeralde', slug: 'icici-emeralde', name: 'ICICI Bank Emeralde Private Metal', bank: 'ICICI', category: ['premium','travel','lifestyle'], tier: 'super-premium', joining_fee_inr: 12000, annual_fee_inr: 12000, min_income_inr_monthly: 300000, credit_score_min: 780, reward_currency: 'reward-points', base_reward_rate: 3, category_rewards: [{ category: 'international', rate: 6, unit: 'multiplier' }], welcome_benefit_inr: 12000, welcome_benefit_description: 'EazyDiner Prime + spa vouchers', lounges: [{ type: 'domestic', network: 'priority-pass', notes: 'Unlimited' },{ type: 'international', network: 'priority-pass', notes: 'Unlimited' }], forex_markup_percent: 1.5, golf: { rounds_per_year: 4 }, redemption_options: [{ type: 'cashback', value_per_point_inr: 1.0, best_for: '1:1 statement credit' }], color: '#064e3b', best_for: 'ICICI Wealth/Private banking customers', highlights: ['Unlimited Priority Pass','1:1 cashback redemption','EazyDiner Prime'], expert_rating: 8.6, active: true, last_verified: '2026-05-01' },
+  { id: 'icici-sapphiro', slug: 'icici-sapphiro',
+    image_url: 'https://www.icicibank.com/content/dam/icicibank/india/assets/images/header/logo.png', name: 'ICICI Bank Sapphiro Credit Card', bank: 'ICICI', category: ['premium','travel','lifestyle'], tier: 'premium', joining_fee_inr: 6500, annual_fee_inr: 3500, fee_waiver_spend_inr: 600000, min_income_inr_monthly: 120000, credit_score_min: 750, reward_currency: 'reward-points', base_reward_rate: 2, category_rewards: [{ category: 'international', rate: 4, unit: 'multiplier' },{ category: 'dining', rate: 2, unit: 'multiplier' }], welcome_benefit_inr: 9000, welcome_benefit_description: 'Gift vouchers worth Rs.9,000', lounges: [{ type: 'domestic', network: 'priority-pass', visits_per_year: 4 },{ type: 'international', network: 'priority-pass', visits_per_year: 4 }], forex_markup_percent: 3.5, redemption_options: [{ type: 'cashback', value_per_point_inr: 0.25 },{ type: 'voucher', value_per_point_inr: 0.35 }], color: '#1e40af', best_for: 'ICICI banking customers wanting premium benefits', highlights: ['Rs.9K welcome vouchers','Priority Pass lounges','4X international'], expert_rating: 7.3, active: true, last_verified: '2026-05-01' },
+  { id: 'icici-emeralde', slug: 'icici-emeralde',
+    image_url: 'https://www.icicibank.com/content/dam/icicibank/india/assets/images/header/logo.png', name: 'ICICI Bank Emeralde Private Metal', bank: 'ICICI', category: ['premium','travel','lifestyle'], tier: 'super-premium', joining_fee_inr: 12000, annual_fee_inr: 12000, min_income_inr_monthly: 300000, credit_score_min: 780, reward_currency: 'reward-points', base_reward_rate: 3, category_rewards: [{ category: 'international', rate: 6, unit: 'multiplier' }], welcome_benefit_inr: 12000, welcome_benefit_description: 'EazyDiner Prime + spa vouchers', lounges: [{ type: 'domestic', network: 'priority-pass', notes: 'Unlimited' },{ type: 'international', network: 'priority-pass', notes: 'Unlimited' }], forex_markup_percent: 1.5, golf: { rounds_per_year: 4 }, redemption_options: [{ type: 'cashback', value_per_point_inr: 1.0, best_for: '1:1 statement credit' }], color: '#064e3b', best_for: 'ICICI Wealth/Private banking customers', highlights: ['Unlimited Priority Pass','1:1 cashback redemption','EazyDiner Prime'], expert_rating: 8.6, active: true, last_verified: '2026-05-01' },
   { id: 'icici-coral', slug: 'icici-coral', name: 'ICICI Bank Coral Credit Card', bank: 'ICICI', category: ['entry-level','rewards'], tier: 'entry', joining_fee_inr: 500, annual_fee_inr: 500, fee_waiver_spend_inr: 150000, min_income_inr_monthly: 20000, reward_currency: 'reward-points', base_reward_rate: 1, category_rewards: [{ category: 'dining', rate: 2, unit: 'multiplier' },{ category: 'grocery', rate: 2, unit: 'multiplier' }], lounges: [{ type: 'domestic', network: 'dreamfolks', visits_per_quarter: 1 }], fuel_surcharge_waiver: true, redemption_options: [{ type: 'cashback', value_per_point_inr: 0.25 }], color: '#dc2626', best_for: 'Entry-level card for ICICI account holders', highlights: ['2X on dining/grocery','Movie discounts','Quarterly lounge access'], expert_rating: 6.8, active: true, last_verified: '2026-05-01' },
   { id: 'icici-rubyx', slug: 'icici-rubyx', name: 'ICICI Bank Rubyx Credit Card', bank: 'ICICI', category: ['rewards','lifestyle'], tier: 'mid', joining_fee_inr: 3000, annual_fee_inr: 2000, fee_waiver_spend_inr: 400000, min_income_inr_monthly: 60000, reward_currency: 'reward-points', base_reward_rate: 1.5, category_rewards: [{ category: 'dining-entertainment', rate: 2, unit: 'multiplier' },{ category: 'international', rate: 2, unit: 'multiplier' }], welcome_benefit_inr: 5000, welcome_benefit_description: 'BookMyShow + Yatra vouchers worth Rs.5,000', lounges: [{ type: 'domestic', network: 'dreamfolks', visits_per_year: 4 }], forex_markup_percent: 3.5, redemption_options: [{ type: 'cashback', value_per_point_inr: 0.25 },{ type: 'voucher', value_per_point_inr: 0.30 }], color: '#9f1239', best_for: 'Entertainment and travel with ICICI relationship', highlights: ['Rs.5K welcome vouchers','2X on dining/entertainment','4 lounge visits'], expert_rating: 7.0, active: true, last_verified: '2026-05-01' },
   // ===== Axis =====
@@ -739,7 +750,8 @@ const MORE_CARDS: CreditCard[] = [
   { id: 'yes-first-preferred', slug: 'yes-first-preferred', name: 'YES FIRST Preferred Credit Card', bank: 'Yes', category: ['rewards'], tier: 'mid', joining_fee_inr: 1499, annual_fee_inr: 1499, fee_waiver_spend_inr: 600000, min_income_inr_monthly: 75000, reward_currency: 'reward-points', base_reward_rate: 1.5, category_rewards: [{ category: 'travel-dining', rate: 6, unit: 'multiplier' }], lounges: [{ type: 'domestic', network: 'priority-pass', visits_per_year: 6 },{ type: 'international', network: 'priority-pass', visits_per_year: 3 }], forex_markup_percent: 1.75, redemption_options: [{ type: 'cashback', value_per_point_inr: 0.25 },{ type: 'flight', partner: 'YES Rewardz', value_per_point_inr: 0.50 }], color: '#1e3a8a', best_for: 'Travel + dining rewards at mid-tier fee', highlights: ['6X on travel/dining','Low forex markup (1.75%)','6 domestic lounges'], expert_rating: 7.5, active: true, last_verified: '2026-05-01' },
   // ===== AU more =====
   { id: 'au-zenith', slug: 'au-zenith', name: 'AU Bank Zenith Credit Card', bank: 'AU', category: ['premium','rewards'], tier: 'premium', joining_fee_inr: 4999, annual_fee_inr: 4999, fee_waiver_spend_inr: 800000, min_income_inr_monthly: 100000, reward_currency: 'reward-points', base_reward_rate: 2, category_rewards: [{ category: 'dining', rate: 10, unit: 'multiplier', cap_inr_monthly: 2000 },{ category: 'travel', rate: 5, unit: 'multiplier' }], welcome_benefit_inr: 5000, welcome_benefit_description: '5,000 reward points + gift voucher', lounges: [{ type: 'domestic', network: 'dreamfolks', visits_per_quarter: 3 },{ type: 'international', network: 'priority-pass', visits_per_year: 4 }], forex_markup_percent: 1.99, golf: { rounds_per_year: 4 }, redemption_options: [{ type: 'cashback', value_per_point_inr: 0.25 }], color: '#7c2d12', best_for: 'AU Bank customers wanting dining + travel rewards', highlights: ['10X on dining','12 lounge visits/year','4 golf rounds'], expert_rating: 7.8, active: true, last_verified: '2026-05-01' },
-  { id: 'au-lit', slug: 'au-lit', name: 'AU Bank LIT Credit Card', bank: 'AU', category: ['cashback','entry-level'], tier: 'entry', joining_fee_inr: 499, annual_fee_inr: 499, min_income_inr_monthly: 20000, reward_currency: 'cashback', base_reward_rate: 1, category_rewards: [{ category: 'online', rate: 5, unit: 'percent', notes: 'User picks 2 categories monthly' }], welcome_benefit_inr: 500, lounges: [], fuel_surcharge_waiver: true, redemption_options: [{ type: 'cashback', value_per_point_inr: 1.0 }], color: '#0891b2', best_for: 'Choose-your-own-rewards card', highlights: ['Choose your reward categories','5% on selected categories','Flexible benefit toggle'], expert_rating: 7.3, active: true, last_verified: '2026-05-01' },
+  { id: 'au-lit', slug: 'au-lit',
+    image_url: 'https://asset21.ckassets.com/resources/image/stores/au-lit-credit-card-1778234628.png', name: 'AU Bank LIT Credit Card', bank: 'AU', category: ['cashback','entry-level'], tier: 'entry', joining_fee_inr: 499, annual_fee_inr: 499, min_income_inr_monthly: 20000, reward_currency: 'cashback', base_reward_rate: 1, category_rewards: [{ category: 'online', rate: 5, unit: 'percent', notes: 'User picks 2 categories monthly' }], welcome_benefit_inr: 500, lounges: [], fuel_surcharge_waiver: true, redemption_options: [{ type: 'cashback', value_per_point_inr: 1.0 }], color: '#0891b2', best_for: 'Choose-your-own-rewards card', highlights: ['Choose your reward categories','5% on selected categories','Flexible benefit toggle'], expert_rating: 7.3, active: true, last_verified: '2026-05-01' },
   // ===== SC more =====
   { id: 'sc-smart', slug: 'sc-smart', name: 'Standard Chartered Smart Credit Card', bank: 'SC', category: ['cashback','entry-level','zero-fee'], tier: 'entry', joining_fee_inr: 0, annual_fee_inr: 0, min_income_inr_monthly: 25000, reward_currency: 'cashback', base_reward_rate: 1, category_rewards: [{ category: 'online', rate: 5, unit: 'percent', cap_inr_monthly: 1000 }], lounges: [], fuel_surcharge_waiver: true, redemption_options: [{ type: 'cashback', value_per_point_inr: 1.0 }], color: '#0473ea', best_for: 'SC banking customers wanting a simple free cashback card', highlights: ['Lifetime free','5% online cashback','Auto cashback credit'], expert_rating: 7.5, active: true, last_verified: '2026-05-01' },
   { id: 'sc-digismart', slug: 'sc-digismart', name: 'Standard Chartered DigiSmart', bank: 'SC', category: ['cashback','shopping'], tier: 'entry', joining_fee_inr: 49, annual_fee_inr: 49, min_income_inr_monthly: 20000, reward_currency: 'cashback', base_reward_rate: 1, category_rewards: [{ category: 'myntra', rate: 10, unit: 'percent' },{ category: 'netflix-prime', rate: 20, unit: 'percent', notes: '20% off Netflix/Prime (up to Rs.200/month)' },{ category: 'swiggy-zomato', rate: 10, unit: 'percent' }], lounges: [], redemption_options: [{ type: 'cashback', value_per_point_inr: 1.0 }], color: '#0284c7', best_for: 'Millennials heavy on OTT, food delivery and Myntra', highlights: ['20% off OTT subscriptions','10% on Myntra','10% on Swiggy/Zomato','Only Rs.49/month'], expert_rating: 7.8, active: true, last_verified: '2026-05-01' },

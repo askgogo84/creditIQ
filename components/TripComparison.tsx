@@ -157,10 +157,39 @@ export function TripComparison({ destination, origin = 'Bangalore', nights = 3, 
     </a>
   );
 
-  if (loading) return (
-    <div style={{ textAlign: 'center', padding: '32px 0', color: 'var(--text-muted, #64748b)', fontSize: 14 }}>
-      <div style={{ fontSize: 32, marginBottom: 8 }}></div>
-      Comparing prices across platforms...
+      if (loading) return (
+    <div style={{ background: 'linear-gradient(135deg, #0d1117, #1a1f2e)', border: '1px solid rgba(201,151,46,0.2)', borderRadius: 20, padding: '32px 24px', marginTop: 24, overflow: 'hidden', position: 'relative' as const }}>
+      <style>{`
+        @keyframes shimmer { 0%{transform:translateX(-100%)} 100%{transform:translateX(400%)} }
+        @keyframes pulse { 0%,100%{opacity:0.4} 50%{opacity:1} }
+        @keyframes fly { 0%{transform:translateX(-10px)} 50%{transform:translateX(10px)} 100%{transform:translateX(-10px)} }
+        .ciq-shimmer { animation: shimmer 2s infinite; }
+        .ciq-pulse { animation: pulse 1.5s infinite; }
+        .ciq-fly { animation: fly 2s ease-in-out infinite; }
+      `}</style>
+      <div style={{ textAlign: 'center' as const, marginBottom: 24 }}>
+        <div className="ciq-fly" style={{ fontSize: 36, marginBottom: 12 }}>{''}</div>
+        <div style={{ fontSize: 11, fontWeight: 700, color: '#C9972E', letterSpacing: 2, textTransform: 'uppercase' as const, marginBottom: 8 }}>Scanning live prices</div>
+        <div style={{ fontSize: 13, color: 'rgba(255,255,255,0.5)', marginBottom: 20 }}>{origin} {'->'} {destination} . {nights} nights</div>
+      </div>
+      {[
+        { icon: '', label: 'Checking Kayak flights...', delay: '0s' },
+        { icon: '🏨', label: 'Scanning Booking.com hotels...', delay: '0.3s' },
+        { icon: '📱', label: 'Comparing MakeMyTrip rates...', delay: '0.6s' },
+      ].map((item, i) => (
+        <div key={i} className="ciq-pulse" style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '10px 16px', background: 'rgba(255,255,255,0.04)', borderRadius: 10, marginBottom: 8, animationDelay: item.delay }}>
+          <span style={{ fontSize: 18 }}>{item.icon}</span>
+          <div style={{ flex: 1 }}>
+            <div style={{ height: 8, borderRadius: 4, background: 'rgba(255,255,255,0.08)', position: 'relative' as const, overflow: 'hidden' }}>
+              <div className="ciq-shimmer" style={{ position: 'absolute' as const, top: 0, left: 0, width: '40%', height: '100%', background: 'linear-gradient(90deg, transparent, rgba(201,151,46,0.3), transparent)' }} />
+            </div>
+          </div>
+          <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.3)', whiteSpace: 'nowrap' as const }}>{item.label}</div>
+        </div>
+      ))}
+      <div style={{ textAlign: 'center' as const, marginTop: 16, fontSize: 11, color: 'rgba(255,255,255,0.2)' }}>
+        Finding best value across 3 platforms...
+      </div>
     </div>
   );
 
@@ -261,10 +290,15 @@ export function TripComparison({ destination, origin = 'Bangalore', nights = 3, 
                 {f.whyBest}
               </div>
               <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' as const }}>
-                {platformBtn(f.urls.kayak, 'Kayak', true)}
+                {platformBtn(f.urls.kayak, 'Search on Kayak', true)}
                 {platformBtn(f.urls.mmt, 'MakeMyTrip')}
                 {platformBtn(f.urls.googleFlights, 'Google Flights')}
               </div>
+              {f.pointsOption && (
+                <div style={{ marginTop: 8, padding: '8px 12px', background: 'rgba(201,151,46,0.08)', border: '1px solid rgba(201,151,46,0.2)', borderRadius: 8, fontSize: 11, color: '#C9972E' }}>
+                  To redeem {f.pointsNeeded.toLocaleString('en-IN')} pts: transfer from {cardBank} SmartBuy to {f.pointsPartner}, then book directly on {f.pointsPartner} site
+                </div>
+              )}
             </div>
             <div style={{ textAlign: 'right' as const, minWidth: 120 }}>
               <div style={{ fontSize: 11, color: 'var(--text-muted, #94a3b8)', marginBottom: 4 }}>Return price range</div>
@@ -307,8 +341,8 @@ export function TripComparison({ destination, origin = 'Bangalore', nights = 3, 
                 {h.whyBest}
               </div>
               <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' as const }}>
-                {platformBtn(h.urls.booking, 'Booking.com', true)}
-                {platformBtn(h.urls.mmt, 'MMT Hotels')}
+                {platformBtn(h.urls.booking, 'Book on Booking.com', true)}
+                {platformBtn(h.urls.mmt, 'MakeMyTrip Hotels')}
               </div>
             </div>
             <div style={{ textAlign: 'right' as const, minWidth: 130 }}>
