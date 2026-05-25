@@ -248,6 +248,7 @@ export function CardDetailClient({ card }: { card: CreditCard }) {
           >
             Optimize my balance →
 
+
           </Link>
         </div>
       </section>

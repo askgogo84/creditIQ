@@ -63,6 +63,7 @@ export default function UAEPage() {
                 <Link href="/smart-match" className="btn-ghost text-base flex items-center justify-center gap-2">
                   Find my perfect card →
 
+
                 </Link>
               </div>
               <div className="flex items-center gap-8 mt-10 pt-8 border-t" style={{ borderColor: 'var(--border)' }}>
@@ -154,6 +155,7 @@ export default function UAEPage() {
                           <button className="flex-1 py-2 rounded text-xs font-medium" style={{ background: 'color-mix(in srgb, var(--accent) 12%, transparent)', color: 'var(--accent)', border: '1px solid color-mix(in srgb, var(--accent) 25%, transparent)' }}>
                             Apply now →
 
+
                           </button>
                         </div>
                       </div>
@@ -180,6 +182,7 @@ export default function UAEPage() {
             </Link>
             <Link href="/" className="btn-ghost flex items-center justify-center gap-2">
               Browse India cards →
+
 
             </Link>
           </div>
