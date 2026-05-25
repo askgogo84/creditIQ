@@ -243,6 +243,46 @@ export function TripComparison({ destination, origin = 'Bangalore', nights = 3, 
         </div>
       )}
 
+      {/* Points vs Cash guide */}
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginBottom: 20 }}>
+        <div style={{ background: 'rgba(201,151,46,0.07)', border: '1px solid rgba(201,151,46,0.2)', borderRadius: 14, padding: '14px 16px' }}>
+          <div style={{ fontSize: 10, fontWeight: 700, color: '#C9972E', letterSpacing: 1.5, textTransform: 'uppercase' as const, marginBottom: 8 }}>
+            Redeem with points
+          </div>
+          {[
+            { n: '1', text: 'Transfer ' + cardBank + ' points to loyalty program (HDFC SmartBuy)' },
+            { n: '2', text: 'Search & book on InterMiles / KrisFlyer / Vistara' },
+            { n: '3', text: 'Use transferred miles to pay at checkout' },
+          ].map((s, i) => (
+            <div key={i} style={{ display: 'flex', gap: 8, alignItems: 'flex-start', marginBottom: 6 }}>
+              <span style={{ width: 18, height: 18, borderRadius: '50%', background: '#C9972E', color: '#0a0a0a', fontSize: 10, fontWeight: 800, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, marginTop: 1 }}>{s.n}</span>
+              <span style={{ fontSize: 12, color: 'var(--text-muted, #64748b)', lineHeight: 1.4 }}>{s.text}</span>
+            </div>
+          ))}
+          <div style={{ marginTop: 8, fontSize: 11, color: '#C9972E', fontWeight: 600 }}>
+            Best value . up to 3x more than cashback
+          </div>
+        </div>
+        <div style={{ background: 'rgba(59,130,246,0.05)', border: '1px solid rgba(59,130,246,0.15)', borderRadius: 14, padding: '14px 16px' }}>
+          <div style={{ fontSize: 10, fontWeight: 700, color: '#3b82f6', letterSpacing: 1.5, textTransform: 'uppercase' as const, marginBottom: 8 }}>
+            Book with cash
+          </div>
+          {[
+            { n: '1', text: 'Click "Search on Kayak" or "MakeMyTrip" below' },
+            { n: '2', text: 'Destination is pre-filled  --  just pick dates' },
+            { n: '3', text: 'Pay with your credit card to earn reward points' },
+          ].map((s, i) => (
+            <div key={i} style={{ display: 'flex', gap: 8, alignItems: 'flex-start', marginBottom: 6 }}>
+              <span style={{ width: 18, height: 18, borderRadius: '50%', background: '#3b82f6', color: '#fff', fontSize: 10, fontWeight: 800, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, marginTop: 1 }}>{s.n}</span>
+              <span style={{ fontSize: 12, color: 'var(--text-muted, #64748b)', lineHeight: 1.4 }}>{s.text}</span>
+            </div>
+          ))}
+          <div style={{ marginTop: 8, fontSize: 11, color: '#3b82f6', fontWeight: 600 }}>
+            Instant . earn points on every booking
+          </div>
+        </div>
+      </div>
+
       {/* Tabs */}
       <div style={{ display: 'flex', gap: 8, marginBottom: 16 }}>
         {(['flights', 'hotels'] as const).map(tab => (
