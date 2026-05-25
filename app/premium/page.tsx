@@ -164,6 +164,7 @@ export default function PremiumPage() {
 
 
 
+
               </Link>
               <div className="text-center text-xs mt-3 text-white/40">No payment needed to start trial</div>
             </div>
