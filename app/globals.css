@@ -1272,3 +1272,104 @@ html:not(.dark):not([data-theme="dark"]) header {
 }
 
 /* Force card-mockup to use inline --card-color */.card-mockup { background-color: var(--card-color, #1B3A5C) !important; }
+
+/* ============================================
+   MOBILE + DARK MODE FIXES
+   ============================================ */
+
+/* Dark mode CSS variables */
+html.dark, [data-theme="dark"] {
+  --bg:           #0d1117;
+  --bg-2:         #161b22;
+  --bg-3:         #1c2128;
+  --surface:      #161b22;
+  --surface-2:    #1c2128;
+  --paper:        #0d1117;
+  --ink:          #e6edf3;
+  --ink-2:        #b1bac4;
+  --ink-3:        #8b949e;
+  --ink-4:        #6e7681;
+  --ink-5:        #484f58;
+  --line:         rgba(240, 246, 252, 0.1);
+  --line-strong:  rgba(240, 246, 252, 0.2);
+  --line-soft:    rgba(240, 246, 252, 0.05);
+  --bg-card:      #161b22;
+  --bg-surface:   #1c2128;
+  --text:         #e6edf3;
+  --text-muted:   #8b949e;
+  --border:       rgba(240,246,252,0.1);
+}
+
+/* Global input/textarea/select dark mode fix */
+input, textarea, select {
+  background-color: var(--surface, #fff);
+  color: var(--ink, #142950);
+  border-color: var(--line, rgba(20,41,80,0.15));
+}
+
+html.dark input,
+html.dark textarea,
+html.dark select {
+  background-color: #1c2128 !important;
+  color: #e6edf3 !important;
+  border-color: rgba(240,246,252,0.15) !important;
+}
+
+html.dark input::placeholder,
+html.dark textarea::placeholder {
+  color: #6e7681 !important;
+}
+
+/* Fix inline style overrides for dark mode */
+html.dark [style*="background: var(--bg-surface"],
+html.dark [style*="background: 'var(--bg-surface"] {
+  background-color: #1c2128 !important;
+}
+
+/* ── MOBILE LAYOUT FIXES ── */
+@media (max-width: 640px) {
+
+  /* Trip planner - stack points/bank grid */
+  .trip-form-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  /* Price comparison - stack Points vs Cash guide */
+  .compare-guide-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  /* General padding reduction on mobile */
+  main {
+    padding-left: 16px !important;
+    padding-right: 16px !important;
+  }
+
+  /* Card catalog grid - 1 column on mobile */
+  .cards-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  /* Booking modal - full height on mobile */
+  .bm-sheet {
+    max-height: 95vh !important;
+    border-radius: 20px 20px 0 0 !important;
+  }
+
+  /* Trip comparison summary - 2 cols on mobile */
+  .trip-summary-grid {
+    grid-template-columns: 1fr 1fr !important;
+  }
+
+  /* Flight/hotel cards - stack on mobile */
+  .flight-card-inner {
+    flex-direction: column !important;
+  }
+}
+
+/* Safe area for bottom tab bar on iPhone */
+@supports (padding-bottom: env(safe-area-inset-bottom)) {
+  .bottom-tab-bar {
+    padding-bottom: calc(env(safe-area-inset-bottom) + 4px) !important;
+  }
+}

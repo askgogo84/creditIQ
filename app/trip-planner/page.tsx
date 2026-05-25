@@ -216,7 +216,7 @@ function TripPlannerPageInner() {
             />
           </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 16 }}>
+          <div className="trip-form-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 16 }}>
             <div>
               <label style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-muted, #64748b)', textTransform: 'uppercase' as const, letterSpacing: 1, display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
                 Your points balance
@@ -238,6 +238,7 @@ function TripPlannerPageInner() {
                   borderRadius: 10, fontSize: 14,
                   color: 'var(--text, #0f172a)', outline: 'none',
                   boxSizing: 'border-box' as const,
+                  WebkitAppearance: 'none' as const,
                 }}
               />
             </div>

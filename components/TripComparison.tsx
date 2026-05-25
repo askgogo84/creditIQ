@@ -244,7 +244,7 @@ export function TripComparison({ destination, origin = 'Bangalore', nights = 3, 
       )}
 
       {/* Points vs Cash guide */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginBottom: 20 }}>
+      <div className="compare-guide-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginBottom: 20 }}>
         <div style={{ background: 'rgba(201,151,46,0.07)', border: '1px solid rgba(201,151,46,0.2)', borderRadius: 14, padding: '14px 16px' }}>
           <div style={{ fontSize: 10, fontWeight: 700, color: '#C9972E', letterSpacing: 1.5, textTransform: 'uppercase' as const, marginBottom: 8 }}>
             Redeem with points
