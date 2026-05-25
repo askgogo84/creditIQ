@@ -359,7 +359,7 @@ export default function CardSwitchPage() {
             </div>
 
             {/* Card recommendations */}
-            {result.cards.map((card, i) => {
+            {(result.cards || []).map((card, i) => {
               const { url, label } = getApplyUrl(card.id);
               return (
                 <div key={card.id} style={{
@@ -383,7 +383,7 @@ export default function CardSwitchPage() {
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 14, gap: 12 }}>
                     <div style={{ flex: 1 }}>
                       <div style={{ fontSize: 19, fontWeight: 800, color: 'var(--text, #0f172a)', marginBottom: 6 }}>{card.name}</div>
-                      {card.reasons.map((r, j) => (
+                      {(card.reasons || []).map((r, j) => (
                         <div key={j} style={{ fontSize: 13, color: '#16a34a', marginBottom: 2 }}>(ok) {r}</div>
                       ))}
                     </div>
