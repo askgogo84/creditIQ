@@ -181,7 +181,7 @@ export function TripComparison({ destination, origin = 'Bangalore', nights = 3, 
             Live price comparison
           </div>
           <div style={{ fontSize: 18, fontWeight: 800, color: 'var(--text, #0f172a)' }}>
-            {data.origin} -> {data.destination} . {data.nights} nights
+            {data.origin} {'->'} {data.destination} · {data.nights} nights
           </div>
         </div>
         <div style={{ fontSize: 11, color: 'var(--text-muted, #64748b)', maxWidth: 200, textAlign: 'right' as const, lineHeight: 1.4 }}>
