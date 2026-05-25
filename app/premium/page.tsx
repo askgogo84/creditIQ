@@ -141,6 +141,7 @@ export default function PremiumPage() {
                 Start free 7-day trial →
 
 
+
               </Link>
               <div className="text-center text-xs mt-3 text-white/40">No payment needed to start trial</div>
             </div>

@@ -5,7 +5,6 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { Logo } from '@/components/Logo'
 import { createBrowserClient } from '@supabase/ssr'
-import { createBrowserClient } from '@supabase/ssr'
 import { ThemeToggle } from '@/components/design/ThemeToggle'
 
 const aiTools = [
@@ -56,57 +55,33 @@ export function Header() {
   const [aiOpen, setAiOpen] = useState(false)
   const [travelOpen, setTravelOpen] = useState(false)
   const [user, setUser] = useState<any>(null)
-
-  useEffect(() => {
-    const sb = createBrowserClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-    )
-    sb.auth.getSession().then(({ data: { session } }) => {
-      setUser(session?.user ?? null)
-    })
-    const { data: { subscription } } = sb.auth.onAuthStateChange((_event, session) => {
-      setUser(session?.user ?? null)
-    })
-    return () => subscription.unsubscribe()
-  }, [])
-
-  const signOut = async () => {
-    const sb = createBrowserClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-    )
-    await sb.auth.signOut()
-    window.location.href = '/'
-  }
-  const [user, setUser] = useState<any>(null)
-
-  useEffect(() => {
-    const sb = createBrowserClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-    )
-    sb.auth.getSession().then(({ data: { session } }) => {
-      setUser(session?.user ?? null)
-    })
-    const { data: { subscription } } = sb.auth.onAuthStateChange((_event, session) => {
-      setUser(session?.user ?? null)
-    })
-    return () => subscription.unsubscribe()
-  }, [])
-
-  const signOut = async () => {
-    const sb = createBrowserClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-    )
-    await sb.auth.signOut()
-    window.location.href = '/'
-  }
   const aiRef = useRef<HTMLDivElement>(null)
   const travelRef = useRef<HTMLDivElement>(null)
   const aiTimer = useRef<ReturnType<typeof setTimeout>>()
   const travelTimer = useRef<ReturnType<typeof setTimeout>>()
+
+  useEffect(() => {
+    const sb = createBrowserClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+    )
+    sb.auth.getSession().then(({ data: { session } }) => {
+      setUser(session?.user ?? null)
+    })
+    const { data: { subscription } } = sb.auth.onAuthStateChange((_event, session) => {
+      setUser(session?.user ?? null)
+    })
+    return () => subscription.unsubscribe()
+  }, [])
+
+  const signOut = async () => {
+    const sb = createBrowserClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+    )
+    await sb.auth.signOut()
+    window.location.href = '/'
+  }
 
   const navLinkStyle = {
     color: 'var(--ink-3, #5A6A8A)',
@@ -133,19 +108,10 @@ export function Header() {
 
           {/* Desktop Nav */}
           <nav className="hidden md:flex items-center gap-1">
-            <Link
-              href="/cards"
-              className="px-3 py-2 rounded-lg text-sm font-medium transition-colors hover:bg-black/5"
-              style={navLinkStyle}
-            >
+            <Link href="/cards" className="px-3 py-2 rounded-lg text-sm font-medium transition-colors hover:bg-black/5" style={navLinkStyle}>
               Cards
             </Link>
-
-            <Link
-              href="/compare"
-              className="px-3 py-2 rounded-lg text-sm font-medium transition-colors hover:bg-black/5"
-              style={navLinkStyle}
-            >
+            <Link href="/compare" className="px-3 py-2 rounded-lg text-sm font-medium transition-colors hover:bg-black/5" style={navLinkStyle}>
               Compare
             </Link>
 
@@ -156,18 +122,10 @@ export function Header() {
               onMouseEnter={() => { clearTimeout(aiTimer.current); setAiOpen(true); }}
               onMouseLeave={() => { aiTimer.current = setTimeout(() => setAiOpen(false), 150); }}
             >
-              <button
-                className="px-3 py-2 rounded-lg text-sm font-medium transition-colors hover:bg-black/5 flex items-center gap-1"
-                style={navLinkStyle}
-              >
+              <button className="px-3 py-2 rounded-lg text-sm font-medium transition-colors hover:bg-black/5 flex items-center gap-1" style={navLinkStyle}>
                 AI Tools
-                <svg
-                  width="12"
-                  height="12"
-                  viewBox="0 0 12 12"
-                  fill="currentColor"
-                  style={{ transition: 'transform 0.2s', transform: aiOpen ? 'rotate(180deg)' : 'rotate(0deg)' }}
-                >
+                <svg width="12" height="12" viewBox="0 0 12 12" fill="currentColor"
+                  style={{ transition: 'transform 0.2s', transform: aiOpen ? 'rotate(180deg)' : 'rotate(0deg)' }}>
                   <path d="M2 4l4 4 4-4" stroke="currentColor" strokeWidth="1.5" fill="none" strokeLinecap="round"/>
                 </svg>
               </button>
@@ -181,29 +139,17 @@ export function Header() {
               onMouseEnter={() => { clearTimeout(travelTimer.current); setTravelOpen(true); }}
               onMouseLeave={() => { travelTimer.current = setTimeout(() => setTravelOpen(false), 150); }}
             >
-              <button
-                className="px-3 py-2 rounded-lg text-sm font-medium transition-colors hover:bg-black/5 flex items-center gap-1"
-                style={navLinkStyle}
-              >
+              <button className="px-3 py-2 rounded-lg text-sm font-medium transition-colors hover:bg-black/5 flex items-center gap-1" style={navLinkStyle}>
                 Travel
-                <svg
-                  width="12"
-                  height="12"
-                  viewBox="0 0 12 12"
-                  fill="currentColor"
-                  style={{ transition: 'transform 0.2s', transform: travelOpen ? 'rotate(180deg)' : 'rotate(0deg)' }}
-                >
+                <svg width="12" height="12" viewBox="0 0 12 12" fill="currentColor"
+                  style={{ transition: 'transform 0.2s', transform: travelOpen ? 'rotate(180deg)' : 'rotate(0deg)' }}>
                   <path d="M2 4l4 4 4-4" stroke="currentColor" strokeWidth="1.5" fill="none" strokeLinecap="round"/>
                 </svg>
               </button>
               <DropdownMenu items={travelLinks} open={travelOpen} />
             </div>
 
-            <Link
-              href="/uae"
-              className="px-3 py-2 rounded-lg text-sm font-medium transition-colors hover:bg-black/5"
-              style={navLinkStyle}
-            >
+            <Link href="/uae" className="px-3 py-2 rounded-lg text-sm font-medium transition-colors hover:bg-black/5" style={navLinkStyle}>
               UAE
             </Link>
           </nav>
@@ -211,11 +157,7 @@ export function Header() {
           {/* Right actions */}
           <div className="flex items-center gap-2">
             <ThemeToggle />
-            <Link
-              href="/dashboard"
-              className="hidden md:flex px-3 py-1.5 rounded-lg text-sm font-medium transition-colors hover:bg-black/5"
-              style={navLinkStyle}
-            >
+            <Link href="/dashboard" className="hidden md:flex px-3 py-1.5 rounded-lg text-sm font-medium transition-colors hover:bg-black/5" style={navLinkStyle}>
               Dashboard
             </Link>
             {user ? (
