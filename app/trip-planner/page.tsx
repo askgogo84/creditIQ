@@ -423,101 +423,30 @@ function TripPlannerPageInner() {
             />
 
             {/* Flights */}
-            <div style={{ marginBottom: 20 }}>
-              <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-muted, #64748b)', textTransform: 'uppercase' as const, letterSpacing: 1, marginBottom: 12 }}> Flight options</div>
-              {result.flights.map((flight, i) => {
-                const { url, label } = getApplyUrl(flight.cardId);
-                return (
-                  <div key={i} style={{ background: 'var(--bg-card, #fff)', border: i === 0 ? '2px solid rgba(201,151,46,0.4)' : '1px solid var(--border, #e2e8f0)', borderRadius: 16, padding: '18px 20px', marginBottom: 10, boxShadow: i === 0 ? '0 4px 16px rgba(201,151,46,0.1)' : 'none' }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap' as const, gap: 12 }}>
-                      <div style={{ flex: 1 }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
-                          {i === 0 && <span style={{ fontSize: 9, fontWeight: 700, color: '#C9972E', background: 'rgba(201,151,46,0.1)', border: '1px solid rgba(201,151,46,0.3)', padding: '2px 8px', borderRadius: 100, textTransform: 'uppercase' as const }}>Best value</span>}
-                          <span style={{ fontSize: 14, fontWeight: 700, color: 'var(--text, #0f172a)' }}>{flight.airline} . {flight.class}</span>
-                        </div>
-                        <div style={{ fontSize: 13, color: 'var(--text-muted, #64748b)', marginBottom: 12 }}>{flight.option} via {flight.transferPartner}</div>
-                        <div style={{ display: 'flex', gap: 20, flexWrap: 'wrap' as const }}>
-                          {[
-                            { lbl: 'Points needed', val: flight.pointsNeeded.toLocaleString('en-IN'), col: '#C9972E' },
-                            { lbl: 'Cash price', val: `Rs.${flight.cashPrice.toLocaleString('en-IN')}`, col: 'var(--text-muted, #94a3b8)', line: true },
-                            { lbl: 'You save', val: `Rs.${flight.saving.toLocaleString('en-IN')}`, col: '#16a34a' },
-                          ].map((s, j) => (
-                            <div key={j}>
-                              <div style={{ fontSize: 11, color: 'var(--text-muted, #94a3b8)' }}>{s.lbl}</div>
-                              <div style={{ fontSize: 16, fontWeight: 800, color: s.col, textDecoration: s.line ? 'line-through' : 'none' }}>{s.val}</div>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                      <div style={{ display: 'flex', flexDirection: 'column' as const, gap: 8, minWidth: 130 }}>
-                        <div style={{ fontSize: 11, color: 'var(--text-muted, #64748b)', textAlign: 'center' as const }}>Best card: <strong>{flight.cardNeeded}</strong></div>
-                        <button
-                          onClick={() => { setModalFlight(flight); setModalHotel(result.hotels[0] || null); setModalOpen(true); }}
-                          style={{ width: '100%', padding: '11px', background: 'linear-gradient(135deg, #C9972E, #E8B84B)', color: '#0a0a0a', borderRadius: 10, fontSize: 12, fontWeight: 800, cursor: 'pointer', border: 'none' }}
-                        >
-                          How to book this →
-
-
-
-
-
-
-
-
-
-
-                        </button>
-                        <a href={url} target="_blank" rel="noopener noreferrer" style={{ display: 'block', textAlign: 'center' as const, padding: '9px', background: 'var(--bg-surface, #f8fafc)', color: 'var(--text, #0f172a)', borderRadius: 10, fontSize: 11, fontWeight: 700, textDecoration: 'none', border: '1px solid var(--border, #e2e8f0)' }}>{label}</a>
-                        <a href="https://bitli.in/cv7BwVU" target="_blank" rel="noopener noreferrer" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 5, padding: '8px', background: '#fff0f0', color: '#E8122D', borderRadius: 10, fontSize: 11, fontWeight: 700, textDecoration: 'none', border: '1px solid #fecaca' }}>
-                          MakeMyTrip
-                        </a>
-                        <a href={`https://www.google.com/flights?q=flights+to+${encodeURIComponent(result.destination)}`} target="_blank" rel="noopener noreferrer" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 5, padding: '8px', background: '#f0f4ff', color: '#4285F4', borderRadius: 10, fontSize: 11, fontWeight: 700, textDecoration: 'none', border: '1px solid #c7d2fe' }}>
-                          Google Flights
-                        </a>
-                      </div>
+            {/* Points redemption - compact version */}
+            {result.flights?.[0] && (
+              <div style={{ background: 'rgba(201,151,46,0.06)', border: '1px solid rgba(201,151,46,0.15)', borderRadius: 16, padding: '16px 20px', marginBottom: 16 }}>
+                <div style={{ fontSize: 10, fontWeight: 700, color: '#C9972E', letterSpacing: 1.5, textTransform: 'uppercase' as const, marginBottom: 10 }}>
+                  Redeem your points
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap' as const, gap: 12 }}>
+                  <div>
+                    <div style={{ fontSize: 14, fontWeight: 700, color: 'var(--text, #0f172a)', marginBottom: 2 }}>
+                      {result.flights[0].airline} via {result.flights[0].transferPartner}
+                    </div>
+                    <div style={{ fontSize: 12, color: 'var(--text-muted, #64748b)' }}>
+                      {result.flights[0].pointsNeeded.toLocaleString('en-IN')} pts needed . Best card: {result.flights[0].cardNeeded}
                     </div>
                   </div>
-                );
-              })}
-            </div>
-
-            {/* Hotels */}
-            <div style={{ marginBottom: 20 }}>
-              <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-muted, #64748b)', textTransform: 'uppercase' as const, letterSpacing: 1, marginBottom: 12 }}> Hotel options</div>
-              {result.hotels.map((hotel, i) => {
-                const { url, label } = getApplyUrl(hotel.cardId);
-                return (
-                  <div key={i} style={{ background: 'var(--bg-card, #fff)', border: i === 0 ? '2px solid rgba(34,197,94,0.3)' : '1px solid var(--border, #e2e8f0)', borderRadius: 16, padding: '18px 20px', marginBottom: 10 }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap' as const, gap: 12 }}>
-                      <div style={{ flex: 1 }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
-                          {i === 0 && <span style={{ fontSize: 9, fontWeight: 700, color: '#16a34a', background: 'rgba(34,197,94,0.1)', border: '1px solid rgba(34,197,94,0.3)', padding: '2px 8px', borderRadius: 100, textTransform: 'uppercase' as const }}>Best value</span>}
-                          <span style={{ fontSize: 14, fontWeight: 700, color: 'var(--text, #0f172a)' }}>{hotel.name}</span>
-                        </div>
-                        <div style={{ fontSize: 13, color: 'var(--text-muted, #64748b)', marginBottom: 12 }}>{hotel.chain} . {hotel.nights} nights</div>
-                        <div style={{ display: 'flex', gap: 20, flexWrap: 'wrap' as const }}>
-                          {[
-                            { lbl: 'Points needed', val: hotel.pointsNeeded.toLocaleString('en-IN'), col: '#C9972E' },
-                            { lbl: 'Cash price', val: `Rs.${hotel.cashPrice.toLocaleString('en-IN')}`, col: 'var(--text-muted, #94a3b8)', line: true },
-                            { lbl: 'You save', val: `Rs.${hotel.saving.toLocaleString('en-IN')}`, col: '#16a34a' },
-                          ].map((s, j) => (
-                            <div key={j}>
-                              <div style={{ fontSize: 11, color: 'var(--text-muted, #94a3b8)' }}>{s.lbl}</div>
-                              <div style={{ fontSize: 16, fontWeight: 800, color: s.col, textDecoration: s.line ? 'line-through' : 'none' }}>{s.val}</div>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                      <div style={{ display: 'flex', flexDirection: 'column' as const, gap: 8, minWidth: 130 }}>
-                        <div style={{ fontSize: 11, color: 'var(--text-muted, #64748b)', textAlign: 'center' as const }}>Best card: <strong>{hotel.cardNeeded}</strong></div>
-                        <a href={url} target="_blank" rel="noopener noreferrer" style={{ display: 'block', textAlign: 'center' as const, padding: '10px', background: 'linear-gradient(135deg, #C9972E, #E8B84B)', color: '#0a0a0a', borderRadius: 10, fontSize: 12, fontWeight: 700, textDecoration: 'none' }}>{label}</a>
-                      </div>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-
+                  <button
+                    onClick={() => { setModalFlight(result.flights[0]); setModalHotel(result.hotels[0] || null); setModalOpen(true); }}
+                    style={{ padding: '10px 20px', background: 'linear-gradient(135deg, #C9972E, #E8B84B)', color: '#0a0a0a', border: 'none', borderRadius: 10, fontSize: 13, fontWeight: 800, cursor: 'pointer', whiteSpace: 'nowrap' as const }}
+                  >
+                    How to redeem points
+                  </button>
+                </div>
+              </div>
+            )}
 
             <div style={{ textAlign: 'center' }}>
               <button onClick={() => { setResult(null); setQuery(''); }} style={{ padding: '12px 28px', background: 'var(--bg-card, #fff)', border: '1px solid var(--border, #e2e8f0)', borderRadius: 12, fontSize: 14, fontWeight: 600, color: 'var(--text, #0f172a)', cursor: 'pointer' }}>
