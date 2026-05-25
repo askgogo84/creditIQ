@@ -13,6 +13,18 @@ const QUICK_QUESTIONS = [
   'Best forex card for travel?',
 ];
 
+
+function renderMarkdown(text: string) {
+  // Convert **bold** to <strong>
+  const parts = text.split(/(\*\*[^*]+\*\*)/g);
+  return parts.map((part, i) => {
+    if (part.startsWith('**') && part.endsWith('**')) {
+      return <strong key={i}>{part.slice(2, -2)}</strong>;
+    }
+    return part;
+  });
+}
+
 export function CreditIQAssistant() {
   const [open, setOpen] = useState(false);
   const [messages, setMessages] = useState<Message[]>([]);
@@ -193,7 +205,7 @@ export function CreditIQAssistant() {
                   color: msg.role === 'user' ? '#fff' : 'var(--ink, #142950)',
                   border: msg.role === 'assistant' ? '1px solid var(--line, rgba(20,41,80,0.08))' : 'none',
                 }}>
-                  {msg.content}
+                  {renderMarkdown(msg.content)}
                 </div>
               </div>
             ))}
