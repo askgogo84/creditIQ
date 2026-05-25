@@ -360,11 +360,11 @@ export function CardDetailClient({ card }: { card: CreditCard }) {
 
 function Metric({ label, value, highlight }: { label: string; value: string; highlight?: boolean }) {
   return (
-    <div className="bg-ink-950 border border-white/5 rounded px-4 py-3">
-      <div className="text-[10px] font-mono uppercase tracking-widest text-ink-400 mb-1">
+    <div style={{ background: 'var(--surface-2,#f8f5ef)', border: '1px solid var(--line,rgba(20,41,80,0.1))', borderRadius: 10, padding: '12px 16px' }}>
+      <div style={{ fontSize: 10, fontFamily: 'monospace', textTransform: 'uppercase' as const, letterSpacing: '0.1em', color: 'var(--ink-3,#5A6A8A)', marginBottom: 4 }}>
         {label}
       </div>
-      <div className={`font-display text-2xl tabular ${highlight ? 'text-copper-300' : 'text-ink-50'}`}>
+      <div style={{ fontSize: 22, fontWeight: 700, color: highlight ? 'var(--copper-3,#D89B2A)' : 'var(--ink,#142950)', fontVariantNumeric: 'tabular-nums' as const }}>
         {value}
       </div>
     </div>
