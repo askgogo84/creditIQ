@@ -374,6 +374,7 @@ function OptimizeContent() {
                   Plan my trip →
 
 
+
                 </Link>
               </div>
             </div>
@@ -400,6 +401,7 @@ function OptimizeContent() {
                   style={{ background: '#C9972E', color: '#fff', whiteSpace: 'nowrap' }}
                 >
                   Plan my trip →
+
 
 
                 </Link>
