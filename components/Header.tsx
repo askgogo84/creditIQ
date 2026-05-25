@@ -33,14 +33,30 @@ const allNavItems = [
 function DropdownMenu({ items, open }: { items: { label: string; href: string; icon?: string }[]; open: boolean }) {
   if (!open) return null
   return (
-    <div className="absolute top-full left-0 mt-1 w-52 rounded-xl overflow-hidden z-50"
-      style={{ background: 'var(--surface,#fff)', border: '1px solid var(--line,rgba(20,41,80,0.1))', boxShadow: '0 8px 32px rgba(0,0,0,0.12)' }}>
+    <div className="absolute top-full left-0 mt-2 rounded-2xl overflow-hidden z-50"
+      style={{
+        background: 'var(--surface,#fff)',
+        border: '1px solid var(--line,rgba(20,41,80,0.08))',
+        boxShadow: '0 12px 40px rgba(0,0,0,0.12), 0 2px 8px rgba(0,0,0,0.06)',
+        minWidth: 200,
+        padding: '6px',
+      }}>
       {items.map(item => (
-        <Link key={item.href} href={item.href} className="block px-4 py-2.5 text-sm transition-colors"
-          style={{ color: 'var(--ink,#142950)' }}
-          onMouseEnter={e => (e.currentTarget.style.background = 'var(--bg-2,#EFE7D8)')}
-          onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}>
-          {item.icon && <span style={{ marginRight: 8 }}>{item.icon}</span>}{item.label}
+        <Link key={item.href} href={item.href}
+          style={{
+            display: 'flex', alignItems: 'center', gap: 10,
+            padding: '9px 12px', borderRadius: 10,
+            color: 'var(--ink,#142950)', textDecoration: 'none',
+            fontSize: 13, fontWeight: 500, transition: 'background 0.1s',
+          }}
+          onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = 'var(--bg-2,#EFE7D8)' }}
+          onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = 'transparent' }}>
+          {item.icon ? (
+            <span style={{ width: 24, height: 24, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 15, background: 'var(--bg-2,#EFE7D8)', borderRadius: 6, flexShrink: 0 }}>{item.icon}</span>
+          ) : (
+            <span style={{ width: 24, height: 24, background: 'var(--bg-2,#EFE7D8)', borderRadius: 6, flexShrink: 0 }} />
+          )}
+          {item.label}
         </Link>
       ))}
     </div>
