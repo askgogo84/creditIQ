@@ -1,7 +1,8 @@
-﻿import type { Metadata } from "next";
+import type { Metadata } from "next";
 import { GeistSans } from "geist/font/sans";
 import { GeistMono } from "geist/font/mono";
 import "./globals.css";
+import { CreditIQAssistant } from "@/components/CreditIQAssistant";
 
 export const metadata: Metadata = {
   title: "CreditIQ - India's Honest Credit Card Intelligence",
@@ -38,8 +39,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       </head>
       <body style={{ fontFamily: "var(--font-geist-sans), system-ui, sans-serif" }}>
         {children}
+        <CreditIQAssistant />
       </body>
     </html>
   );
 }
-
