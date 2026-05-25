@@ -215,25 +215,27 @@ export function Header() {
 
       {/*  BOTTOM TAB BAR (mobile only)  */}
       <nav style={{ display: 'none' }} className="bottom-tab-bar">
-        {[
-          { label: 'Home', href: '/', icon: '' },
-          { label: 'Cards', href: '/cards', icon: '💳' },
-          { label: 'Trip', href: '/trip-planner', icon: '' },
-          { label: 'AI Tools', href: '/smart-match', icon: '' },
-          { label: 'Account', href: user ? '/dashboard' : '/login', icon: user ? '👤' : '->' },
-        ].map(tab => {
+        {([
+          { label: 'Home', href: '/', d1: 'M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z', d2: 'M9 22V12h6v10' },
+          { label: 'Cards', href: '/cards', d1: 'M1 4h22v16a2 2 0 01-2 2H3a2 2 0 01-2-2V4z', d2: 'M1 10h22' },
+          { label: 'Trip', href: '/trip-planner', d1: 'M22 2L11 13', d2: 'M22 2L15 22 11 13 2 9l20-7z' },
+          { label: 'AI', href: '/smart-match', d1: 'M13 2L3 14h9l-1 8 10-12h-9l1-8z', d2: '' },
+          { label: user ? 'Me' : 'Login', href: user ? '/dashboard' : '/login', d1: 'M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2', d2: 'M12 3a4 4 0 100 8 4 4 0 000-8z' },
+        ] as { label: string; href: string; d1: string; d2: string }[]).map(tab => {
           const active = pathname === tab.href || (tab.href !== '/' && pathname.startsWith(tab.href))
           return (
             <Link key={tab.href} href={tab.href} style={{
-              display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3,
-              padding: '8px 0', flex: 1,
-              textDecoration: 'none',
-              color: active ? '#C9972E' : 'var(--ink-2,#64748b)',
-              transition: 'color 0.15s',
+              display: 'flex', flexDirection: 'column' as const, alignItems: 'center',
+              justifyContent: 'center', gap: 3, padding: '6px 0 2px', flex: 1,
+              textDecoration: 'none', color: active ? '#C9972E' : '#94a3b8',
+              transition: 'color 0.15s', minWidth: 0,
             }}>
-              <span style={{ fontSize: 20, lineHeight: 1 }}>{tab.icon}</span>
-              <span style={{ fontSize: 10, fontWeight: active ? 700 : 500, letterSpacing: 0.3 }}>{tab.label}</span>
-              {active && <span style={{ width: 4, height: 4, borderRadius: '50%', background: '#C9972E' }} />}
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                {tab.d1 && <path d={tab.d1} />}
+                {tab.d2 && <path d={tab.d2} />}
+              </svg>
+              <span style={{ fontSize: 9, fontWeight: active ? 700 : 400, letterSpacing: 0.2, lineHeight: 1.2 }}>{tab.label}</span>
+              {active && <span style={{ width: 3, height: 3, borderRadius: '50%', background: '#C9972E' }} />}
             </Link>
           )
         })}
