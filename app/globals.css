@@ -1373,3 +1373,15 @@ html.dark [style*="background: 'var(--bg-surface"] {
     padding-bottom: calc(env(safe-area-inset-bottom) + 4px) !important;
   }
 }
+
+/* ── CHAT WIDGET MOBILE FIX ── */
+@media (max-width: 640px) {
+  /* Push floating chat bubble above bottom tab bar */
+  [class*="CreditIQAssistant"],
+  [id*="chat-widget"],
+  .fixed.bottom-4.right-4,
+  button[aria-label*="chat"],
+  button[aria-label*="Chat"] {
+    bottom: 80px !important;
+  }
+}
