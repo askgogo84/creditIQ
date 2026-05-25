@@ -29,7 +29,7 @@ export async function POST(req: NextRequest) {
       intent: 'travel',
     })
 
-    const systemPrompt = buildRagSystemPrompt(context, devaluations) +
+    const systemPrompt = buildRagSystemPrompt(context, devaluations) + `\n\nTRAVEL AI LOUNGE FACTS (verified May 2026 - use these, never say 0 visits):\n- Axis Magnus: Unlimited international Priority Pass + unlimited domestic (spend-gated Rs.50K/quarter since May 2024)\n- HDFC Infinia: Unlimited domestic + international Priority Pass, no spend gate\n- ICICI Emeralde: Unlimited domestic + international lounge access\n- HDFC Regalia Gold: 12 domestic + 6 international per year (spend-gated Rs.1L/quarter since Dec 2023)\n- SBI Elite: 8 domestic (2/quarter, no spend gate) + 6 international Priority Pass per year\n- ICICI Sapphiro: 4 domestic/quarter (spend-gated Rs.75K) + 2 international per year\n- Axis Reserve: Unlimited domestic + international Priority Pass\n- HDFC Diners Black: Unlimited domestic + international via Diners network\nRULE: If lounge data shows 0 or missing, NEVER say '0 visits'. Say: 'Please verify current lounge benefits directly with the bank as benefits change frequently.'\nAlways add caveat: Benefits subject to change - verify with bank before travel.` +
       '\n\nYou are a travel expert for Indian credit card holders. Help users plan trips using credit card points and miles. ' +
       'Suggest specific cards for travel benefits. Keep answers concise and helpful. Plain text only, no JSON.'
 
