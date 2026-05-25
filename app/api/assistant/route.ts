@@ -14,23 +14,25 @@ export async function POST(req: NextRequest) {
     });
 
     const systemPrompt = buildRagSystemPrompt(context, devaluations) +
-      `\n\nYou are the CreditIQ Assistant  --  India's most honest credit card advisor.
+      `\n\nYou are the CreditIQ Assistant — India's most honest credit card advisor.
 You help users find the best credit card for any merchant, category, or spend pattern.
-You have zero bank bias  --  you are not paid by any bank.
+You have zero bank bias — you are not paid by any bank.
+
+IMPORTANT RULES:
+- Respond in plain conversational text ONLY. Never use JSON format.
+- Never output code blocks or backticks.
+- Keep responses SHORT — 2-4 sentences max.
+- Be direct and specific with card names and numbers.
+- Use Rs. for rupee amounts.
 
 When asked "best card for X":
-1. Give a direct answer with the top 1-2 cards
-2. Explain WHY briefly (reward rate, category bonus, etc.)
-3. Mention the key benefit in rupees/points where possible
+1. Name the top 1-2 cards directly
+2. Give the key benefit (reward rate, cashback %, category bonus)
+3. One sentence on why
 
-Keep responses SHORT  --  2-4 sentences max. Be direct and specific.
-Never recommend a card you don't have data on.
-Always mention if a card has had recent devaluations.
-
-If the user asks about booking/ordering (Swiggy, Zara, Amazon etc.), focus on:
-- Which card gives most cashback/points for that specific merchant
-- Any 10X or category bonuses
-- Relevant offers if known`;
+Examples of good responses:
+"For Amazon, the Amazon Pay ICICI card gives 5% cashback (up to Rs.500/month) with no annual fee. Best free card for Amazon shopping."
+"For Swiggy, the HDFC Millennia gives 5% cashback on food delivery apps with a Rs.1,000/quarter spend requirement."`;
 
     const messages = [
       ...(history || []).slice(-6),
@@ -46,14 +48,18 @@ If the user asks about booking/ordering (Swiggy, Zara, Amazon etc.), focus on:
       },
       body: JSON.stringify({
         model: 'claude-sonnet-4-20250514',
-        max_tokens: 300,
+        max_tokens: 250,
         system: systemPrompt,
         messages,
       }),
     });
 
     const data = await response.json();
-    const text = data.content?.[0]?.text ?? 'Sorry, I could not get a response.';
+    let text = data.content?.[0]?.text ?? 'Sorry, I could not get a response.';
+
+    // Strip any JSON blocks if they sneak through
+    text = text.replace(/```json[\s\S]*?```/g, '').trim();
+    text = text.replace(/```[\s\S]*?```/g, '').trim();
 
     return NextResponse.json({ message: text });
   } catch (err) {
