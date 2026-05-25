@@ -4,7 +4,7 @@
 // Last updated: 25 May 2026
 
 const AFFILIATE_LINKS: Record<string, string> = {
-  // ── HDFC ──────────────────────────────────────────────────────────────────
+  //  HDFC 
   "hdfc-regalia":              "https://bitli.in/s7cak4c",
   "hdfc-regalia-gold":         "https://bitli.in/s7cak4c",
   "hdfc-millenia":             "https://bitli.in/s7cak4c",
@@ -23,7 +23,7 @@ const AFFILIATE_LINKS: Record<string, string> = {
   "tata-neu-infinity-hdfc":    "https://bitli.in/s7cak4c",
   "tata-neu-plus-hdfc":        "https://bitli.in/s7cak4c",
 
-  // ── AXIS ──────────────────────────────────────────────────────────────────
+  //  AXIS 
   "axis-magnus":               "https://bitli.in/MQ6vAYP",
   "axis-magnus-burgundy":      "https://bitli.in/MQ6vAYP",
   "axis-privilege":            "https://bitli.in/9gTv08q",
@@ -44,7 +44,7 @@ const AFFILIATE_LINKS: Record<string, string> = {
   "axis-neo":                  "https://bitli.in/MQ6vAYP",
   "axis-reserve":              "https://bitli.in/MQ6vAYP",
 
-  // ── SBI ───────────────────────────────────────────────────────────────────
+  //  SBI 
   "sbi-cashback":              "https://bitli.in/KCBtYhM",
   "sbi-simplysave":            "https://bitli.in/KCBtYhM",
   "sbi-simplyclick":           "https://bitli.in/KCBtYhM",
@@ -57,7 +57,7 @@ const AFFILIATE_LINKS: Record<string, string> = {
   "sbi-aurum":                 "https://bitli.in/KCBtYhM",
   "sbi-club-vistara":          "https://bitli.in/KCBtYhM",
 
-  // ── IDFC FIRST ────────────────────────────────────────────────────────────
+  //  IDFC FIRST 
   "idfc-first":                "https://bitli.in/aii7dpF",
   "idfc-first-power":          "https://bitli.in/LsE5x76",
   "idfc-first-power-plus":     "https://bitli.in/k1ZzS7w",
@@ -71,7 +71,7 @@ const AFFILIATE_LINKS: Record<string, string> = {
   "idfc-first-millennia":      "https://bitli.in/aii7dpF",
   "idfc-first-select":         "https://bitli.in/aii7dpF",
 
-  // ── AU BANK ───────────────────────────────────────────────────────────────
+  //  AU BANK 
   "au-lit":                    "https://bitli.in/Z27qj7I",
   "au-altura":                 "https://bitli.in/Z27qj7I",
   "au-altura-plus":            "https://bitli.in/Z27qj7I",
@@ -79,7 +79,7 @@ const AFFILIATE_LINKS: Record<string, string> = {
   "au-zenith-plus":            "https://bitli.in/Z27qj7I",
   "au-vetta":                  "https://bitli.in/Z27qj7I",
 
-  // ── KOTAK ─────────────────────────────────────────────────────────────────
+  //  KOTAK 
   "kotak-811":                 "https://bitli.in/glzF0Ff",
   "kotak-white":               "https://bitli.in/glzF0Ff",
   "kotak-royale-signature":    "https://bitli.in/glzF0Ff",
@@ -88,7 +88,7 @@ const AFFILIATE_LINKS: Record<string, string> = {
   "kotak-league-platinum":     "https://bitli.in/glzF0Ff",
   "kotak-privy-league":        "https://bitli.in/glzF0Ff",
 
-  // ── RBL ───────────────────────────────────────────────────────────────────
+  //  RBL 
   "rbl-shoprite":              "https://bitli.in/cnFgfO8",
   "rbl-world-safari":          "https://bitli.in/cnFgfO8",
   "rbl-dubai-first":           "https://bitli.in/cnFgfO8",
@@ -97,14 +97,14 @@ const AFFILIATE_LINKS: Record<string, string> = {
   "rbl-popcorn":               "https://bitli.in/cnFgfO8",
   "bajaj-rbl-supercard":       "https://bitli.in/cnFgfO8",
 
-  // ── YES BANK ──────────────────────────────────────────────────────────────
+  //  YES BANK 
   "yes-first-exclusive":       "https://bitli.in/pe8xoQG",
   "yes-first-preferred":       "https://bitli.in/pe8xoQG",
   "yes-ace":                   "https://bitli.in/pe8xoQG",
   "yes-marquee":               "https://bitli.in/pe8xoQG",
   "yes-prosperity-cashback":   "https://bitli.in/pe8xoQG",
 
-  // ── INDUSIND ──────────────────────────────────────────────────────────────
+  //  INDUSIND 
   "tiger-credit-card":         "https://bitli.in/dhbkHA6",
   "legend-credit-card":        "https://bitli.in/XV9120H",
   "platinum-credit-card":      "https://bitli.in/mU83w2n",
@@ -115,12 +115,12 @@ const AFFILIATE_LINKS: Record<string, string> = {
   "indusind-nexxt":            "https://bitli.in/XV9120H",
   "indusind-pinnacle":         "https://bitli.in/XV9120H",
 
-  // ── SCAPIA / KIWI / NOMO ──────────────────────────────────────────────────
+  //  SCAPIA / KIWI / NOMO 
   "scapia":                    "https://bitli.in/VO2npLG",
   "kiwi-upi":                  "https://bitli.in/U44UnpR",
   "nomo":                      "https://bitli.in/P633SQj",
 
-  // ── ICICI (no EarnKaro program — direct bank links) ───────────────────────
+  //  ICICI (no EarnKaro program  --  direct bank links) 
   "icici-amazon-pay":          "https://www.icicibank.com/card/credit-cards/amazon-pay-credit-card",
   "icici-emeralde":            "https://www.icicibank.com/card/credit-cards",
   "icici-rubyx":               "https://www.icicibank.com/card/credit-cards",
@@ -131,26 +131,26 @@ const AFFILIATE_LINKS: Record<string, string> = {
   "icici-hpcl-super-saver":    "https://www.icicibank.com/card/credit-cards",
   "icici-mmt-platinum":        "https://www.icicibank.com/card/credit-cards",
 
-  // ── AMEX (no EarnKaro program — direct) ───────────────────────────────────
+  //  AMEX (no EarnKaro program  --  direct) 
   "amex-platinum-travel":      "https://www.americanexpress.com/in/credit-cards/",
   "amex-gold":                 "https://www.americanexpress.com/in/credit-cards/",
   "amex-membership-rewards":   "https://www.americanexpress.com/in/credit-cards/",
   "amex-mrcc":                 "https://www.americanexpress.com/in/credit-cards/",
   "amex-smartearn":            "https://www.americanexpress.com/in/credit-cards/",
 
-  // ── STANDARD CHARTERED (direct) ───────────────────────────────────────────
+  //  STANDARD CHARTERED (direct) 
   "sc-digismart":              "https://www.sc.com/in/credit-cards/",
   "sc-manhattan":              "https://www.sc.com/in/credit-cards/",
   "sc-smart":                  "https://www.sc.com/in/credit-cards/",
   "sc-super-value-titanium":   "https://www.sc.com/in/credit-cards/",
   "sc-ultimate":               "https://www.sc.com/in/credit-cards/",
 
-  // ── HSBC (direct) ─────────────────────────────────────────────────────────
+  //  HSBC (direct) 
   "hsbc-cashback":             "https://www.hsbc.co.in/credit-cards/",
   "hsbc-live-plus":            "https://www.hsbc.co.in/credit-cards/",
   "hsbc-premier":              "https://www.hsbc.co.in/credit-cards/",
 
-  // ── BOB / FEDERAL / IDBI / ONECARD (direct) ───────────────────────────────
+  //  BOB / FEDERAL / IDBI / ONECARD (direct) 
   "bob-eterna":                "https://www.bankofbaroda.in/personal-banking/accounts/cards/credit-cards",
   "bob-prime":                 "https://www.bankofbaroda.in/personal-banking/accounts/cards/credit-cards",
   "federal-celesta":           "https://www.federalbank.co.in/credit-cards",
@@ -158,7 +158,7 @@ const AFFILIATE_LINKS: Record<string, string> = {
   "idbi-steel":                "https://www.idbibank.in/credit-cards.aspx",
   "onecard":                   "https://www.getonecard.app/",
 
-  // ── TRAVEL BOOKINGS (EarnKaro) ────────────────────────────────────────────
+  //  TRAVEL BOOKINGS (EarnKaro) 
   "mmt-hotels":                "https://bitli.in/VrZOzeR",
   "mmt-flights":               "https://bitli.in/cv7BwVU",
   "booking-com":               "https://bitli.in/xc9tvmd",

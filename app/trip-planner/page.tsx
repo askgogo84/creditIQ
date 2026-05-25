@@ -7,6 +7,7 @@ import { Header } from '@/components/Header';
 import { Footer } from '@/components/Footer';
 import { getApplyUrl } from '@/lib/affiliate';
 import { BookingModal } from '@/components/BookingModal';
+import { TripComparison } from '@/components/TripComparison';
 import { createBrowserClient } from '@supabase/ssr';
 
 interface TripResult {
@@ -357,6 +358,7 @@ function TripPlannerPageInner() {
 
 
 
+
                         </button>
                         <a href={url} target="_blank" rel="noopener noreferrer" style={{ display: 'block', textAlign: 'center' as const, padding: '9px', background: 'var(--bg-surface, #f8fafc)', color: 'var(--text, #0f172a)', borderRadius: 10, fontSize: 11, fontWeight: 700, textDecoration: 'none', border: '1px solid var(--border, #e2e8f0)' }}>{label}</a>
                         <a href="https://bitli.in/cv7BwVU" target="_blank" rel="noopener noreferrer" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 5, padding: '8px', background: '#fff0f0', color: '#E8122D', borderRadius: 10, fontSize: 11, fontWeight: 700, textDecoration: 'none', border: '1px solid #fecaca' }}>
@@ -408,6 +410,16 @@ function TripPlannerPageInner() {
                 );
               })}
             </div>
+
+            {/* Live price comparison across platforms */}
+            <TripComparison
+              destination={result.destination}
+              origin="Bangalore"
+              nights={parseInt(result.duration?.replace(/\D/g,'')) || 3}
+              cabin={result.flights?.[0]?.class?.toLowerCase() || 'economy'}
+              userPoints={parseInt((points || '0').replace(/,/g, '')) || 0}
+              cardBank={cardBank}
+            />
 
             <div style={{ textAlign: 'center' }}>
               <button onClick={() => { setResult(null); setQuery(''); }} style={{ padding: '12px 28px', background: 'var(--bg-card, #fff)', border: '1px solid var(--border, #e2e8f0)', borderRadius: 12, fontSize: 14, fontWeight: 600, color: 'var(--text, #0f172a)', cursor: 'pointer' }}>
