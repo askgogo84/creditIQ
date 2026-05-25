@@ -20,7 +20,7 @@ interface FlightOption {
   pointsSaving: number;
   canAfford: boolean;
   whyBest: string;
-  urls: { kayak: string; mmt: string; googleFlights: string };
+  urls: { kayak: string; mmt: string; googleFlights: string; easemytrip?: string; goibibo?: string };
 }
 
 interface HotelOption {
@@ -330,8 +330,10 @@ export function TripComparison({ destination, origin = 'Bangalore', nights = 3, 
                 {f.whyBest}
               </div>
               <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' as const }}>
-                {platformBtn(f.urls.kayak, 'Search on Kayak', true)}
+                {platformBtn(f.urls.kayak, 'Kayak', true)}
                 {platformBtn(f.urls.mmt, 'MakeMyTrip')}
+                {platformBtn(f.urls.easemytrip || 'https://www.easemytrip.com', 'EaseMyTrip')}
+                {platformBtn(f.urls.goibibo || 'https://www.goibibo.com', 'Goibibo')}
                 {platformBtn(f.urls.googleFlights, 'Google Flights')}
               </div>
               {f.pointsOption && (

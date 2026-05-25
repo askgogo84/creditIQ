@@ -90,6 +90,33 @@ function buildMmtHotelUrl(dest: string): string {
   return `https://bitli.in/VrZOzeR`
 }
 
+function buildEasemytripUrl(origin: string, dest: string): string {
+  const CITY: Record<string, string> = {
+    'bangalore': 'BLR', 'bengaluru': 'BLR', 'mumbai': 'BOM', 'delhi': 'DEL',
+    'hyderabad': 'HYD', 'chennai': 'MAA', 'goa': 'GOI', 'jaipur': 'JAI',
+    'kochi': 'COK', 'pune': 'PNQ', 'kolkata': 'CCU', 'ahmedabad': 'AMD',
+  }
+  const o = CITY[origin.toLowerCase()] || 'BLR'
+  const d = CITY[dest.toLowerCase()] || dest.toUpperCase().substring(0,3)
+  const dep = new Date(Date.now() + 30*24*60*60*1000).toISOString().split('T')[0]
+  const ret = new Date(Date.now() + 33*24*60*60*1000).toISOString().split('T')[0]
+  // TODO: replace with affiliate tracking ID when approved at partners.easemytrip.com
+  return `https://www.easemytrip.com/flight/search?origin=${o}&dest=${d}&depDate=${dep}&retDate=${ret}&pax=1-0-0&class=E&tripMode=R`
+}
+
+function buildGoibiboUrl(origin: string, dest: string): string {
+  const CITY: Record<string, string> = {
+    'bangalore': 'BLR', 'bengaluru': 'BLR', 'mumbai': 'BOM', 'delhi': 'DEL',
+    'hyderabad': 'HYD', 'chennai': 'MAA', 'goa': 'GOI', 'jaipur': 'JAI',
+    'kochi': 'COK', 'pune': 'PNQ', 'kolkata': 'CCU', 'ahmedabad': 'AMD',
+  }
+  const o = CITY[origin.toLowerCase()] || 'BLR'
+  const d = CITY[dest.toLowerCase()] || dest.toUpperCase().substring(0,3)
+  const dep = new Date(Date.now() + 30*24*60*60*1000).toISOString().split('T')[0].replace(/-/g,'')
+  // TODO: replace with affiliate tracking ID when approved at goibibo.com/affiliate
+  return `https://www.goibibo.com/flights/search/?travelType=R&from=${o}&to=${d}&depart=${dep}&adults=1&children=0&infants=0&class=E&source=metasearch`
+}
+
 export async function POST(req: NextRequest) {
   try {
     const {
@@ -240,6 +267,8 @@ Respond ONLY with valid JSON:
           kayak: kayakUrl,
           mmt: mmtFlightUrl,
           googleFlights: googleFlightsUrl,
+          easemytrip: buildEasemytripUrl(origin, destination),
+          goibibo: buildGoibiboUrl(origin, destination),
         }
       })),
       hotels: parsed.hotels.map((h: any) => ({
