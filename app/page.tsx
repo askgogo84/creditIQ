@@ -16,7 +16,6 @@ import { AIToolCard }     from '@/components/design/AIToolCard';
 import { CardTile, type TileCard } from '@/components/design/CardTile';
 import { Stamp }          from '@/components/design/Stamp';
 import { DesignFooter }   from '@/components/design/Footer';
-import { HowItWorks }     from '@/components/design/HowItWorks';
 import { ShowcaseStrip } from '@/components/design/ShowcaseStrip'
 import { CleoHero }       from '@/components/design/CleoHero';
 import { SEED_CARDS }     from '@/lib/data/seed-cards';
@@ -84,8 +83,6 @@ export default function HomePage() {
           'AMEX MRCC reduced point earn on utility bills to 0',
           'New . AU Bank Zenith+ launches with 10x on fuel',
         ]} />
-
-        <HowItWorks />
 
         <section style={{ background: '#291210', padding: 'clamp(56px,8vw,96px) 0', borderTop: '1px solid rgba(255,233,199,0.12)', borderBottom: '1px solid rgba(255,233,199,0.12)', position: 'relative', overflow: 'hidden' }}>
           <div style={{ position: 'absolute', top: '-30%', left: '40%', width: 500, height: 500, borderRadius: '50%', background: 'radial-gradient(circle,rgba(216,155,42,0.20),transparent 60%)', filter: 'blur(80px)', pointerEvents: 'none' }} />
@@ -221,4 +218,5 @@ export default function HomePage() {
     </>
   );
 }
+
 

@@ -100,10 +100,11 @@ export function ShowcaseStrip() {
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 'clamp(24px,4vw,56px)' }} className="grid-1-mobile">
           {SHOWCASES.map((s, i) => (
             <Reveal key={s.scene} delay={i * 120}>
-              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', position: 'relative' }}>
+              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', position: 'relative', height: '100%' }}>
                 <div style={{ position: 'absolute', top: -20, left: '50%', transform: 'translateX(-50%) rotate(-6deg)', zIndex: 10, width: 56, height: 56, borderRadius: 999, background: '#F2C658', color: '#142950', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, fontSize: 24, border: '4px solid #142950' }}>{i + 1}</div>
+                <div style={{ height: 484, display: 'flex', alignItems: 'flex-start', justifyContent: 'center', overflow: 'visible' }}>
                 <div
-                  style={{ transform: 'scale(0.78)', transformOrigin: 'top center', cursor: 'pointer', transition: 'transform 0.4s cubic-bezier(0.2,0.8,0.2,1)', width: 300 }}
+                  style={{ transform: 'scale(0.78)', transformOrigin: 'top center', cursor: 'pointer', transition: 'transform 0.4s cubic-bezier(0.2,0.8,0.2,1)', flexShrink: 0 }}
                   onMouseEnter={e => (e.currentTarget as HTMLElement).style.transform = 'scale(0.82) translateY(-8px)'}
                   onMouseLeave={e => (e.currentTarget as HTMLElement).style.transform = 'scale(0.78)'}
                 >
@@ -133,3 +134,7 @@ export function ShowcaseStrip() {
     </section>
   )
 }
+
+
+
+
