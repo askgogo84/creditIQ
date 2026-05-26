@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
@@ -170,7 +170,7 @@ export function HowItWorks() {
             ))}
           </div>
           <Link href="/card-roast" style={{ padding: '10px 22px', background: 'var(--copper-3, #D89B2A)', color: 'var(--navy, #142950)', borderRadius: 100, fontSize: 14, fontWeight: 700, textDecoration: 'none', whiteSpace: 'nowrap' as const }}>
-            Get roasted ->
+            Get roasted →
           </Link>
         </div>
       </div>
@@ -181,3 +181,4 @@ export function HowItWorks() {
     </section>
   )
 }
+
