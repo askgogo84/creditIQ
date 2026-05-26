@@ -15,6 +15,7 @@ import { AIToolCard }     from '@/components/design/AIToolCard';
 import { CardTile, type TileCard } from '@/components/design/CardTile';
 import { Stamp }          from '@/components/design/Stamp';
 import { DesignFooter }   from '@/components/design/Footer';
+import { CleoHero } from '@/components/design/CleoHero'
 import { HowItWorks }     from '@/components/design/HowItWorks';
 import { SEED_CARDS }     from '@/lib/data/seed-cards';
 import type { CreditCard } from '@/lib/types';
@@ -95,176 +96,8 @@ export default function HomePage() {
       <Header />
       <div className="page-fade">
 
-        {/* ============================================
-              HERO -- editorial slab w/ floating card
-              ============================================ */}
-        <section style={{ position: 'relative', paddingTop: 'clamp(120px, 18vw, 160px)' }}>
-          <div className="aurora" style={{ top: -120, right: -100, width: 540, height: 540,
-            background: 'radial-gradient(circle, rgba(212,163,115,0.55), transparent 60%)' }} />
-          <div className="aurora" style={{ top: 300, left: -120, width: 420, height: 420,
-            background: 'radial-gradient(circle, rgba(124,137,112,0.40), transparent 60%)' }} />
+        <CleoHero />
 
-          <div className="shell" style={{ position: 'relative', zIndex: 2, paddingBottom: 60 }}>
-
-            {/* Eyebrow */}
-            <Reveal style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 'clamp(40px, 6vw, 72px)', flexWrap: 'wrap', gap: 16 }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
-                <span style={{ width: 8, height: 8, borderRadius: 999, background: 'var(--green)',
-                  boxShadow: '0 0 12px var(--green)' }} />
-                <span className="label">Live . 100+ cards across 24 banks</span>
-              </div>
-              <div className="label hide-mobile" style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
-                <span>EST. 2025</span><span>.</span><span>BENGALURU</span><span>.</span><span>v1.0</span>
-              </div>
-            </Reveal>
-
-            {/* Hero grid */}
-            <div style={{
-              display: 'grid',
-              gridTemplateColumns: 'minmax(0, 1.25fr) minmax(0, 1fr)',
-              gap: 'clamp(40px, 6vw, 80px)',
-              alignItems: 'center'
-            }} className="grid-1-mobile">
-
-              {/* LEFT: HEADLINE */}
-              <div>
-                <Reveal>
-                  <h1 style={{
-                    fontSize: 'clamp(36px, 5.5vw, 72px)',
-                    letterSpacing: '-0.035em',
-                    lineHeight: 1.04,
-                    fontWeight: 800
-                  }}>
-                    The <span className="serif" style={{ color: 'var(--copper-3)', fontStyle: 'italic', fontWeight: 400 }}>honest</span>{' '}credit card intelligence India needed.
-                  </h1>
-                </Reveal>
-
-                <Reveal delay={120}>
-                  <p style={{
-                    marginTop: 'clamp(28px, 4vw, 44px)',
-                    fontSize: 'clamp(16px, 1.4vw, 20px)',
-                    color: 'var(--ink-2)',
-                    maxWidth: 540,
-                    lineHeight: 1.55
-                  }}>
-                    Real annual value. Live devaluation tracking. Points optimization.
-                    Built by people who refuse to be{' '}
-                    <span className="serif" style={{ color: 'var(--ink)' }}>paid by banks</span> to rank cards.
-                  </p>
-                </Reveal>
-
-                <Reveal delay={240} style={{
-                  marginTop: 'clamp(28px, 4vw, 44px)',
-                  display: 'flex', gap: 14, flexWrap: 'wrap'
-                }} className="stack-mobile">
-                  <CopperCTA href="/smart-match">Find my perfect card</CopperCTA>
-                  <GhostCTA href="/cards">Browse all 100+ cards</GhostCTA>
-                </Reveal>
-
-                {/* Mini stat row */}
-                <Reveal delay={400} style={{
-                  marginTop: 'clamp(56px, 9vw, 96px)',
-                  display: 'grid',
-                  gridTemplateColumns: 'repeat(3, 1fr)',
-                  gap: 'clamp(16px, 3vw, 32px)',
-                  maxWidth: 620
-                }}>
-                  {[
-                  { val: 100, suffix: '+',      label: 'Cards tracked' },
-                  { val: 4.2, suffix: 'L',      prefix: 'Rs.', label: 'Avg. yearly waste', decimals: 1 },
-                  { val: 7,   suffix: ' days',  label: 'Data refresh' }].
-                  map((s, i) =>
-                  <div key={i} style={{ borderLeft: '1px solid var(--line)', paddingLeft: 14, minWidth: 0, flex: 1 }}>
-                      <div style={{
-                      fontFamily: 'var(--font-display)', fontWeight: 400,
-                      fontSize: 'clamp(24px, 4vw, 40px)', letterSpacing: '-0.03em', lineHeight: 1, whiteSpace: 'nowrap' as const
-                    }}>
-                        <StatNumber value={s.val} prefix={s.prefix || ''} suffix={s.suffix} decimals={s.decimals || 0} />
-                      </div>
-                      <div className="label" style={{ marginTop: 10 }}>{s.label}</div>
-                    </div>
-                  )}
-                </Reveal>
-              </div>
-
-              {/* RIGHT: 3D card */}
-              <Reveal delay={300} style={{ position: 'relative', minHeight: 360 }}>
-                <div className="floaty" style={{ position: 'relative', maxWidth: 460, marginLeft: 'auto' }}>
-                  {/* Ghost cards behind */}
-                  <div style={{
-                    position: 'absolute',
-                    top: 40, right: -20,
-                    width: '62%',
-                    opacity: 0.55,
-                    transform: 'rotate(9deg) scale(0.85)',
-                    filter: 'blur(1px)',
-                    pointerEvents: 'none'
-                  }}>
-                    <CreditCard3D variant="navy" name="ZENITH" bank="AU BANK" tagline="Metal" network="VISA" interactive={false} small />
-                  </div>
-                  <div style={{
-                    position: 'absolute',
-                    bottom: 20, left: -30,
-                    width: '58%',
-                    opacity: 0.45,
-                    transform: 'rotate(-11deg) scale(0.78)',
-                    filter: 'blur(1.5px)',
-                    pointerEvents: 'none'
-                  }}>
-                    <CreditCard3D variant="plum" name="MAGNUS" bank="AXIS BANK" tagline="Burgundy" network="VISA" interactive={false} small />
-                  </div>
-
-                  {/* Main card */}
-                  <div style={{ position: 'relative', zIndex: 2 }}>
-                    <CreditCard3D
-                      variant="obsidian"
-                      name="INFINIA"
-                      bank="HDFC BANK"
-                      tagline="Reserve metal"
-                      network="VISA" />
-
-                  </div>
-
-                  {/* Floating IQ score badge */}
-                  <div style={{
-                    position: 'absolute',
-                    top: -16, right: -10,
-                    padding: '12px 18px',
-                    background: 'var(--surface)',
-                    border: '1px solid var(--line-strong)',
-                    borderRadius: 14,
-                    backdropFilter: 'blur(20px)',
-                    zIndex: 3,
-                    boxShadow: 'var(--shadow-md)'
-                  }}>
-                    <div className="label-copper">IQ SCORE</div>
-                    <div style={{ fontSize: 38, fontWeight: 400, fontFamily: 'var(--font-display)', lineHeight: 1, marginTop: 4, letterSpacing: '-0.03em' }}>
-                      94<span style={{ fontSize: 15, color: 'var(--ink-4)' }}>/100</span>
-                    </div>
-                  </div>
-
-                  {/* Sticker stamp */}
-                  <div style={{ position: 'absolute', bottom: -28, left: -16, zIndex: 5 }}>
-                    <Stamp variant="sage">
-                      Worth<br />the fee
-                    </Stamp>
-                  </div>
-                </div>
-              </Reveal>
-            </div>
-          </div>
-
-          {/* Scroll cue */}
-          <div style={{ textAlign: 'center', paddingBottom: 30 }}>
-            <span className="label" style={{ display: 'inline-block', animation: 'float-y 2.5s ease-in-out infinite' }}>
-              " &nbsp; KEEP SCROLLING
-            </span>
-          </div>
-        </section>
-
-        {/* ============================================
-              DEVALUATION TICKER
-              ============================================ */}
         <DevalTicker items={[
         'AXIS Magnus devalued -- Grab Vouchers capped at 1:0.4',
         'HDFC SmartBuy halved on Cleartrip from May 2026',
@@ -564,6 +397,7 @@ export default function HomePage() {
     </>
   );
 }
+
 
 
 
