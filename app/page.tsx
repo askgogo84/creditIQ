@@ -17,6 +17,7 @@ import { CardTile, type TileCard } from '@/components/design/CardTile';
 import { Stamp }          from '@/components/design/Stamp';
 import { DesignFooter }   from '@/components/design/Footer';
 import { HowItWorks }     from '@/components/design/HowItWorks';
+import { ShowcaseStrip } from '@/components/design/ShowcaseStrip'
 import { CleoHero }       from '@/components/design/CleoHero';
 import { SEED_CARDS }     from '@/lib/data/seed-cards';
 import type { CreditCard } from '@/lib/types';
@@ -72,6 +73,8 @@ export default function HomePage() {
       <div className="page-fade">
 
         <CleoHero />
+
+        <ShowcaseStrip />
 
         <DevalTicker items={[
           'AXIS Magnus devalued -- Grab Vouchers capped at 1:0.4',
@@ -218,3 +221,4 @@ export default function HomePage() {
     </>
   );
 }
+
