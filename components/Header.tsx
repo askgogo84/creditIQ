@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
@@ -13,15 +13,13 @@ const NAV_LINKS = [
 ]
 
 const AI_TOOLS = [
-  { label: 'Spend Optimizer', href: '/spend-optimizer', icon: '', badge: '' },
-  { label: 'Card Roast', href: '/card-roast', icon: '🔥', badge: 'NEW' },
-  { label: 'Smart Match', href: '/smart-match', icon: '', badge: 'POPULAR' },
-  { label: 'Statement Truth', href: '/statement-truth', icon: '📋', badge: '' },
-  { label: 'Card Switch', href: '/card-switch', icon: '', badge: '' },
-  { label: 'Approval Odds', href: '/approval-odds', icon: '🎯', badge: '' },
-  { label: 'Trip Planner', href: '/trip-planner', icon: '', badge: '' },
-  { label: 'Travel AI', href: '/travel', icon: '🌐', badge: 'BETA' },
-  { label: 'Lounge Tracker', href: '/lounge-tracker', icon: '🛋', badge: '' },
+  { label: 'Card Roast', href: '/card-roast', icon: '🔥', desc: 'Get a brutal A-F grade on your card', badge: 'NEW' },
+  { label: 'Spend Optimizer', href: '/spend-optimizer', icon: '⚡', desc: 'Find the one card for your spend', badge: '' },
+  { label: 'Points Optimizer', href: '/points-optimizer', icon: '💎', desc: 'Find sweet spots worth Rs.3+/pt', badge: '' },
+  { label: 'Statement Truth', href: '/statement-truth', icon: '📋', desc: 'Upload statement, see the real rate', badge: '' },
+  { label: 'Switch Wizard', href: '/card-switch', icon: '↔', desc: 'Should you switch? 4 questions.', badge: '' },
+  { label: 'Travel AI', href: '/travel', icon: '✈', desc: 'Chat about miles + transfers', badge: 'BETA' },
+  { label: 'Lounge Tracker', href: '/lounge-tracker', icon: '🛋', desc: 'Never get turned away at the gate', badge: '' },
 ]
 
 export function Header() {
@@ -81,7 +79,7 @@ export function Header() {
         .ciq-bar { width: 22px; height: 2px; background: var(--ink,#142950); border-radius: 2px; display: block; transition: all 0.2s; }
 
         /* AI Tools mega dropdown */
-        .ciq-ai-dropdown { position: absolute; top: calc(100% + 8px); left: 50%; transform: translateX(-50%); background: var(--surface,#fff); border: 1px solid var(--line,rgba(20,41,80,0.08)); border-radius: 20px; box-shadow: 0 16px 48px rgba(0,0,0,0.12); padding: 12px; width: 360px; display: grid; grid-template-columns: 1fr 1fr; gap: 4px; z-index: 300; }
+        .ciq-ai-dropdown { position: absolute; top: calc(100% + 8px); left: 50%; transform: translateX(-50%); background: var(--surface,#fff); border: 1px solid var(--line,rgba(20,41,80,0.08)); border-radius: 20px; box-shadow: 0 12px 40px rgba(0,0,0,0.12); padding: 8px; width: 280px; display: flex; flex-direction: column; gap: 2px; z-index: 300; }
         .ciq-ai-item { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: 12px; text-decoration: none; transition: background 0.1s; }
         .ciq-ai-item:hover { background: var(--bg-2,#EFE7D8); }
         .ciq-ai-icon { width: 32px; height: 32px; border-radius: 8px; background: var(--bg-2,#EFE7D8); display: flex; align-items: center; justify-content: center; font-size: 16px; flex-shrink: 0; }
@@ -192,7 +190,6 @@ export function Header() {
 
             {user ? (
               <>
-                <Link href="/dashboard" className="ciq-theme-desktop" style={{ padding: '8px 16px', fontSize: 13, fontWeight: 600, color: 'var(--ink,#142950)', textDecoration: 'none', borderRadius: 100, border: '1px solid var(--line,rgba(20,41,80,0.15))' }}>Dashboard</Link>
                 <button onClick={signOut} className="ciq-theme-desktop" style={{ padding: '8px 16px', fontSize: 13, fontWeight: 600, color: '#fff', background: '#C9972E', border: 'none', borderRadius: 100, cursor: 'pointer' }}>Sign Out</button>
               </>
             ) : (
@@ -219,7 +216,7 @@ export function Header() {
         {mobileOpen && (
           <div className="ciq-mobile-menu">
             <div className="ciq-mobile-section">Browse</div>
-            {[{label:'All Cards',href:'/cards',icon:'💳'},{label:'Compare',href:'/compare',icon:'='},{label:'UAE Cards',href:'/uae',icon:'🇦🇪'}].map(i=>(
+            {[{label:'All Cards',href:'/cards',icon:'ðŸ’³'},{label:'Compare',href:'/compare',icon:'='},{label:'UAE Cards',href:'/uae',icon:'ðŸ‡¦ðŸ‡ª'}].map(i=>(
               <Link key={i.href} href={i.href} className="ciq-mobile-link"><span style={{fontSize:20,width:28,textAlign:'center'}}>{i.icon}</span>{i.label}</Link>
             ))}
             <div className="ciq-mobile-section">AI Tools</div>
@@ -271,3 +268,5 @@ export function Header() {
     </>
   )
 }
+
+
