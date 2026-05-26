@@ -102,11 +102,11 @@ export function ShowcaseStrip() {
             <Reveal key={s.scene} delay={i * 120}>
               <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', position: 'relative', height: '100%' }}>
                 <div style={{ position: 'absolute', top: -20, left: '50%', transform: 'translateX(-50%) rotate(-6deg)', zIndex: 10, width: 56, height: 56, borderRadius: 999, background: '#F2C658', color: '#142950', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, fontSize: 24, border: '4px solid #142950' }}>{i + 1}</div>
-                <div style={{ height: 484, display: 'flex', alignItems: 'flex-start', justifyContent: 'center', overflow: 'visible' }}>
+                <div style={{ height: 446, display: 'flex', alignItems: 'flex-start', justifyContent: 'center', overflow: 'visible' }}>
                 <div
-                  style={{ transform: 'scale(0.78)', transformOrigin: 'top center', cursor: 'pointer', transition: 'transform 0.4s cubic-bezier(0.2,0.8,0.2,1)', flexShrink: 0 }}
-                  onMouseEnter={e => (e.currentTarget as HTMLElement).style.transform = 'scale(0.82) translateY(-8px)'}
-                  onMouseLeave={e => (e.currentTarget as HTMLElement).style.transform = 'scale(0.78)'}
+                  style={{ transform: 'scale(0.72)', transformOrigin: 'top center', cursor: 'pointer', transition: 'transform 0.4s cubic-bezier(0.2,0.8,0.2,1)', flexShrink: 0 }}
+                  onMouseEnter={e => (e.currentTarget as HTMLElement).style.transform = 'scale(0.75) translateY(-8px)'}
+                  onMouseLeave={e => (e.currentTarget as HTMLElement).style.transform = 'scale(0.72)'}
                 >
                   <div style={{ width: 300, height: 620, background: '#0F0F0F', borderRadius: 56, padding: 10, boxShadow: 'rgba(216,155,42,0.30) -40px 90px 90px 0px, 0 50px 90px -30px rgba(0,0,0,0.70), inset 0 0 0 2px rgba(255,255,255,0.06)', position: 'relative' }}>
                     <div style={{ position: 'absolute', top: 16, left: '50%', transform: 'translateX(-50%)', width: 100, height: 28, background: '#000', borderRadius: 999, zIndex: 10 }} />
@@ -116,7 +116,7 @@ export function ShowcaseStrip() {
                   </div>
                 </div>
                 </div>
-                <div style={{ marginTop: -50, textAlign: 'center', maxWidth: 280, position: 'relative', zIndex: 1 }}>
+                <div style={{ marginTop: 24, textAlign: 'center', maxWidth: 280, position: 'relative', zIndex: 1 }}>
                   <h3 style={{ fontSize: 28, fontWeight: 800, color: '#F5EFE6', letterSpacing: '-0.02em', marginBottom: 10 }}>{s.title}</h3>
                   <p style={{ color: 'rgba(245,239,230,0.65)', fontSize: 14.5, lineHeight: 1.5, marginBottom: 18 }}>{s.desc}</p>
                   <Link href={s.href}
@@ -135,6 +135,7 @@ export function ShowcaseStrip() {
     </section>
   )
 }
+
 
 
 
