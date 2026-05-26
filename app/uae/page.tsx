@@ -90,6 +90,7 @@ export default function UAEPage() {
 
 
 
+
                 </Link>
               </div>
               <div className="flex items-center gap-8 mt-10 pt-8 border-t" style={{ borderColor: 'var(--border)' }}>
@@ -208,6 +209,7 @@ export default function UAEPage() {
 
 
 
+
                           </button>
                         </div>
                       </div>
@@ -234,6 +236,7 @@ export default function UAEPage() {
             </Link>
             <Link href="/" className="btn-ghost flex items-center justify-center gap-2">
               Browse India cards →
+
 
 
 

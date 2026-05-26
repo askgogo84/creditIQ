@@ -15,6 +15,7 @@ import { AIToolCard }     from '@/components/design/AIToolCard';
 import { CardTile, type TileCard } from '@/components/design/CardTile';
 import { Stamp }          from '@/components/design/Stamp';
 import { DesignFooter }   from '@/components/design/Footer';
+import { HowItWorks }     from '@/components/design/HowItWorks';
 import { SEED_CARDS }     from '@/lib/data/seed-cards';
 import type { CreditCard } from '@/lib/types';
 
