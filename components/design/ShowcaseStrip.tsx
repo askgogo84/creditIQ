@@ -115,6 +115,7 @@ export function ShowcaseStrip() {
                     </div>
                   </div>
                 </div>
+                </div>
                 <div style={{ marginTop: -50, textAlign: 'center', maxWidth: 280, position: 'relative', zIndex: 1 }}>
                   <h3 style={{ fontSize: 28, fontWeight: 800, color: '#F5EFE6', letterSpacing: '-0.02em', marginBottom: 10 }}>{s.title}</h3>
                   <p style={{ color: 'rgba(245,239,230,0.65)', fontSize: 14.5, lineHeight: 1.5, marginBottom: 18 }}>{s.desc}</p>
@@ -134,6 +135,7 @@ export function ShowcaseStrip() {
     </section>
   )
 }
+
 
 
 
