@@ -274,6 +274,9 @@ export default function HomePage() {
         'New . AU Bank Zenith+ launches with 10x on fuel']
         } />
 
+        <HowItWorks />
+
+
         {/* ============================================
               START HERE -- Three journeys
               ============================================ */}
