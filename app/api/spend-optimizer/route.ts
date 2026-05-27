@@ -8,22 +8,32 @@ export async function POST(req: NextRequest) {
     const { prompt, spends, totalSpend } = await req.json()
     if (!prompt) return NextResponse.json({ error: 'Missing prompt' }, { status: 400 })
 
+    // Detect intent from actual spend categories (not just prompt text)
+    const spendKeys = Object.keys(spends || {}).filter(k => parseInt(spends[k]) > 0)
     const promptLower = prompt.toLowerCase()
+
     let intent: 'travel' | 'cashback' | 'dining' | 'fuel' | 'shopping' | 'general' = 'general'
-    if (promptLower.includes('travel') || promptLower.includes('flight') || promptLower.includes('lounge')) {
+
+    // Priority: highest spend category determines intent
+    const spendAmounts = spendKeys.map(k => ({ key: k, amount: parseInt(spends[k]) || 0 }))
+    spendAmounts.sort((a, b) => b.amount - a.amount)
+    const topSpendKey = spendAmounts[0]?.key || ''
+
+    if (topSpendKey === 'travel' || promptLower.includes('travel') || promptLower.includes('flight') || promptLower.includes('lounge')) {
       intent = 'travel'
+    } else if (topSpendKey === 'dining' || promptLower.includes('dining') || promptLower.includes('restaurant')) {
+      intent = 'dining'
+    } else if (topSpendKey === 'fuel' || promptLower.includes('fuel') || promptLower.includes('petrol')) {
+      intent = 'fuel'
+    } else if (topSpendKey === 'shopping' || promptLower.includes('shopping') || promptLower.includes('online')) {
+      intent = 'shopping'
     } else if (promptLower.includes('cashback') || promptLower.includes('cash back')) {
       intent = 'cashback'
-    } else if (promptLower.includes('dining') || promptLower.includes('restaurant')) {
-      intent = 'dining'
-    } else if (promptLower.includes('fuel') || promptLower.includes('petrol')) {
-      intent = 'fuel'
-    } else if (promptLower.includes('shopping') || promptLower.includes('online')) {
-      intent = 'shopping'
     }
 
+    // Increase topK to surface more card options for the AI to choose from
     const { context, devaluations } = await retrieveRelevantCards(prompt, {
-      topK: 10,
+      topK: 20,  // was 10 — doubled to see more cards
       intent,
       maxFee: spends?.maxFee,
     })
@@ -39,7 +49,7 @@ export async function POST(req: NextRequest) {
       },
       body: JSON.stringify({
         model: 'claude-sonnet-4-20250514',
-        max_tokens: 2000,
+        max_tokens: 3000,  // was 2000 — more room for 5 cards
         system: systemPrompt,
         messages: [{ role: 'user', content: prompt }],
       }),
@@ -53,7 +63,18 @@ export async function POST(req: NextRequest) {
 
     const data = await response.json()
     const text = data.content?.[0]?.text ?? ''
-    const clean = text.replace(/```json/g, '').replace(/```/g, '').trim()
+
+    // Robust JSON extraction — handles cases where AI wraps in markdown
+    let clean = text.trim()
+    // Strip markdown code fences if present
+    clean = clean.replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/i, '').trim()
+    // Find the first { and last } to extract just the JSON object
+    const firstBrace = clean.indexOf('{')
+    const lastBrace = clean.lastIndexOf('}')
+    if (firstBrace !== -1 && lastBrace !== -1) {
+      clean = clean.substring(firstBrace, lastBrace + 1)
+    }
+
     const parsed = JSON.parse(clean)
     return NextResponse.json(parsed)
   } catch (err) {

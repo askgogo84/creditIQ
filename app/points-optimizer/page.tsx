@@ -1,151 +1,398 @@
-﻿'use client'
+'use client';
 
-import { useState } from 'react'
-import { Header } from '@/components/Header'
-import { DesignFooter } from '@/components/design/Footer'
-import { Reveal } from '@/components/design/Reveal'
-import { StatNumber } from '@/components/design/StatNumber'
+import { useState } from 'react';
+import { Header } from '@/components/Header';
 
-const CARDS_LIST = [
-  { id: 'hdfc-infinia', label: 'HDFC - Infinia' },
-  { id: 'hdfc-regalia-gold', label: 'HDFC - Regalia Gold' },
-  { id: 'axis-magnus', label: 'Axis - Magnus' },
-  { id: 'sbi-cashback', label: 'SBI - Cashback' },
-  { id: 'icici-amazon-pay', label: 'ICICI - Amazon Pay' },
-  { id: 'amex-mrcc', label: 'Amex - MRCC' },
-]
+const CARDS_WITH_POINTS = [
+  // HDFC
+  { value: 'hdfc-infinia', label: 'HDFC Infinia', bank: 'HDFC Bank', pointName: 'Reward Points', ratio: '1 pt = Rs.1 (SmartBuy) / 0.5 base' },
+  { value: 'hdfc-diners-black', label: 'HDFC Diners Black', bank: 'HDFC Bank', pointName: 'Reward Points', ratio: '1 pt = Rs.1 (SmartBuy)' },
+  { value: 'hdfc-regalia-gold', label: 'HDFC Regalia Gold', bank: 'HDFC Bank', pointName: 'Reward Points', ratio: '1 pt = Rs.0.50' },
+  { value: 'hdfc-tata-neu-infinity', label: 'Tata Neu Infinity HDFC', bank: 'HDFC Bank', pointName: 'NeuCoins', ratio: '1 NeuCoin = Rs.1' },
+  // Axis
+  { value: 'axis-magnus', label: 'Axis Magnus', bank: 'Axis Bank', pointName: 'EDGE Miles', ratio: '1 EDGE Mile = Rs.2 (partner)' },
+  { value: 'axis-reserve', label: 'Axis Reserve', bank: 'Axis Bank', pointName: 'EDGE Miles', ratio: '1 EDGE Mile = Rs.2 (partner)' },
+  { value: 'axis-vistara-infinite', label: 'Axis Vistara Infinite', bank: 'Axis Bank', pointName: 'CV Points', ratio: '1 CV Point = 1 Vistara mile' },
+  { value: 'axis-flipkart', label: 'Axis Flipkart', bank: 'Axis Bank', pointName: 'Cashback', ratio: 'Direct cashback' },
+  // Amex
+  { value: 'amex-platinum-travel', label: 'Amex Platinum Travel', bank: 'American Express', pointName: 'Membership Rewards', ratio: '1 MR = Rs.0.5–Rs.1.75 (transfer)' },
+  { value: 'amex-mrcc', label: 'Amex MRCC', bank: 'American Express', pointName: 'Membership Rewards', ratio: '1 MR = Rs.0.5–Rs.1.75' },
+  // ICICI
+  { value: 'icici-emeralde', label: 'ICICI Emeralde', bank: 'ICICI Bank', pointName: 'PAYBACK Points', ratio: '1 pt = Rs.0.25' },
+  { value: 'icici-sapphiro', label: 'ICICI Sapphiro', bank: 'ICICI Bank', pointName: 'PAYBACK Points', ratio: '1 pt = Rs.0.25' },
+  // SBI
+  { value: 'sbi-elite', label: 'SBI Card ELITE', bank: 'SBI Card', pointName: 'Reward Points', ratio: '1 pt = Rs.0.25' },
+  { value: 'sbi-aurum', label: 'SBI Aurum', bank: 'SBI Card', pointName: 'Reward Points', ratio: '1 pt = Rs.1 (premium)' },
+  // IndusInd
+  { value: 'indusind-iconia', label: 'IndusInd Iconia', bank: 'IndusInd Bank', pointName: 'Reward Points', ratio: '1 pt = Rs.0.70' },
+  { value: 'indusind-legend', label: 'IndusInd Legend', bank: 'IndusInd Bank', pointName: 'Reward Points', ratio: '1 pt = Rs.0.70' },
+  // Others
+  { value: 'idfc-wealth', label: 'IDFC FIRST Wealth', bank: 'IDFC FIRST', pointName: 'Reward Points', ratio: '1 pt = Rs.0.25' },
+  { value: 'standard-chartered-ultimate', label: 'SC Ultimate', bank: 'Standard Chartered', pointName: '360° Reward Points', ratio: '1 pt = Rs.1' },
+  { value: 'kotak-white', label: 'Kotak White Reserve', bank: 'Kotak Mahindra', pointName: 'Reward Points', ratio: '1 pt = Rs.0.25' },
+  { value: 'rbl-world-safari', label: 'RBL World Safari', bank: 'RBL Bank', pointName: 'Travel Points', ratio: '1 pt = Rs.0.50' },
+];
 
-const PATHS = {
-  flights: [
-    { what: 'Turkish Air - Miles&Smiles', route: 'DEL to IST (R/T)', cost: '60,000 pts', value: 64000, rate: 'Rs.1.07/pt' },
-    { what: 'Singapore - KrisFlyer', route: 'BOM to SIN (R/T)', cost: '70,000 pts', value: 58000, rate: 'Rs.0.83/pt' },
-    { what: 'British Airways - Avios', route: 'DEL to DOH (R/T)', cost: '46,000 pts', value: 32000, rate: 'Rs.0.70/pt' },
-  ],
-  hotels: [
-    { what: 'Marriott Bonvoy', route: '5 nights - St. Regis Goa', cost: '1,20,000 pts', value: 92000, rate: 'Rs.0.77/pt' },
-    { what: 'Accor ALL', route: '4 nights - Raffles Udaipur', cost: '80,000 pts', value: 56000, rate: 'Rs.0.70/pt' },
-    { what: 'IHG One Rewards', route: '6 nights - InterCont Mumbai', cost: '95,000 pts', value: 60000, rate: 'Rs.0.63/pt' },
-  ],
-  value: [
-    { what: 'SmartBuy vouchers', route: 'Amazon / Flipkart', cost: '50,000 pts', value: 25000, rate: 'Rs.0.50/pt' },
-    { what: 'Statement credit', route: 'Cashback rebate', cost: '50,000 pts', value: 17500, rate: 'Rs.0.35/pt' },
-    { what: 'Cleartrip vouchers', route: 'Flights & hotels', cost: '50,000 pts', value: 22000, rate: 'Rs.0.44/pt' },
-  ],
-} as const
-type PrefKey = keyof typeof PATHS
+const GOALS = [
+  { id: 'flights', label: '✈️ Flights', desc: 'Maximize flight value via airline transfers' },
+  { id: 'hotels', label: '🏨 Hotels', desc: 'Get hotel stays via transfers or cashback' },
+  { id: 'cashback', label: '💵 Cashback', desc: 'Convert to statement credit or cash' },
+  { id: 'lounge', label: '🛋️ Lounge Access', desc: 'Maximize lounge visits per point' },
+  { id: 'shopping', label: '🛍️ Shopping', desc: 'Use on e-commerce or brand vouchers' },
+];
+
+interface RedemptionPath {
+  program: string;
+  route: string;
+  pointsNeeded: number;
+  estimatedValue: number;
+  valuePerPoint: number;
+  steps: string[];
+  isTopPick: boolean;
+  transferPartner?: string;
+}
+
+interface OptimizeResult {
+  paths: RedemptionPath[];
+  topStrategy: string;
+  warnings?: string[];
+}
+
+function fmt(n: number) {
+  return 'Rs.' + Math.round(n).toLocaleString('en-IN');
+}
 
 export default function PointsOptimizerPage() {
-  const [pickedCard, setPickedCard] = useState('hdfc-infinia')
-  const [points, setPoints] = useState(150000)
-  const [pref, setPref] = useState<PrefKey>('flights')
+  const [selectedCard, setSelectedCard] = useState('');
+  const [points, setPoints] = useState('');
+  const [goal, setGoal] = useState('flights');
+  const [loading, setLoading] = useState(false);
+  const [result, setResult] = useState<OptimizeResult | null>(null);
+  const [error, setError] = useState('');
+  const [aiStrategy, setAiStrategy] = useState('');
 
-  const paths = PATHS[pref]
-  const card = CARDS_LIST.find(c => c.id === pickedCard)
+  const selectedCardData = CARDS_WITH_POINTS.find(c => c.value === selectedCard);
+  const pointsNum = parseInt(points.replace(/,/g, '')) || 0;
+
+  const handleOptimize = async () => {
+    if (!selectedCard || pointsNum < 100) {
+      setError('Please select a card and enter at least 100 points.');
+      return;
+    }
+    setError('');
+    setLoading(true);
+    setResult(null);
+    setAiStrategy('');
+
+    try {
+      const prompt = `You are CreditIQ's points optimization expert for India. 
+
+Card: ${selectedCardData?.label} (${selectedCardData?.bank})
+Points balance: ${pointsNum.toLocaleString('en-IN')} ${selectedCardData?.pointName}
+Base ratio: ${selectedCardData?.ratio}
+User goal: ${GOALS.find(g => g.id === goal)?.label} - ${GOALS.find(g => g.id === goal)?.desc}
+
+Give the top 3 redemption strategies ranked by value. Be specific about transfer partners, programs, and realistic valuations for India.
+
+Respond ONLY with valid JSON (no markdown):
+{
+  "paths": [
+    {
+      "program": "Turkish Airlines Miles&Smiles",
+      "route": "DEL to IST (R/T)",
+      "pointsNeeded": 60000,
+      "estimatedValue": 64000,
+      "valuePerPoint": 1.07,
+      "steps": ["Transfer HDFC points to Miles&Smiles via SmartBuy (1:1)", "Search partner award on Turkish.com", "Book 2-4 weeks in advance"],
+      "isTopPick": true,
+      "transferPartner": "Turkish Airlines"
+    }
+  ],
+  "topStrategy": "2-3 sentence explanation of the single best move to make right now with these points",
+  "warnings": ["Optional: any expiry risk, devaluation notice, or tip"]
+}`;
+
+      const response = await fetch('/api/points-optimizer', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ prompt, card: selectedCard, points: pointsNum, goal }),
+      });
+
+      if (!response.ok) throw new Error('API error ' + response.status);
+      const data = await response.json();
+      if (data.error) throw new Error(data.error);
+      setResult(data);
+      setAiStrategy(data.topStrategy || '');
+    } catch (e: unknown) {
+      setError('Optimization failed. Please try again. ' + (e instanceof Error ? e.message : ''));
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const barWidth = (val: number, max: number) => `${Math.min(100, Math.round((val / max) * 100))}%`;
+  const maxVal = result ? Math.max(...result.paths.map(p => p.estimatedValue)) : 1;
 
   return (
-    <>
+    <div className="min-h-screen" style={{ backgroundColor: '#f1f5f9' }}>
       <Header />
-      <div className="page-fade">
-        <section style={{ position: 'relative', paddingTop: 'clamp(120px,18vw,150px)', paddingBottom: 40 }}>
-          <div className="aurora" style={{ top: -100, right: -100, width: 600, height: 500, background: 'radial-gradient(circle,rgba(212,163,115,0.35),transparent 60%)' }} />
-          <div className="shell" style={{ position: 'relative', zIndex: 2 }}>
-            <Reveal style={{ textAlign: 'center', marginBottom: 'clamp(40px,6vw,64px)', maxWidth: 800, margin: '0 auto clamp(40px,6vw,64px)' }}>
-              <div style={{ display: 'inline-flex', alignItems: 'center', gap: 10, padding: '8px 14px', borderRadius: 999, background: 'rgba(212,163,115,0.12)', border: '1px solid rgba(212,163,115,0.30)', marginBottom: 28 }}>
-                <span>✨</span>
-                <span style={{ fontFamily: 'var(--font-mono,monospace)', fontSize: 11, letterSpacing: '0.16em', color: 'var(--copper,#8C5F12)', textTransform: 'uppercase', fontWeight: 600 }}>AI TOOL - POINTS OPTIMIZER</span>
-              </div>
-              <h1 style={{ fontSize: 'clamp(40px,7vw,96px)', letterSpacing: '-0.04em', lineHeight: 1.0, fontWeight: 800, color: 'var(--ink,#142950)' }}>
-                Your points are worth{' '}
-                <span style={{ fontFamily: 'var(--font-serif,Georgia,serif)', color: 'var(--copper-3,#D89B2A)', fontStyle: 'italic', fontWeight: 400 }}>more</span>{' '}
-                than you think.
-              </h1>
-              <p style={{ maxWidth: 560, margin: '20px auto 0', color: 'var(--ink-2,#2A3F6B)', fontSize: 'clamp(15px,1.3vw,18px)', lineHeight: 1.55 }}>
-                Most people redeem at Rs.0.25/pt. We find paths worth Rs.3-5/pt. Pick a bank, tell me your goal.
-              </p>
-            </Reveal>
+      <main className="mx-auto px-4 pb-28" style={{ maxWidth: 760, paddingTop: 40 }}>
 
-            <div style={{ display: 'grid', gridTemplateColumns: '0.9fr 1.2fr', gap: 24 }} className="grid-1-mobile">
-              <Reveal>
-                <div style={{ padding: 28, background: 'var(--paper,#FAF5EB)', borderRadius: 20, border: '1px solid var(--line,rgba(20,41,80,0.08))' }}>
-                  <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: '0.15em', textTransform: 'uppercase', color: 'var(--copper,#8C5F12)', marginBottom: 14 }}>YOUR CARD</div>
-                  <select value={pickedCard} onChange={e => setPickedCard(e.target.value)}
-                    style={{ width: '100%', padding: '14px 18px', borderRadius: 12, background: 'var(--surface,#fff)', border: '1px solid var(--line,rgba(20,41,80,0.08))', color: 'var(--ink,#142950)', fontSize: 15, fontFamily: 'inherit' }}>
-                    {CARDS_LIST.map(c => <option key={c.id} value={c.id}>{c.label}</option>)}
-                  </select>
+        {/* Hero */}
+        <div className="text-center mb-8">
+          <span style={{
+            display: 'inline-block', backgroundColor: '#1B3A5C', color: '#C9972E',
+            fontSize: 11, fontWeight: 700, letterSpacing: 1.5, padding: '5px 16px',
+            borderRadius: 100, marginBottom: 20, textTransform: 'uppercase',
+          }}>
+            AI-Powered &nbsp;•&nbsp; Real Valuations
+          </span>
+          <h1 style={{
+            fontSize: 'clamp(26px,5vw,38px)', fontWeight: 800, color: '#1B3A5C',
+            margin: '0 0 12px', lineHeight: 1.15, letterSpacing: '-0.5px',
+          }}>
+            Squeeze every rupee from<br />your reward points
+          </h1>
+          <p style={{ fontSize: 15, color: '#64748b', maxWidth: 460, marginInline: 'auto', lineHeight: 1.7 }}>
+            Pick a card, tell me your goal — I&apos;ll rank every redemption path by actual value.
+          </p>
+        </div>
 
-                  <div style={{ marginTop: 28 }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 14 }}>
-                      <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: '0.15em', textTransform: 'uppercase', color: 'var(--ink-3,#5A6A8A)' }}>POINTS TO REDEEM</span>
-                      <span style={{ fontFamily: 'var(--font-mono,monospace)', color: 'var(--copper-3,#D89B2A)', fontSize: 15, fontWeight: 600 }}>{points.toLocaleString('en-IN')}</span>
-                    </div>
-                    <input type="range" min="10000" max="500000" step="5000" value={points} onChange={e => setPoints(parseInt(e.target.value))}
-                      style={{ width: '100%', accentColor: 'var(--copper-3,#D89B2A)' }} />
-                    <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 6 }}>
-                      <span style={{ fontSize: 11, color: 'var(--ink-3,#5A6A8A)' }}>10K</span>
-                      <span style={{ fontSize: 11, color: 'var(--ink-3,#5A6A8A)' }}>5L</span>
-                    </div>
-                  </div>
+        {/* Left-right layout on desktop */}
+        <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0,1fr) minmax(0,1.4fr)', gap: 20 }}
+          className="points-grid">
+          <style>{`
+            @media (max-width: 640px) { .points-grid { grid-template-columns: 1fr !important; } }
+            @keyframes spin { to { transform: rotate(360deg); } }
+          `}</style>
 
-                  <div style={{ marginTop: 28 }}>
-                    <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: '0.15em', textTransform: 'uppercase', color: 'var(--ink-3,#5A6A8A)', marginBottom: 14 }}>OPTIMIZE FOR</div>
-                    <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-                      {(['flights', 'hotels', 'value'] as PrefKey[]).map(p => (
-                        <button key={p} onClick={() => setPref(p)} style={{ padding: '8px 16px', borderRadius: 999, border: `1px solid ${pref === p ? 'var(--copper-3,#D89B2A)' : 'var(--line,rgba(20,41,80,0.12))'}`, background: pref === p ? 'rgba(212,163,115,0.15)' : 'transparent', color: pref === p ? 'var(--copper,#8C5F12)' : 'var(--ink-2,#2A3F6B)', fontSize: 14, fontWeight: pref === p ? 600 : 400, cursor: 'pointer', textTransform: 'capitalize', transition: 'all 0.2s' }}>
-                          {p}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
+          {/* Left: Inputs */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
 
-                  <div style={{ marginTop: 32, padding: 22, borderRadius: 16, background: 'linear-gradient(135deg,rgba(212,163,115,0.14),rgba(212,163,115,0.04))', border: '1px solid rgba(184,116,58,0.3)' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 10 }}>
-                      <span style={{ fontSize: 18, color: 'var(--copper-3,#D89B2A)' }}>✦</span>
-                      <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: '0.15em', textTransform: 'uppercase', color: 'var(--copper,#8C5F12)' }}>AI STRATEGY</span>
-                    </div>
-                    <p style={{ fontSize: 14, lineHeight: 1.55, color: 'var(--ink-2,#2A3F6B)' }}>
-                      Transfer to{' '}
-                      <span style={{ fontFamily: 'var(--font-serif,Georgia,serif)', color: 'var(--copper-3,#D89B2A)', fontStyle: 'italic' }}>Turkish Miles&Smiles</span>{' '}
-                      within 30 days. Highest-leverage path on {card?.label.split(' - ')[1] || 'your card'}.
-                    </p>
-                  </div>
+            {/* Card selector */}
+            <div style={{ backgroundColor: '#fff', borderRadius: 18, padding: '18px 20px', boxShadow: '0 1px 3px rgba(0,0,0,0.06)' }}>
+              <p style={{ margin: '0 0 10px', fontSize: 11, fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: 1.2 }}>Your Card</p>
+              <select
+                value={selectedCard}
+                onChange={e => setSelectedCard(e.target.value)}
+                style={{
+                  width: '100%', padding: '10px 14px', borderRadius: 10,
+                  border: '1.5px solid #e2e8f0', fontSize: 14, color: '#1e293b',
+                  backgroundColor: '#f8fafc', outline: 'none', cursor: 'pointer',
+                }}
+              >
+                <option value="">Select your card...</option>
+                {CARDS_WITH_POINTS.map(c => (
+                  <option key={c.value} value={c.value}>{c.label} ({c.bank})</option>
+                ))}
+              </select>
+              {selectedCardData && (
+                <div style={{ marginTop: 10, padding: '8px 12px', backgroundColor: '#f0f4ff', borderRadius: 8, fontSize: 12, color: '#3730a3' }}>
+                  💎 {selectedCardData.pointName} · {selectedCardData.ratio}
                 </div>
-              </Reveal>
+              )}
+            </div>
 
-              <div>
-                <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: '0.15em', textTransform: 'uppercase', color: 'var(--copper,#8C5F12)', marginBottom: 14 }}>REDEMPTION PATHS - RANKED</div>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-                  {paths.map((path, i) => (
-                    <Reveal key={i} delay={i * 80}>
-                      <div style={{ padding: 24, borderRadius: 20, background: 'var(--surface,#fff)', border: `${i === 0 ? 2 : 1}px solid ${i === 0 ? 'var(--copper-3,#D89B2A)' : 'var(--line,rgba(20,41,80,0.08))'}` }}>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 14, gap: 16, flexWrap: 'wrap' }}>
-                          <div>
-                            {i === 0 && <div style={{ display: 'inline-block', padding: '2px 10px', borderRadius: 999, background: 'rgba(212,163,115,0.15)', color: 'var(--copper,#8C5F12)', fontSize: 9, fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: 8 }}>BEST VALUE</div>}
-                            <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', color: 'var(--ink-3,#5A6A8A)', marginBottom: 6 }}>{path.what}</div>
-                            <h3 style={{ fontSize: 22, letterSpacing: '-0.02em', fontWeight: 600, color: 'var(--ink,#142950)' }}>{path.route}</h3>
-                          </div>
-                          <div style={{ textAlign: 'right' }}>
-                            <div style={{ fontSize: 9, fontWeight: 700, letterSpacing: '0.1em', color: 'var(--ink-3,#5A6A8A)' }}>VALUE</div>
-                            <div style={{ fontSize: 30, fontWeight: 800, color: 'var(--green,#4F8C58)', marginTop: 4, letterSpacing: '-0.02em' }}>
-                              Rs.<StatNumber value={path.value} />
-                            </div>
-                          </div>
-                        </div>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingTop: 14, borderTop: '1px solid var(--line,rgba(20,41,80,0.08))' }}>
-                          <div style={{ fontFamily: 'var(--font-mono,monospace)', fontSize: 12, color: 'var(--ink-3,#5A6A8A)' }}>{path.cost} - {path.rate}</div>
-                          <div style={{ width: 120, height: 6, background: 'var(--bg-2,#EFE7D8)', borderRadius: 999, overflow: 'hidden' }}>
-                            <div style={{ width: `${(path.value / paths[0].value) * 100}%`, height: '100%', background: i === 0 ? 'var(--copper-3,#D89B2A)' : 'var(--ink-3,#5A6A8A)', borderRadius: 999 }} />
-                          </div>
-                        </div>
-                      </div>
-                    </Reveal>
-                  ))}
-                </div>
+            {/* Points input */}
+            <div style={{ backgroundColor: '#fff', borderRadius: 18, padding: '18px 20px', boxShadow: '0 1px 3px rgba(0,0,0,0.06)' }}>
+              <p style={{ margin: '0 0 10px', fontSize: 11, fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: 1.2 }}>Points to Redeem</p>
+              <input
+                type="number"
+                placeholder="e.g. 60000"
+                value={points}
+                onChange={e => setPoints(e.target.value)}
+                style={{
+                  width: '100%', padding: '10px 14px', borderRadius: 10,
+                  border: '1.5px solid #e2e8f0', fontSize: 16, fontWeight: 700,
+                  color: '#1B3A5C', backgroundColor: '#f8fafc', outline: 'none',
+                  boxSizing: 'border-box',
+                }}
+              />
+              {pointsNum > 0 && (
+                <p style={{ margin: '6px 0 0', fontSize: 12, color: '#64748b' }}>
+                  Base value (cash): ~{fmt(pointsNum * 0.25)} – {fmt(pointsNum * 1.0)}
+                </p>
+              )}
+            </div>
+
+            {/* Goal selector */}
+            <div style={{ backgroundColor: '#fff', borderRadius: 18, padding: '18px 20px', boxShadow: '0 1px 3px rgba(0,0,0,0.06)' }}>
+              <p style={{ margin: '0 0 12px', fontSize: 11, fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: 1.2 }}>Optimize For</p>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                {GOALS.map(g => (
+                  <button
+                    key={g.id}
+                    onClick={() => setGoal(g.id)}
+                    style={{
+                      display: 'flex', alignItems: 'center', gap: 10,
+                      padding: '10px 14px', borderRadius: 10, border: 'none',
+                      backgroundColor: goal === g.id ? '#1B3A5C' : '#f8fafc',
+                      cursor: 'pointer', textAlign: 'left', transition: 'all 0.15s',
+                    }}
+                  >
+                    <span style={{ fontSize: 16 }}>{g.label.split(' ')[0]}</span>
+                    <div>
+                      <p style={{ margin: 0, fontSize: 13, fontWeight: 600, color: goal === g.id ? '#fff' : '#334155' }}>
+                        {g.label.split(' ').slice(1).join(' ')}
+                      </p>
+                      <p style={{ margin: 0, fontSize: 11, color: goal === g.id ? '#94a3b8' : '#94a3b8' }}>{g.desc}</p>
+                    </div>
+                  </button>
+                ))}
               </div>
             </div>
+
+            {error && (
+              <div style={{ backgroundColor: '#fef2f2', border: '1px solid #fecaca', borderRadius: 10, padding: '10px 14px', color: '#dc2626', fontSize: 13 }}>
+                {error}
+              </div>
+            )}
+
+            <button
+              onClick={handleOptimize}
+              disabled={loading || !selectedCard || pointsNum < 100}
+              style={{
+                padding: '14px 20px', borderRadius: 12, border: 'none',
+                backgroundColor: selectedCard && pointsNum >= 100 ? '#C9972E' : '#cbd5e1',
+                color: '#fff', fontSize: 15, fontWeight: 700,
+                cursor: selectedCard && pointsNum >= 100 && !loading ? 'pointer' : 'not-allowed',
+                display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
+                transition: 'all 0.2s',
+              }}
+            >
+              {loading ? (
+                <>
+                  <span style={{ width: 16, height: 16, border: '2px solid rgba(255,255,255,0.3)', borderTopColor: '#fff', borderRadius: '50%', display: 'inline-block', animation: 'spin 0.8s linear infinite' }} />
+                  Calculating...
+                </>
+              ) : '✨ Optimize My Points'}
+            </button>
           </div>
-        </section>
-        <DesignFooter />
-      </div>
-    </>
-  )
+
+          {/* Right: Results */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+
+            {!result && !loading && (
+              <div style={{
+                backgroundColor: '#fff', borderRadius: 18, padding: '32px 24px',
+                boxShadow: '0 1px 3px rgba(0,0,0,0.06)', textAlign: 'center',
+                display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+                minHeight: 300, color: '#94a3b8',
+              }}>
+                <span style={{ fontSize: 48, marginBottom: 12 }}>💎</span>
+                <p style={{ fontWeight: 700, fontSize: 15, color: '#64748b', margin: '0 0 6px' }}>Redemption paths will appear here</p>
+                <p style={{ fontSize: 13, margin: 0 }}>Select a card and enter your points balance to get started</p>
+              </div>
+            )}
+
+            {loading && (
+              <div style={{
+                backgroundColor: '#fff', borderRadius: 18, padding: '32px 24px',
+                boxShadow: '0 1px 3px rgba(0,0,0,0.06)', textAlign: 'center',
+                minHeight: 300, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+              }}>
+                <span style={{ width: 32, height: 32, border: '3px solid #e2e8f0', borderTopColor: '#C9972E', borderRadius: '50%', display: 'inline-block', animation: 'spin 0.8s linear infinite', marginBottom: 16 }} />
+                <p style={{ color: '#64748b', fontWeight: 600, margin: 0 }}>Calculating best redemption paths...</p>
+              </div>
+            )}
+
+            {result && (
+              <>
+                {/* AI Strategy */}
+                {aiStrategy && (
+                  <div style={{ backgroundColor: '#1B3A5C', borderRadius: 16, padding: '16px 18px' }}>
+                    <p style={{ margin: '0 0 6px', fontSize: 10, fontWeight: 700, color: '#C9972E', textTransform: 'uppercase', letterSpacing: 1.2 }}>✦ AI Strategy</p>
+                    <p style={{ margin: 0, fontSize: 13, color: '#e2e8f0', lineHeight: 1.65 }}>{aiStrategy}</p>
+                  </div>
+                )}
+
+                {/* Paths */}
+                <p style={{ margin: 0, fontSize: 11, fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: 1.2 }}>
+                  Redemption Paths — Ranked
+                </p>
+
+                {result.paths.map((path, idx) => (
+                  <div key={idx} style={{
+                    backgroundColor: '#fff', borderRadius: 16,
+                    boxShadow: path.isTopPick
+                      ? '0 0 0 2px #C9972E, 0 4px 16px rgba(201,151,46,0.1)'
+                      : '0 1px 3px rgba(0,0,0,0.06)',
+                    overflow: 'hidden',
+                  }}>
+                    <div style={{ padding: '14px 18px 10px' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 6 }}>
+                        <div>
+                          {path.isTopPick && (
+                            <span style={{ fontSize: 10, fontWeight: 700, color: '#C9972E', textTransform: 'uppercase', letterSpacing: 1 }}>
+                              Best Value
+                            </span>
+                          )}
+                          <p style={{ margin: path.isTopPick ? '2px 0 0' : '0', fontSize: 11, color: '#94a3b8', fontWeight: 600, textTransform: 'uppercase', letterSpacing: 0.8 }}>
+                            {path.program}
+                          </p>
+                          <p style={{ margin: '2px 0 0', fontSize: 16, fontWeight: 800, color: '#1B3A5C' }}>{path.route}</p>
+                        </div>
+                        <div style={{ textAlign: 'right' }}>
+                          <p style={{ margin: 0, fontSize: 10, color: '#94a3b8', fontWeight: 600, textTransform: 'uppercase' }}>Value</p>
+                          <p style={{ margin: 0, fontSize: 20, fontWeight: 800, color: '#10b981' }}>{fmt(path.estimatedValue)}</p>
+                        </div>
+                      </div>
+
+                      {/* Value bar */}
+                      <div style={{ height: 4, backgroundColor: '#f1f5f9', borderRadius: 4, margin: '8px 0', overflow: 'hidden' }}>
+                        <div style={{
+                          height: '100%', borderRadius: 4,
+                          backgroundColor: path.isTopPick ? '#C9972E' : '#94a3b8',
+                          width: barWidth(path.estimatedValue, maxVal),
+                          transition: 'width 0.8s ease',
+                        }} />
+                      </div>
+
+                      <div style={{ display: 'flex', gap: 16, marginBottom: 10 }}>
+                        <div>
+                          <p style={{ margin: 0, fontSize: 10, color: '#94a3b8', fontWeight: 600 }}>POINTS</p>
+                          <p style={{ margin: 0, fontSize: 13, fontWeight: 700, color: '#475569' }}>{path.pointsNeeded.toLocaleString('en-IN')} pts</p>
+                        </div>
+                        <div>
+                          <p style={{ margin: 0, fontSize: 10, color: '#94a3b8', fontWeight: 600 }}>VALUE / PT</p>
+                          <p style={{ margin: 0, fontSize: 13, fontWeight: 700, color: '#475569' }}>Rs.{path.valuePerPoint.toFixed(2)}</p>
+                        </div>
+                        {path.transferPartner && (
+                          <div>
+                            <p style={{ margin: 0, fontSize: 10, color: '#94a3b8', fontWeight: 600 }}>PARTNER</p>
+                            <p style={{ margin: 0, fontSize: 13, fontWeight: 700, color: '#475569' }}>{path.transferPartner}</p>
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Steps */}
+                      {path.steps && path.steps.length > 0 && (
+                        <div style={{ borderTop: '1px solid #f1f5f9', paddingTop: 10 }}>
+                          <p style={{ margin: '0 0 6px', fontSize: 10, color: '#94a3b8', fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.8 }}>How to redeem</p>
+                          <ol style={{ margin: 0, paddingLeft: 18, display: 'flex', flexDirection: 'column', gap: 4 }}>
+                            {path.steps.map((step, si) => (
+                              <li key={si} style={{ fontSize: 12, color: '#475569', lineHeight: 1.5 }}>{step}</li>
+                            ))}
+                          </ol>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                ))}
+
+                {/* Warnings */}
+                {result.warnings && result.warnings.length > 0 && (
+                  <div style={{ backgroundColor: '#fffbeb', border: '1px solid #fde68a', borderRadius: 12, padding: '12px 16px' }}>
+                    {result.warnings.map((w, i) => (
+                      <p key={i} style={{ margin: i > 0 ? '6px 0 0' : 0, fontSize: 12, color: '#78350f' }}>⚠️ {w}</p>
+                    ))}
+                  </div>
+                )}
+              </>
+            )}
+          </div>
+        </div>
+      </main>
+    </div>
+  );
 }
