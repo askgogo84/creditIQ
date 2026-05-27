@@ -139,13 +139,37 @@ export function Header() {
           {/* Desktop pill nav */}
           <nav className="ciq-nav" style={{ position: 'relative' }}>
             <Link href="/" className={`ciq-nav-item${isActive('/') ? ' active' : ''}`}>Discover</Link>
-            <Link href="/cards" className={`ciq-nav-item${isActive('/cards') ? ' active' : ''}`}>Cards</Link>
 
-            <div style={{ position: 'relative' }}
-              onMouseEnter={() => setAiOpen(true)}
-              onMouseLeave={() => setAiOpen(false)}>
-              <button className={`ciq-nav-item${isActive('/smart-match') ? ' active' : ''}`}
-                style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+            <div style={{ position: 'relative' }} onMouseEnter={() => setCardsOpen(true)} onMouseLeave={() => setCardsOpen(false)}>
+              <button className={`ciq-nav-item${isActive('/cards') ? ' active' : ''}`} style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                Cards
+                <svg width="10" height="10" viewBox="0 0 10 10" fill="none" style={{ opacity: 0.5, transform: cardsOpen ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s' }}>
+                  <path d="M2 3.5l3 3 3-3" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+                </svg>
+              </button>
+              {cardsOpen && (
+                <div className="ciq-ai-dropdown" style={{ width: 220 }}>
+                  {[
+                    { label: 'All Cards', href: '/cards', icon: '💳', desc: '100+ cards ranked honestly' },
+                    { label: 'Compare', href: '/compare', icon: '⚖', desc: 'Side by side comparison' },
+                    { label: 'Best Travel Cards', href: '/best-cards/travel', icon: '✈', desc: 'Top cards for travel' },
+                    { label: 'Best Cashback', href: '/best-cards/cashback', icon: '💰', desc: 'Maximum cashback cards' },
+                    { label: 'UAE Cards', href: '/uae', icon: '🇦🇪', desc: 'Cards for UAE residents' },
+                  ].map(item => (
+                    <Link key={item.href} href={item.href} className="ciq-ai-item">
+                      <div className="ciq-ai-icon">{item.icon}</div>
+                      <div style={{ flex: 1 }}>
+                        <div className="ciq-ai-label">{item.label}</div>
+                        <div style={{ fontSize: 11, color: 'var(--ink-3,#5A6A8A)', marginTop: 1 }}>{item.desc}</div>
+                      </div>
+                    </Link>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            <div style={{ position: 'relative' }} onMouseEnter={() => setAiOpen(true)} onMouseLeave={() => setAiOpen(false)}>
+              <button className={`ciq-nav-item${isActive('/smart-match') ? ' active' : ''}`} style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
                 AI Tools
                 <svg width="10" height="10" viewBox="0 0 10 10" fill="none" style={{ opacity: 0.5, transform: aiOpen ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s' }}>
                   <path d="M2 3.5l3 3 3-3" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
@@ -156,11 +180,12 @@ export function Header() {
                   {AI_TOOLS.map(tool => (
                     <Link key={tool.href} href={tool.href} className="ciq-ai-item">
                       <div className="ciq-ai-icon">{tool.icon}</div>
-                      <div>
+                      <div style={{ flex: 1 }}>
                         <div className="ciq-ai-label">
                           {tool.label}
                           {tool.badge && <span className={`ciq-badge ${tool.badge.toLowerCase()}`}>{tool.badge}</span>}
                         </div>
+                        <div style={{ fontSize: 11, color: 'var(--ink-3,#5A6A8A)', marginTop: 1 }}>{tool.desc}</div>
                       </div>
                     </Link>
                   ))}
@@ -168,8 +193,33 @@ export function Header() {
               )}
             </div>
 
-            <Link href={user ? '/dashboard' : '/login'} className={`ciq-nav-item${isActive('/dashboard') ? ' active' : ''}`}>Dashboard</Link>
-          </nav>
+            <div style={{ position: 'relative' }} onMouseEnter={() => setTravelOpen(true)} onMouseLeave={() => setTravelOpen(false)}>
+              <button className={`ciq-nav-item${isActive('/travel') ? ' active' : ''}`} style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                Travel
+                <svg width="10" height="10" viewBox="0 0 10 10" fill="none" style={{ opacity: 0.5, transform: travelOpen ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s' }}>
+                  <path d="M2 3.5l3 3 3-3" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+                </svg>
+              </button>
+              {travelOpen && (
+                <div className="ciq-ai-dropdown" style={{ width: 220 }}>
+                  {[
+                    { label: 'Trip Planner', href: '/trip-planner', icon: '🗺', desc: 'Plan with your points' },
+                    { label: 'Travel AI', href: '/travel', icon: '✈', desc: 'Chat about miles + transfers' },
+                    { label: 'Lounge Tracker', href: '/lounge-tracker', icon: '🛋', desc: 'Never get turned away' },
+                  ].map(item => (
+                    <Link key={item.href} href={item.href} className="ciq-ai-item">
+                      <div className="ciq-ai-icon">{item.icon}</div>
+                      <div style={{ flex: 1 }}>
+                        <div className="ciq-ai-label">{item.label}</div>
+                        <div style={{ fontSize: 11, color: 'var(--ink-3,#5A6A8A)', marginTop: 1 }}>{item.desc}</div>
+                      </div>
+                    </Link>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            <Link href={user ? '/dashboard' : '/login'} className={`ciq-nav-item${isActive('/dashboard') ? ' active' : ''}`}>My Wallet</Link>
 
           {/* Right side */}
           <div className="ciq-right">
@@ -268,5 +318,6 @@ export function Header() {
     </>
   )
 }
+
 
 
