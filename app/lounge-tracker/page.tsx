@@ -1,294 +1,123 @@
-'use client';
+﻿'use client'
+import { useState } from 'react'
+import { Header } from '@/components/Header'
+import { DesignFooter } from '@/components/design/Footer'
+import { Reveal } from '@/components/design/Reveal'
 
-import { useState } from 'react';
-import Link from 'next/link';
-import { Header } from '@/components/Header';
-import { SEED_CARDS } from '@/lib/data/seed-cards';
+const MY_CARDS = [
+  { name: 'HDFC Infinia', bank: 'HDFC', domestic: 'Unlimited', international: 'Unlimited', network: 'Priority Pass', used: 2, total: 999, color: '#142950' },
+  { name: 'Axis Magnus', bank: 'AXIS', domestic: '8/year', international: '4/year', network: 'Priority Pass', used: 4, total: 8, color: '#4A1A6B' },
+  { name: 'SBI Elite', bank: 'SBI', domestic: '2/quarter', international: '6/year', network: 'Dreamfolks', used: 1, total: 2, color: '#1A3A6B' },
+]
 
-const LOUNGES_BY_AIRPORT = [
-  { airport: 'BOM -- Mumbai (CSIA)', terminal: 'T2 International', lounges: ['Plaza Premium', 'Air India Maharaja', 'BIAL Lounge'] },
-  { airport: 'DEL -- Delhi (IGI)', terminal: 'T3 International', lounges: ['Plaza Premium', 'Encalm Prive', 'Air India Maharaja'] },
-  { airport: 'BLR -- Bangalore (KIA)', terminal: 'T1 & T2', lounges: ['BLR Lounges by Encalm', 'Plaza Premium'] },
-  { airport: 'HYD -- Hyderabad (RGIA)', terminal: 'International', lounges: ['GMR Aero Lounge', 'Plaza Premium'] },
-  { airport: 'MAA -- Chennai', terminal: 'International', lounges: ['Chennai International Lounge'] },
-  { airport: 'CCU -- Kolkata', terminal: 'International', lounges: ['Netaji Subhash Lounge'] },
-];
-
-interface CardLounge {
-  cardId: string;
-  cardName: string;
-  bank: string;
-  domesticAccess: string;
-  internationalAccess: string;
-  network: string;
-  quarterlyLimit: number | null;
-  visitsUsed: number;
-  visitsRemaining: number | null;
-  spendRequired: number | null;
-  annualFee: number;
-}
+const LOUNGES = [
+  { airport: 'BLR - Bengaluru', name: 'Plaza Premium Lounge', terminal: 'T2 Domestic', network: 'Priority Pass', cards: ['HDFC Infinia', 'Axis Magnus'] },
+  { airport: 'BLR - Bengaluru', name: 'BIAL Lounge', terminal: 'T1 Domestic', network: 'Dreamfolks', cards: ['SBI Elite'] },
+  { airport: 'DEL - Delhi', name: 'Encalm Privaté', terminal: 'T3 International', network: 'Priority Pass', cards: ['HDFC Infinia'] },
+  { airport: 'BOM - Mumbai', name: 'GVK Lounge', terminal: 'T2 International', network: 'Priority Pass', cards: ['HDFC Infinia', 'Axis Magnus'] },
+]
 
 export default function LoungeTrackerPage() {
-  const [selectedCards, setSelectedCards] = useState<string[]>([]);
-  const [visitLog, setVisitLog] = useState<Record<string, number>>({});
-  const [quarterlySpend, setQuarterlySpend] = useState<Record<string, string>>({});
+  const [airport, setAirport] = useState('')
 
-  const loungeCards: CardLounge[] = SEED_CARDS
-    .filter(c => {
-      const card = c as any;
-      return card.lounges && card.lounges.length > 0;
-    })
-    .map(c => {
-      const card = c as any;
-      const lounges = card.lounges ?? [];
-      const domestic = lounges.find((l: any) => l.type === 'domestic');
-      const international = lounges.find((l: any) => l.type === 'international');
-      const quarterlyLimit = card.lounge_visits_quarterly ?? (lounges[0]?.notes === 'Unlimited' ? null : 4);
-
-      return {
-        cardId: c.id,
-        cardName: c.name,
-        bank: c.bank,
-        domesticAccess: domestic ? (domestic.notes || `${domestic.network} access`) : 'None',
-        internationalAccess: international ? (international.notes || `${international.network} access`) : 'None',
-        network: lounges[0]?.network ?? 'DreamFolks',
-        quarterlyLimit,
-        visitsUsed: visitLog[c.id] ?? 0,
-        visitsRemaining: quarterlyLimit !== null ? Math.max(0, quarterlyLimit - (visitLog[c.id] ?? 0)) : null,
-        spendRequired: card.lounge_spend_requirement_quarterly ?? null,
-        annualFee: card.annual_fee_inr ?? 0,
-      };
-    })
-    .filter(c => c.domesticAccess !== 'None' || c.internationalAccess !== 'None');
-
-  const myCards = loungeCards.filter(c => selectedCards.includes(c.cardId));
-
-  const logVisit = (cardId: string) => {
-    setVisitLog(prev => ({ ...prev, [cardId]: (prev[cardId] ?? 0) + 1 }));
-  };
-
-  const removeVisit = (cardId: string) => {
-    setVisitLog(prev => ({ ...prev, [cardId]: Math.max(0, (prev[cardId] ?? 0) - 1) }));
-  };
-
-  const totalRemainingVisits = myCards.reduce((sum, c) => {
-    return sum + (c.visitsRemaining ?? 8);
-  }, 0);
+  const filtered = airport ? LOUNGES.filter(l => l.airport.toLowerCase().includes(airport.toLowerCase())) : LOUNGES
 
   return (
-    <div style={{ minHeight: '100vh', backgroundColor: '#f1f5f9' }}>
+    <>
       <Header />
-      <main style={{ maxWidth: 760, margin: '0 auto', padding: '32px 16px 80px' }}>
+      <div className="page-fade">
+        <section style={{ position: 'relative', paddingTop: 'clamp(120px,18vw,150px)', paddingBottom: 80 }}>
+          <div className="aurora" style={{ top: -100, right: -100, width: 600, height: 500, background: 'radial-gradient(circle,rgba(124,137,112,0.30),transparent 60%)' }} />
+          <div className="shell" style={{ position: 'relative', zIndex: 2 }}>
+            <Reveal style={{ textAlign: 'center', marginBottom: 'clamp(40px,6vw,64px)', maxWidth: 800, margin: '0 auto clamp(40px,6vw,64px)' }}>
+              <div style={{ display: 'inline-flex', alignItems: 'center', gap: 10, padding: '8px 14px', borderRadius: 999, background: 'rgba(124,137,112,0.12)', border: '1px solid rgba(124,137,112,0.25)', marginBottom: 28 }}>
+                <span>🛋</span>
+                <span style={{ fontFamily: 'var(--font-mono,monospace)', fontSize: 11, letterSpacing: '0.16em', color: 'var(--sage,#7C8970)', textTransform: 'uppercase', fontWeight: 600 }}>TRAVEL TOOL - LOUNGE TRACKER</span>
+              </div>
+              <h1 style={{ fontSize: 'clamp(40px,7vw,96px)', letterSpacing: '-0.04em', lineHeight: 1.0, fontWeight: 800, color: 'var(--ink,#142950)' }}>
+                Never get turned away{' '}
+                <span style={{ fontFamily: 'var(--font-serif,Georgia,serif)', color: 'var(--sage,#7C8970)', fontStyle: 'italic', fontWeight: 400 }}>at the gate</span>.
+              </h1>
+              <p style={{ maxWidth: 560, margin: '20px auto 0', color: 'var(--ink-2,#2A3F6B)', fontSize: 'clamp(15px,1.3vw,18px)', lineHeight: 1.55 }}>
+                Track free visits across every card you carry. Know before you go.
+              </p>
+            </Reveal>
 
-        {/* Hero */}
-        <div style={{ textAlign: 'center', marginBottom: 28 }}>
-          <div style={{
-            display: 'inline-block', backgroundColor: '#1B3A5C', borderRadius: 100,
-            padding: '5px 18px', marginBottom: 16,
-          }}>
-            <span style={{ fontSize: 11, fontWeight: 700, color: '#C9972E', textTransform: 'uppercase' as const, letterSpacing: 1.5 }}>
-              Lounge Access Tracker
-            </span>
-          </div>
-          <h1 style={{ fontSize: 28, fontWeight: 800, color: '#1B3A5C', margin: '0 0 10px', lineHeight: 1.2 }}>
-            How many free lounge visits do you have left?
-          </h1>
-          <p style={{ fontSize: 15, color: '#64748b', margin: 0, lineHeight: 1.6 }}>
-            Track lounge visits across all your cards. Know exactly where you can walk in free before your next flight.
-          </p>
-        </div>
-
-        {/* Card selector */}
-        <div style={{ backgroundColor: '#fff', borderRadius: 20, border: '1px solid #e2e8f0', padding: '24px', marginBottom: 20 }}>
-          <div style={{ fontSize: 15, fontWeight: 700, color: '#1B3A5C', marginBottom: 4 }}>Select your cards</div>
-          <div style={{ fontSize: 13, color: '#94a3b8', marginBottom: 16 }}>Pick all cards you own with lounge access</div>
-
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: 8 }}>
-            {loungeCards.map(card => (
-              <button
-                key={card.cardId}
-                onClick={() => setSelectedCards(prev =>
-                  prev.includes(card.cardId) ? prev.filter(id => id !== card.cardId) : [...prev, card.cardId]
-                )}
-                style={{
-                  padding: '12px 14px', borderRadius: 12, textAlign: 'left' as const,
-                  border: selectedCards.includes(card.cardId) ? '2px solid #1B3A5C' : '1px solid #e2e8f0',
-                  backgroundColor: selectedCards.includes(card.cardId) ? '#eff6ff' : '#f8fafc',
-                  cursor: 'pointer',
-                }}
-              >
-                <div style={{ fontSize: 13, fontWeight: 700, color: '#1e293b', marginBottom: 2 }}>{card.cardName}</div>
-                <div style={{ fontSize: 11, color: '#94a3b8' }}>
-                  {card.quarterlyLimit === null ? 'Unlimited' : `${card.quarterlyLimit} visits/quarter`}
-                </div>
-              </button>
-            ))}
-          </div>
-        </div>
-
-        {/* My cards tracker */}
-        {myCards.length > 0 && (
-          <>
-            {/* Summary */}
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 12, marginBottom: 20 }}>
-              {[
-                { label: 'Cards with lounge', value: myCards.length },
-                { label: 'Visits remaining', value: totalRemainingVisits },
-                { label: 'Visits used this Q', value: Object.values(visitLog).reduce((a, b) => a + b, 0) },
-              ].map((s, i) => (
-                <div key={i} style={{ backgroundColor: '#fff', borderRadius: 14, border: '1px solid #e2e8f0', padding: '16px', textAlign: 'center' as const }}>
-                  <div style={{ fontSize: 26, fontWeight: 800, color: '#1B3A5C' }}>{s.value}</div>
-                  <div style={{ fontSize: 12, color: '#94a3b8', marginTop: 2 }}>{s.label}</div>
-                </div>
-              ))}
-            </div>
-
-            {/* Per card tracker */}
-            {myCards.map(card => {
-              const pct = card.quarterlyLimit ? ((card.visitsUsed / card.quarterlyLimit) * 100) : 0;
-              const isUnlimited = card.visitsRemaining === null;
-              return (
-                <div key={card.cardId} style={{
-                  backgroundColor: '#fff', borderRadius: 16, border: '1px solid #e2e8f0',
-                  padding: '20px 24px', marginBottom: 14,
-                }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 14 }}>
-                    <div>
-                      <div style={{ fontSize: 16, fontWeight: 700, color: '#0f172a', marginBottom: 2 }}>{card.cardName}</div>
-                      <div style={{ fontSize: 13, color: '#64748b' }}>{card.bank} &nbsp;&bull;&nbsp; {card.network}</div>
-                    </div>
-                    <div style={{ textAlign: 'right' as const }}>
-                      <div style={{ fontSize: 22, fontWeight: 800, color: isUnlimited ? '#16a34a' : (card.visitsRemaining! > 0 ? '#1B3A5C' : '#dc2626') }}>
-                        {isUnlimited ? '' : card.visitsRemaining}
-                      </div>
-                      <div style={{ fontSize: 11, color: '#94a3b8' }}>
-                        {isUnlimited ? 'unlimited' : 'visits left'}
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Progress bar */}
-                  {!isUnlimited && (
-                    <div style={{ marginBottom: 14 }}>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12, color: '#94a3b8', marginBottom: 6 }}>
-                        <span>{card.visitsUsed} used</span>
-                        <span>{card.quarterlyLimit} total this quarter</span>
-                      </div>
-                      <div style={{ height: 8, backgroundColor: '#f1f5f9', borderRadius: 8, overflow: 'hidden' }}>
-                        <div style={{
-                          height: '100%', borderRadius: 8,
-                          width: `${Math.min(pct, 100)}%`,
-                          backgroundColor: pct >= 100 ? '#dc2626' : pct >= 75 ? '#f59e0b' : '#16a34a',
-                          transition: 'width 0.3s',
-                        }} />
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Access details */}
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginBottom: 14 }}>
-                    <div style={{ backgroundColor: '#f8fafc', borderRadius: 10, padding: '12px' }}>
-                      <div style={{ fontSize: 11, color: '#94a3b8', marginBottom: 4 }}>Domestic lounges</div>
-                      <div style={{ fontSize: 13, fontWeight: 600, color: '#1e293b', lineHeight: 1.4 }}>{card.domesticAccess}</div>
-                    </div>
-                    <div style={{ backgroundColor: '#f8fafc', borderRadius: 10, padding: '12px' }}>
-                      <div style={{ fontSize: 11, color: '#94a3b8', marginBottom: 4 }}>International lounges</div>
-                      <div style={{ fontSize: 13, fontWeight: 600, color: '#1e293b', lineHeight: 1.4 }}>
-                        {card.internationalAccess === 'None' ? <span style={{ color: '#dc2626' }}>Not included</span> : card.internationalAccess}
-                      </div>
-                    </div>
-                  </div>
-
-                  {card.spendRequired && (
-                    <div style={{ backgroundColor: '#fffbeb', border: '1px solid #fde68a', borderRadius: 10, padding: '10px 14px', marginBottom: 14 }}>
-                      <div style={{ fontSize: 12, color: '#92400e' }}>
-                        (!!) Requires Rs.{card.spendRequired.toLocaleString('en-IN')} quarterly spend to unlock lounge access
-                      </div>
-                      <div style={{ marginTop: 8 }}>
-                        <label style={{ fontSize: 11, color: '#92400e' }}>My Q spend: Rs.</label>
-                        <input
-                          type="number"
-                          value={quarterlySpend[card.cardId] || ''}
-                          onChange={e => setQuarterlySpend(prev => ({ ...prev, [card.cardId]: e.target.value }))}
-                          placeholder="0"
-                          style={{ marginLeft: 4, width: 80, padding: '3px 8px', borderRadius: 6, border: '1px solid #fde68a', fontSize: 12, outline: 'none' }}
-                        />
-                        {quarterlySpend[card.cardId] && (
-                          <span style={{ marginLeft: 8, fontSize: 12, color: parseInt(quarterlySpend[card.cardId]) >= card.spendRequired! ? '#16a34a' : '#dc2626' }}>
-                            {parseInt(quarterlySpend[card.cardId]) >= card.spendRequired! ? '(ok) Lounge unlocked' : `Need Rs.${(card.spendRequired! - parseInt(quarterlySpend[card.cardId])).toLocaleString('en-IN')} more`}
-                          </span>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1.4fr', gap: 32, alignItems: 'flex-start' }} className="grid-1-mobile">
+              <div>
+                <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: '0.15em', textTransform: 'uppercase', color: 'var(--copper,#8C5F12)', marginBottom: 16 }}>YOUR CARDS</div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                  {MY_CARDS.map((card, i) => (
+                    <Reveal key={i} delay={i * 80}>
+                      <div style={{ padding: 20, borderRadius: 18, background: 'var(--surface,#fff)', border: '1px solid var(--line,rgba(20,41,80,0.08))' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 14 }}>
+                          <div>
+                            <div style={{ fontSize: 9, fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', color: 'var(--ink-3,#5A6A8A)' }}>{card.bank}</div>
+                            <div style={{ fontWeight: 700, fontSize: 17, color: 'var(--ink,#142950)', marginTop: 2 }}>{card.name}</div>
+                            <div style={{ fontSize: 11, color: 'var(--ink-3,#5A6A8A)', marginTop: 3 }}>{card.network}</div>
+                          </div>
+                          <div style={{ textAlign: 'right' }}>
+                            <div style={{ fontSize: 9, fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: card.total === 999 ? 'var(--green,#4F8C58)' : 'var(--ink-3,#5A6A8A)' }}>
+                              {card.total === 999 ? 'UNLIMITED' : `${card.total - card.used} LEFT`}
+                            </div>
+                          </div>
+                        </div>
+                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+                          <div style={{ padding: '8px 12px', borderRadius: 10, background: 'var(--bg-2,#EFE7D8)' }}>
+                            <div style={{ fontSize: 9, fontWeight: 700, textTransform: 'uppercase', color: 'var(--ink-3,#5A6A8A)', letterSpacing: '0.1em' }}>Domestic</div>
+                            <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--ink,#142950)', marginTop: 3 }}>{card.domestic}</div>
+                          </div>
+                          <div style={{ padding: '8px 12px', borderRadius: 10, background: 'var(--bg-2,#EFE7D8)' }}>
+                            <div style={{ fontSize: 9, fontWeight: 700, textTransform: 'uppercase', color: 'var(--ink-3,#5A6A8A)', letterSpacing: '0.1em' }}>International</div>
+                            <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--ink,#142950)', marginTop: 3 }}>{card.international}</div>
+                          </div>
+                        </div>
+                        {card.total !== 999 && (
+                          <div style={{ marginTop: 12, height: 4, background: 'var(--bg-2,#EFE7D8)', borderRadius: 999, overflow: 'hidden' }}>
+                            <div style={{ width: `${(card.used / card.total) * 100}%`, height: '100%', background: card.used / card.total > 0.75 ? '#B84230' : 'var(--copper-3,#D89B2A)', borderRadius: 999 }} />
+                          </div>
                         )}
                       </div>
-                    </div>
-                  )}
-
-                  {/* Log visit buttons */}
-                  <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-                    <div style={{ fontSize: 13, color: '#64748b', flex: 1 }}>Track a visit:</div>
-                    <button onClick={() => removeVisit(card.cardId)} style={{
-                      width: 36, height: 36, borderRadius: 8, border: '1px solid #e2e8f0',
-                      backgroundColor: '#f8fafc', fontSize: 18, cursor: 'pointer', color: '#64748b',
-                    }}>-</button>
-                    <span style={{ fontSize: 15, fontWeight: 700, color: '#1B3A5C', minWidth: 20, textAlign: 'center' as const }}>
-                      {card.visitsUsed}
-                    </span>
-                    <button onClick={() => logVisit(card.cardId)} style={{
-                      width: 36, height: 36, borderRadius: 8, border: 'none',
-                      backgroundColor: '#1B3A5C', fontSize: 18, cursor: 'pointer', color: '#fff',
-                    }}>+</button>
-                  </div>
+                    </Reveal>
+                  ))}
                 </div>
-              );
-            })}
-          </>
-        )}
+              </div>
 
-        {/* Lounge directory */}
-        <div style={{ backgroundColor: '#fff', borderRadius: 20, border: '1px solid #e2e8f0', overflow: 'hidden', marginTop: 20 }}>
-          <div style={{ padding: '20px 24px', borderBottom: '1px solid #f1f5f9', backgroundColor: '#1B3A5C' }}>
-            <div style={{ fontSize: 16, fontWeight: 700, color: '#fff' }}>Major airport lounges in India</div>
-            <div style={{ fontSize: 12, color: '#94a3b8', marginTop: 2 }}>Quick reference for your next trip</div>
-          </div>
-          {LOUNGES_BY_AIRPORT.map((airport, i) => (
-            <div key={airport.airport} style={{
-              padding: '16px 24px',
-              borderBottom: i < LOUNGES_BY_AIRPORT.length - 1 ? '1px solid #f8fafc' : 'none',
-            }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                <div>
-                  <div style={{ fontSize: 14, fontWeight: 700, color: '#1B3A5C', marginBottom: 2 }}>{airport.airport}</div>
-                  <div style={{ fontSize: 12, color: '#94a3b8', marginBottom: 6 }}>{airport.terminal}</div>
-                  <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' as const }}>
-                    {airport.lounges.map((l, j) => (
-                      <span key={j} style={{
-                        fontSize: 11, backgroundColor: '#f1f5f9', color: '#475569',
-                        padding: '3px 10px', borderRadius: 100, fontWeight: 500,
-                      }}>{l}</span>
-                    ))}
-                  </div>
+              <div>
+                <div style={{ marginBottom: 20 }}>
+                  <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: '0.15em', textTransform: 'uppercase', color: 'var(--copper,#8C5F12)', marginBottom: 12 }}>FIND LOUNGES AT YOUR AIRPORT</div>
+                  <input value={airport} onChange={e => setAirport(e.target.value)} placeholder="Type airport name or code (e.g. BLR, DEL, BOM...)"
+                    style={{ width: '100%', padding: '14px 18px', borderRadius: 14, border: '1px solid var(--line,rgba(20,41,80,0.12))', background: 'var(--surface,#fff)', color: 'var(--ink,#142950)', fontSize: 15, fontFamily: 'inherit', outline: 'none', boxSizing: 'border-box' as const }} />
+                </div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                  {filtered.map((lounge, i) => (
+                    <Reveal key={i} delay={i * 60}>
+                      <div style={{ padding: 20, borderRadius: 18, background: 'var(--surface,#fff)', border: '1px solid var(--line,rgba(20,41,80,0.08))' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 12, marginBottom: 12 }}>
+                          <div>
+                            <div style={{ fontSize: 9, fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', color: 'var(--ink-3,#5A6A8A)', marginBottom: 4 }}>{lounge.airport} - {lounge.terminal}</div>
+                            <div style={{ fontWeight: 700, fontSize: 17, color: 'var(--ink,#142950)' }}>{lounge.name}</div>
+                          </div>
+                          <div style={{ padding: '4px 10px', borderRadius: 999, background: 'rgba(124,137,112,0.12)', color: 'var(--sage,#7C8970)', fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', whiteSpace: 'nowrap' as const }}>{lounge.network}</div>
+                        </div>
+                        <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' as const }}>
+                          {lounge.cards.map(c => (
+                            <span key={c} style={{ padding: '3px 10px', borderRadius: 999, background: 'var(--bg-2,#EFE7D8)', color: 'var(--ink-2,#2A3F6B)', fontSize: 11, fontWeight: 500 }}>{c}</span>
+                          ))}
+                        </div>
+                      </div>
+                    </Reveal>
+                  ))}
+                  {filtered.length === 0 && (
+                    <div style={{ textAlign: 'center', padding: '40px 20px', color: 'var(--ink-3,#5A6A8A)', fontSize: 15 }}>No lounges found for that airport.</div>
+                  )}
                 </div>
               </div>
             </div>
-          ))}
-        </div>
-
-        {/* CTA */}
-        <div style={{ backgroundColor: '#1B3A5C', borderRadius: 16, padding: '24px', textAlign: 'center' as const, marginTop: 20 }}>
-          <div style={{ fontSize: 16, fontWeight: 700, color: '#fff', marginBottom: 8 }}>
-            Want more lounge visits?
           </div>
-          <div style={{ fontSize: 14, color: '#94a3b8', marginBottom: 16 }}>
-            HDFC Infinia and Axis Magnus offer unlimited Priority Pass lounge access globally.
-          </div>
-          <Link href="/best-cards/travel" style={{
-            display: 'inline-block', padding: '11px 24px', backgroundColor: '#C9972E',
-            color: '#fff', borderRadius: 10, fontSize: 14, fontWeight: 700, textDecoration: 'none',
-          }}>
-            See best travel cards &rarr;
-          </Link>
-        </div>
-
-      </main>
-    </div>
-  );
+        </section>
+        <DesignFooter />
+      </div>
+    </>
+  )
 }
