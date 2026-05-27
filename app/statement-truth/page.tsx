@@ -80,7 +80,7 @@ export default function StatementTruthPage() {
   return (
     <div style={{ minHeight: '100vh', backgroundColor: 'var(--bg,#F5EFE6)' }}>
       <Header />
-      <main style={{ maxWidth: 720, margin: '0 auto', padding: '32px 16px 80px' }}>
+      <main style={{ maxWidth: 800, margin: '0 auto', padding: 'clamp(100px,14vw,140px) clamp(20px,5vw,40px) 80px' }}>
 
         {/* Hero */}
         <div style={{ textAlign: 'center', marginBottom: 32 }}>
