@@ -5,7 +5,6 @@ import { useState, useMemo, useEffect, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { Header } from '@/components/Header';
 import { DesignFooter } from '@/components/design/Footer';
-import { CompareTray } from '@/components/CompareTray';
 import { CreditCard3D } from '@/components/design/CreditCard3D';
 import { SEED_CARDS } from '@/lib/data/seed-cards';
 import { optimizeRedemption } from '@/lib/redemption';
@@ -459,7 +458,7 @@ function OptimizeContent() {
             </div>
           )}
       <DesignFooter />
-      <CompareTray />
+      
     </main>
   );
 }

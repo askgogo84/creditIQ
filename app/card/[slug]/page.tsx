@@ -2,7 +2,6 @@ import { notFound } from 'next/navigation';
 import { SEED_CARDS } from '@/lib/data/seed-cards';
 import { Header } from '@/components/Header';
 import { DesignFooter } from '@/components/design/Footer';
-import { CompareTray } from '@/components/CompareTray';
 import { CreditCard3D } from '@/components/design/CreditCard3D';
 import { CardDetailClient } from './CardDetailClient';
 
@@ -43,7 +42,7 @@ export default function CardDetailPage({ params }: { params: { slug: string } })
       <Header />
       <CardDetailClient card={card} />
       <DesignFooter />
-      <CompareTray />
+      
     </main>
   );
 }

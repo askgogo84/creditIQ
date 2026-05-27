@@ -2,7 +2,6 @@
 import { useState } from 'react';
 import { Header } from '@/components/Header';
 import { DesignFooter } from '@/components/design/Footer';
-import { CompareTray } from '@/components/CompareTray';
 import { ExternalLink, Clock, CheckCircle, Search } from 'lucide-react';
 
 const STATUS_LINKS = [
@@ -135,7 +134,7 @@ export default function ApplicationStatusPage() {
         </div>
       </section>
       <DesignFooter />
-      <CompareTray />
+      
     </main>
   );
 }

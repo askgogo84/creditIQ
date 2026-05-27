@@ -1,7 +1,6 @@
 'use client';
 import { Header } from '@/components/Header';
 import { DesignFooter } from '@/components/design/Footer';
-import { CompareTray } from '@/components/CompareTray';
 import { ExternalLink, ShieldCheck, TrendingUp, AlertCircle } from 'lucide-react';
 
 const SCORE_RANGES = [
@@ -104,7 +103,7 @@ export default function CreditScorePage() {
         </div>
       </section>
       <DesignFooter />
-      <CompareTray />
+      
     </main>
   );
 }

@@ -2,7 +2,6 @@ import { notFound } from 'next/navigation';
 import { SEED_CARDS } from '@/lib/data/seed-cards';
 import { Header } from '@/components/Header';
 import { DesignFooter } from '@/components/design/Footer';
-import { CompareTray } from '@/components/CompareTray';
 import { CardTile } from '@/components/design/CardTile'
 import { type CardVariant } from '@/components/design/CreditCard3D'
 import type { CreditCard } from '@/lib/types'
@@ -94,7 +93,7 @@ export default function BankPage({ params }: { params: { slug: string } }) {
         </div>
       </section>
       <DesignFooter />
-      <CompareTray />
+      
     </main>
   );
 }

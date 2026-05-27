@@ -3,7 +3,6 @@
 import { useState, useMemo } from 'react';
 import { Header } from '@/components/Header';
 import { DesignFooter } from '@/components/design/Footer';
-import { CompareTray } from '@/components/CompareTray';
 import { CardTile } from '@/components/design/CardTile';
 import { SEED_CARDS } from '@/lib/data/seed-cards';
 import { matchCards, approvalProbability } from '@/lib/engine';
@@ -257,7 +256,7 @@ export default function SmartMatchPage() {
       </section>
 
       <DesignFooter />
-      <CompareTray />
+      
     </main>
   );
 }

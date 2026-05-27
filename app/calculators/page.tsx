@@ -2,7 +2,6 @@
 import { useState } from 'react';
 import { Header } from '@/components/Header';
 import { DesignFooter } from '@/components/design/Footer';
-import { CompareTray } from '@/components/CompareTray';
 import { formatINR } from '@/lib/utils';
 import { Calculator, CreditCard, TrendingDown, IndianRupee } from 'lucide-react';
 
@@ -151,7 +150,7 @@ export default function CalculatorsPage() {
         </div>
       </section>
       <DesignFooter />
-      <CompareTray />
+      
     </main>
   );
 }

@@ -1,6 +1,5 @@
 import { Header } from '@/components/Header';
 import { DesignFooter } from '@/components/design/Footer';
-import { CompareTray } from '@/components/CompareTray';
 
 const TERMS = [
   { term: 'Annual Fee', def: 'Yearly charge for holding the card. Many cards waive this if you spend above a threshold (fee waiver spend).' },
@@ -80,7 +79,7 @@ export default function GlossaryPage() {
         </div>
       </section>
       <DesignFooter />
-      <CompareTray />
+      
     </main>
   );
 }

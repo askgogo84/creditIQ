@@ -1,7 +1,6 @@
 import { SEED_CARDS } from '@/lib/data/seed-cards';
 import { Header } from '@/components/Header';
 import { DesignFooter } from '@/components/design/Footer';
-import { CompareTray } from '@/components/CompareTray';
 import Link from 'next/link';
 
 const BANKS = [
@@ -50,7 +49,7 @@ export default function BanksPage() {
         </div>
       </section>
       <DesignFooter />
-      <CompareTray />
+      
     </main>
   );
 }
