@@ -415,7 +415,7 @@ function TripPlannerPageInner() {
             {/* Live Flight Search */}
             <div style={{ marginTop: 32, marginBottom: 32 }}>
               <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: '0.15em', textTransform: 'uppercase', color: 'var(--copper,#8C5F12)', marginBottom: 16 }}>SEARCH FLIGHTS</div>
-              <FlightSearch defaultFrom={originCity || 'DEL'} pointsBalance={parseInt((points || '0').replace(/,/g, '')) || 0} bank={cardBank || 'HDFC'} />
+              <FlightSearch defaultFrom={originIata || 'BLR'} defaultTo={result?.destination ? result.destination.substring(0,3).toUpperCase() : ''} pointsBalance={parseInt((points || '0').replace(/,/g, '')) || 0} bank={cardBank || 'HDFC'} />
             </div>
 
 

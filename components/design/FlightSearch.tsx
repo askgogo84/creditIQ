@@ -120,9 +120,9 @@ function FlightCard({ flight, pointsBalance, bank }: { flight: Flight; pointsBal
   )
 }
 
-export function FlightSearch({ defaultFrom = 'DEL', pointsBalance = 0, bank = 'HDFC' }: { defaultFrom?: string; pointsBalance?: number; bank?: string }) {
+export function FlightSearch({ defaultFrom = 'DEL', defaultTo = '', pointsBalance = 0, bank = 'HDFC' }: { defaultFrom?: string; defaultTo?: string; pointsBalance?: number; bank?: string }) {
   const [from, setFrom] = useState(defaultFrom)
-  const [to, setTo] = useState('')
+  const [to, setTo] = useState(defaultTo)
   const [dateFrom, setDateFrom] = useState('')
   const [dateTo, setDateTo] = useState('')
   const [loading, setLoading] = useState(false)
