@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import { useState, useEffect, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
@@ -8,7 +8,7 @@ import { DesignFooter } from '@/components/design/Footer';
 import { getApplyUrl } from '@/lib/affiliate';
 import { BookingModal } from '@/components/BookingModal';
 import { TripComparison } from '@/components/TripComparison';
-import { FlightSearch } from '@/components/design/FlightSearch';
+import FlightSearch from '@/components/design/FlightSearch';
 import { createBrowserClient } from '@supabase/ssr';
 
 interface TripResult {
