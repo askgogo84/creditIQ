@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 export const dynamic = 'force-dynamic';
 
 import { useState, useEffect } from 'react';
@@ -220,14 +220,14 @@ export default function DashboardPage() {
         </div>
       )}
 
-      <section className="pt-20 pb-16 px-4 sm:px-6">
-        <div className="max-w-5xl mx-auto">
+      <section className="section" style={{ paddingTop: "clamp(100px,14vw,140px)" }}>
+        <div className="shell">
 
           {/* Top bar */}
           <div className="flex items-start justify-between mb-6 flex-wrap gap-3">
             <div>
-              <h1 className="font-display text-2xl sm:text-3xl" style={{ color: 'var(--text)' }}>
-                Hey {firstName}
+              <h1 style={{ fontSize: "clamp(32px,5vw,56px)", fontWeight: 800, letterSpacing: "-0.03em", color: "var(--ink,#142950)" }}>
+                Hi, {firstName}.
               </h1>
               <p className="text-sm mt-1" style={{ color: 'var(--text-muted)' }}>{user?.email}</p>
             </div>
@@ -248,7 +248,7 @@ export default function DashboardPage() {
 
           {/* Empty state */}
           {!cardsLoading && cards.length === 0 && (
-            <div className="rounded-2xl border-2 border-dashed p-10 text-center mb-6" style={{ borderColor: 'var(--border)', background: 'var(--bg-elevated)' }}>
+            <div style={{ borderRadius: 24, border: "2px dashed var(--line-strong,rgba(20,41,80,0.2))", padding: "clamp(40px,6vw,80px) 40px", textAlign: "center", marginBottom: 24 }}>
               <CreditCard className="w-12 h-12 mx-auto mb-4" style={{ color: 'var(--text-dim)' }} />
               <h2 className="font-display text-2xl mb-2" style={{ color: 'var(--text)' }}>No cards yet</h2>
               <p className="text-sm mb-6 max-w-sm mx-auto" style={{ color: 'var(--text-muted)' }}>
@@ -269,7 +269,7 @@ export default function DashboardPage() {
           {cards.length > 0 && (
             <>
               {/* Combined points hero */}
-              <div className="rounded-2xl p-5 mb-5" style={{ background: 'linear-gradient(135deg, #1B3A5C, #0d2240)', border: '1px solid rgba(201,151,46,0.2)' }}>
+              <div style={{ borderRadius: 24, padding: "clamp(24px,3vw,40px)", marginBottom: 20 }}>
                 <div className="text-xs font-mono uppercase tracking-widest mb-1" style={{ color: 'rgba(201,151,46,0.8)' }}>
                   Combined portfolio . {cards.length} card{cards.length !== 1 ? 's' : ''}
                 </div>
@@ -308,7 +308,7 @@ export default function DashboardPage() {
                   { label: 'Statement credit', value: `Rs.${(conservativeValue/1000).toFixed(0)}K`, color: 'var(--text)', sub: 'worst option' },
                   { label: 'Value gap', value: `Rs.${((bestValue-conservativeValue)/1000).toFixed(0)}K`, color: '#ef4444', sub: "don't leave this" },
                 ].map((s, i) => (
-                  <div key={i} className="rounded-xl p-4 border" style={{ borderColor: 'var(--border)', background: 'var(--bg-elevated)' }}>
+                  <div key={i} style={{ padding: "20px 24px", borderRadius: 16, background: "var(--surface,#fff)", border: "1px solid var(--line,rgba(20,41,80,0.08))" }}>
                     <div className="text-[9px] font-mono uppercase tracking-widest mb-1" style={{ color: 'var(--text-dim)' }}>{s.label}</div>
                     <div className="font-display text-2xl tabular" style={{ color: s.color }}>{s.value}</div>
                     <div className="text-xs mt-0.5" style={{ color: 'var(--text-dim)' }}>{s.sub}</div>
@@ -328,7 +328,7 @@ export default function DashboardPage() {
 
               <div className="space-y-3 mb-6">
                 {cards.map((card) => (
-                  <div key={card.id} className="rounded-xl border overflow-hidden" style={{ borderColor: 'var(--border)', background: 'var(--bg-elevated)' }}>
+                  <div key={card.id} className="rounded-xl border overflow-hidden">
                     <div className="flex items-center gap-3 p-4">
                       <div className="w-10 h-10 rounded-lg shrink-0 flex items-center justify-center text-white text-xs font-bold"
                         style={{ background: BANK_COLORS[card.bank] || '#333' }}>
@@ -424,7 +424,7 @@ export default function DashboardPage() {
           {/* Add cards CTA */}
           <div className="grid grid-cols-2 gap-3 mb-6">
             <Link href="/upload-statement" className="rounded-xl border p-4 flex items-center gap-3 transition-all"
-              style={{ borderColor: 'var(--border)', background: 'var(--bg-elevated)' }}>
+             >
               <div className="w-9 h-9 rounded-lg flex items-center justify-center shrink-0"
                 style={{ background: 'color-mix(in srgb, var(--accent) 12%, transparent)' }}>
                 <FileText className="w-4 h-4" style={{ color: 'var(--accent)' }} />
@@ -435,7 +435,7 @@ export default function DashboardPage() {
               </div>
             </Link>
             <Link href="/sms-import" className="rounded-xl border p-4 flex items-center gap-3 transition-all"
-              style={{ borderColor: 'var(--border)', background: 'var(--bg-elevated)' }}>
+             >
               <div className="w-9 h-9 rounded-lg flex items-center justify-center shrink-0"
                 style={{ background: 'color-mix(in srgb, var(--accent) 12%, transparent)' }}>
                 <MessageSquare className="w-4 h-4" style={{ color: 'var(--accent)' }} />
@@ -469,3 +469,6 @@ export default function DashboardPage() {
     </main>
   );
 }
+
+
+
