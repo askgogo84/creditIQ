@@ -1,6 +1,6 @@
 'use client';
 
-import { CardMockup } from '@/components/cards/CardMockup';
+import { CreditCard3D } from '@/components/design/CreditCard3D';
 import { useCompare } from '@/lib/store';
 import { calculateAnnualValue } from '@/lib/engine';
 import { formatINR, formatINRFull } from '@/lib/utils';
@@ -82,7 +82,7 @@ export function CardDetailClient({ card }: { card: CreditCard }) {
             </div>
 
             <div className="flex justify-center lg:justify-end">
-              <CardMockup card={card} size="lg" />
+              <CreditCard3D variant='obsidian' name={(card.name || 'CARD').toUpperCase()} bank={(card.bank || 'BANK').toUpperCase()} tagline={card.tier || ''} network='VISA' />
             </div>
           </div>
         </div>

@@ -6,7 +6,7 @@ import { useSearchParams } from 'next/navigation';
 import { Header } from '@/components/Header';
 import { DesignFooter } from '@/components/design/Footer';
 import { CompareTray } from '@/components/CompareTray';
-import { CardMockup } from '@/components/cards/CardMockup';
+import { CreditCard3D } from '@/components/design/CreditCard3D';
 import { SEED_CARDS } from '@/lib/data/seed-cards';
 import { optimizeRedemption } from '@/lib/redemption';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -229,7 +229,7 @@ function OptimizeContent() {
               {/* Card preview - hidden on mobile */}
               <div className="hidden sm:flex justify-center">
                 <div style={{ width: '80%', maxWidth: 280 }}>
-                  <CardMockup card={card} size="md" />
+                  <CreditCard3D variant='obsidian' name='CARD' bank='BANK' tagline='' network='VISA' />
                 </div>
               </div>
             </aside>

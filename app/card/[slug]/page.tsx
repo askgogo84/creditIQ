@@ -3,7 +3,7 @@ import { SEED_CARDS } from '@/lib/data/seed-cards';
 import { Header } from '@/components/Header';
 import { DesignFooter } from '@/components/design/Footer';
 import { CompareTray } from '@/components/CompareTray';
-import { CardMockup } from '@/components/cards/CardMockup';
+import { CreditCard3D } from '@/components/design/CreditCard3D';
 import { CardDetailClient } from './CardDetailClient';
 
 export async function generateStaticParams() {
