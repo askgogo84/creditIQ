@@ -220,6 +220,7 @@ export function Header() {
             </div>
 
             <Link href={user ? '/dashboard' : '/login'} className={`ciq-nav-item${isActive('/dashboard') ? ' active' : ''}`}>My Wallet</Link>
+          </nav>
 
           {/* Right side */}
           <div className="ciq-right">
@@ -318,6 +319,7 @@ export function Header() {
     </>
   )
 }
+
 
 
 
