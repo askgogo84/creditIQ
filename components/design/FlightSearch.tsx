@@ -119,10 +119,22 @@ function getDatePlusDays(days: number): string {
   return d.toISOString().split('T')[0];
 }
 
-export default function FlightSearch() {
+interface FlightSearchProps {
+  defaultFrom?: string;
+  defaultTo?: string;
+  pointsBalance?: number;
+  bank?: string;
+}
+
+export default function FlightSearch({
+  defaultFrom = 'BLR',
+  defaultTo = '',
+  pointsBalance = 0,
+  bank = 'HDFC',
+}: FlightSearchProps) {
   const [tripType, setTripType] = useState<'round-trip' | 'one-way'>('round-trip');
-  const [from, setFrom] = useState('BLR');
-  const [to, setTo] = useState('');
+  const [from, setFrom] = useState(defaultFrom);
+  const [to, setTo] = useState(defaultTo);
   const [departure, setDeparture] = useState(getDatePlusDays(7));
   const [returnDate, setReturnDate] = useState(getDatePlusDays(10));
   const [passengers, setPassengers] = useState(1);
@@ -414,7 +426,7 @@ export default function FlightSearch() {
                 {/* Points hint if available */}
                 <div className="mt-3 pt-3 border-t border-gray-100 flex items-center justify-between">
                   <p className="text-xs text-[#1B3A5C]">
-                    💳 Book via HDFC Infinia/Diners Black to earn 3.3% rewards
+                    💳 Book via ${bank} card to earn rewards${pointsBalance > 0 ? ` · You have ${pointsBalance.toLocaleString('en-IN')} pts` : ''}
                   </p>
                   <button
                     onClick={() => toggleCard(result.id)}
