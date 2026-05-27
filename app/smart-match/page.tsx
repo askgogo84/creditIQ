@@ -1,8 +1,8 @@
-'use client';
+﻿'use client';
 
 import { useState, useMemo } from 'react';
 import { Header } from '@/components/Header';
-import { Footer } from '@/components/Footer';
+import { DesignFooter } from '@/components/design/Footer';
 import { CompareTray } from '@/components/CompareTray';
 import { CardTile } from '@/components/CardTile';
 import { SEED_CARDS } from '@/lib/data/seed-cards';
@@ -52,7 +52,7 @@ export default function SmartMatchPage() {
   };
 
   return (
-    <main className="min-h-screen">
+    <main className="page-fade">
       <Header />
 
       <section className="pt-32 pb-12 grain relative">
@@ -250,7 +250,7 @@ export default function SmartMatchPage() {
         </div>
       </section>
 
-      <Footer />
+      <DesignFooter />
       <CompareTray />
     </main>
   );
@@ -301,3 +301,4 @@ function SliderField({
     </div>
   );
 }
+

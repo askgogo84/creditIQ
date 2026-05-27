@@ -1,10 +1,10 @@
-'use client';
+﻿'use client';
 
 import { useState, useCallback } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { Header } from '@/components/Header';
-import { Footer } from '@/components/Footer';
+import { DesignFooter } from '@/components/design/Footer';
 import { SEED_CARDS } from '@/lib/data/seed-cards';
 import { getApplyUrl } from '@/lib/affiliate';
 import { X, Plus, ChevronRight } from 'lucide-react';
@@ -260,13 +260,14 @@ export default function ComparePage() {
                 padding: '12px 24px', background: 'transparent', color: '#1B3A5C',
                 border: '1.5px solid #1B3A5C', borderRadius: 12, fontSize: 14, fontWeight: 600,
                 textDecoration: 'none', display: 'inline-block',
-              }}>Browse all 100+ cards →</Link>
+              }}>Browse all 100+ cards â†’</Link>
             </div>
           </div>
         )}
 
       </main>
-      <Footer />
+      <DesignFooter />
     </div>
   );
 }
+

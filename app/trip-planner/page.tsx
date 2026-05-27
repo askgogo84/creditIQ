@@ -1,10 +1,10 @@
-'use client';
+﻿'use client';
 
 import { useState, useEffect, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { Header } from '@/components/Header';
-import { Footer } from '@/components/Footer';
+import { DesignFooter } from '@/components/design/Footer';
 import { getApplyUrl } from '@/lib/affiliate';
 import { BookingModal } from '@/components/BookingModal';
 import { TripComparison } from '@/components/TripComparison';
@@ -466,7 +466,7 @@ function TripPlannerPageInner() {
         userPoints={parseInt((points || '0').replace(/,/g, '')) || 0}
         cardBank={cardBank}
       />
-      <Footer />
+      <DesignFooter />
     </div>
   );
 }
@@ -478,3 +478,4 @@ export default function TripPlannerPage() {
     </Suspense>
   );
 }
+
