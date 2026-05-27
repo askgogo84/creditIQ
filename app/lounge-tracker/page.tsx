@@ -62,7 +62,7 @@ export default function LoungeTrackerPage() {
                             </div>
                           </div>
                         </div>
-                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }} className="grid-1-mobile">
                           <div style={{ padding: '8px 12px', borderRadius: 10, background: 'var(--bg-2,#EFE7D8)' }}>
                             <div style={{ fontSize: 9, fontWeight: 700, textTransform: 'uppercase', color: 'var(--ink-3,#5A6A8A)', letterSpacing: '0.1em' }}>Domestic</div>
                             <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--ink,#142950)', marginTop: 3 }}>{card.domestic}</div>

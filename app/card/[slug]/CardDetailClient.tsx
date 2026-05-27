@@ -98,13 +98,13 @@ export function CardDetailClient({ card }: { card: CreditCard }) {
           </h2>
 
           <div className="grid lg:grid-cols-[400px,1fr] gap-8">
-            <div className="bg-ink-950 border border-white/10 rounded-xl p-6 space-y-6">
+            <div style={{ background: "var(--paper,#FAF5EB)", border: "1px solid var(--line,rgba(20,41,80,0.08))", borderRadius: 16, padding: 24 }}>
               <div>
                 <div className="flex justify-between items-baseline mb-2">
-                  <label className="text-xs font-mono uppercase tracking-widest text-ink-400">
+                  <label style={{ fontSize: 10, fontFamily: "var(--font-mono,monospace)", textTransform: "uppercase", letterSpacing: "0.15em", color: "var(--ink-3,#5A6A8A)" }}>
                     Your monthly spend
                   </label>
-                  <span className="font-display text-2xl text-copper-300 tabular">
+                  <span style={{ fontSize: 24, fontWeight: 800, color: "var(--copper-3,#D89B2A)", fontVariantNumeric: "tabular-nums" }}>
                     {formatINR(monthlySpend)}
                   </span>
                 </div>
@@ -115,25 +115,25 @@ export function CardDetailClient({ card }: { card: CreditCard }) {
                   step={5000}
                   value={monthlySpend}
                   onChange={(e) => setMonthlySpend(parseInt(e.target.value))}
-                  className="w-full accent-copper-400"
+                  style={{ width: "100%", accentColor: "var(--copper-3,#D89B2A)" }}
                 />
               </div>
 
-              <div className="pt-4 border-t border-white/5 space-y-3">
+              <div style={{ paddingTop: 16, borderTop: "1px solid var(--line,rgba(20,41,80,0.08))", display: "flex", flexDirection: "column", gap: 12 }}>
                 <div className="flex justify-between items-baseline">
-                  <span className="text-sm text-ink-300">Gross rewards</span>
-                  <span className="font-display text-xl text-ink-50 tabular">
+                  <span style={{ fontSize: 14, color: "var(--ink-2,#2A3F6B)" }}>Gross rewards</span>
+                  <span style={{ fontSize: 20, fontWeight: 700, color: "var(--ink,#142950)" }}>
                     {formatINRFull(annualCalc.gross_rewards_inr)}
                   </span>
                 </div>
                 <div className="flex justify-between items-baseline">
-                  <span className="text-sm text-ink-300">Fees</span>
-                  <span className="font-display text-xl text-crimson-400 tabular">
+                  <span style={{ fontSize: 14, color: "var(--ink-2,#2A3F6B)" }}>Fees</span>
+                  <span style={{ fontSize: 20, fontWeight: 700, color: "#B84230" }}>
                     -{formatINRFull(annualCalc.fee_inr)}
                   </span>
                 </div>
-                <div className="pt-3 border-t border-white/5 flex justify-between items-baseline">
-                  <span className="text-sm text-ink-200 font-medium">Net annual value</span>
+                <div style={{ paddingTop: 12, borderTop: "1px solid var(--line,rgba(20,41,80,0.08))", display: "flex", justifyContent: "space-between", alignItems: "baseline" }}>
+                  <span style={{ fontSize: 14, color: "var(--ink,#142950)", fontWeight: 600 }}>Net annual value</span>
                   <span
                     className={`font-display text-3xl tabular ${
                       annualCalc.net_value_inr > 0 ? 'text-emerald-300 glow-emerald' : 'text-crimson-400'
