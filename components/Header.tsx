@@ -110,7 +110,7 @@ export function Header() {
           .ciq-theme-desktop { display: none !important; }
           .ciq-hamburger { display: flex !important; }
           .ciq-tab-bar { display: flex !important; }
-          main, .main-content, body > div { padding-bottom: 72px !important; }
+          main, .main-content, .page-fade, body > div { padding-bottom: 72px !important; }
         }
         @media (min-width: 769px) {
           .ciq-hamburger { display: none !important; }
