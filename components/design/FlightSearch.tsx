@@ -33,6 +33,21 @@ const AIRPORTS = [
   { code: 'JFK', name: 'New York' },
 ]
 
+
+const CITY_TO_IATA: Record<string, string> = {
+  'goa': 'GOI', 'mumbai': 'BOM', 'bombay': 'BOM', 'delhi': 'DEL',
+  'new delhi': 'DEL', 'bangalore': 'BLR', 'bengaluru': 'BLR',
+  'chennai': 'MAA', 'madras': 'MAA', 'kolkata': 'CCU', 'calcutta': 'CCU',
+  'hyderabad': 'HYD', 'kochi': 'COK', 'cochin': 'COK', 'pune': 'PNQ',
+  'ahmedabad': 'AMD', 'jaipur': 'JAI', 'lucknow': 'LKO', 'chandigarh': 'IXC',
+  'singapore': 'SIN', 'dubai': 'DXB', 'bangkok': 'BKK', 'london': 'LHR',
+  'tokyo': 'NRT', 'new york': 'JFK', 'paris': 'CDG', 'sydney': 'SYD',
+}
+
+function cityToIata(city: string): string {
+  return CITY_TO_IATA[city.toLowerCase().trim()] || city.substring(0, 3).toUpperCase()
+}
+
 const POINTS_VALUE: Record<string, number> = {
   'HDFC': 1.80,
   'AXIS': 0.80,
@@ -122,7 +137,7 @@ function FlightCard({ flight, pointsBalance, bank }: { flight: Flight; pointsBal
 
 export function FlightSearch({ defaultFrom = 'DEL', defaultTo = '', pointsBalance = 0, bank = 'HDFC' }: { defaultFrom?: string; defaultTo?: string; pointsBalance?: number; bank?: string }) {
   const [from, setFrom] = useState(defaultFrom)
-  const [to, setTo] = useState(defaultTo)
+  const [to, setTo] = useState(defaultTo ? cityToIata(defaultTo) : '')
   const [dateFrom, setDateFrom] = useState('')
   const [dateTo, setDateTo] = useState('')
   const [loading, setLoading] = useState(false)
