@@ -69,7 +69,7 @@ export default function TravelPage() {
   const empty = messages.length === 0;
 
   return (
-    <div style={{ minHeight: '100vh', backgroundColor: '#f1f5f9', display: 'flex', flexDirection: 'column' }}>
+    <div style={{ minHeight: '100vh', backgroundColor: 'var(--bg,#F5EFE6)', display: 'flex', flexDirection: 'column' }}>
       <Header />
 
       {/* Page wrapper */}
@@ -189,7 +189,7 @@ export default function TravelPage() {
             style={{
               flex: 1, padding: '12px 16px', borderRadius: 12,
               border: '1.5px solid #e2e8f0', fontSize: 14,
-              color: 'var(--surface,#fff)', backgroundColor: '#f8fafc', outline: 'none',
+              color: 'var(--surface,#fff)', backgroundColor: 'var(--bg,#F5EFE6)', outline: 'none',
             }}
           />
           <button
