@@ -3,7 +3,16 @@ import { SEED_CARDS } from '@/lib/data/seed-cards';
 import { Header } from '@/components/Header';
 import { DesignFooter } from '@/components/design/Footer';
 import { CompareTray } from '@/components/CompareTray';
-import { CardTile } from '@/components/CardTile';
+import { CardTile } from '@/components/design/CardTile'
+import { type CardVariant } from '@/components/design/CreditCard3D'
+import type { CreditCard } from '@/lib/types'
+
+const VARIANT_ROTATION: CardVariant[] = ['obsidian', 'navy', 'plum', 'gold', 'iris', 'mint']
+const NETWORK_BY_BANK: Record<string, string> = { HDFC: 'VISA', AXIS: 'MASTERCARD', ICICI: 'AMEX', SBI: 'VISA', AMEX: 'AMEX', IDFC: 'VISA', RBL: 'MASTERCARD' }
+function toTileCard(c: CreditCard, i: number) {
+  const bank = c.bank.toUpperCase()
+  return { bank, name: c.name.replace(/^HDFC\s+|^AXIS\s+|^ICICI\s+|^SBI\s+|^AMEX\s+/i, '').replace(/ Credit Card$/i, ''), tagline: c.tier || 'Standard', tier: (c.tier || 'CARD').toUpperCase().replace(/-/g, ' '), network: NETWORK_BY_BANK[bank.split(' ')[0]] || 'VISA', variant: VARIANT_ROTATION[i % VARIANT_ROTATION.length], tags: (c.category || []).slice(0, 2).map((s: string) => s.replace(/-/g, ' ')), fee: c.annual_fee_inr, iqScore: Math.round((c.expert_rating ?? 8) * 10) }
+};
 import type { Bank } from '@/lib/types';
 import { ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
@@ -77,7 +86,7 @@ export default function BankPage({ params }: { params: { slug: string } }) {
         <div className="max-w-7xl mx-auto px-4 sm:px-6">
           <div className="divider-rule mb-8 max-w-xs">-- {cards.length} cards tracked</div>
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
-            {cards.map((card, i) => <CardTile key={card.id} card={card} rank={i + 1} />)}
+            {cards.map((card, i) => <CardTile key={card.id} card={toTileCard(card, i)} rank={i + 1} href={`/card/${card.slug}`} />)}
           </div>
           {cards.length === 0 && (
             <div className="text-center py-20 text-ink-400 font-display italic">No cards tracked yet for this bank.</div>
