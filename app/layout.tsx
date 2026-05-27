@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+﻿import type { Metadata } from "next";
 import { GeistSans } from "geist/font/sans";
 import { GeistMono } from "geist/font/mono";
 import "./globals.css";
@@ -33,6 +33,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en" className={`${GeistSans.variable} ${GeistMono.variable}`}>
       <head>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `(function () { var script = document.createElement("script"); script.async = 1; script.src = 'https://emrldco.com/NTMzNDA5.js?t=533409'; document.head.appendChild(script); })();`
+          }}
+        />
         <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
         <link rel="alternate icon" href="/favicon.svg" />
         <meta name="theme-color" content="#1B3A5C" />
@@ -44,3 +49,4 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     </html>
   );
 }
+
