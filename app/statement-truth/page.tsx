@@ -78,7 +78,7 @@ export default function StatementTruthPage() {
   };
 
   return (
-    <div style={{ minHeight: '100vh', backgroundColor: '#f1f5f9' }}>
+    <div style={{ minHeight: '100vh', backgroundColor: 'var(--bg,#F5EFE6)' }}>
       <Header />
       <main style={{ maxWidth: 720, margin: '0 auto', padding: '32px 16px 80px' }}>
 
@@ -262,7 +262,7 @@ export default function StatementTruthPage() {
                     </div>
                   </div>
                   {/* Gap bar */}
-                  <div style={{ marginTop: 10, height: 6, backgroundColor: '#f1f5f9', borderRadius: 6, overflow: 'hidden' }}>
+                  <div style={{ marginTop: 10, height: 6, backgroundColor: 'var(--bg,#F5EFE6)', borderRadius: 6, overflow: 'hidden' }}>
                     <div style={{
                       height: '100%', borderRadius: 6,
                       width: `${Math.min((cat.actualRate / Math.max(cat.advertisedRate, 1)) * 100, 100)}%`,

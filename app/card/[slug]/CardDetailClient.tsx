@@ -153,9 +153,9 @@ export function CardDetailClient({ card }: { card: CreditCard }) {
                 {Object.entries(annualCalc.breakdown).map(([k, v]) => (
                   <div
                     key={k}
-                    className="flex justify-between items-center px-4 py-3 bg-ink-950 border border-white/5 rounded"
+                    className="flex justify-between items-center px-4 py-3 rounded" style={{ background: "var(--surface,#fff)", border: "1px solid var(--line,rgba(20,41,80,0.08))" }}
                   >
-                    <span className="text-sm text-ink-200">{k}</span>
+                    <span className="text-sm" style={{ color: "var(--ink,#142950)" }}>{k}</span>
                     <span
                       className={`font-display text-base tabular ${
                         v < 0 ? 'text-crimson-400' : 'text-emerald-300'
@@ -217,7 +217,7 @@ export function CardDetailClient({ card }: { card: CreditCard }) {
                 return (
                   <div
                     key={i}
-                    className="grid grid-cols-[auto,auto,1fr,auto] gap-4 items-center px-4 py-4 bg-ink-950 border border-white/5 rounded"
+                    className="grid grid-cols-[auto,auto,1fr,auto] gap-4 items-center px-4 py-4 rounded" style={{ background: "var(--surface,#fff)", border: "1px solid var(--line,rgba(20,41,80,0.08))" }}
                   >
                     <div className="font-display text-xl text-ink-500 tabular w-8">{i + 1}</div>
                     <div className="w-9 h-9 rounded bg-white/5 border border-white/10 flex items-center justify-center text-copper-400">
@@ -328,7 +328,7 @@ export function CardDetailClient({ card }: { card: CreditCard }) {
               {card.devaluations.map((d, i) => (
                 <div
                   key={i}
-                  className="grid grid-cols-[auto,auto,1fr,auto] gap-4 items-center px-4 py-4 bg-ink-950 border border-white/5 rounded"
+                  className="grid grid-cols-[auto,auto,1fr,auto] gap-4 items-center px-4 py-4 rounded" style={{ background: "var(--surface,#fff)", border: "1px solid var(--line,rgba(20,41,80,0.08))" }}
                 >
                   <Clock className="w-4 h-4 text-ink-400" />
                   <div className="font-mono text-sm text-ink-200 tabular">

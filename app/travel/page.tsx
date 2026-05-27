@@ -129,7 +129,7 @@ export default function TravelPage() {
               <div style={{
                 maxWidth: '82%',
                 backgroundColor: msg.role === 'user' ? '#1B3A5C' : '#ffffff',
-                color: msg.role === 'user' ? '#f1f5f9' : '#1e293b',
+                color: msg.role === 'user' ? '#f1f5f9' : 'var(--surface,#fff)',
                 borderRadius: msg.role === 'user' ? '16px 4px 16px 16px' : '4px 16px 16px 16px',
                 padding: '13px 16px',
                 fontSize: 14,
@@ -189,7 +189,7 @@ export default function TravelPage() {
             style={{
               flex: 1, padding: '12px 16px', borderRadius: 12,
               border: '1.5px solid #e2e8f0', fontSize: 14,
-              color: '#1e293b', backgroundColor: '#f8fafc', outline: 'none',
+              color: 'var(--surface,#fff)', backgroundColor: '#f8fafc', outline: 'none',
             }}
           />
           <button
@@ -220,4 +220,5 @@ export default function TravelPage() {
     </div>
   );
 }
+
 
