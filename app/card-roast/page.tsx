@@ -1,280 +1,246 @@
-'use client';
+﻿'use client'
 
-import { useState } from 'react';
-import { Header } from '@/components/Header';
-import { SEED_CARDS } from '@/lib/data/seed-cards';
+import { useState } from 'react'
+import { Header } from '@/components/Header'
+import { DesignFooter } from '@/components/design/Footer'
+import { Reveal } from '@/components/design/Reveal'
+import { StatNumber } from '@/components/design/StatNumber'
+import { CopperCTA, GhostCTA } from '@/components/design/CTAs'
+import { CreditCard3D } from '@/components/design/CreditCard3D'
+import Link from 'next/link'
+import { SEED_CARDS } from '@/lib/data/seed-cards'
 
-interface RoastResult {
-  grade: string;
-  gradeColor: string;
-  roast: string;
-  monthlyEarnings: number;
-  monthlyPotential: number;
-  moneyLeft: number;
-  improvements: string[];
-  betterCard: string;
-  betterCardId: string;
-  shareText: string;
+const PRESETS = {
+  balanced: { label: 'Balanced', desc: 'Rs.8L - mixed spend', monthly: 5640, potential: 14820 },
+  travel:   { label: 'Travel junkie', desc: 'Rs.12L - 40% travel', monthly: 7200, potential: 22400 },
+  online:   { label: 'Online stan', desc: 'Rs.6L - 60% online', monthly: 3120, potential: 9800 },
+  rent:     { label: 'Pays rent', desc: 'Rs.9L - 40% rent + utility', monthly: 1280, potential: 6300 },
+} as const
+type PresetKey = keyof typeof PRESETS
+
+const GRADE_COLORS = { A: '#4F8C58', B: '#7C8970', C: '#B97C2C', D: '#C46A52', F: '#B84230' }
+const GRADE_TAGLINES = {
+  A: 'Frankly, we have nothing to say.',
+  B: 'Solid. Could be better. Not a tragedy.',
+  C: "Mid. You're leaving money on the table.",
+  D: 'My friend. What are you doing.',
+  F: 'This is financial self-harm. Please stop.',
 }
 
-const SPEND_PRESETS = [
-  { label: 'Student / Low spender', dining: 3000, shopping: 5000, travel: 2000, fuel: 2000, total: 12000 },
-  { label: 'Salaried professional', dining: 8000, shopping: 15000, travel: 10000, fuel: 4000, total: 37000 },
-  { label: 'Frequent traveler', dining: 10000, shopping: 10000, travel: 40000, fuel: 5000, total: 65000 },
-  { label: 'High spender', dining: 20000, shopping: 30000, travel: 50000, fuel: 8000, total: 108000 },
-];
+const CARDS_LIST = [
+  { id: 'hdfc-infinia', bank: 'HDFC', name: 'Infinia', fee: 12500, variant: 'obsidian' as const },
+  { id: 'hdfc-regalia-gold', bank: 'HDFC', name: 'Regalia Gold', fee: 2500, variant: 'navy' as const },
+  { id: 'axis-magnus', bank: 'AXIS', name: 'Magnus', fee: 12500, variant: 'plum' as const },
+  { id: 'sbi-cashback', bank: 'SBI', name: 'Cashback', fee: 999, variant: 'gold' as const },
+  { id: 'icici-amazon-pay', bank: 'ICICI', name: 'Amazon Pay', fee: 0, variant: 'iris' as const },
+  { id: 'idfc-first-wow', bank: 'IDFC', name: 'WOW', fee: 0, variant: 'mint' as const },
+]
+
+const ISSUES = [
+  { tag: '-Rs.3,200/mo', issue: 'Fuel earns nothing on this card', fix: 'Add BPCL SBI Octane as a stacker' },
+  { tag: '-Rs.1,800/mo', issue: 'Forex markup is 3.5% — high for tier', fix: 'Switch to a 0% forex card for international' },
+  { tag: '-Rs.2,400/mo', issue: 'Lounge program got nerfed in March 2026', fix: 'AU Zenith+ now has unlimited Priority Pass' },
+  { tag: '-Rs.1,000/mo', issue: 'Welcome benefit already expired', fix: 'Apply for a card with active welcome to stack' },
+]
 
 export default function CardRoastPage() {
-  const [selectedCardId, setSelectedCardId] = useState('');
-  const [monthlySpend, setMonthlySpend] = useState(50000);
-  const [spendProfile, setSpendProfile] = useState('');
-  const [loading, setLoading] = useState(false);
-  const [result, setResult] = useState<RoastResult | null>(null);
-  const [copied, setCopied] = useState(false);
+  const [step, setStep] = useState<'input' | 'rolling' | 'result'>('input')
+  const [selectedCard, setSelectedCard] = useState('hdfc-regalia-gold')
+  const [preset, setPreset] = useState<PresetKey>('balanced')
 
-  const cards = SEED_CARDS.slice(0, 40).map(c => ({
-    id: c.id,
-    name: c.name,
-    bank: c.bank,
-    fee: (c as any).annual_fee_inr ?? 0,
-  }));
+  const card = CARDS_LIST.find(c => c.id === selectedCard) || CARDS_LIST[0]
+  const p = PRESETS[preset]
+  const ratio = p.monthly / p.potential
+  const grade = ratio > 0.85 ? 'A' : ratio > 0.65 ? 'B' : ratio > 0.45 ? 'C' : ratio > 0.30 ? 'D' : 'F'
+  const gradeColor = GRADE_COLORS[grade as keyof typeof GRADE_COLORS]
+  const annualLost = (p.potential - p.monthly) * 12
 
-  const roast = async () => {
-    if (!selectedCardId) return;
-    setLoading(true);
-    try {
-      const res = await fetch('/api/card-roast', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ cardId: selectedCardId, monthlySpend, spendProfile }),
-      });
-      const data = await res.json();
-      setResult(data);
-    } catch {
-      setResult({
-        grade: 'C',
-        gradeColor: '#f59e0b',
-        roast: 'Your card is doing okay, but you could be earning significantly more with a better match for your spend pattern.',
-        monthlyEarnings: Math.round(monthlySpend * 0.01),
-        monthlyPotential: Math.round(monthlySpend * 0.025),
-        moneyLeft: Math.round(monthlySpend * 0.015),
-        improvements: ['Switch to a card with higher base reward rate', 'Look for cards with category multipliers for your top spends'],
-        betterCard: 'Axis Magnus or HDFC Regalia Gold',
-        betterCardId: 'axis-magnus',
-        shareText: `My credit card got a C grade on CreditIQ. I'm leaving Rs.${Math.round(monthlySpend * 0.015).toLocaleString('en-IN')}/month on the table! Check yours at creditiq.app/card-roast`,
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const share = () => {
-    if (!result) return;
-    navigator.clipboard.writeText(result.shareText);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
-  };
-
-  const gradeColors: Record<string, { bg: string; text: string; border: string }> = {
-    'A+': { bg: '#f0fdf4', text: '#15803d', border: '#86efac' },
-    'A': { bg: '#f0fdf4', text: '#16a34a', border: '#bbf7d0' },
-    'B': { bg: '#eff6ff', text: '#1d4ed8', border: '#bfdbfe' },
-    'C': { bg: '#fffbeb', text: '#d97706', border: '#fde68a' },
-    'D': { bg: '#fff7ed', text: '#ea580c', border: '#fed7aa' },
-    'F': { bg: '#fef2f2', text: '#dc2626', border: '#fecaca' },
-  };
-
-  const gradeStyle = result ? (gradeColors[result.grade] || gradeColors['C']) : gradeColors['C'];
+  const handleRoast = () => {
+    setStep('rolling')
+    setTimeout(() => setStep('result'), 1800)
+  }
 
   return (
-    <div style={{ minHeight: '100vh', backgroundColor: '#f1f5f9' }}>
+    <>
       <Header />
-      <main style={{ maxWidth: 640, margin: '0 auto', padding: '32px 16px 80px' }}>
+      <div className="page-fade">
+        <section style={{ position: 'relative', paddingTop: 'clamp(120px,18vw,150px)' }}>
+          <div className="aurora" style={{ top: -100, left: -100, width: 600, height: 500, background: 'radial-gradient(circle,rgba(196,106,82,0.35),transparent 60%)' }} />
+          <div className="aurora" style={{ bottom: -150, right: -100, width: 600, height: 600, background: 'radial-gradient(circle,rgba(212,163,115,0.35),transparent 60%)' }} />
 
-        {/* Hero */}
-        <div style={{ textAlign: 'center', marginBottom: 28 }}>
-          <div style={{ fontSize: 48, marginBottom: 12 }}>🔥</div>
-          <h1 style={{ fontSize: 30, fontWeight: 800, color: '#1B3A5C', margin: '0 0 10px', lineHeight: 1.2 }}>
-            Roast my credit card
-          </h1>
-          <p style={{ fontSize: 15, color: '#64748b', margin: 0, lineHeight: 1.6 }}>
-            Get an honest A-F grade on your card. Find out how much money you're leaving on the table every month.
-          </p>
-        </div>
-
-        {!result ? (
-          <div style={{ backgroundColor: '#fff', borderRadius: 20, border: '1px solid #e2e8f0', padding: '28px' }}>
-
-            {/* Card selector */}
-            <div style={{ marginBottom: 20 }}>
-              <label style={{ fontSize: 13, fontWeight: 600, color: '#374151', display: 'block', marginBottom: 8 }}>
-                Which card do you want roasted?
-              </label>
-              <select
-                value={selectedCardId}
-                onChange={e => setSelectedCardId(e.target.value)}
-                style={{
-                  width: '100%', padding: '12px 16px', borderRadius: 12,
-                  border: '1.5px solid #e2e8f0', fontSize: 14, color: '#1e293b',
-                  backgroundColor: '#f8fafc', outline: 'none', cursor: 'pointer',
-                }}
-              >
-                <option value="">Select your card...</option>
-                {cards.map(c => (
-                  <option key={c.id} value={c.id}>{c.name} -- {c.bank}</option>
-                ))}
-              </select>
-            </div>
-
-            {/* Spend profile */}
-            <div style={{ marginBottom: 20 }}>
-              <label style={{ fontSize: 13, fontWeight: 600, color: '#374151', display: 'block', marginBottom: 8 }}>
-                Your spend profile
-              </label>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginBottom: 12 }}>
-                {SPEND_PRESETS.map(p => (
-                  <button
-                    key={p.label}
-                    onClick={() => { setSpendProfile(p.label); setMonthlySpend(p.total); }}
-                    style={{
-                      padding: '12px', borderRadius: 10, textAlign: 'left' as const,
-                      border: spendProfile === p.label ? '2px solid #1B3A5C' : '1px solid #e2e8f0',
-                      backgroundColor: spendProfile === p.label ? '#eff6ff' : '#f8fafc',
-                      cursor: 'pointer',
-                    }}
-                  >
-                    <div style={{ fontSize: 12, fontWeight: 700, color: '#1B3A5C', marginBottom: 2 }}>{p.label}</div>
-                    <div style={{ fontSize: 11, color: '#94a3b8' }}>Rs.{p.total.toLocaleString('en-IN')}/mo</div>
-                  </button>
-                ))}
+          <div className="shell" style={{ position: 'relative', zIndex: 2, paddingBottom: 60 }}>
+            <Reveal style={{ textAlign: 'center', marginBottom: 'clamp(40px,6vw,64px)', maxWidth: 880, margin: '0 auto clamp(40px,6vw,64px)' }}>
+              <div style={{ display: 'inline-flex', alignItems: 'center', gap: 10, padding: '8px 14px', borderRadius: 999, background: 'rgba(196,106,82,0.12)', border: '1px solid rgba(196,106,82,0.30)', marginBottom: 28 }}>
+                <span style={{ fontSize: 14 }}>🔥</span>
+                <span style={{ fontFamily: 'var(--font-mono,monospace)', fontSize: 11, letterSpacing: '0.16em', color: 'var(--terracotta,#C46A52)', textTransform: 'uppercase', fontWeight: 600 }}>AI TOOL - CARD ROAST</span>
               </div>
+              <h1 style={{ fontSize: 'clamp(44px,8vw,108px)', letterSpacing: '-0.04em', lineHeight: 1.0, fontWeight: 800, color: 'var(--ink,#142950)' }}>
+                Is your card{' '}
+                <span style={{ fontFamily: 'var(--font-serif,Georgia,serif)', color: 'var(--terracotta,#C46A52)', fontStyle: 'italic', fontWeight: 400 }}>wasting</span>{' '}
+                your money?
+              </h1>
+              <p style={{ maxWidth: 580, margin: '24px auto 0', color: 'var(--ink-2,#2A3F6B)', fontSize: 'clamp(16px,1.4vw,19px)', lineHeight: 1.55 }}>
+                Drop your card and a month of spending. We grade it brutally — and tell you exactly{' '}
+                <span style={{ fontFamily: 'var(--font-serif,Georgia,serif)', color: 'var(--ink,#142950)' }}>what you are losing</span>.
+              </p>
+            </Reveal>
 
-              <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                <span style={{ fontSize: 13, color: '#94a3b8', whiteSpace: 'nowrap' as const }}>Or enter monthly spend:</span>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 6, flex: 1 }}>
-                  <span style={{ fontSize: 13, color: '#94a3b8' }}>Rs.</span>
-                  <input
-                    type="number"
-                    value={monthlySpend}
-                    onChange={e => setMonthlySpend(parseInt(e.target.value) || 0)}
-                    style={{
-                      flex: 1, padding: '10px 12px', borderRadius: 10,
-                      border: '1.5px solid #e2e8f0', fontSize: 14, color: '#1e293b',
-                      backgroundColor: '#f8fafc', outline: 'none',
-                    }}
-                  />
+            {step === 'input' && (
+              <Reveal>
+                <div style={{ padding: 'clamp(28px,4vw,48px)', maxWidth: 1080, margin: '0 auto', background: 'var(--paper,#FAF5EB)', borderRadius: 24, border: '1px solid var(--line,rgba(20,41,80,0.08))' }}>
+                  <div style={{ marginBottom: 40 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 20 }}>
+                      <span style={{ width: 26, height: 26, borderRadius: 999, background: 'var(--copper-3,#D89B2A)', color: '#FFF', fontWeight: 700, fontSize: 13, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>1</span>
+                      <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: '0.15em', textTransform: 'uppercase', color: 'var(--copper,#8C5F12)' }}>PICK YOUR CARD</div>
+                    </div>
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 12 }} className="grid-1-mobile">
+                      {CARDS_LIST.map(c => (
+                        <div key={c.id} onClick={() => setSelectedCard(c.id)} style={{ padding: 16, borderRadius: 16, border: `1px solid ${selectedCard === c.id ? 'var(--copper-3,#D89B2A)' : 'var(--line,rgba(20,41,80,0.08))'}`, background: selectedCard === c.id ? 'rgba(212,163,115,0.10)' : 'var(--surface,#fff)', cursor: 'pointer', transition: 'all 0.25s', display: 'flex', gap: 14, alignItems: 'center' }}>
+                          <div style={{ width: 64, flexShrink: 0 }}>
+                            <CreditCard3D variant={c.variant} name={c.name.toUpperCase()} bank={c.bank} tagline="" network="VISA" small interactive={false} />
+                          </div>
+                          <div style={{ flex: 1, minWidth: 0 }}>
+                            <div style={{ fontSize: 9, fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', color: 'var(--ink-3,#5A6A8A)' }}>{c.bank}</div>
+                            <div style={{ fontWeight: 600, fontSize: 15, marginTop: 2, letterSpacing: '-0.01em', color: 'var(--ink,#142950)' }}>{c.name}</div>
+                            <div style={{ fontFamily: 'var(--font-mono,monospace)', fontSize: 11, color: 'var(--ink-3,#5A6A8A)', marginTop: 3 }}>Rs.{c.fee.toLocaleString('en-IN')}/yr</div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div style={{ marginBottom: 40 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 20 }}>
+                      <span style={{ width: 26, height: 26, borderRadius: 999, background: 'var(--copper-3,#D89B2A)', color: '#FFF', fontWeight: 700, fontSize: 13, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>2</span>
+                      <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: '0.15em', textTransform: 'uppercase', color: 'var(--copper,#8C5F12)' }}>PICK YOUR SPEND VIBE</div>
+                    </div>
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 10 }} className="grid-2-mobile">
+                      {(Object.entries(PRESETS) as [PresetKey, typeof PRESETS[PresetKey]][]).map(([k, v]) => (
+                        <div key={k} onClick={() => setPreset(k)} style={{ padding: 18, borderRadius: 16, border: `1px solid ${preset === k ? 'var(--copper-3,#D89B2A)' : 'var(--line,rgba(20,41,80,0.08))'}`, background: preset === k ? 'rgba(212,163,115,0.10)' : 'var(--surface,#fff)', cursor: 'pointer', transition: 'all 0.25s' }}>
+                          <div style={{ fontWeight: 600, fontSize: 17, color: 'var(--ink,#142950)' }}>{v.label}</div>
+                          <div style={{ fontFamily: 'var(--font-mono,monospace)', fontSize: 10.5, color: 'var(--ink-3,#5A6A8A)', marginTop: 6 }}>{v.desc}</div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div style={{ textAlign: 'center', paddingTop: 24, borderTop: '1px solid var(--line,rgba(20,41,80,0.08))' }}>
+                    <p style={{ color: 'var(--ink-3,#5A6A8A)', fontSize: 13.5, marginBottom: 18 }}>
+                      By clicking below, you consent to having your financial choices questioned.
+                    </p>
+                    <CopperCTA onClick={handleRoast}>Roast my card</CopperCTA>
+                  </div>
+                </div>
+              </Reveal>
+            )}
+
+            {step === 'rolling' && (
+              <div style={{ textAlign: 'center', padding: '80px 0', maxWidth: 600, margin: '0 auto' }}>
+                <div style={{ fontFamily: 'var(--font-serif,Georgia,serif)', fontSize: 80, color: 'var(--copper-3,#D89B2A)', lineHeight: 1, fontStyle: 'italic' }}>...</div>
+                <div style={{ marginTop: 20, color: 'var(--ink-3,#5A6A8A)', fontSize: 12, letterSpacing: '0.15em', fontFamily: 'var(--font-mono,monospace)' }}>
+                  ANALYSING 47 CATEGORIES - 12 PARTNER LISTS - YOUR LIFE CHOICES
+                </div>
+                <div style={{ marginTop: 28, height: 2, background: 'var(--line,rgba(20,41,80,0.08))', borderRadius: 999, overflow: 'hidden', maxWidth: 320, margin: '28px auto 0' }}>
+                  <div style={{ height: '100%', background: 'linear-gradient(90deg,var(--copper,#8C5F12),var(--copper-3,#D89B2A))', animation: 'rollbar 1.8s cubic-bezier(0.65,0,0.35,1) forwards' }} />
+                  <style>{`@keyframes rollbar { from { transform: translateX(-100%); } to { transform: translateX(0); } }`}</style>
                 </div>
               </div>
-            </div>
+            )}
 
-            <button
-              onClick={roast}
-              disabled={loading || !selectedCardId}
-              style={{
-                width: '100%', padding: '16px', borderRadius: 14,
-                backgroundColor: loading || !selectedCardId ? '#94a3b8' : '#1B3A5C',
-                color: '#fff', border: 'none', fontSize: 16, fontWeight: 700,
-                cursor: loading || !selectedCardId ? 'not-allowed' : 'pointer',
-              }}
-            >
-              {loading ? 'Roasting your card... 🔥' : '🔥 Roast My Card'}
-            </button>
+            {step === 'result' && (
+              <div className="page-fade">
+                <div style={{ display: 'grid', gridTemplateColumns: '1.1fr 1fr', gap: 'clamp(32px,5vw,64px)', alignItems: 'center', marginBottom: 'clamp(48px,7vw,80px)' }} className="grid-1-mobile">
+                  <div>
+                    <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: '0.15em', textTransform: 'uppercase', color: 'var(--copper,#8C5F12)', marginBottom: 14 }}>{card.bank} {card.name.toUpperCase()} - {p.label.toUpperCase()}</div>
+                    <div style={{ position: 'relative', display: 'inline-block' }}>
+                      <div style={{ fontFamily: 'var(--font-serif,Georgia,serif)', fontSize: 'clamp(200px,36vw,400px)', lineHeight: 0.78, fontStyle: 'italic', color: gradeColor, textShadow: `0 0 80px ${gradeColor}55`, fontWeight: 400, letterSpacing: '-0.04em' }}>{grade}</div>
+                      <div style={{ position: 'absolute', top: 24, right: -16, padding: '8px 14px', borderRadius: 999, background: 'var(--surface,#fff)', border: '1px solid var(--line-strong,rgba(20,41,80,0.2))', boxShadow: '0 2px 8px rgba(20,41,80,0.08)' }}>
+                        <span style={{ fontFamily: 'var(--font-mono,monospace)', fontSize: 11, color: 'var(--ink-2,#2A3F6B)' }}>FINAL GRADE</span>
+                      </div>
+                    </div>
+                  </div>
+                  <div>
+                    <p style={{ fontSize: 'clamp(24px,3.5vw,44px)', lineHeight: 1.08, letterSpacing: '-0.02em', fontWeight: 600, color: 'var(--ink,#142950)' }}>
+                      <span style={{ fontFamily: 'var(--font-serif,Georgia,serif)', color: gradeColor }}>"</span>
+                      {GRADE_TAGLINES[grade as keyof typeof GRADE_TAGLINES]}
+                      <span style={{ fontFamily: 'var(--font-serif,Georgia,serif)', color: gradeColor }}>"</span>
+                    </p>
+                    <p style={{ marginTop: 20, color: 'var(--ink-3,#5A6A8A)', fontSize: 12, letterSpacing: '0.1em', fontFamily: 'var(--font-mono,monospace)' }}>
+                      CREDITIQ ENGINE - v2.1
+                    </p>
+                    <div style={{ marginTop: 32, padding: 24, borderRadius: 18, background: 'rgba(184,66,48,0.08)', border: '1px solid rgba(184,66,48,0.25)' }}>
+                      <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: '0.15em', textTransform: 'uppercase', color: '#B84230', marginBottom: 8 }}>ANNUAL OPPORTUNITY COST</div>
+                      <div style={{ fontSize: 'clamp(40px,5.5vw,64px)', fontWeight: 800, color: '#B84230', letterSpacing: '-0.03em' }}>
+                        Rs.<StatNumber value={annualLost} />
+                      </div>
+                      <p style={{ marginTop: 10, color: 'var(--ink-3,#5A6A8A)', fontSize: 13.5 }}>What you could have earned on the right card this year.</p>
+                    </div>
+                  </div>
+                </div>
+
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20, marginBottom: 48 }} className="grid-1-mobile">
+                  <div style={{ padding: 32, borderRadius: 20, background: 'var(--surface,#fff)', border: '1px solid var(--line,rgba(20,41,80,0.08))' }}>
+                    <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: '0.15em', textTransform: 'uppercase', color: 'var(--ink-3,#5A6A8A)', marginBottom: 12 }}>YOUR MONTHLY EARN</div>
+                    <div style={{ fontSize: 'clamp(42px,6vw,84px)', fontWeight: 800, letterSpacing: '-0.04em', color: 'var(--ink,#142950)' }}>Rs.<StatNumber value={p.monthly} /></div>
+                  </div>
+                  <div style={{ padding: 32, borderRadius: 20, background: 'linear-gradient(180deg,rgba(212,163,115,0.10),transparent)', border: '1px solid rgba(184,116,58,0.3)' }}>
+                    <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: '0.15em', textTransform: 'uppercase', color: 'var(--copper,#8C5F12)', marginBottom: 12 }}>POTENTIAL - RIGHT CARD</div>
+                    <div style={{ fontSize: 'clamp(42px,6vw,84px)', fontWeight: 800, letterSpacing: '-0.04em', color: 'var(--copper-3,#D89B2A)' }}>Rs.<StatNumber value={p.potential} /></div>
+                  </div>
+                </div>
+
+                <div style={{ padding: 32, borderRadius: 20, background: 'var(--surface,#fff)', border: '1px solid var(--line,rgba(20,41,80,0.08))', marginBottom: 48 }}>
+                  <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: '0.15em', textTransform: 'uppercase', color: 'var(--copper,#8C5F12)', marginBottom: 22 }}>WHAT IS DRAGGING YOU DOWN</div>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+                    {ISSUES.map((it, i) => (
+                      <div key={i} style={{ display: 'grid', gridTemplateColumns: '130px 1fr 1fr', gap: 20, paddingBottom: 14, borderBottom: i < ISSUES.length - 1 ? '1px solid var(--line,rgba(20,41,80,0.08))' : 'none', alignItems: 'center' }} className="grid-1-mobile">
+                        <div style={{ fontFamily: 'var(--font-mono,monospace)', fontSize: 15, color: '#B84230', fontWeight: 500 }}>{it.tag}</div>
+                        <div style={{ fontSize: 15, color: 'var(--ink,#142950)' }}>{it.issue}</div>
+                        <div style={{ fontSize: 14, color: 'var(--ink-3,#5A6A8A)' }}>
+                          <span style={{ fontFamily: 'var(--font-serif,Georgia,serif)', color: 'var(--copper-3,#D89B2A)' }}>→</span> {it.fix}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 1fr', gap: 20 }} className="grid-1-mobile">
+                  <div style={{ padding: 32, borderRadius: 20, background: 'linear-gradient(135deg,rgba(212,163,115,0.10),rgba(124,137,112,0.06))', border: '1px solid rgba(184,116,58,0.3)' }}>
+                    <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: '0.15em', textTransform: 'uppercase', color: 'var(--copper,#8C5F12)', marginBottom: 14 }}>OUR ALTERNATIVE</div>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 1fr', gap: 24, alignItems: 'center' }} className="grid-1-mobile">
+                      <div>
+                        <h3 style={{ fontSize: 30, letterSpacing: '-0.02em', marginBottom: 10, color: 'var(--ink,#142950)', fontWeight: 800 }}>
+                          HDFC <span style={{ fontFamily: 'var(--font-serif,Georgia,serif)', color: 'var(--copper-3,#D89B2A)', fontStyle: 'italic', fontWeight: 400 }}>Infinia</span>
+                        </h3>
+                        <p style={{ color: 'var(--ink-3,#5A6A8A)', fontSize: 14, lineHeight: 1.55 }}>On your profile: 3.3% effective, unlimited lounges, 1:1 airline transfers. Break-even Rs.6.2L.</p>
+                        <div style={{ marginTop: 18 }}>
+                          <Link href="/card/hdfc-infinia" style={{ display: 'inline-flex', alignItems: 'center', gap: 8, padding: '12px 22px', borderRadius: 999, background: 'var(--copper-3,#D89B2A)', color: 'var(--ink,#142950)', fontWeight: 700, fontSize: 15, textDecoration: 'none' }}>See full breakdown</Link>
+                        </div>
+                      </div>
+                      <div style={{ maxWidth: 200 }}>
+                        <CreditCard3D variant="obsidian" name="INFINIA" bank="HDFC BANK" tagline="Reserve metal" network="VISA" />
+                      </div>
+                    </div>
+                  </div>
+                  <div style={{ padding: 32, borderRadius: 20, background: 'var(--surface,#fff)', border: '1px solid var(--line,rgba(20,41,80,0.08))', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+                    <div>
+                      <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: '0.15em', textTransform: 'uppercase', color: 'var(--ink-3,#5A6A8A)', marginBottom: 14 }}>SHARE THE ROAST</div>
+                      <h3 style={{ fontSize: 24, lineHeight: 1.1, fontWeight: 400, color: 'var(--ink,#142950)' }}>Receipts for the group chat.</h3>
+                      <p style={{ marginTop: 12, color: 'var(--ink-3,#5A6A8A)', fontSize: 14 }}>Generate a shareable card with your grade and the savings number.</p>
+                    </div>
+                    <div style={{ marginTop: 22, display: 'flex', flexDirection: 'column', gap: 10 }}>
+                      <GhostCTA href="#">Share to Instagram</GhostCTA>
+                      <GhostCTA href="#">Copy roast link</GhostCTA>
+                      <button onClick={() => setStep('input')} style={{ color: 'var(--ink-3,#5A6A8A)', background: 'none', border: 'none', cursor: 'pointer', fontSize: 14, marginTop: 4 }}>Roast another card</button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
-        ) : (
-          <>
-            {/* Grade card -- shareable */}
-            <div style={{
-              backgroundColor: gradeStyle.bg, border: `2px solid ${gradeStyle.border}`,
-              borderRadius: 20, padding: '32px', textAlign: 'center' as const, marginBottom: 20,
-              boxShadow: '0 4px 20px rgba(0,0,0,0.06)',
-            }}>
-              <div style={{ fontSize: 11, fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase' as const, letterSpacing: 1.5, marginBottom: 12 }}>
-                CreditIQ Card Grade
-              </div>
-              <div style={{
-                fontSize: 96, fontWeight: 900, color: gradeStyle.text, lineHeight: 1,
-                marginBottom: 8, fontFamily: 'serif',
-              }}>
-                {result.grade}
-              </div>
-              <div style={{ fontSize: 14, color: '#64748b', lineHeight: 1.6, maxWidth: 400, margin: '0 auto 16px' }}>
-                {result.roast}
-              </div>
-
-              {/* Money stats */}
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginTop: 16 }}>
-                <div style={{ backgroundColor: 'rgba(255,255,255,0.8)', borderRadius: 12, padding: '14px' }}>
-                  <div style={{ fontSize: 20, fontWeight: 800, color: '#16a34a' }}>
-                    Rs.{result.monthlyEarnings.toLocaleString('en-IN')}
-                  </div>
-                  <div style={{ fontSize: 11, color: '#94a3b8' }}>Currently earning/mo</div>
-                </div>
-                <div style={{ backgroundColor: 'rgba(255,255,255,0.8)', borderRadius: 12, padding: '14px' }}>
-                  <div style={{ fontSize: 20, fontWeight: 800, color: '#dc2626' }}>
-                    Rs.{result.moneyLeft.toLocaleString('en-IN')}
-                  </div>
-                  <div style={{ fontSize: 11, color: '#94a3b8' }}>Left on table/mo</div>
-                </div>
-              </div>
-            </div>
-
-            {/* Improvements */}
-            <div style={{ backgroundColor: '#fff', borderRadius: 16, border: '1px solid #e2e8f0', padding: '20px 24px', marginBottom: 16 }}>
-              <div style={{ fontSize: 15, fontWeight: 700, color: '#1B3A5C', marginBottom: 14 }}>What would earn you more</div>
-              {result.improvements.map((imp, i) => (
-                <div key={i} style={{ display: 'flex', gap: 10, marginBottom: 10, alignItems: 'flex-start' }}>
-                  <div style={{
-                    width: 20, height: 20, borderRadius: 6, backgroundColor: '#fef3c7',
-                    display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    fontSize: 11, color: '#d97706', fontWeight: 800, flexShrink: 0, marginTop: 1,
-                  }}>!</div>
-                  <span style={{ fontSize: 14, color: '#374151', lineHeight: 1.5 }}>{imp}</span>
-                </div>
-              ))}
-            </div>
-
-            {/* Better card CTA */}
-            <div style={{ backgroundColor: '#1B3A5C', borderRadius: 16, padding: '20px 24px', marginBottom: 16 }}>
-              <div style={{ fontSize: 11, fontWeight: 700, color: '#C9972E', textTransform: 'uppercase' as const, letterSpacing: 1.2, marginBottom: 8 }}>
-                Better alternative
-              </div>
-              <div style={{ fontSize: 15, color: '#cbd5e1', lineHeight: 1.6, marginBottom: 16 }}>
-                {result.betterCard} would earn you <strong style={{ color: '#C9972E' }}>Rs.{result.monthlyPotential.toLocaleString('en-IN')}/month</strong> -- Rs.{result.moneyLeft.toLocaleString('en-IN')} more than your current card.
-              </div>
-              <div style={{ display: 'flex', gap: 10 }}>
-                <a href={`/cards/${result.betterCardId}`} style={{
-                  flex: 1, display: 'block', backgroundColor: '#C9972E', color: '#fff',
-                  textAlign: 'center' as const, padding: '12px', borderRadius: 10,
-                  fontSize: 14, fontWeight: 700, textDecoration: 'none',
-                }}>See {result.betterCard}</a>
-                <a href="/spend-optimizer" style={{
-                  flex: 1, display: 'block', backgroundColor: 'rgba(255,255,255,0.1)', color: '#fff',
-                  textAlign: 'center' as const, padding: '12px', borderRadius: 10,
-                  fontSize: 14, fontWeight: 600, textDecoration: 'none',
-                  border: '1px solid rgba(255,255,255,0.2)',
-                }}>Full analysis</a>
-              </div>
-            </div>
-
-            {/* Share */}
-            <button onClick={share} style={{
-              width: '100%', padding: '14px', backgroundColor: copied ? '#16a34a' : '#fff',
-              border: '1px solid #e2e8f0', borderRadius: 12, fontSize: 14,
-              fontWeight: 700, color: copied ? '#fff' : '#1B3A5C', cursor: 'pointer',
-              marginBottom: 10, transition: 'all 0.2s',
-            }}>
-              {copied ? '(ok) Copied to clipboard!' : '🔁 Share my card grade'}
-            </button>
-
-            <button onClick={() => setResult(null)} style={{
-              width: '100%', padding: '13px', backgroundColor: 'transparent',
-              border: 'none', fontSize: 13, color: '#94a3b8', cursor: 'pointer',
-            }}>
-              Roast a different card
-            </button>
-          </>
-        )}
-      </main>
-    </div>
-  );
+        </section>
+        <DesignFooter />
+      </div>
+    </>
+  )
 }
