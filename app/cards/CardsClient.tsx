@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { useState, useRef } from 'react';
 import { CardTile, type TileCard } from '@/components/design/CardTile';
@@ -192,3 +192,4 @@ export function CardsClient() {
     </>
   );
 }
+

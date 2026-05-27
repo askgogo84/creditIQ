@@ -1,4 +1,4 @@
-import { Metadata } from 'next';
+﻿import { Metadata } from 'next';
 import { Header } from '@/components/Header';
 import { SectionHeader }  from '@/components/design/SectionHeader';
 import { CopperCTA, GhostCTA } from '@/components/design/CTAs';
@@ -8,12 +8,12 @@ import { CardsClient }    from './CardsClient';
 
 export const metadata: Metadata = {
   title: 'All Credit Cards in India 2026 -- Compare 100+ cards | CreditIQ',
-  description: 'Compare all 93 credit cards in India. HDFC, Axis, SBI, ICICI, Amex, IDFC First and more. Honest reviews, real fees, no affiliate bias. Find the best card for your spends.',
+  description: 'Compare all 100+ credit cards in India. HDFC, Axis, SBI, ICICI, Amex, IDFC First and more. Honest reviews, real fees, no affiliate bias. Find the best card for your spends.',
   keywords: 'credit cards India 2026, best credit card India, HDFC credit card, Axis credit card, SBI credit card, compare credit cards India',
   alternates: { canonical: 'https://creditiq.app/cards' },
   openGraph: {
     title: 'All Credit Cards in India 2026 | CreditIQ',
-    description: 'Compare 93 credit cards honestly. No affiliate bias.',
+    description: 'Compare 100+ credit cards honestly. No affiliate bias.',
     url: 'https://creditiq.app/cards',
   },
 };
@@ -89,3 +89,4 @@ export default function CardsIndexPage() {
     </>
   );
 }
+
