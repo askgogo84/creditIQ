@@ -27,6 +27,8 @@ export function Header() {
   const router = useRouter()
   const [user, setUser] = useState<any>(null)
   const [aiOpen, setAiOpen] = useState(false)
+  const [cardsOpen, setCardsOpen] = useState(false)
+  const [travelOpen, setTravelOpen] = useState(false)
   const [mobileOpen, setMobileOpen] = useState(false)
   const [scrolled, setScrolled] = useState(false)
 
@@ -319,6 +321,7 @@ export function Header() {
     </>
   )
 }
+
 
 
 
