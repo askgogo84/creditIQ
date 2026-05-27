@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { createBrowserClient } from '@supabase/ssr';
 import { Header } from '@/components/Header';
-import { Footer } from '@/components/Footer';
+import { DesignFooter } from '@/components/design/Footer';
 import { MessageSquare, CheckCircle, Zap, AlertCircle, ArrowRight, Copy, LogIn, Plus } from 'lucide-react';
 import Link from 'next/link';
 
@@ -269,7 +269,7 @@ You have earned 2,500 Reward Points on your HDFC Card XX4821. Total RP Balance: 
 
         </div>
       </section>
-      <Footer />
+      <DesignFooter />
     </main>
   );
 }

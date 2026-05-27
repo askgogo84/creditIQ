@@ -1,5 +1,5 @@
 import { Header } from '@/components/Header';
-import { Footer } from '@/components/Footer';
+import { DesignFooter } from '@/components/design/Footer';
 import { UAE_CARDS, UAE_BANKS } from '@/lib/data/uae-cards';
 import Link from 'next/link';
 import { Shield, Plane, CreditCard, ArrowRight, Star } from 'lucide-react';
@@ -270,7 +270,7 @@ export default function UAEPage() {
         </div>
       </section>
 
-      <Footer />
+      <DesignFooter />
     </main>
   );
 }

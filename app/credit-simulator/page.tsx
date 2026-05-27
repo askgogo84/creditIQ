@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { Header } from '@/components/Header';
-import { Footer } from '@/components/Footer';
+import { DesignFooter } from '@/components/design/Footer';
 
 interface SimAction {
   id: string;
@@ -295,7 +295,7 @@ export default function CreditSimulatorPage() {
           </div>
         </div>
       </main>
-      <Footer />
+      <DesignFooter />
     </div>
   );
 }

@@ -3,7 +3,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { createBrowserClient } from '@supabase/ssr';
 import { Header } from '@/components/Header';
-import { Footer } from '@/components/Footer';
+import { DesignFooter } from '@/components/design/Footer';
 import { Upload, FileText, CheckCircle, AlertCircle, Zap, ArrowRight, Lock, X, ExternalLink, LogIn } from 'lucide-react';
 import Link from 'next/link';
 
@@ -321,7 +321,7 @@ export default function UploadStatementPage() {
           )}
         </div>
       </section>
-      <Footer />
+      <DesignFooter />
     </main>
   );
 }

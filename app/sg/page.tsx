@@ -1,5 +1,5 @@
 import { Header } from '@/components/Header';
-import { Footer } from '@/components/Footer';
+import { DesignFooter } from '@/components/design/Footer';
 import Link from 'next/link';
 import type { Metadata } from 'next';
 
@@ -36,7 +36,7 @@ export default function SGPage() {
           <Link href="/uae" style={{ color: 'var(--accent)', fontSize: 14 }}>Browse UAE cards instead →</Link>
         </div>
       </section>
-      <Footer />
+      <DesignFooter />
     </main>
   );
 }

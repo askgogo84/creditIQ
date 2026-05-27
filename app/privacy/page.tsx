@@ -1,5 +1,5 @@
 import { Header } from '@/components/Header';
-import { Footer } from '@/components/Footer';
+import { DesignFooter } from '@/components/design/Footer';
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
@@ -155,7 +155,7 @@ For escalations, contact the Data Protection Board of India (once operational un
           </div>
         </div>
       </section>
-      <Footer />
+      <DesignFooter />
     </main>
   );
 }

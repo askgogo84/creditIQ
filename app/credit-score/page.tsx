@@ -1,6 +1,6 @@
 'use client';
 import { Header } from '@/components/Header';
-import { Footer } from '@/components/Footer';
+import { DesignFooter } from '@/components/design/Footer';
 import { CompareTray } from '@/components/CompareTray';
 import { ExternalLink, ShieldCheck, TrendingUp, AlertCircle } from 'lucide-react';
 
@@ -103,7 +103,7 @@ export default function CreditScorePage() {
 
         </div>
       </section>
-      <Footer />
+      <DesignFooter />
       <CompareTray />
     </main>
   );

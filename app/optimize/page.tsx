@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { useState, useMemo, useEffect, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { Header } from '@/components/Header';
-import { Footer } from '@/components/Footer';
+import { DesignFooter } from '@/components/design/Footer';
 import { CompareTray } from '@/components/CompareTray';
 import { CardMockup } from '@/components/cards/CardMockup';
 import { SEED_CARDS } from '@/lib/data/seed-cards';
@@ -458,7 +458,7 @@ function OptimizeContent() {
               </div>
             </div>
           )}
-      <Footer />
+      <DesignFooter />
       <CompareTray />
     </main>
   );

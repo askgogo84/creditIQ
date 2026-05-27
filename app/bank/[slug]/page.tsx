@@ -1,7 +1,7 @@
 import { notFound } from 'next/navigation';
 import { SEED_CARDS } from '@/lib/data/seed-cards';
 import { Header } from '@/components/Header';
-import { Footer } from '@/components/Footer';
+import { DesignFooter } from '@/components/design/Footer';
 import { CompareTray } from '@/components/CompareTray';
 import { CardTile } from '@/components/CardTile';
 import type { Bank } from '@/lib/types';
@@ -84,7 +84,7 @@ export default function BankPage({ params }: { params: { slug: string } }) {
           )}
         </div>
       </section>
-      <Footer />
+      <DesignFooter />
       <CompareTray />
     </main>
   );

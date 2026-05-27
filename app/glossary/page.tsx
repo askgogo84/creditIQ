@@ -1,5 +1,5 @@
 import { Header } from '@/components/Header';
-import { Footer } from '@/components/Footer';
+import { DesignFooter } from '@/components/design/Footer';
 import { CompareTray } from '@/components/CompareTray';
 
 const TERMS = [
@@ -79,7 +79,7 @@ export default function GlossaryPage() {
           ))}
         </div>
       </section>
-      <Footer />
+      <DesignFooter />
       <CompareTray />
     </main>
   );

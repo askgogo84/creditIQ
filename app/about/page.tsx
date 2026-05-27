@@ -1,5 +1,5 @@
 import { Header } from '@/components/Header';
-import { Footer } from '@/components/Footer';
+import { DesignFooter } from '@/components/design/Footer';
 import { CompareTray } from '@/components/CompareTray';
 import { SEED_CARDS } from '@/lib/data/seed-cards';
 import { TrendingDown, ShieldCheck, Zap, Eye, ArrowRight } from 'lucide-react';
@@ -148,7 +148,7 @@ export default function AboutPage() {
         </div>
       </section>
 
-      <Footer />
+      <DesignFooter />
       <CompareTray />
     </main>
   );

@@ -5,7 +5,7 @@ import { useState, useEffect } from 'react';
 import { createBrowserClient } from '@supabase/ssr';
 import { useRouter } from 'next/navigation';
 import { Header } from '@/components/Header';
-import { Footer } from '@/components/Footer';
+import { DesignFooter } from '@/components/design/Footer';
 import { Plus, TrendingUp, ArrowRight, Zap, RefreshCw, FileText, MessageSquare, LogOut, CreditCard, Upload, Trash2, X, Check } from 'lucide-react';
 import Link from 'next/link';
 
@@ -465,7 +465,7 @@ export default function DashboardPage() {
 
         </div>
       </section>
-      <Footer />
+      <DesignFooter />
     </main>
   );
 }

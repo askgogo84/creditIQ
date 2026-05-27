@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { Header } from '@/components/Header';
-import { Footer } from '@/components/Footer';
+import { DesignFooter } from '@/components/design/Footer';
 import { Check, Zap, Shield, Star, CreditCard, TrendingUp, Bell, Plane, Building2, ChevronDown } from 'lucide-react';
 import Link from 'next/link';
 
@@ -242,7 +242,7 @@ export default function PremiumPage() {
         </div>
       </section>
 
-      <Footer />
+      <DesignFooter />
     </main>
   );
 }

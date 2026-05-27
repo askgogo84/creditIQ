@@ -1,7 +1,7 @@
 'use client';
 import { useState, useEffect } from 'react';
 import { Header } from '@/components/Header';
-import { Footer } from '@/components/Footer';
+import { DesignFooter } from '@/components/design/Footer';
 import { RefreshCw, Check, X, Plus, Loader2 } from 'lucide-react';
 
 interface PendingCard {
@@ -156,7 +156,7 @@ export default function AdminCardsPage() {
           </div>
         </div>
       </section>
-      <Footer />
+      <DesignFooter />
     </main>
   );
 }

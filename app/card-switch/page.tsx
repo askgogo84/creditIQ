@@ -4,7 +4,7 @@ import { useState } from 'react';
 import type { CSSProperties } from 'react';
 import Link from 'next/link';
 import { Header } from '@/components/Header';
-import { Footer } from '@/components/Footer';
+import { DesignFooter } from '@/components/design/Footer';
 import { SEED_CARDS } from '@/lib/data/seed-cards';
 import { getApplyUrl } from '@/lib/affiliate';
 
@@ -474,7 +474,7 @@ export default function CardSwitchPage() {
           </>
         )}
       </main>
-      <Footer />
+      <DesignFooter />
     </div>
   );
 }

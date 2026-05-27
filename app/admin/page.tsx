@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { Header } from '@/components/Header';
-import { Footer } from '@/components/Footer';
+import { DesignFooter } from '@/components/design/Footer';
 import { SEED_CARDS } from '@/lib/data/seed-cards';
 import { Lock, RefreshCw, Database, Eye, EyeOff } from 'lucide-react';
 
@@ -82,7 +82,7 @@ export default function AdminPage() {
             </div>
           </div>
         </section>
-        <Footer />
+        <DesignFooter />
       </main>
     );
   }
@@ -167,7 +167,7 @@ export default function AdminPage() {
           </div>
         </div>
       </section>
-      <Footer />
+      <DesignFooter />
     </main>
   );
 }

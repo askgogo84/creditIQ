@@ -1,7 +1,7 @@
 import { Metadata } from 'next';
 import Link from 'next/link';
 import { Header } from '@/components/Header';
-import { Footer } from '@/components/Footer';
+import { DesignFooter } from '@/components/design/Footer';
 
 export const metadata: Metadata = {
   title: 'Best Credit Cards in Singapore 2026 | CreditIQ',
@@ -163,7 +163,7 @@ export default function SingaporePage() {
         </div>
 
       </main>
-      <Footer />
+      <DesignFooter />
     </div>
   );
 }
