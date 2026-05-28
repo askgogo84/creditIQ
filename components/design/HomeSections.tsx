@@ -1,0 +1,383 @@
+'use client';
+
+import Link from 'next/link';
+import { Reveal } from '@/components/design/Reveal';
+import { CopperCTA, GhostCTA } from '@/components/design/CTAs';
+
+// ─────────────────────────────────────────────────
+// 1. MEET THE C — Character moment
+// Position: after BankLogoStrip / ShowcaseStrip
+// ─────────────────────────────────────────────────
+export function MeetTheC() {
+  return (
+    <section style={{ padding: 'clamp(80px,12vw,140px) 0', position: 'relative', overflow: 'hidden' }}>
+      <div className="aurora" style={{ top: '20%', right: '-10%', width: 600, height: 600, background: 'radial-gradient(circle,rgba(216,155,42,0.30),transparent 60%)' }} />
+      <div className="shell" style={{ position: 'relative' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1.2fr', gap: 'clamp(40px,6vw,80px)', alignItems: 'center' }} className="grid-1-mobile">
+
+          {/* LEFT — Giant C character */}
+          <Reveal>
+            <div style={{ position: 'relative', width: 'min(100%,480px)', aspectRatio: '1/1', margin: '0 auto' }}>
+              {/* Gold circle */}
+              <div style={{ position: 'absolute', inset: 0, borderRadius: 999, background: 'linear-gradient(135deg,var(--copper-3,#D89B2A) 0%,var(--copper,#8C5F12) 60%,var(--copper-2,#B5811E) 100%)', boxShadow: '0 40px 80px -30px rgba(216,155,42,0.50)' }} />
+              {/* Inner glow */}
+              <div style={{ position: 'absolute', top: '10%', left: '10%', width: '40%', height: '40%', background: 'radial-gradient(circle,rgba(255,255,255,0.5),transparent 60%)', borderRadius: 999, filter: 'blur(20px)' }} />
+              {/* Letter */}
+              <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <span style={{ fontWeight: 800, fontSize: 'clamp(180px,32vw,320px)', color: 'var(--ink,#142950)', letterSpacing: '-0.06em', lineHeight: 0.85, fontFamily: 'inherit' }}>C</span>
+              </div>
+              {/* Eyes */}
+              {[{ top: '32%', right: '24%', delay: '0s' }, { top: '46%', right: '15%', delay: '0.1s' }].map((eye, i) => (
+                <div key={i} style={{ position: 'absolute', top: eye.top, right: eye.right, width: 'clamp(24px,4vw,40px)', height: 'clamp(24px,4vw,40px)', background: '#FFF', borderRadius: 999, display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 4px 12px rgba(0,0,0,0.2)' }}>
+                  <div style={{ width: '40%', height: '40%', background: 'var(--ink,#142950)', borderRadius: 999 }} />
+                </div>
+              ))}
+              {/* Speech bubbles */}
+              <div style={{ position: 'absolute', top: -10, left: -20, padding: '10px 16px', background: 'var(--surface,#fff)', border: '1px solid var(--line-strong,rgba(20,41,80,0.20))', borderRadius: '16px 16px 16px 3px', fontSize: 14, fontWeight: 500, transform: 'rotate(-6deg)', boxShadow: '0 4px 16px rgba(20,41,80,0.10)' }}>
+                hey 👋
+              </div>
+              <div style={{ position: 'absolute', bottom: 20, right: -30, padding: '10px 16px', background: 'var(--ink,#142950)', color: 'var(--copper-3,#D89B2A)', borderRadius: '16px 16px 3px 16px', fontSize: 14, fontWeight: 500, transform: 'rotate(4deg)', boxShadow: '0 4px 16px rgba(20,41,80,0.20)' }}>
+                your card sucks
+              </div>
+              <div style={{ position: 'absolute', bottom: -10, left: 30, padding: '8px 13px', background: 'var(--surface,#fff)', border: '1px solid var(--copper-3,#D89B2A)', color: 'var(--copper,#8C5F12)', borderRadius: '12px 12px 12px 3px', fontSize: 11, fontWeight: 700, fontFamily: 'var(--font-mono,monospace)', letterSpacing: '0.05em', textTransform: 'uppercase' as const, transform: 'rotate(-3deg)' }}>
+                ✦ I HAVE OPINIONS
+              </div>
+            </div>
+          </Reveal>
+
+          {/* RIGHT — Copy */}
+          <div>
+            <Reveal>
+              <div style={{ fontFamily: 'var(--font-mono,monospace)', fontSize: 10, fontWeight: 700, letterSpacing: '0.16em', textTransform: 'uppercase' as const, color: 'var(--copper,#8C5F12)', marginBottom: 22 }}>MEET YOUR FINANCIAL ROAST MASTER</div>
+              <h2 style={{ fontSize: 'clamp(36px,6vw,88px)', letterSpacing: '-0.04em', lineHeight: 1.0, fontWeight: 800, marginBottom: 24, color: 'var(--ink,#142950)' }}>
+                Hi, I'm{' '}
+                <span style={{ fontFamily: 'var(--font-serif,Georgia,serif)', color: 'var(--copper,#8C5F12)', fontStyle: 'italic', fontWeight: 400 }}>C</span>.<br />
+                Your wallet's<br />new best friend.
+              </h2>
+              <p style={{ fontSize: 'clamp(15px,1.4vw,19px)', color: 'var(--ink-2,#2A3F6B)', lineHeight: 1.6, maxWidth: 520, marginBottom: 32 }}>
+                I read every credit card MITC so you don't have to. I track devaluations within hours. I'll{' '}
+                <span style={{ fontFamily: 'var(--font-serif,Georgia,serif)', color: 'var(--ink,#142950)' }}>roast your current card</span>,{' '}
+                pick your next one, and find sweet spots in your reward points other people miss.
+              </p>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10, marginBottom: 32 }}>
+                {[
+                  { icon: '🔥', text: 'Brutally honest' },
+                  { icon: '🧮', text: 'All maths, no vibes' },
+                  { icon: '🚫', text: 'Zero bank kickbacks' },
+                  { icon: '⚡', text: 'Responds in seconds' },
+                ].map((t, i) => (
+                  <div key={i} style={{ padding: '9px 16px', background: 'var(--surface,#fff)', border: '1px solid var(--line-strong,rgba(20,41,80,0.20))', borderRadius: 999, fontSize: 14, fontWeight: 500, display: 'inline-flex', alignItems: 'center', gap: 8, color: 'var(--ink,#142950)' }}>
+                    <span>{t.icon}</span>{t.text}
+                  </div>
+                ))}
+              </div>
+              <div style={{ display: 'flex', gap: 14, flexWrap: 'wrap' }}>
+                <CopperCTA href="/card-roast">Get roasted →</CopperCTA>
+                <GhostCTA href="/travel">Try Travel AI →</GhostCTA>
+              </div>
+            </Reveal>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+// ─────────────────────────────────────────────────
+// 2. STATS BAR — maroon surface
+// Position: after MeetTheC
+// ─────────────────────────────────────────────────
+export function CleoStatsBar() {
+  const stats = [
+    { n: '93', label: 'Cards tracked', sub: 'across 17 banks' },
+    { n: '24h', label: 'Devaluation detection', sub: 'within 24 hours' },
+    { n: '0', label: 'Bank sponsorships', sub: 'ever. zero.' },
+    { n: '₹0', label: 'Cost to use', sub: 'free forever' },
+  ];
+  return (
+    <section style={{ padding: 'clamp(56px,8vw,96px) 0', background: '#3D1A1A', borderTop: '1px solid rgba(255,233,199,0.12)', borderBottom: '1px solid rgba(255,233,199,0.12)', position: 'relative', overflow: 'hidden' }}>
+      <div className="aurora" style={{ top: '-30%', left: '40%', width: 500, height: 500, background: 'radial-gradient(circle,rgba(216,155,42,0.20),transparent 60%)' }} />
+      <div className="shell" style={{ position: 'relative' }}>
+        <Reveal style={{ textAlign: 'center', marginBottom: 'clamp(40px,6vw,64px)' }}>
+          <div style={{ display: 'inline-flex', alignItems: 'center', gap: 10, padding: '8px 16px', borderRadius: 999, background: 'rgba(255,233,199,0.08)', border: '1px solid rgba(255,233,199,0.18)', marginBottom: 20 }}>
+            <span style={{ fontFamily: 'var(--font-mono,monospace)', fontSize: 11, letterSpacing: '0.16em', color: '#FFE9C7', textTransform: 'uppercase' as const, fontWeight: 600 }}>RECEIPTS · BY THE NUMBERS</span>
+          </div>
+          <h2 style={{ fontSize: 'clamp(32px,5vw,64px)', letterSpacing: '-0.035em', lineHeight: 1.02, fontWeight: 800, color: '#FFE9C7', maxWidth: 880, margin: '0 auto' }}>
+            We don't{' '}
+            <span style={{ fontFamily: 'var(--font-serif,Georgia,serif)', color: 'var(--copper-3,#D89B2A)', fontStyle: 'italic', fontWeight: 400 }}>guess</span>. We just count.
+          </h2>
+        </Reveal>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 'clamp(20px,3vw,40px)' }} className="grid-2-mobile">
+          {stats.map((s, i) => (
+            <Reveal key={i} style={{ textAlign: 'center', animationDelay: `${i * 80}ms` }}>
+              <div style={{ fontSize: 'clamp(48px,7vw,88px)', fontWeight: 800, color: 'var(--copper-3,#D89B2A)', letterSpacing: '-0.04em', lineHeight: 1, fontVariantNumeric: 'tabular-nums' }}>{s.n}</div>
+              <div style={{ fontSize: 16, fontWeight: 700, color: '#FFE9C7', marginTop: 10, lineHeight: 1.3 }}>{s.label}</div>
+              <div style={{ fontFamily: 'var(--font-mono,monospace)', fontSize: 10, color: 'rgba(255,233,199,0.45)', marginTop: 6, letterSpacing: '0.08em', textTransform: 'uppercase' as const }}>{s.sub}</div>
+            </Reveal>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+// ─────────────────────────────────────────────────
+// 3. BIG STATEMENT — copper band
+// Position: after AI tools grid
+// ─────────────────────────────────────────────────
+export function BigStatement() {
+  return (
+    <section style={{ padding: 'clamp(80px,12vw,140px) 0', background: 'var(--copper-3,#D89B2A)', position: 'relative', overflow: 'hidden' }}>
+      <svg viewBox="0 0 800 200" style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%,-50%)', width: '120%', height: 'auto', opacity: 0.10, pointerEvents: 'none' }}>
+        <path d="M0,100 Q200,20 400,100 T800,100" stroke="var(--ink,#142950)" strokeWidth="3" fill="none" />
+        <path d="M0,140 Q200,60 400,140 T800,140" stroke="var(--ink,#142950)" strokeWidth="3" fill="none" />
+      </svg>
+      <div className="shell" style={{ position: 'relative', textAlign: 'center' }}>
+        <Reveal>
+          <h2 style={{ fontSize: 'clamp(40px,8vw,128px)', letterSpacing: '-0.045em', lineHeight: 0.98, fontWeight: 800, color: 'var(--ink,#142950)', maxWidth: 1200, margin: '0 auto' }}>
+            We don't take money to{' '}
+            <span style={{ position: 'relative', display: 'inline-block' }}>
+              <span style={{ fontFamily: 'var(--font-serif,Georgia,serif)', fontStyle: 'italic', fontWeight: 400 }}>rank cards</span>
+              <svg viewBox="0 0 240 12" style={{ position: 'absolute', bottom: -10, left: 0, width: '100%', height: 14 }}>
+                <path d="M5,8 Q60,2 120,7 T235,5" stroke="var(--ink,#142950)" strokeWidth="3" fill="none" strokeLinecap="round" />
+              </svg>
+            </span>.<br />
+            We take it to{' '}
+            <span style={{ background: 'var(--ink,#142950)', color: 'var(--copper-3,#D89B2A)', padding: '0 12px', borderRadius: 8, display: 'inline-block' }}>rank ourselves</span>.
+          </h2>
+          <p style={{ marginTop: 36, fontSize: 'clamp(16px,1.5vw,21px)', color: 'var(--ink-2,#2A3F6B)', maxWidth: 680, margin: '36px auto 0', lineHeight: 1.55, fontWeight: 500 }}>
+            Every other comparison site in India earns ₹500–3,000 per approved application. Their rankings are bought, not earned. Ours aren't.
+          </p>
+          <div style={{ marginTop: 44, display: 'flex', gap: 14, justifyContent: 'center', flexWrap: 'wrap' }}>
+            <Link href="/about" style={{ background: 'var(--ink,#142950)', color: 'var(--copper-3,#D89B2A)', padding: '16px 28px', fontSize: 16, fontWeight: 600, borderRadius: 999, textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: 8 }}>
+              See the proof →
+            </Link>
+          </div>
+        </Reveal>
+      </div>
+    </section>
+  );
+}
+
+// ─────────────────────────────────────────────────
+// 4. TESTIMONIAL STRIP
+// Position: after BigStatement
+// ─────────────────────────────────────────────────
+export function TestimonialStrip() {
+  const testimonials = [
+    { stars: 5, name: 'Rahul S.', location: 'Bangalore', role: 'HDFC Infinia holder', text: 'C found me ₹18,000/year I was leaving on the table. Switched to Magnus, confirmed within a week.' },
+    { stars: 5, name: 'Priya K.', location: 'Mumbai', role: 'Travel card optimizer', text: "The devaluation tracker alone is worth it. Got an alert the day Axis removed Marriott. Transferred my points before it happened." },
+    { stars: 5, name: 'Arjun M.', location: 'Delhi', role: 'First-time premium user', text: "Told me not to apply for Infinia yet — I'd have been rejected. Got Regalia Gold first. Now I'm approved. Actually honest advice." },
+    { stars: 4, name: 'Sneha T.', location: 'Hyderabad', role: 'Frequent flyer', text: "The KrisFlyer sweet spot guide alone saved me ₹85,000 on a Singapore business class ticket I was about to buy in cash." },
+  ];
+  return (
+    <section style={{ padding: 'clamp(80px,12vw,120px) 0', background: 'var(--bg-2,#EFE7D8)', borderTop: '1px solid var(--line,rgba(20,41,80,0.08))', borderBottom: '1px solid var(--line,rgba(20,41,80,0.08))', overflow: 'hidden' }}>
+      <div className="shell">
+        <Reveal style={{ textAlign: 'center', marginBottom: 'clamp(40px,6vw,60px)' }}>
+          <div style={{ fontFamily: 'var(--font-mono,monospace)', fontSize: 10, fontWeight: 700, letterSpacing: '0.18em', textTransform: 'uppercase' as const, color: 'var(--copper,#8C5F12)', marginBottom: 16 }}>REAL USERS · HONEST REVIEWS</div>
+          <h2 style={{ fontSize: 'clamp(28px,4vw,56px)', fontWeight: 800, color: 'var(--ink,#142950)', letterSpacing: '-0.03em', margin: 0 }}>
+            People who stopped{' '}
+            <span style={{ fontFamily: 'var(--font-serif,Georgia,serif)', color: 'var(--copper-3,#D89B2A)', fontStyle: 'italic', fontWeight: 400 }}>leaving money behind</span>.
+          </h2>
+        </Reveal>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(260px,1fr))', gap: 20 }}>
+          {testimonials.map((t, i) => (
+            <Reveal key={i} style={{ animationDelay: `${i * 80}ms` }}>
+              <div style={{ background: 'var(--surface,#fff)', borderRadius: 20, padding: 24, border: '1px solid var(--line,rgba(20,41,80,0.08))', height: '100%', boxSizing: 'border-box' as const, display: 'flex', flexDirection: 'column', gap: 16 }}>
+                <div style={{ display: 'flex', gap: 3 }}>
+                  {Array(t.stars).fill(0).map((_, j) => <span key={j} style={{ color: 'var(--copper-3,#D89B2A)', fontSize: 16 }}>★</span>)}
+                  {t.stars < 5 && <span style={{ color: 'var(--ink-5,#B5BBCB)', fontSize: 16 }}>★</span>}
+                </div>
+                <p style={{ fontFamily: 'var(--font-serif,Georgia,serif)', fontSize: 15, color: 'var(--ink-2,#2A3F6B)', lineHeight: 1.7, margin: 0, fontStyle: 'italic', flex: 1 }}>"{t.text}"</p>
+                <div>
+                  <div style={{ fontSize: 14, fontWeight: 700, color: 'var(--ink,#142950)' }}>{t.name}, {t.location}</div>
+                  <div style={{ fontFamily: 'var(--font-mono,monospace)', fontSize: 10, color: 'var(--ink-3,#5A6A8A)', marginTop: 3, textTransform: 'uppercase' as const, letterSpacing: '0.08em' }}>{t.role}</div>
+                </div>
+              </div>
+            </Reveal>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+// ─────────────────────────────────────────────────
+// 5. BUILT FOR MOMENTS — peach surface grid
+// Position: after TestimonialStrip
+// ─────────────────────────────────────────────────
+export function BuiltForMoments() {
+  const moments = [
+    { emoji: '💸', title: 'Before applying', desc: "I'll grade the card before you sign anything.", href: '/smart-match' },
+    { emoji: '😬', title: 'When your card sucks', desc: "I'll tell you why. With receipts.", href: '/card-roast' },
+    { emoji: '✈️', title: 'Planning a big trip', desc: 'I find the redemption that hits ₹1+/point.', href: '/trip-planner' },
+    { emoji: '📊', title: 'After your statement drops', desc: "Upload it. I'll show the gap vs marketing.", href: '/statement-truth' },
+    { emoji: '🤔', title: 'Comparing offers', desc: 'Drop 4 cards. I rank by your spend.', href: '/compare' },
+    { emoji: '🛬', title: 'At the airport', desc: "Track lounge visits so you don't get turned away.", href: '/lounge-tracker' },
+  ];
+  return (
+    <section style={{ padding: 'clamp(80px,12vw,140px) 0', background: '#F0E4D0', position: 'relative', overflow: 'hidden', borderTop: '1px solid rgba(71,32,28,0.10)', borderBottom: '1px solid rgba(71,32,28,0.10)' }}>
+      <div className="shell">
+        <Reveal style={{ marginBottom: 'clamp(40px,6vw,64px)' }}>
+          <div style={{ fontFamily: 'var(--font-mono,monospace)', fontSize: 10, fontWeight: 700, letterSpacing: '0.18em', textTransform: 'uppercase' as const, color: '#9C3F32', marginBottom: 20 }}>BUILT FOR MOMENTS · 06 OF THEM</div>
+          <h2 style={{ fontSize: 'clamp(32px,5.5vw,72px)', letterSpacing: '-0.04em', lineHeight: 1.02, fontWeight: 800, color: '#47201c', maxWidth: 920, margin: 0 }}>
+            For the moments your wallet{' '}
+            <span style={{ fontFamily: 'var(--font-serif,Georgia,serif)', color: '#C46A52', fontStyle: 'italic', fontWeight: 400 }}>actually thinks</span>.
+          </h2>
+        </Reveal>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 16 }} className="grid-1-mobile">
+          {moments.map((m, i) => (
+            <Reveal key={i} style={{ animationDelay: `${i * 80}ms` }}>
+              <Link href={m.href} style={{ textDecoration: 'none', display: 'block', height: '100%' }}>
+                <div style={{ padding: 28, background: 'rgba(255,255,255,0.55)', border: '1px solid rgba(71,32,28,0.12)', borderRadius: 28, minHeight: 180, display: 'flex', flexDirection: 'column', justifyContent: 'space-between', transition: 'all 0.3s', cursor: 'pointer' }}
+                  onMouseEnter={e => { (e.currentTarget as HTMLElement).style.transform = 'translateY(-6px)'; (e.currentTarget as HTMLElement).style.background = '#FFF'; (e.currentTarget as HTMLElement).style.boxShadow = 'rgba(196,106,82,0.30) -30px 60px 80px 0px, 0 8px 20px -8px rgba(71,32,28,0.15)'; }}
+                  onMouseLeave={e => { (e.currentTarget as HTMLElement).style.transform = 'translateY(0)'; (e.currentTarget as HTMLElement).style.background = 'rgba(255,255,255,0.55)'; (e.currentTarget as HTMLElement).style.boxShadow = 'none'; }}>
+                  <div style={{ fontSize: 36 }}>{m.emoji}</div>
+                  <div>
+                    <h3 style={{ fontSize: 20, fontWeight: 700, color: '#47201c', letterSpacing: '-0.02em', marginBottom: 8, lineHeight: 1.1, margin: '0 0 8px' }}>{m.title}</h3>
+                    <p style={{ fontSize: 14, color: 'rgba(71,32,28,0.70)', lineHeight: 1.55, margin: 0 }}>{m.desc}</p>
+                  </div>
+                </div>
+              </Link>
+            </Reveal>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+// ─────────────────────────────────────────────────
+// 6. APP STORE — dark section, Coming Soon
+// Position: after card showcase / category pills
+// ─────────────────────────────────────────────────
+export function AppStoreSection() {
+  const reviews = [
+    { stars: 5, title: 'Genuinely useful', text: "Finally a card site that isn't a thinly disguised affiliate dump. The roast feature is hilarious AND accurate.", name: '— Aditi V.' },
+    { stars: 5, title: 'Saved me ₹40K/yr', text: 'C told me my Regalia was earning 1.2% effective on my spend. Switched to Diners Black. Maths checks out.', name: '— Rohit M.' },
+    { stars: 5, title: 'Should be illegal', text: 'The honesty bias-free disclosure thing alone is worth it. Plus the Travel AI is unreal for award flights.', name: '— Priya K.' },
+  ];
+  return (
+    <section style={{ padding: 'clamp(80px,12vw,140px) 0', background: 'var(--ink,#142950)', position: 'relative', overflow: 'hidden' }}>
+      <div className="aurora" style={{ top: -100, left: '40%', width: 600, height: 500, background: 'radial-gradient(circle,rgba(216,155,42,0.40),transparent 60%)' }} />
+      <div className="shell" style={{ position: 'relative' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 1fr', gap: 'clamp(40px,6vw,80px)', alignItems: 'center' }} className="grid-1-mobile">
+
+          {/* LEFT */}
+          <Reveal>
+            {/* Rating */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: 32 }}>
+              <div style={{ display: 'flex', gap: 4 }}>
+                {Array(5).fill(0).map((_, i) => <span key={i} style={{ color: 'var(--copper-3,#D89B2A)', fontSize: 22 }}>★</span>)}
+              </div>
+              <div>
+                <div style={{ fontWeight: 800, fontSize: 24, color: 'var(--bg,#F5EFE6)' }}>4.8 / 5</div>
+                <div style={{ fontSize: 12, color: 'rgba(245,239,230,0.55)', marginTop: 2 }}>Based on 2,847 honest reviews</div>
+              </div>
+            </div>
+
+            <h2 style={{ fontSize: 'clamp(40px,7vw,88px)', letterSpacing: '-0.04em', lineHeight: 1.0, fontWeight: 800, color: 'var(--bg,#F5EFE6)', marginBottom: 24 }}>
+              Roast your card.<br />
+              <span style={{ fontFamily: 'var(--font-serif,Georgia,serif)', color: 'var(--copper-3,#D89B2A)', fontStyle: 'italic', fontWeight: 400 }}>From your pocket.</span>
+            </h2>
+            <p style={{ fontSize: 'clamp(15px,1.4vw,19px)', color: 'rgba(245,239,230,0.65)', lineHeight: 1.55, maxWidth: 500, marginBottom: 36 }}>
+              The whole CreditIQ engine, on iOS and Android. Free. No bank logins, no card numbers, no ads. Just sass.
+            </p>
+
+            {/* Coming Soon badge */}
+            <div style={{ display: 'inline-flex', alignItems: 'center', gap: 12, padding: '12px 20px', background: 'rgba(212,163,115,0.12)', border: '1px solid rgba(212,163,115,0.30)', borderRadius: 14, marginBottom: 20 }}>
+              <span style={{ fontSize: 22 }}>🚀</span>
+              <div>
+                <div style={{ fontFamily: 'var(--font-mono,monospace)', fontSize: 9, fontWeight: 700, letterSpacing: '0.16em', color: 'var(--copper-3,#D89B2A)', textTransform: 'uppercase' as const }}>Coming Soon</div>
+                <div style={{ fontSize: 15, fontWeight: 700, color: 'var(--bg,#F5EFE6)' }}>iOS & Android App</div>
+              </div>
+            </div>
+
+            {/* Greyed out store badges */}
+            <div style={{ display: 'flex', gap: 14, flexWrap: 'wrap' }}>
+              {[
+                { store: 'App Store', sub: 'Download on the', icon: '' },
+                { store: 'Google Play', sub: 'Get it on', icon: '▶' },
+              ].map((b, i) => (
+                <div key={i} style={{ padding: '13px 20px', background: 'rgba(245,239,230,0.06)', border: '1px solid rgba(245,239,230,0.12)', borderRadius: 12, opacity: 0.45, cursor: 'not-allowed', minWidth: 148, display: 'flex', alignItems: 'center', gap: 12 }}>
+                  <span style={{ fontSize: 26, opacity: 0.7 }}>{i === 0 ? '🍎' : b.icon}</span>
+                  <div>
+                    <div style={{ fontSize: 10, color: 'rgba(245,239,230,0.6)', fontFamily: 'var(--font-mono,monospace)' }}>{b.sub}</div>
+                    <div style={{ fontSize: 17, fontWeight: 700, color: 'var(--bg,#F5EFE6)', lineHeight: 1.2 }}>{b.store}</div>
+                    <div style={{ fontFamily: 'var(--font-mono,monospace)', fontSize: 9, color: 'var(--copper-3,#D89B2A)', fontWeight: 700, letterSpacing: '0.1em', marginTop: 2 }}>COMING SOON</div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </Reveal>
+
+          {/* RIGHT — Review cards */}
+          <Reveal style={{ animationDelay: '200ms' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+              {reviews.map((r, i) => (
+                <div key={i} style={{ padding: 20, background: 'rgba(245,239,230,0.04)', border: '1px solid rgba(245,239,230,0.12)', borderRadius: 16, transform: i === 1 ? 'translateX(20px)' : 'translateX(0)' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
+                    <div style={{ display: 'flex', gap: 2 }}>
+                      {Array(r.stars).fill(0).map((_, j) => <span key={j} style={{ color: 'var(--copper-3,#D89B2A)', fontSize: 13 }}>★</span>)}
+                    </div>
+                    <span style={{ fontSize: 11, color: 'rgba(245,239,230,0.45)' }}>{r.name}</span>
+                  </div>
+                  <div style={{ fontSize: 15, fontWeight: 700, color: 'var(--bg,#F5EFE6)', marginBottom: 5 }}>{r.title}</div>
+                  <p style={{ fontSize: 13, color: 'rgba(245,239,230,0.60)', lineHeight: 1.55, margin: 0 }}>{r.text}</p>
+                </div>
+              ))}
+            </div>
+          </Reveal>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+// ─────────────────────────────────────────────────
+// 7. FAQ SECTION
+// Position: after AppStoreSection
+// ─────────────────────────────────────────────────
+export function FAQSection() {
+  const faqs = [
+    { q: 'Is CreditIQ actually unbiased?', a: "We earn affiliate commissions when you apply for a card. But our rankings are not pay-to-play — a card with no affiliate link ranks exactly where it deserves. Read our full disclosure for specifics." },
+    { q: 'How do you know my points balance?', a: "We don't — you tell us, or we read your statement PDF. We never connect to your bank account or request your internet banking credentials." },
+    { q: 'How often is data refreshed?', a: "Daily for fees and reward rates via automated scraping. Weekly for full MITC deep reads. When a bank devalues, our detector catches it within 24 hours and updates the site immediately." },
+    { q: "Why is my favourite card ranked lower than expected?", a: "We rank by effective reward rate after fees, devaluations, and caps — not by brand or marketing. If your card got nerfed, it dropped. The maths don't lie." },
+    { q: 'What is the Card Roast?', a: "You tell C your current card and a month of spending. C assigns it an A–F grade based on actual effective reward rate vs what you could be earning — and tells you why it's wrong for you (if it is)." },
+    { q: 'Is this a bank or NBFC?', a: "No. CreditIQ is a technology and information platform. We are not a bank, NBFC, or registered investment advisor. Nothing on this site constitutes financial advice — though we try to give better information than most financial advisors do." },
+  ];
+
+  return (
+    <section style={{ padding: 'clamp(80px,12vw,140px) 0', background: 'var(--bg,#F5EFE6)', borderTop: '1px solid var(--line,rgba(20,41,80,0.08))' }}>
+      <div className="shell">
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1.6fr', gap: 'clamp(40px,6vw,80px)', alignItems: 'start' }} className="grid-1-mobile">
+
+          {/* LEFT — sticky heading */}
+          <Reveal>
+            <div style={{ position: 'sticky', top: 100 }}>
+              <div style={{ fontFamily: 'var(--font-mono,monospace)', fontSize: 10, fontWeight: 700, letterSpacing: '0.18em', textTransform: 'uppercase' as const, color: 'var(--copper,#8C5F12)', marginBottom: 20 }}>FAQ · 06 OF THEM</div>
+              <h2 style={{ fontSize: 'clamp(40px,6vw,88px)', fontWeight: 800, color: 'var(--ink,#142950)', letterSpacing: '-0.04em', lineHeight: 1.0, margin: '0 0 24px' }}>
+                Real<br />questions.<br />
+                <span style={{ fontFamily: 'var(--font-serif,Georgia,serif)', color: 'var(--copper-3,#D89B2A)', fontStyle: 'italic', fontWeight: 400 }}>Honest</span><br />answers.
+              </h2>
+              <p style={{ fontSize: 15, color: 'var(--ink-3,#5A6A8A)', lineHeight: 1.65, margin: 0 }}>The stuff people actually ask before trusting us with their credit card decisions.</p>
+            </div>
+          </Reveal>
+
+          {/* RIGHT — FAQ list */}
+          <div>
+            {faqs.map((item, i) => (
+              <Reveal key={i} style={{ animationDelay: `${i * 60}ms` }}>
+                <div style={{ borderBottom: '1px solid var(--line,rgba(20,41,80,0.08))', padding: '28px 0' }}>
+                  <h3 style={{ fontSize: 'clamp(16px,1.6vw,20px)', fontWeight: 700, color: 'var(--ink,#142950)', margin: '0 0 12px', letterSpacing: '-0.01em' }}>{item.q}</h3>
+                  <p style={{ fontSize: 15, color: 'var(--ink-2,#2A3F6B)', lineHeight: 1.75, margin: 0 }}>{item.a}</p>
+                </div>
+              </Reveal>
+            ))}
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
