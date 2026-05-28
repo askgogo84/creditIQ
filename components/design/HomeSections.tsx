@@ -1,4 +1,8 @@
 'use client';
+import React from 'react';
+import Link from 'next/link';
+import { Reveal } from '@/components/design/Reveal';
+import { CopperCTA, GhostCTA } from '@/components/design/CTAs';
 
 import Link from 'next/link';
 import { Reveal } from '@/components/design/Reveal';
@@ -89,7 +93,7 @@ export function MeetTheC() {
 // ─────────────────────────────────────────────────
 export function CleoStatsBar() {
   const stats = [
-    { n: '93', label: 'Cards tracked', sub: 'across 17 banks' },
+    { n: '100+', label: 'Cards tracked', sub: 'across 24 banks' },
     { n: '24h', label: 'Devaluation detection', sub: 'within 24 hours' },
     { n: '0', label: 'Bank sponsorships', sub: 'ever. zero.' },
     { n: '₹0', label: 'Cost to use', sub: 'free forever' },
@@ -340,40 +344,48 @@ export function AppStoreSection() {
 // ─────────────────────────────────────────────────
 export function FAQSection() {
   const faqs = [
-    { q: 'Is CreditIQ actually unbiased?', a: "We earn affiliate commissions when you apply for a card. But our rankings are not pay-to-play — a card with no affiliate link ranks exactly where it deserves. Read our full disclosure for specifics." },
-    { q: 'How do you know my points balance?', a: "We don't — you tell us, or we read your statement PDF. We never connect to your bank account or request your internet banking credentials." },
-    { q: 'How often is data refreshed?', a: "Daily for fees and reward rates via automated scraping. Weekly for full MITC deep reads. When a bank devalues, our detector catches it within 24 hours and updates the site immediately." },
-    { q: "Why is my favourite card ranked lower than expected?", a: "We rank by effective reward rate after fees, devaluations, and caps — not by brand or marketing. If your card got nerfed, it dropped. The maths don't lie." },
-    { q: 'What is the Card Roast?', a: "You tell C your current card and a month of spending. C assigns it an A–F grade based on actual effective reward rate vs what you could be earning — and tells you why it's wrong for you (if it is)." },
-    { q: 'Is this a bank or NBFC?', a: "No. CreditIQ is a technology and information platform. We are not a bank, NBFC, or registered investment advisor. Nothing on this site constitutes financial advice — though we try to give better information than most financial advisors do." },
+    { q: "How do you make money if you don't take affiliate commissions?", a: "We earn a flat Rs.2,800 per successful card application — the same on every card, regardless of which bank it is. Zero incentive to push you toward any particular card." },
+    { q: "How often is data refreshed?", a: "Daily for fees and reward rates via automated scraping. Weekly for full MITC deep reads. When a bank devalues a card, our detector catches it within 24 hours." },
+    { q: "Is my data safe? Do I need to give bank login?", a: "Never. We never ask for internet banking credentials, passwords, or OTPs. You share only what you choose — your card name, spending categories, or a PDF statement." },
+    { q: "Can I trust the rankings?", a: "Our rankings are based on effective reward rate on real spend patterns — after fees, caps, and devaluations. No card pays to rank higher. The maths decide." },
+    { q: "Why is my favourite card ranked lower than I expected?", a: "We rank by effective reward rate after fees, devaluations, and caps — not by brand or marketing. If your card got nerfed recently, it dropped. The maths don't lie." },
+    { q: "Does this work for UAE / Singapore / NRIs?", a: "CreditIQ is built for Indian credit cards and the Indian rupee ecosystem. UAE and Singapore cards are not currently tracked. NRIs with Indian cards can use all features." },
   ];
+
+  const [open, setOpen] = React.useState<number | null>(null);
 
   return (
     <section style={{ padding: 'clamp(80px,12vw,140px) 0', background: 'var(--bg,#F5EFE6)', borderTop: '1px solid var(--line,rgba(20,41,80,0.08))' }}>
       <div className="shell">
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1.6fr', gap: 'clamp(40px,6vw,80px)', alignItems: 'start' }} className="grid-1-mobile">
 
-          {/* LEFT — sticky heading */}
           <Reveal>
             <div style={{ position: 'sticky', top: 100 }}>
-              <div style={{ fontFamily: 'var(--font-mono,monospace)', fontSize: 10, fontWeight: 700, letterSpacing: '0.18em', textTransform: 'uppercase' as const, color: 'var(--copper,#8C5F12)', marginBottom: 20 }}>FAQ · 06 OF THEM</div>
-              <h2 style={{ fontSize: 'clamp(40px,6vw,88px)', fontWeight: 800, color: 'var(--ink,#142950)', letterSpacing: '-0.04em', lineHeight: 1.0, margin: '0 0 24px' }}>
-                Real<br />questions.<br />
-                <span style={{ fontFamily: 'var(--font-serif,Georgia,serif)', color: 'var(--copper-3,#D89B2A)', fontStyle: 'italic', fontWeight: 400 }}>Honest</span><br />answers.
+              <h2 style={{ fontSize: 'clamp(36px,5.5vw,72px)', fontWeight: 800, color: 'var(--ink,#142950)', letterSpacing: '-0.04em', lineHeight: 1.0, margin: '0 0 16px' }}>
+                The honest<br />
+                <span style={{ fontFamily: 'var(--font-serif,Georgia,serif)', color: 'var(--copper-3,#D89B2A)', fontStyle: 'italic', fontWeight: 400 }}>questions</span>.
               </h2>
-              <p style={{ fontSize: 15, color: 'var(--ink-3,#5A6A8A)', lineHeight: 1.65, margin: 0 }}>The stuff people actually ask before trusting us with their credit card decisions.</p>
+              <p style={{ fontSize: 15, color: 'var(--ink-3,#5A6A8A)', lineHeight: 1.65, margin: '0 0 24px' }}>People ask a lot of them. Here are 06 of them.</p>
+              <Link href="/about" style={{ fontSize: 14, fontWeight: 600, color: 'var(--copper,#8C5F12)', textDecoration: 'none' }}>Full disclosure →</Link>
             </div>
           </Reveal>
 
-          {/* RIGHT — FAQ list */}
           <div>
             {faqs.map((item, i) => (
-              <Reveal key={i} style={{ animationDelay: `${i * 60}ms` }}>
-                <div style={{ borderBottom: '1px solid var(--line,rgba(20,41,80,0.08))', padding: '28px 0' }}>
-                  <h3 style={{ fontSize: 'clamp(16px,1.6vw,20px)', fontWeight: 700, color: 'var(--ink,#142950)', margin: '0 0 12px', letterSpacing: '-0.01em' }}>{item.q}</h3>
-                  <p style={{ fontSize: 15, color: 'var(--ink-2,#2A3F6B)', lineHeight: 1.75, margin: 0 }}>{item.a}</p>
-                </div>
-              </Reveal>
+              <div key={i} style={{ borderBottom: '1px solid var(--line,rgba(20,41,80,0.10))' }}>
+                <button
+                  onClick={() => setOpen(open === i ? null : i)}
+                  style={{ width: '100%', display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '22px 0', background: 'none', border: 'none', cursor: 'pointer', textAlign: 'left', gap: 16 }}
+                >
+                  <span style={{ fontSize: 'clamp(15px,1.3vw,18px)', fontWeight: 600, color: 'var(--ink,#142950)', lineHeight: 1.4 }}>{item.q}</span>
+                  <span style={{ fontSize: 24, color: 'var(--copper-3,#D89B2A)', flexShrink: 0, transition: 'transform 0.25s', transform: open === i ? 'rotate(45deg)' : 'rotate(0deg)', display: 'inline-block', fontWeight: 300, lineHeight: 1 }}>+</span>
+                </button>
+                {open === i && (
+                  <div style={{ paddingBottom: 22 }}>
+                    <p style={{ fontSize: 15, color: 'var(--ink-2,#2A3F6B)', lineHeight: 1.75, margin: 0 }}>{item.a}</p>
+                  </div>
+                )}
+              </div>
             ))}
           </div>
         </div>
