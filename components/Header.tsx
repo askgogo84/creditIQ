@@ -29,6 +29,7 @@ export function Header() {
   const [aiOpen, setAiOpen] = useState(false)
   const [cardsOpen, setCardsOpen] = useState(false)
   const [travelOpen, setTravelOpen] = useState(false)
+  const [discoverOpen, setDiscoverOpen] = useState(false)
   const [mobileOpen, setMobileOpen] = useState(false)
   const [scrolled, setScrolled] = useState(false)
 
@@ -45,7 +46,7 @@ export function Header() {
     return () => window.removeEventListener('scroll', onScroll)
   }, [])
 
-  useEffect(() => { setMobileOpen(false); setAiOpen(false) }, [pathname])
+  useEffect(() => { setMobileOpen(false); setAiOpen(false); setDiscoverOpen(false) }, [pathname])
 
   const signOut = async () => {
     const sb = createBrowserClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!)
@@ -140,7 +141,33 @@ export function Header() {
 
           {/* Desktop pill nav */}
           <nav className="ciq-nav" style={{ position: 'relative' }}>
-            <Link href="/" className={`ciq-nav-item${isActive('/') ? ' active' : ''}`}>Discover</Link>
+            <div style={{ position: 'relative' }} onMouseEnter={() => setDiscoverOpen(true)} onMouseLeave={() => setDiscoverOpen(false)}>
+              <button className={`ciq-nav-item${isActive('/') ? ' active' : ''}`} style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                Discover
+                <svg width="10" height="10" viewBox="0 0 10 10" fill="none" style={{ opacity: 0.5, transform: discoverOpen ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s' }}>
+                  <path d="M2 3.5l3 3 3-3" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+                </svg>
+              </button>
+              {discoverOpen && (
+                <div className="ciq-ai-dropdown" style={{ width: 240 }}>
+                  {[
+                    { label: 'Home', href: '/', icon: '🏠', desc: 'Find your perfect card in 90s' },
+                    { label: 'Sweet Spots', href: '/sweet-spots', icon: '💎', desc: '8 best redemption strategies' },
+                    { label: 'Blog', href: '/blog', icon: '📝', desc: 'Honest card reviews & guides' },
+                    { label: 'Glossary', href: '/glossary', icon: '📖', desc: 'Every credit card term explained' },
+                    { label: 'Devaluation Tracker', href: '/blog/credit-card-devaluations-india-2026', icon: '⚠', desc: 'Every 2026 benefit cut tracked' },
+                  ].map(item => (
+                    <Link key={item.href} href={item.href} className="ciq-ai-item">
+                      <div className="ciq-ai-icon">{item.icon}</div>
+                      <div style={{ flex: 1 }}>
+                        <div className="ciq-ai-label">{item.label}</div>
+                        <div style={{ fontSize: 11, color: 'var(--ink-3,#5A6A8A)', marginTop: 1 }}>{item.desc}</div>
+                      </div>
+                    </Link>
+                  ))}
+                </div>
+              )}
+            </div>
 
             <div style={{ position: 'relative' }} onMouseEnter={() => setCardsOpen(true)} onMouseLeave={() => setCardsOpen(false)}>
               <button className={`ciq-nav-item${isActive('/cards') ? ' active' : ''}`} style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
