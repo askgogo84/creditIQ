@@ -33,6 +33,21 @@ export function Header() {
   const [mobileOpen, setMobileOpen] = useState(false)
   const [scrolled, setScrolled] = useState(false)
 
+  // Close timers — prevent flicker on fast mouse movements
+  const closeTimers = {
+    discover: { ref: null as any },
+    cards:    { ref: null as any },
+    ai:       { ref: null as any },
+    travel:   { ref: null as any },
+  }
+
+  const delayClose = (setter: (v: boolean) => void, timerRef: { ref: any }) => {
+    timerRef.ref = setTimeout(() => setter(false), 200)
+  }
+  const cancelClose = (timerRef: { ref: any }) => {
+    if (timerRef.ref) clearTimeout(timerRef.ref)
+  }
+
   useEffect(() => {
     const sb = createBrowserClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!)
     sb.auth.getSession().then(({ data: { session } }) => setUser(session?.user ?? null))
@@ -141,7 +156,7 @@ export function Header() {
 
           {/* Desktop pill nav */}
           <nav className="ciq-nav" style={{ position: 'relative' }}>
-            <div style={{ position: 'relative' }} onMouseEnter={() => setDiscoverOpen(true)} onMouseLeave={() => setDiscoverOpen(false)}>
+            <div style={{ position: 'relative' }} onMouseEnter={() => { cancelClose(closeTimers.discover); setDiscoverOpen(true) }} onMouseLeave={() => delayClose(setDiscoverOpen, closeTimers.discover)}>
               <button className={`ciq-nav-item${isActive('/') ? ' active' : ''}`} style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
                 Discover
                 <svg width="10" height="10" viewBox="0 0 10 10" fill="none" style={{ opacity: 0.5, transform: discoverOpen ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s' }}>
@@ -169,7 +184,7 @@ export function Header() {
               )}
             </div>
 
-            <div style={{ position: 'relative' }} onMouseEnter={() => setCardsOpen(true)} onMouseLeave={() => setCardsOpen(false)}>
+            <div style={{ position: 'relative' }} onMouseEnter={() => { cancelClose(closeTimers.cards); setCardsOpen(true) }} onMouseLeave={() => delayClose(setCardsOpen, closeTimers.cards)}>
               <button className={`ciq-nav-item${isActive('/cards') ? ' active' : ''}`} style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
                 Cards
                 <svg width="10" height="10" viewBox="0 0 10 10" fill="none" style={{ opacity: 0.5, transform: cardsOpen ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s' }}>
@@ -197,7 +212,7 @@ export function Header() {
               )}
             </div>
 
-            <div style={{ position: 'relative' }} onMouseEnter={() => setAiOpen(true)} onMouseLeave={() => setAiOpen(false)}>
+            <div style={{ position: 'relative' }} onMouseEnter={() => { cancelClose(closeTimers.ai); setAiOpen(true) }} onMouseLeave={() => delayClose(setAiOpen, closeTimers.ai)}>
               <button className={`ciq-nav-item${isActive('/smart-match') ? ' active' : ''}`} style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
                 AI Tools
                 <svg width="10" height="10" viewBox="0 0 10 10" fill="none" style={{ opacity: 0.5, transform: aiOpen ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s' }}>
@@ -222,7 +237,7 @@ export function Header() {
               )}
             </div>
 
-            <div style={{ position: 'relative' }} onMouseEnter={() => setTravelOpen(true)} onMouseLeave={() => setTravelOpen(false)}>
+            <div style={{ position: 'relative' }} onMouseEnter={() => { cancelClose(closeTimers.travel); setTravelOpen(true) }} onMouseLeave={() => delayClose(setTravelOpen, closeTimers.travel)}>
               <button className={`ciq-nav-item${isActive('/travel') ? ' active' : ''}`} style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
                 Travel
                 <svg width="10" height="10" viewBox="0 0 10 10" fill="none" style={{ opacity: 0.5, transform: travelOpen ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s' }}>
