@@ -135,30 +135,6 @@ const ARTICLES: Record<string, {
 
 };
 
-export function generateStaticParams() {
-  return Object.keys(ARTICLES).map(slug => ({ slug }));
-}
-
-export async function generateMetadata({ params }: { params: { slug: string } }): Promise<Metadata> {
-  const article = ARTICLES[params.slug];
-  if (!article) return { title: 'Not Found | CreditIQ' };
-  return {
-    title: `${article.title} | CreditIQ`,
-    description: article.intro.substring(0, 160),
-    openGraph: { title: article.title, description: article.intro.substring(0, 160) },
-  };
-}
-
-export default function BlogArticlePage({ params }: { params: { slug: string } }) {
-  const article = ARTICLES[params.slug];
-  if (!article) notFound();
-
-  return (
-    <div style={{ backgroundColor: '#faf9f6', minHeight: '100vh' }}>
-      <Header />
-      <main style={{ maxWidth: 720, marginInline: 'auto', padding: 'clamp(100px,14vw,140px) clamp(16px,4vw,24px) 80px' }}>
-
-        <Link href="/blog" style={{ display: 'inline-flex', alignItems: 'center', gap: 6, color: '#64748b', fontSize: 13, fontWeight: 600, textDecoration: 'none', marginBottom: 32 }}>
 
 export function generateStaticParams() {
   return Object.keys(ARTICLES).map(slug => ({ slug }));
@@ -183,40 +159,40 @@ export default function BlogArticlePage({ params }: { params: { slug: string } }
       <Header />
       <div className="page-fade">
 
-        {/* ── Hero ── */}
+        {/* Hero */}
         <section style={{ position: 'relative', paddingTop: 'clamp(120px,18vw,150px)', paddingBottom: 48 }}>
           <div className="aurora" style={{ top: -80, right: -100, width: 600, height: 500, background: 'radial-gradient(circle,rgba(212,163,115,0.22),transparent 60%)' }} />
           <div style={{ maxWidth: 740, margin: '0 auto', padding: '0 clamp(16px,4vw,24px)', position: 'relative', zIndex: 2 }}>
+
             <Link href="/blog" style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontFamily: 'var(--font-mono,monospace)', fontSize: 11, color: 'var(--ink-3,#5A6A8A)', textDecoration: 'none', letterSpacing: '0.05em', marginBottom: 32, fontWeight: 600 }}>
               ← All articles
             </Link>
 
             <div style={{ display: 'flex', gap: 14, alignItems: 'center', marginBottom: 20, flexWrap: 'wrap' }}>
-              <span style={{ padding: '4px 14px', borderRadius: 999, background: `${article.tagColor}18`, border: `1px solid ${article.tagColor}35`, fontSize: 9, fontWeight: 700, letterSpacing: '0.14em', textTransform: 'uppercase', color: article.tagColor, fontFamily: 'var(--font-mono,monospace)' }}>
-                {article.tag}
+              <span style={{ padding: '4px 14px', borderRadius: 999, background: `${article!.tagColor}18`, border: `1px solid ${article!.tagColor}35`, fontSize: 9, fontWeight: 700, letterSpacing: '0.14em', textTransform: 'uppercase' as const, color: article!.tagColor, fontFamily: 'var(--font-mono,monospace)' }}>
+                {article!.tag}
               </span>
-              <span style={{ fontFamily: 'var(--font-mono,monospace)', fontSize: 11, color: 'var(--ink-3,#5A6A8A)' }}>{article.date} &bull; {article.readTime}</span>
+              <span style={{ fontFamily: 'var(--font-mono,monospace)', fontSize: 11, color: 'var(--ink-3,#5A6A8A)' }}>{article!.date} &bull; {article!.readTime}</span>
             </div>
 
             <h1 style={{ fontSize: 'clamp(24px,4vw,40px)', fontWeight: 800, color: 'var(--ink,#142950)', margin: '0 0 24px', lineHeight: 1.2, letterSpacing: '-0.03em' }}>
-              {article.title}
+              {article!.title}
             </h1>
 
-            {/* Intro with left accent */}
-            <div style={{ borderLeft: '3px solid var(--copper-3,#D89B2A)', paddingLeft: 20, marginBottom: 0 }}>
+            <div style={{ borderLeft: '3px solid var(--copper-3,#D89B2A)', paddingLeft: 20 }}>
               <p style={{ fontSize: 16, color: 'var(--ink-2,#2A3F6B)', lineHeight: 1.8, margin: 0, fontFamily: 'var(--font-serif,Georgia,serif)', fontStyle: 'italic' }}>
-                {article.intro}
+                {article!.intro}
               </p>
             </div>
           </div>
         </section>
 
-        {/* ── Body ── */}
+        {/* Body */}
         <section style={{ paddingBottom: 80 }}>
           <div style={{ maxWidth: 740, margin: '0 auto', padding: '0 clamp(16px,4vw,24px)' }}>
 
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 36 }}>
-              {article.sections.map((section, idx) => (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
+              {article!.sections.map((section, idx) => (
                 <div key={idx} style={{ background: 'var(--paper,#FAF5EB)', borderRadius: 20, padding: 'clamp(20px,3vw,32px)', border: '1px solid var(--line,rgba(20,41,80,0.08))' }}>
                   <h2 style={{ fontSize: 'clamp(17px,2vw,21px)', fontWeight: 700, color: 'var(--ink,#142950)', margin: '0 0 14px', letterSpacing: '-0.02em', lineHeight: 1.3 }}>
                     {section.heading}
@@ -235,33 +211,33 @@ export default function BlogArticlePage({ params }: { params: { slug: string } }
             </div>
 
             {/* Verdict */}
-            {article.verdict && (
-              <div style={{ marginTop: 32, background: 'var(--ink,#142950)', borderRadius: 20, padding: 'clamp(20px,3vw,32px)', position: 'relative', overflow: 'hidden' }}>
+            {article!.verdict && (
+              <div style={{ marginTop: 24, background: 'var(--ink,#142950)', borderRadius: 20, padding: 'clamp(20px,3vw,32px)', position: 'relative', overflow: 'hidden' }}>
                 <div className="aurora" style={{ top: -40, right: -40, width: 250, height: 250, background: 'radial-gradient(circle,rgba(212,163,115,0.18),transparent 60%)' }} />
                 <div style={{ position: 'relative', zIndex: 2 }}>
-                  <div style={{ fontFamily: 'var(--font-mono,monospace)', fontSize: 9, fontWeight: 700, letterSpacing: '0.18em', textTransform: 'uppercase', color: 'var(--copper-3,#D89B2A)', marginBottom: 12 }}>CreditIQ Verdict</div>
-                  <p style={{ margin: 0, fontSize: 15, color: 'rgba(255,255,255,0.75)', lineHeight: 1.8 }}>{article.verdict}</p>
+                  <div style={{ fontFamily: 'var(--font-mono,monospace)', fontSize: 9, fontWeight: 700, letterSpacing: '0.18em', textTransform: 'uppercase' as const, color: 'var(--copper-3,#D89B2A)', marginBottom: 12 }}>CreditIQ Verdict</div>
+                  <p style={{ margin: 0, fontSize: 15, color: 'rgba(255,255,255,0.75)', lineHeight: 1.8 }}>{article!.verdict}</p>
                 </div>
               </div>
             )}
 
             {/* CTAs */}
-            <div style={{ marginTop: 36, display: 'flex', gap: 12, flexWrap: 'wrap' }}>
-              {article.relatedCardSlug && (
-                <Link href={`/cards/${article.relatedCardSlug}`} style={{ display: 'inline-block', background: 'var(--copper-3,#D89B2A)', color: '#fff', padding: '12px 24px', borderRadius: 10, fontWeight: 700, fontSize: 14, textDecoration: 'none', letterSpacing: '-0.01em' }}>
-                  View {article.relatedCard} →
+            <div style={{ marginTop: 32, display: 'flex', gap: 12, flexWrap: 'wrap' }}>
+              {article!.relatedCardSlug && (
+                <Link href={`/cards/${article!.relatedCardSlug}`} style={{ display: 'inline-block', background: 'var(--copper-3,#D89B2A)', color: '#fff', padding: '12px 24px', borderRadius: 10, fontWeight: 700, fontSize: 14, textDecoration: 'none' }}>
+                  View {article!.relatedCard} →
                 </Link>
               )}
-              <Link href="/sweet-spots" style={{ display: 'inline-block', background: 'transparent', border: '1.5px solid var(--ink,#142950)', color: 'var(--ink,#142950)', padding: '12px 24px', borderRadius: 10, fontWeight: 700, fontSize: 14, textDecoration: 'none', letterSpacing: '-0.01em' }}>
+              <Link href="/sweet-spots" style={{ display: 'inline-block', background: 'transparent', border: '1.5px solid var(--ink,#142950)', color: 'var(--ink,#142950)', padding: '12px 24px', borderRadius: 10, fontWeight: 700, fontSize: 14, textDecoration: 'none' }}>
                 Redemption Sweet Spots
               </Link>
             </div>
 
-            {/* More articles */}
-            <div style={{ marginTop: 56 }}>
-              <div style={{ fontFamily: 'var(--font-mono,monospace)', fontSize: 9, fontWeight: 700, letterSpacing: '0.18em', textTransform: 'uppercase', color: 'var(--ink-3,#5A6A8A)', marginBottom: 16 }}>More articles</div>
+            {/* More */}
+            <div style={{ marginTop: 48 }}>
+              <div style={{ fontFamily: 'var(--font-mono,monospace)', fontSize: 9, fontWeight: 700, letterSpacing: '0.18em', textTransform: 'uppercase' as const, color: 'var(--ink-3,#5A6A8A)', marginBottom: 14 }}>More articles</div>
               <Link href="/blog" style={{ display: 'block', background: 'var(--paper,#FAF5EB)', borderRadius: 16, padding: 20, border: '1px solid var(--line,rgba(20,41,80,0.08))', textDecoration: 'none' }}>
-                <p style={{ margin: 0, fontSize: 14, fontWeight: 700, color: 'var(--ink,#142950)', letterSpacing: '-0.01em' }}>View all articles →</p>
+                <p style={{ margin: 0, fontSize: 14, fontWeight: 700, color: 'var(--ink,#142950)' }}>View all articles →</p>
                 <p style={{ margin: '4px 0 0', fontSize: 13, color: 'var(--ink-3,#5A6A8A)' }}>Card reviews, comparisons, and earning strategies</p>
               </Link>
             </div>
