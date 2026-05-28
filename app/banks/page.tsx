@@ -1,6 +1,7 @@
 import { SEED_CARDS } from '@/lib/data/seed-cards';
 import { Header } from '@/components/Header';
 import { DesignFooter } from '@/components/design/Footer';
+import { Reveal } from '@/components/design/Reveal';
 import Link from 'next/link';
 
 const BANKS = [
@@ -18,38 +19,61 @@ const BANKS = [
   { slug: 'AU', name: 'AU Small Finance Bank', color: '#7C2D12' },
 ];
 
+export const metadata = {
+  title: 'Credit Cards by Bank India 2026 | CreditIQ',
+  description: 'Browse all Indian credit cards by issuing bank. HDFC, SBI, ICICI, Axis, Amex and more — unbiased rankings.',
+};
+
 export default function BanksPage() {
   return (
-    <main className="min-h-screen">
+    <>
       <Header />
-      <section className="pt-28 pb-24 px-4 sm:px-6">
-        <div className="max-w-7xl mx-auto">
-          <div className="divider-rule mb-6 max-w-xs">Card issuers</div>
-          <h1 className="font-display text-4xl sm:text-5xl text-ink-50 mb-4">All banks and issuers</h1>
-          <p className="text-ink-300 mb-12 max-w-2xl">Browse credit cards by issuing bank. We track {SEED_CARDS.length} cards across {BANKS.length} issuers.</p>
-          <div className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-            {BANKS.map(bank => {
-              const count = SEED_CARDS.filter(c => c.bank === bank.slug && c.active).length;
-              return (
-                <Link key={bank.slug} href={`/bank/${bank.slug}`} className="group bg-ink-900/40 border border-white/10 hover:border-copper-500/30 rounded-xl p-5 transition-all">
-                  <div className="flex items-center gap-3 mb-3">
-                    <div className="w-10 h-10 rounded-lg flex items-center justify-center text-white font-bold text-sm shrink-0" style={{ background: bank.color }}>
-                      {bank.slug.slice(0, 2)}
-                    </div>
-                    <div>
-                      <div className="font-medium text-ink-50 group-hover:text-copper-300 transition-colors">{bank.name}</div>
-                      <div className="text-xs text-ink-400 font-mono">{count} card{count !== 1 ? 's' : ''} tracked</div>
-                    </div>
-                  </div>
-                  <div className="text-xs text-copper-400 font-mono">View all cards →</div>
-                </Link>
-              );
-            })}
+      <div className="page-fade">
+        <section style={{ position: 'relative', paddingTop: 'clamp(120px,18vw,150px)', paddingBottom: 48 }}>
+          <div className="aurora" style={{ top: -80, right: -100, width: 600, height: 500, background: 'radial-gradient(circle,rgba(212,163,115,0.22),transparent 60%)' }} />
+          <div className="shell" style={{ position: 'relative', zIndex: 2 }}>
+            <Reveal>
+              <div style={{ fontFamily: 'var(--font-mono,monospace)', fontSize: 10, letterSpacing: '0.18em', textTransform: 'uppercase', color: 'var(--copper,#8C5F12)', fontWeight: 700, marginBottom: 16 }}>Card issuers</div>
+              <h1 style={{ fontSize: 'clamp(36px,6vw,80px)', fontWeight: 800, color: 'var(--ink,#142950)', lineHeight: 1.0, letterSpacing: '-0.03em', margin: '0 0 16px' }}>
+                All banks{' '}
+                <span style={{ fontFamily: 'var(--font-serif,Georgia,serif)', color: 'var(--copper-3,#D89B2A)', fontStyle: 'italic', fontWeight: 400 }}>& issuers</span>
+              </h1>
+              <p style={{ fontSize: 'clamp(15px,1.4vw,18px)', color: 'var(--ink-2,#2A3F6B)', lineHeight: 1.65, margin: 0, maxWidth: 480 }}>
+                We track {SEED_CARDS.length} cards across {BANKS.length} issuers — with zero bank bias.
+              </p>
+            </Reveal>
           </div>
-        </div>
-      </section>
-      <DesignFooter />
-      
-    </main>
+        </section>
+
+        <section style={{ paddingBottom: 80 }}>
+          <div className="shell">
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(240px,1fr))', gap: 16 }}>
+              {BANKS.map((bank, i) => {
+                const count = SEED_CARDS.filter(c => c.bank === bank.slug && c.active).length;
+                return (
+                  <Reveal key={bank.slug} style={{ animationDelay: `${i * 40}ms` }}>
+                    <Link href={`/bank/${bank.slug}`} style={{ textDecoration: 'none', display: 'block' }}>
+                      <div style={{ background: 'var(--paper,#FAF5EB)', border: '1px solid var(--line,rgba(20,41,80,0.08))', borderRadius: 18, padding: 20, transition: 'box-shadow 0.2s', cursor: 'pointer' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: 16 }}>
+                          <div style={{ width: 44, height: 44, borderRadius: 12, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontWeight: 800, fontSize: 14, flexShrink: 0, background: bank.color }}>
+                            {bank.slug.slice(0, 2)}
+                          </div>
+                          <div>
+                            <div style={{ fontSize: 15, fontWeight: 700, color: 'var(--ink,#142950)', letterSpacing: '-0.01em' }}>{bank.name}</div>
+                            <div style={{ fontFamily: 'var(--font-mono,monospace)', fontSize: 10, color: 'var(--ink-3,#5A6A8A)', marginTop: 2 }}>{count} card{count !== 1 ? 's' : ''} tracked</div>
+                          </div>
+                        </div>
+                        <div style={{ fontFamily: 'var(--font-mono,monospace)', fontSize: 11, color: 'var(--copper,#8C5F12)', fontWeight: 600 }}>View all cards →</div>
+                      </div>
+                    </Link>
+                  </Reveal>
+                );
+              })}
+            </div>
+          </div>
+        </section>
+        <DesignFooter />
+      </div>
+    </>
   );
 }
