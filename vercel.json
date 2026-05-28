@@ -2,11 +2,15 @@
   "crons": [
     {
       "path": "/api/scrape",
-      "schedule": "0 2 * * 0"
+      "schedule": "0 2 * * *"
     },
     {
       "path": "/api/cards-sync",
-      "schedule": "0 9 * * 1"
+      "schedule": "0 9 * * 1,4"
+    },
+    {
+      "path": "/api/cron/detect-devaluations",
+      "schedule": "0 6 * * *"
     }
   ]
 }
