@@ -132,22 +132,6 @@ const ARTICLES: Record<string, {
     relatedCard: 'HDFC Diners Privilege', relatedCardSlug: 'hdfc-diners-privilege',
   },
 
-  'hdfc-smartbuy-complete-guide': {
-    title: 'HDFC SmartBuy 2026 — The Complete Guide to Maximising Your Reward Points',
-    tag: 'Guide', tagColor: '#6366f1',
-    date: 'May 14, 2026', readTime: '7 min read',
-    intro: 'SmartBuy is the most powerful — and most underused — tool in the HDFC rewards ecosystem. Most cardholders let points expire on Amazon vouchers at ₹0.20/pt. SmartBuy can deliver ₹1.00–₹3.00+. Here is how.',
-    sections: [
-      { heading: 'What SmartBuy actually is', body: 'SmartBuy (smartbuy.hdfcbank.com) is HDFC\'s proprietary rewards portal. It gives HDFC cardholders accelerated reward points on specific spending categories — flights, hotels, and gift vouchers — and lets you redeem points for the same categories at significantly better value than the standard product catalogue.\n\nThe portal covers flights via MakeMyTrip and Cleartrip, hotel bookings, Apple products, electronics via MyEMIShop, and Gyftr gift cards covering 100+ brands.' },
-      { heading: 'The 10X categories in 2026', body: 'Hotels: 10X for Infinia and Diners Black.\nFlights: 5X for most eligible cards.\nGyftr vouchers: 5X for Regalia Gold; 3X for Diners Black (changed in 2026).\nApple products: Up to 5X.\n\nKey 2026 change: Diners Black now earns 3X on vouchers vs Regalia Gold\'s 5X. If you hold both cards, always use Regalia Gold for Gyftr vouchers and Diners Black only for 10X hotel bookings.' },
-      { heading: 'Monthly caps — limits you must know', body: 'Infinia: 15,000 bonus points per month (caps at ~₹2.25L portal spend).\nDiners Black: 7,500 bonus points per month.\nAll other eligible cards: 5,000 bonus points per month.\nGyftr/Tanishq vouchers: Infinia capped at 50,000 points per month.\n\nOnce you hit the cap, additional SmartBuy spend earns only base points — the same as booking directly. Stop using SmartBuy for that cycle once capped.' },
-      { heading: 'Gyftr vouchers — the best non-travel redemption', body: 'Gyftr on SmartBuy gives approximately ₹0.32 per reward point — 60% better than the catalogue rate of ₹0.20/pt. Popular brands: Amazon, Flipkart, Myntra, Nykaa, Swiggy, Zomato, and 100+ others.\n\nHow it works: Redeem points in SmartBuy → receive digital gift card code → use at checkout. Delivery is instant via email. Gift cards typically have 12-month validity.\n\nBest brands: Amazon (all categories including groceries), Swiggy (covers Instamart), Myntra (especially during EORS sale events).' },
-      { heading: 'Flight redemption — the ₹1/pt sweet spot', body: 'Booking flights via SmartBuy earns 5X points. But you can also redeem points for flights at ₹1.00/pt — and this stacks with earn on cash-paid portions.\n\nExample: ₹20,000 flight, pay ₹10,000 with points (10,000 pts = ₹10,000) + ₹10,000 cash → earn 5X on cash portion = 3,333 bonus points back. Effective rate: ₹1/pt used. Compare to catalogue: same 10,000 points = ₹2,000 in vouchers. SmartBuy flight redemption is 5x better.' },
-      { heading: 'Airline transfers vs SmartBuy — when to use which', body: 'Use SmartBuy for: Domestic flights, hotel bookings, Gyftr vouchers, Apple products. Simple, instant, no waiting.\n\nUse airline transfers for: International business class, premium cabin awards, high-value long-haul routes. Value extraction is 3–9x better than SmartBuy for these.\n\nNever use: The product catalogue (Amazon vouchers, merchandise). ₹0.20–₹0.25/pt is the worst available rate. Every SmartBuy option beats it.' },
-    ],
-    verdict: 'SmartBuy is HDFC\'s most valuable feature — and most cardholders leave 60–80% of its value untouched. Start with Gyftr for everyday brands. Use flight redemptions at ₹1/pt for domestic travel. Reserve airline transfers for international premium cabin. In that order.',
-    relatedCard: 'HDFC Infinia', relatedCardSlug: 'hdfc-infinia',
-  },
 };
 
 export function generateStaticParams() {
