@@ -4,7 +4,7 @@ import { useState, useRef } from 'react';
 import { Header } from '@/components/Header';
 import { DesignFooter } from '@/components/design/Footer';
 import { Reveal } from '@/components/design/Reveal';
-import { CopperCTA } from '@/components/design/CTAs';
+
 import Link from 'next/link';
 
 interface TruthReport {
@@ -129,9 +129,9 @@ export default function StatementTruthPage() {
 
                 {error && <p style={{ color: '#B84230', fontSize: 13, textAlign: 'center', marginBottom: 12 }}>{error}</p>}
 
-                <CopperCTA onClick={analyze} disabled={loading || !file}>
+                <button onClick={analyze} disabled={loading || !file} style={{ width: '100%', padding: '16px', borderRadius: 14, background: loading || !file ? 'rgba(20,41,80,0.15)' : 'var(--copper-3,#D89B2A)', color: '#fff', border: 'none', fontSize: 16, fontWeight: 700, cursor: loading || !file ? 'not-allowed' : 'pointer', opacity: loading || !file ? 0.6 : 1 }}>
                   {loading ? 'Analysing your statement...' : 'Generate Truth Report'}
-                </CopperCTA>
+                </button>
               </Reveal>
             )}
 
