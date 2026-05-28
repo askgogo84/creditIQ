@@ -4,9 +4,6 @@ import Link from 'next/link';
 import { Reveal } from '@/components/design/Reveal';
 import { CopperCTA, GhostCTA } from '@/components/design/CTAs';
 
-import Link from 'next/link';
-import { Reveal } from '@/components/design/Reveal';
-import { CopperCTA, GhostCTA } from '@/components/design/CTAs';
 
 // ─────────────────────────────────────────────────
 // 1. MEET THE C — Character moment
