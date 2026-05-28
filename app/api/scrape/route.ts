@@ -3,65 +3,78 @@ import { runScrapers } from '@/lib/scrapers';
 import { parseScrapedCard } from '@/lib/scrapers/parser';
 import { createClient } from '@supabase/supabase-js';
 
-// Vercel cron will call this weekly
-export const maxDuration = 300; // 5 min  --  adjust if using Hobby (60s max)
+export const maxDuration = 300;
 
 export async function GET(req: NextRequest) {
-  // Auth: Vercel cron sends Authorization: Bearer ${CRON_SECRET}
   const auth = req.headers.get('authorization');
   if (auth !== `Bearer ${process.env.CRON_SECRET}`) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
-  return runScrape();
+  // Respond immediately — cron-job.org only waits 30s
+  // The actual scraping runs async after response is sent
+  const ctx = (req as any)[Symbol.for('next.request.context')];
+  if (ctx?.waitUntil) {
+    ctx.waitUntil(runScrapeBackground());
+  } else {
+    // Fallback: fire and forget
+    runScrapeBackground().catch(console.error);
+  }
+
+  return NextResponse.json({
+    message: 'Scrape job started in background',
+    started_at: new Date().toISOString(),
+  });
 }
 
 export async function POST(req: NextRequest) {
-  // Manual trigger from admin panel  --  requires admin session
-  // (In production, add stricter check)
   const url = new URL(req.url);
   const bank = url.searchParams.get('bank');
   const banks = bank && bank !== 'all' ? [bank] : undefined;
 
-  return runScrape(banks);
+  // For POST (manual admin trigger), also respond immediately
+  runScrapeBackground(banks).catch(console.error);
+
+  return NextResponse.json({
+    message: `Scrape started for: ${banks?.join(', ') || 'all banks'}`,
+    started_at: new Date().toISOString(),
+  });
 }
 
-async function runScrape(banks?: string[]) {
+async function runScrapeBackground(banks?: string[]) {
   const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL!;
   const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY!;
-
-  if (!SUPABASE_URL || !SUPABASE_SERVICE_KEY) {
-    return NextResponse.json(
-      { error: 'Supabase not configured. Set NEXT_PUBLIC_SUPABASE_URL + SUPABASE_SERVICE_ROLE_KEY.' },
-      { status: 500 }
-    );
-  }
+  if (!SUPABASE_URL || !SUPABASE_SERVICE_KEY) return;
 
   const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY);
 
   try {
     const scrapes = await runScrapers(banks);
-    let parsed = 0;
-    let saved = 0;
+    let parsed = 0, saved = 0;
 
     for (const scrape of scrapes) {
       if (scrape.error) continue;
       const card = await parseScrapedCard(scrape);
       if (!card || !card.slug) continue;
       parsed++;
-
-      // Upsert into Supabase
-      const { error } = await supabase
-        .from('cards')
-        .upsert(card, { onConflict: 'slug' });
+      const { error } = await supabase.from('cards').upsert(card, { onConflict: 'slug' });
       if (!error) saved++;
     }
 
-    return NextResponse.json({
-      message: `Scraped ${scrapes.length} pages, parsed ${parsed}, saved ${saved}`,
-      stats: { scraped: scrapes.length, parsed, saved },
-    });
+    // Log result to Supabase for monitoring
+    await supabase.from('cron_logs').insert({
+      job: 'scrape',
+      result: { scraped: scrapes.length, parsed, saved },
+      ran_at: new Date().toISOString(),
+    }).catch(() => {});
+
+    console.log(`Scrape complete: ${scrapes.length} pages, ${parsed} parsed, ${saved} saved`);
   } catch (e: any) {
-    return NextResponse.json({ error: e.message }, { status: 500 });
+    console.error('Scrape error:', e.message);
+    await supabase.from('cron_logs').insert({
+      job: 'scrape',
+      result: { error: e.message },
+      ran_at: new Date().toISOString(),
+    }).catch(() => {});
   }
 }
