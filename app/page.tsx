@@ -16,6 +16,7 @@ import { AIToolCard }     from '@/components/design/AIToolCard';
 import { CardTile, type TileCard } from '@/components/design/CardTile';
 import { Stamp }          from '@/components/design/Stamp';
 import { DesignFooter }   from '@/components/design/Footer';
+import { ScrollButton }   from '@/components/design/ScrollButton';
 import { ShowcaseStrip } from '@/components/design/ShowcaseStrip'
 import { CleoHero }       from '@/components/design/CleoHero';
 import { SEED_CARDS }     from '@/lib/data/seed-cards';
@@ -142,26 +143,6 @@ export default function HomePage() {
         </section>
 
 
-        {/* ── BIG STATEMENT ── */}
-        <section style={{ padding: 'clamp(80px,12vw,140px) 0', background: 'var(--copper-3,#D89B2A)', color: 'var(--ink,#142950)', position: 'relative', overflow: 'hidden' }}>
-          <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%,-50%)', width: '120%', opacity: 0.08, pointerEvents: 'none' }}>
-            <svg viewBox='0 0 800 200' style={{ width: '100%' }}><path d='M0,100 Q200,20 400,100 T800,100' stroke='var(--ink)' strokeWidth='3' fill='none'/><path d='M0,140 Q200,60 400,140 T800,140' stroke='var(--ink)' strokeWidth='3' fill='none'/></svg>
-          </div>
-          <div className='shell' style={{ position: 'relative', textAlign: 'center' }}>
-            <h2 style={{ fontSize: 'clamp(36px,7vw,112px)', letterSpacing: '-0.04em', lineHeight: 0.98, fontWeight: 800, maxWidth: 1100, margin: '0 auto' }}>
-              We don't take money to{' '}
-              <span style={{ position: 'relative', display: 'inline-block' }}>
-                <span style={{ fontFamily: 'var(--font-serif,Georgia,serif)', fontStyle: 'italic', fontWeight: 400 }}>rank cards</span>
-              </span>.
-              <br />We take it to{' '}
-              <span style={{ background: 'var(--ink,#142950)', color: 'var(--copper-3,#D89B2A)', padding: '0 16px', borderRadius: 8, display: 'inline-block' }}>rank ourselves</span>.
-            </h2>
-            <p style={{ marginTop: 36, fontSize: 'clamp(16px,1.4vw,21px)', color: 'var(--ink-2,#2A3F6B)', maxWidth: 720, margin: '36px auto 0', lineHeight: 1.55, fontWeight: 500 }}>
-              Every other comparison site in India earns Rs.500-3,000 per approved application. Their rankings are bought, not earned. We charge a flat Rs.2,800. Same on every card.
-            </p>
-          </div>
-        </section>
-
         <section className="section" style={{ background: 'var(--bg-2,#EFE7D8)', borderTop: '1px solid var(--line)', borderBottom: '1px solid var(--line)', position: 'relative', overflow: 'hidden' }}>
           <div className="shell" style={{ position: 'relative' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', gap: 40, marginBottom: 'clamp(40px,6vw,64px)' }} className="stack-mobile">
@@ -208,27 +189,8 @@ export default function HomePage() {
           </div>
         </section>
 
-        <section style={{ padding: 'clamp(80px,12vw,140px) 0' }}>
-          <div className="shell">
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1.5fr', gap: 'clamp(40px,6vw,80px)', alignItems: 'flex-start' }} className="grid-1-mobile">
-              <Reveal>
-                <div className="label-copper" style={{ marginBottom: 20 }}>FAQ . 06 OF THEM</div>
-                <h2 style={{ fontSize: 'clamp(32px,5vw,68px)', letterSpacing: '-0.035em', lineHeight: 1.02, fontWeight: 800 }}>
-                  The honest{' '}
-                  <span className="serif" style={{ color: 'var(--copper)', fontStyle: 'italic', fontWeight: 400 }}>questions</span>.
-                </h2>
-                <p style={{ marginTop: 24, fontSize: 'clamp(15px,1.3vw,18px)', color: 'var(--ink-3,#5A6A8A)', maxWidth: 380, lineHeight: 1.55 }}>
-                  Stuff people ask before trusting us with their money. Real answers, no spin.
-                </p>
-              </Reveal>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-                {FAQS.map((f, i) => <Reveal key={i} delay={i * 60}><FAQItem q={f.q} a={f.a} /></Reveal>)}
-              </div>
-            </div>
-          </div>
-        </section>
 
-        <AppStoreSection />
+        <AppStoreSection /><AppStoreSection />
 
         <FAQSection />
 
