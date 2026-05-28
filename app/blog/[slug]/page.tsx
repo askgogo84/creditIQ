@@ -2,6 +2,7 @@ import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import { Header } from '@/components/Header';
 import type { Metadata } from 'next';
+import { DesignFooter } from '@/components/design/Footer';
 
 const ARTICLES: Record<string, {
   title: string;
@@ -158,67 +159,117 @@ export default function BlogArticlePage({ params }: { params: { slug: string } }
       <main style={{ maxWidth: 720, marginInline: 'auto', padding: 'clamp(100px,14vw,140px) clamp(16px,4vw,24px) 80px' }}>
 
         <Link href="/blog" style={{ display: 'inline-flex', alignItems: 'center', gap: 6, color: '#64748b', fontSize: 13, fontWeight: 600, textDecoration: 'none', marginBottom: 32 }}>
-          &larr; All articles
-        </Link>
 
-        <div style={{ marginBottom: 40 }}>
-          <div style={{ display: 'flex', gap: 12, alignItems: 'center', marginBottom: 16 }}>
-            <span style={{ backgroundColor: article.tagColor, color: '#fff', fontSize: 10, fontWeight: 800, letterSpacing: 1, textTransform: 'uppercase', padding: '4px 12px', borderRadius: 100 }}>{article.tag}</span>
-            <span style={{ color: '#94a3b8', fontSize: 12 }}>{article.date} &bull; {article.readTime}</span>
-          </div>
-          <h1 style={{ fontSize: 'clamp(22px,4vw,34px)', fontWeight: 800, color: '#1B3A5C', margin: '0 0 20px', lineHeight: 1.25 }}>
-            {article.title}
-          </h1>
-          <p style={{ fontSize: 16, color: '#475569', lineHeight: 1.8, margin: 0, borderLeft: '3px solid #C9972E', paddingLeft: 16 }}>
-            {article.intro}
-          </p>
-        </div>
+export function generateStaticParams() {
+  return Object.keys(ARTICLES).map(slug => ({ slug }));
+}
 
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 32 }}>
-          {article.sections.map((section, idx) => (
-            <section key={idx}>
-              <h2 style={{ fontSize: 'clamp(17px,2.5vw,21px)', fontWeight: 700, color: '#1B3A5C', margin: '0 0 12px' }}>
-                {section.heading}
-              </h2>
-              <div style={{ fontSize: 15, color: '#334155', lineHeight: 1.85 }}>
-                {section.body.split('\n\n').map((para, i) => (
-                  <p key={i} style={{ margin: i > 0 ? '14px 0 0' : 0 }}>
-                    {para.split('\n').map((line, j, arr) => (
-                      <span key={j}>{line}{j < arr.length - 1 && <br />}</span>
-                    ))}
-                  </p>
-                ))}
-              </div>
-            </section>
-          ))}
-        </div>
+export async function generateMetadata({ params }: { params: { slug: string } }): Promise<Metadata> {
+  const article = ARTICLES[params.slug];
+  if (!article) return { title: 'Not Found | CreditIQ' };
+  return {
+    title: `${article.title} | CreditIQ`,
+    description: article.intro.substring(0, 160),
+    openGraph: { title: article.title, description: article.intro.substring(0, 160) },
+  };
+}
 
-        {article.verdict && (
-          <div style={{ marginTop: 40, backgroundColor: '#1B3A5C', borderRadius: 16, padding: '20px 24px' }}>
-            <p style={{ margin: '0 0 8px', fontSize: 11, fontWeight: 700, color: '#C9972E', textTransform: 'uppercase', letterSpacing: 1.2 }}>CreditIQ Verdict</p>
-            <p style={{ margin: 0, fontSize: 15, color: '#e2e8f0', lineHeight: 1.75 }}>{article.verdict}</p>
-          </div>
-        )}
+export default function BlogArticlePage({ params }: { params: { slug: string } }) {
+  const article = ARTICLES[params.slug];
+  if (!article) notFound();
 
-        <div style={{ marginTop: 48, display: 'flex', gap: 12, flexWrap: 'wrap' }}>
-          {article.relatedCardSlug && (
-            <Link href={`/cards/${article.relatedCardSlug}`} style={{ display: 'inline-block', backgroundColor: '#C9972E', color: '#fff', padding: '12px 24px', borderRadius: 10, fontWeight: 700, fontSize: 14, textDecoration: 'none' }}>
-              View {article.relatedCard} &rarr;
+  return (
+    <>
+      <Header />
+      <div className="page-fade">
+
+        {/* ── Hero ── */}
+        <section style={{ position: 'relative', paddingTop: 'clamp(120px,18vw,150px)', paddingBottom: 48 }}>
+          <div className="aurora" style={{ top: -80, right: -100, width: 600, height: 500, background: 'radial-gradient(circle,rgba(212,163,115,0.22),transparent 60%)' }} />
+          <div style={{ maxWidth: 740, margin: '0 auto', padding: '0 clamp(16px,4vw,24px)', position: 'relative', zIndex: 2 }}>
+            <Link href="/blog" style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontFamily: 'var(--font-mono,monospace)', fontSize: 11, color: 'var(--ink-3,#5A6A8A)', textDecoration: 'none', letterSpacing: '0.05em', marginBottom: 32, fontWeight: 600 }}>
+              ← All articles
             </Link>
-          )}
-          <Link href="/sweet-spots" style={{ display: 'inline-block', backgroundColor: 'transparent', border: '2px solid #1B3A5C', color: '#1B3A5C', padding: '12px 24px', borderRadius: 10, fontWeight: 700, fontSize: 14, textDecoration: 'none' }}>
-            Redemption Sweet Spots
-          </Link>
-        </div>
 
-        <div style={{ marginTop: 56 }}>
-          <h3 style={{ fontSize: 16, fontWeight: 700, color: '#1B3A5C', margin: '0 0 16px' }}>More articles</h3>
-          <Link href="/blog" style={{ display: 'block', backgroundColor: '#fff', borderRadius: 12, padding: 20, boxShadow: '0 1px 3px rgba(0,0,0,0.06)', textDecoration: 'none' }}>
-            <p style={{ margin: 0, fontSize: 14, fontWeight: 700, color: '#1B3A5C' }}>View all articles &rarr;</p>
-            <p style={{ margin: '4px 0 0', fontSize: 13, color: '#64748b' }}>Card reviews, comparisons, and earning strategies</p>
-          </Link>
-        </div>
-      </main>
-    </div>
+            <div style={{ display: 'flex', gap: 14, alignItems: 'center', marginBottom: 20, flexWrap: 'wrap' }}>
+              <span style={{ padding: '4px 14px', borderRadius: 999, background: `${article.tagColor}18`, border: `1px solid ${article.tagColor}35`, fontSize: 9, fontWeight: 700, letterSpacing: '0.14em', textTransform: 'uppercase', color: article.tagColor, fontFamily: 'var(--font-mono,monospace)' }}>
+                {article.tag}
+              </span>
+              <span style={{ fontFamily: 'var(--font-mono,monospace)', fontSize: 11, color: 'var(--ink-3,#5A6A8A)' }}>{article.date} &bull; {article.readTime}</span>
+            </div>
+
+            <h1 style={{ fontSize: 'clamp(24px,4vw,40px)', fontWeight: 800, color: 'var(--ink,#142950)', margin: '0 0 24px', lineHeight: 1.2, letterSpacing: '-0.03em' }}>
+              {article.title}
+            </h1>
+
+            {/* Intro with left accent */}
+            <div style={{ borderLeft: '3px solid var(--copper-3,#D89B2A)', paddingLeft: 20, marginBottom: 0 }}>
+              <p style={{ fontSize: 16, color: 'var(--ink-2,#2A3F6B)', lineHeight: 1.8, margin: 0, fontFamily: 'var(--font-serif,Georgia,serif)', fontStyle: 'italic' }}>
+                {article.intro}
+              </p>
+            </div>
+          </div>
+        </section>
+
+        {/* ── Body ── */}
+        <section style={{ paddingBottom: 80 }}>
+          <div style={{ maxWidth: 740, margin: '0 auto', padding: '0 clamp(16px,4vw,24px)' }}>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 36 }}>
+              {article.sections.map((section, idx) => (
+                <div key={idx} style={{ background: 'var(--paper,#FAF5EB)', borderRadius: 20, padding: 'clamp(20px,3vw,32px)', border: '1px solid var(--line,rgba(20,41,80,0.08))' }}>
+                  <h2 style={{ fontSize: 'clamp(17px,2vw,21px)', fontWeight: 700, color: 'var(--ink,#142950)', margin: '0 0 14px', letterSpacing: '-0.02em', lineHeight: 1.3 }}>
+                    {section.heading}
+                  </h2>
+                  <div>
+                    {section.body.split('\n\n').map((para, i) => (
+                      <p key={i} style={{ fontSize: 14.5, color: 'var(--ink-2,#2A3F6B)', lineHeight: 1.85, margin: i > 0 ? '14px 0 0' : 0 }}>
+                        {para.split('\n').map((line, j, arr) => (
+                          <span key={j}>{line}{j < arr.length - 1 && <br />}</span>
+                        ))}
+                      </p>
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* Verdict */}
+            {article.verdict && (
+              <div style={{ marginTop: 32, background: 'var(--ink,#142950)', borderRadius: 20, padding: 'clamp(20px,3vw,32px)', position: 'relative', overflow: 'hidden' }}>
+                <div className="aurora" style={{ top: -40, right: -40, width: 250, height: 250, background: 'radial-gradient(circle,rgba(212,163,115,0.18),transparent 60%)' }} />
+                <div style={{ position: 'relative', zIndex: 2 }}>
+                  <div style={{ fontFamily: 'var(--font-mono,monospace)', fontSize: 9, fontWeight: 700, letterSpacing: '0.18em', textTransform: 'uppercase', color: 'var(--copper-3,#D89B2A)', marginBottom: 12 }}>CreditIQ Verdict</div>
+                  <p style={{ margin: 0, fontSize: 15, color: 'rgba(255,255,255,0.75)', lineHeight: 1.8 }}>{article.verdict}</p>
+                </div>
+              </div>
+            )}
+
+            {/* CTAs */}
+            <div style={{ marginTop: 36, display: 'flex', gap: 12, flexWrap: 'wrap' }}>
+              {article.relatedCardSlug && (
+                <Link href={`/cards/${article.relatedCardSlug}`} style={{ display: 'inline-block', background: 'var(--copper-3,#D89B2A)', color: '#fff', padding: '12px 24px', borderRadius: 10, fontWeight: 700, fontSize: 14, textDecoration: 'none', letterSpacing: '-0.01em' }}>
+                  View {article.relatedCard} →
+                </Link>
+              )}
+              <Link href="/sweet-spots" style={{ display: 'inline-block', background: 'transparent', border: '1.5px solid var(--ink,#142950)', color: 'var(--ink,#142950)', padding: '12px 24px', borderRadius: 10, fontWeight: 700, fontSize: 14, textDecoration: 'none', letterSpacing: '-0.01em' }}>
+                Redemption Sweet Spots
+              </Link>
+            </div>
+
+            {/* More articles */}
+            <div style={{ marginTop: 56 }}>
+              <div style={{ fontFamily: 'var(--font-mono,monospace)', fontSize: 9, fontWeight: 700, letterSpacing: '0.18em', textTransform: 'uppercase', color: 'var(--ink-3,#5A6A8A)', marginBottom: 16 }}>More articles</div>
+              <Link href="/blog" style={{ display: 'block', background: 'var(--paper,#FAF5EB)', borderRadius: 16, padding: 20, border: '1px solid var(--line,rgba(20,41,80,0.08))', textDecoration: 'none' }}>
+                <p style={{ margin: 0, fontSize: 14, fontWeight: 700, color: 'var(--ink,#142950)', letterSpacing: '-0.01em' }}>View all articles →</p>
+                <p style={{ margin: '4px 0 0', fontSize: 13, color: 'var(--ink-3,#5A6A8A)' }}>Card reviews, comparisons, and earning strategies</p>
+              </Link>
+            </div>
+          </div>
+        </section>
+
+        <DesignFooter />
+      </div>
+    </>
   );
 }
