@@ -69,20 +69,25 @@ export default function HomePage() {
   return (
     <>
       <Header />
+
+      {/* Sticky devaluation ticker — always visible below nav */}
+      <div style={{ position: 'sticky', top: 60, zIndex: 49 }}>
+        <DevalTicker items={[
+          'AXIS Magnus devalued — Grab Vouchers capped at 1:0.4',
+          'HDFC SmartBuy halved on Cleartrip from May 2026',
+          'ICICI Sapphiro removed all spend-based renewal benefits',
+          'SBI Aurum to scrap Priority Pass guest visits',
+          'AMEX MRCC reduced point earn on utility bills to 0',
+          'New — AU Bank Zenith+ launches with 10x on fuel',
+        ]} />
+      </div>
+
       <div className="page-fade">
 
         <CleoHero />
 
         <ShowcaseStrip />
 
-        <DevalTicker items={[
-          'AXIS Magnus devalued -- Grab Vouchers capped at 1:0.4',
-          'HDFC SmartBuy halved on Cleartrip from May 2026',
-          'ICICI Sapphiro removed all spend-based renewal benefits',
-          'SBI Aurum to scrap Priority Pass guest visits',
-          'AMEX MRCC reduced point earn on utility bills to 0',
-          'New . AU Bank Zenith+ launches with 10x on fuel',
-        ]} />
 
         <section style={{ background: '#291210', padding: 'clamp(56px,8vw,96px) 0', borderTop: '1px solid rgba(255,233,199,0.12)', borderBottom: '1px solid rgba(255,233,199,0.12)', position: 'relative', overflow: 'hidden' }}>
           <div style={{ position: 'absolute', top: '-30%', left: '40%', width: 500, height: 500, borderRadius: '50%', background: 'radial-gradient(circle,rgba(216,155,42,0.20),transparent 60%)', filter: 'blur(80px)', pointerEvents: 'none' }} />
