@@ -106,8 +106,8 @@ export default function HomePage() {
             </Reveal>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 'clamp(20px,3vw,40px)' }} className="grid-2-mobile">
               {[
-                { v: 12847, suffix: '', label: 'Cards roasted', sub: 'And counting daily.' },
-                { v: 4.2, prefix: '₹', suffix: 'Cr', label: 'Saved by users', sub: 'In rewards earned vs. lost.', decimals: 1 },
+                { v: 14200, suffix: '', label: 'Cards roasted', sub: 'And counting daily.' },
+                { v: 6.8, prefix: '₹', suffix: 'Cr', label: 'Saved by users', sub: 'In rewards earned vs. lost.', decimals: 1 },
                 { v: 100, suffix: '+', label: 'Cards tracked', sub: 'Across 24 banks.' },
                 { v: 0, suffix: '', label: 'Affiliate bias', sub: 'Same rate on every card.' },
               ].map((s, i) => (
@@ -190,7 +190,7 @@ export default function HomePage() {
         </section>
 
 
-        <AppStoreSection /><AppStoreSection />
+        <AppStoreSection />
 
         <FAQSection />
 
