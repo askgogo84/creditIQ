@@ -8,10 +8,12 @@ const COLS: { title: string; links: { label: string; href: string }[] }[] = [
   {
     title: 'Discover',
     links: [
-      { label: 'All Cards',   href: '/cards' },
-      { label: 'Smart Match', href: '/smart-match' },
-      { label: 'Compare',     href: '/compare' },
-      { label: 'UAE Cards',   href: '/uae' },
+      { label: 'All Cards',     href: '/cards' },
+      { label: 'Smart Match',   href: '/smart-match' },
+      { label: 'Compare',       href: '/compare' },
+      { label: 'UAE Cards',     href: '/uae' },
+      { label: 'Sweet Spots',   href: '/sweet-spots' },
+      { label: 'Blog',          href: '/blog' },
     ],
   },
   {
@@ -19,6 +21,8 @@ const COLS: { title: string; links: { label: string; href: string }[] }[] = [
     links: [
       { label: 'Card Match',       href: '/smart-match' },
       { label: 'Card Roast',       href: '/card-roast' },
+      { label: 'Spend Optimizer',  href: '/spend-optimizer' },
+      { label: 'Points Optimizer', href: '/points-optimizer' },
       { label: 'Statement Truth',  href: '/statement-truth' },
       { label: 'Travel AI',        href: '/travel' },
     ],
@@ -26,7 +30,7 @@ const COLS: { title: string; links: { label: string; href: string }[] }[] = [
   {
     title: 'Company',
     links: [
-      { label: 'How we earn',  href: '/about' },
+      { label: 'How we earn',  href: '/disclosures' },
       { label: 'Methodology',  href: '/about' },
       { label: 'Press',        href: '/about' },
       { label: 'Careers',      href: '/about' },
@@ -121,6 +125,7 @@ export function DesignFooter() {
             </div>
           ))}
         </div>
+
         <div
           style={{
             paddingTop: 24,
@@ -135,7 +140,11 @@ export function DesignFooter() {
           }}
         >
           <span className="mono">(c) 2026 CREDITIQ INTELLIGENCE PVT LTD</span>
-          <span className="mono">PRIVACY . TERMS . DISCLOSURES</span>
+          <div style={{ display: 'flex', gap: 20 }}>
+            <Link href="/privacy" className="mono" style={{ color: 'var(--ink-4)', textDecoration: 'none', fontSize: 12, letterSpacing: '0.1em' }}>PRIVACY</Link>
+            <Link href="/terms" className="mono" style={{ color: 'var(--ink-4)', textDecoration: 'none', fontSize: 12, letterSpacing: '0.1em' }}>TERMS</Link>
+            <Link href="/disclosures" className="mono" style={{ color: 'var(--ink-4)', textDecoration: 'none', fontSize: 12, letterSpacing: '0.1em' }}>DISCLOSURES</Link>
+          </div>
         </div>
       </div>
     </footer>
