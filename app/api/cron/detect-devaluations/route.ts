@@ -70,13 +70,13 @@ async function runDetection() {
         devaluations++;
         await supabase.from('devaluation_events').insert({ card_name: source.card, bank: source.bank, ...event, detected_at: new Date().toISOString(), date: today, status: 'detected' });
         if (event.impact === 'high') {
-          fetch(`${process.env.NEXT_PUBLIC_APP_URL}/api/alerts/send`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ type: 'devaluation', card: source.card, bank: source.bank, description: event.description }) }).catch(() => {});
+          fetch(`${process.env.NEXT_PUBLIC_APP_URL}/api/alerts/send`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ type: 'devaluation', card: source.card, bank: source.bank, description: event.description }) })
         }
       }
     }
   }
 
-  await supabase.from('cron_logs').insert({ job: 'detect-devaluations', result: { checked, devaluations }, ran_at: new Date().toISOString() }).catch(() => {});
+  try { await supabase.from('cron_logs').insert({ job: 'detect-devaluations', result: { checked, devaluations }, ran_at: new Date().toISOString() }) } catch {}
   console.log(`Detection complete: ${checked} checked, ${devaluations} devaluations found`);
 }
 

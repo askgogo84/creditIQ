@@ -66,7 +66,7 @@ async function runScrapeBackground(banks?: string[]) {
       job: 'scrape',
       result: { scraped: scrapes.length, parsed, saved },
       ran_at: new Date().toISOString(),
-    }).catch(() => {});
+    })
 
     console.log(`Scrape complete: ${scrapes.length} pages, ${parsed} parsed, ${saved} saved`);
   } catch (e: any) {
@@ -75,6 +75,6 @@ async function runScrapeBackground(banks?: string[]) {
       job: 'scrape',
       result: { error: e.message },
       ran_at: new Date().toISOString(),
-    }).catch(() => {});
+    })
   }
 }
