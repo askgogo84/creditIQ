@@ -141,8 +141,12 @@ export default function DashboardPage() {
         process.env.NEXT_PUBLIC_SUPABASE_URL || '',
         process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || ''
       );
-      const table = card.source === 'manual' ? 'manual_cards' : 'statement_imports';
-      await sb.from(table).update({ points_balance: val, imported_at: new Date().toISOString() }).eq('id', card.id);
+      const res = await fetch('/api/update-points', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ cardId: card.id, source: card.source, points: val, userId: user.id }),
+      });
+      if (!res.ok) throw new Error('Update failed');
       setCards(cards.map(c => c.id === card.id ? { ...c, points_balance: val } : c));
       setEditingCardId(null);
       setEditPoints('');
