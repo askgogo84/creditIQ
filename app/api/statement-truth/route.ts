@@ -13,29 +13,25 @@ CRITICAL: You must extract THREE separate reward point values and never confuse 
 - closing_balance: Total points at END of statement (what user can redeem RIGHT NOW)
 
 For HDFC statements specifically:
-- There is a "Reward Points" summary box showing: Opening Balance | Feature+Bonus Reward Points Earned | Disbursed | Adjusted/Lapsed
+- There is a Reward Points summary box showing: Opening Balance | Feature+Bonus Reward Points Earned | Disbursed | Adjusted/Lapsed
 - The BIG number displayed (e.g. 52,164) is the CLOSING BALANCE = Opening + Earned - Disbursed - Lapsed
-- Extract all four fields separately
 - closing_balance MUST equal opening_balance + points_earned_this_cycle - points_disbursed - points_lapsed
 
 For statements without a summary box (some Infinia/other cards):
-- Sum up all "+XXX" reward entries from transactions = points_earned_this_cycle
-- If no opening balance is shown, set opening_balance to 0
+- Sum all +XXX reward entries from individual transactions = points_earned_this_cycle
+- If no opening balance shown, set opening_balance to 0
 - closing_balance = opening_balance + points_earned_this_cycle
 
-Return ONLY valid JSON. No markdown. No explanation. No preamble.`;
+Return ONLY valid JSON. No markdown fences. No explanation.`;
 
-const USER_INSTRUCTION = `Analyze this credit card statement PDF and extract all data.
-
-Return EXACTLY this JSON structure (no extra fields, no markdown fences):
+const USER_INSTRUCTION = `Analyze this credit card statement and return EXACTLY this JSON (no markdown, no extra text):
 {
-  "card_holder": "full name from statement",
-  "card_number": "masked number e.g. 552260XXXXXX9687",
+  "card_holder": "full name",
+  "card_number": "masked e.g. 552260XXXXXX9687",
   "card_type": "e.g. HDFC Regalia Credit Card",
   "statement_date": "15 May 2026",
   "billing_period": "16 Apr 2026 - 15 May 2026",
   "due_date": "04 Jun 2026",
-
   "points": {
     "opening_balance": 50124,
     "points_earned_this_cycle": 2040,
@@ -45,7 +41,6 @@ Return EXACTLY this JSON structure (no extra fields, no markdown fences):
     "points_expiring_30_days": 0,
     "points_expiring_60_days": 0
   },
-
   "financials": {
     "previous_dues": 272311.62,
     "payments_received": 105000.00,
@@ -56,14 +51,10 @@ Return EXACTLY this JSON structure (no extra fields, no markdown fences):
     "total_credit_limit": 375000,
     "available_credit_limit": 81734
   },
-
   "finance_charge_warning": true,
-
   "category_breakdown": [
-    { "category": "Electronics", "percentage": 99 },
-    { "category": "Groceries", "percentage": 1 }
+    { "category": "Electronics", "percentage": 99 }
   ],
-
   "transactions": [
     {
       "date": "15 Apr 2026",
@@ -74,16 +65,14 @@ Return EXACTLY this JSON structure (no extra fields, no markdown fences):
       "category": "Groceries"
     }
   ],
-
-  "summary_insight": "One sentence CIRA insight. e.g. Finance charges of ₹9,884 wiped out your ₹408 in rewards — you lost money this month."
+  "summary_insight": "One sentence CIRA insight about finance charges vs rewards."
 }
 
-RULES:
-1. closing_balance = the total points the user has RIGHT NOW (not just this month's earned)
-2. points_earned_this_cycle = ONLY points added during this billing period
-3. finance_charge_warning = true if finance_charges > 500
-4. For credits/payments, set type to "credit" and amount as positive
-5. Include ALL transactions listed in the statement`;
+IMPORTANT RULES:
+1. closing_balance = total points user has NOW (opening + earned - disbursed - lapsed). NOT just this month earned.
+2. points_earned_this_cycle = ONLY points added this billing period.
+3. finance_charge_warning = true if finance_charges > 500.
+4. Payments/credits: type = credit, amount positive.`;
 
 export async function POST(request: NextRequest) {
   try {
@@ -94,11 +83,13 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'No file uploaded' }, { status: 400 });
     }
 
-    // Convert file to base64
     const arrayBuffer = await file.arrayBuffer();
     const base64Data = Buffer.from(arrayBuffer).toString('base64');
 
-    const response = await anthropic.messages.create({
+    // Cast to any to bypass SDK type restrictions on 'document' type
+    // The Anthropic API supports document type but older SDK typings don't include it
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const messageBody: any = {
       model: 'claude-opus-4-5-20251101',
       max_tokens: 4096,
       system: SYSTEM_PROMPT,
@@ -121,22 +112,21 @@ export async function POST(request: NextRequest) {
           ],
         },
       ],
-    });
+    };
 
-    // Extract text response
+    const response = await anthropic.messages.create(messageBody);
+
     const textContent = response.content.find((c) => c.type === 'text');
     if (!textContent || textContent.type !== 'text') {
       return NextResponse.json({ error: 'No response from AI' }, { status: 500 });
     }
 
-    // Clean and parse JSON (strip any accidental markdown fences)
     let rawText = textContent.text.trim();
     rawText = rawText.replace(/^```json\s*/i, '').replace(/^```\s*/i, '').replace(/\s*```$/i, '');
 
     const data = JSON.parse(rawText);
 
-    // Safety check: if closing_balance looks wrong (equals only earned this cycle),
-    // recalculate it
+    // Safety net: if closing_balance was set to only earned (Infinia bug), recalculate
     if (
       data.points &&
       data.points.closing_balance === data.points.points_earned_this_cycle &&
