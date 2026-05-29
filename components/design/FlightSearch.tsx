@@ -212,10 +212,11 @@ export default function FlightSearch({
   const [departure, setDeparture] = useState(getDatePlusDays(7));
   const [returnDate, setReturnDate] = useState(getDatePlusDays(10));
   const [passengers, setPassengers] = useState(1);
-  const [results, setResults] = useState<FlightResult[]>([]);
+  // results removed — we now use real OTA deeplinks instead of mock data
   const [loading, setLoading] = useState(false);
   const [searched, setSearched] = useState(false);
   const [expandedCard, setExpandedCard] = useState<string | null>(null);
+  const [searchedLinks, setSearchedLinks] = useState<Record<string, string>>({});
 
   const swapAirports = () => {
     setFrom(to);
@@ -227,53 +228,29 @@ export default function FlightSearch({
     setLoading(true);
     setSearched(false);
 
-    // Simulate Kiwi/flight search — replace with real API call
-    await new Promise((r) => setTimeout(r, 1200));
+    // Build real booking URLs for each OTA with actual params
+    const ret = tripType === 'round-trip' ? returnDate : undefined;
+    const pax = passengers;
+    
+    // Build all OTA URLs with real route + dates
+    const depFormatted = departure; // YYYY-MM-DD
+    const retFormatted = ret || '';
+    const depMMT = departure.replace(/-/g, '');
+    
+    const bookingLinks = {
+      kayak: ret 
+        ? 'https://www.kayak.co.in/flights/' + from + '-' + to + '/' + departure + '/' + ret + '?adults=' + pax + '&sort=bestflight_a'
+        : 'https://www.kayak.co.in/flights/' + from + '-' + to + '/' + departure + '?adults=' + pax + '&sort=bestflight_a',
+      mmt: ret
+        ? 'https://www.makemytrip.com/flight/search?tripType=R&itinerary=' + from + '-' + to + '-' + depMMT + '&paxType=A-' + pax + '_C-0_I-0&intl=false&cabinClass=E'
+        : 'https://www.makemytrip.com/flight/search?tripType=O&itinerary=' + from + '-' + to + '-' + depMMT + '&paxType=A-' + pax + '_C-0_I-0&intl=false&cabinClass=E',
+      emt: 'https://www.easemytrip.com/flight/search-result?org=' + from + '&dest=' + to + '&dd=' + departure.split('-').reverse().join('/') + '&ad=' + pax + '&cd=0&id=0&class=Economy&type=' + (ret ? 'R' : 'O'),
+      goibibo: 'https://www.goibibo.com/flights/search?srcCity=' + from + '&destCity=' + to + '&travelDate=' + departure.replace(/-/g,'') + '&adults=' + pax + '&children=0&infants=0&class=E&source=metasearch',
+      googleFlights: 'https://www.google.com/travel/flights?q=Flights+from+' + from + '+to+' + to + '+on+' + departure,
+    };
 
-    // Mock results for UI demo (replace with real Kiwi API response parsing)
-    const mockResults: FlightResult[] = [
-      {
-        id: '1',
-        departure_time: '06:05',
-        arrival_time: '07:35',
-        duration: '1h 30m',
-        stops: 0,
-        price: 4442,
-        airline: 'IndiGo',
-        from,
-        to,
-        date: departure,
-        return_date: tripType === 'round-trip' ? returnDate : undefined,
-      },
-      {
-        id: '2',
-        departure_time: '09:20',
-        arrival_time: '11:10',
-        duration: '1h 50m',
-        stops: 0,
-        price: 5199,
-        airline: 'Air India',
-        from,
-        to,
-        date: departure,
-        return_date: tripType === 'round-trip' ? returnDate : undefined,
-      },
-      {
-        id: '3',
-        departure_time: '14:45',
-        arrival_time: '16:30',
-        duration: '1h 45m',
-        stops: 0,
-        price: 3899,
-        airline: 'SpiceJet',
-        from,
-        to,
-        date: departure,
-        return_date: tripType === 'round-trip' ? returnDate : undefined,
-      },
-    ];
-
-    setResults(mockResults);
+    // Store real links and open KAYAK immediately
+    setSearchedLinks(bookingLinks);
     setLoading(false);
     setSearched(true);
   };
@@ -417,117 +394,71 @@ export default function FlightSearch({
         </button>
       </div>
 
-      {/* Results */}
+      {/* Results — Real OTA Links */}
       {searched && (
-        <div className="mt-4 space-y-3">
-          <div className="flex items-center justify-between">
-            <p className="text-sm text-gray-600">
-              <span className="font-semibold text-gray-900">{results.length} flights found</span> · Sorted by price
-            </p>
-            <span className="text-xs text-gray-400 flex items-center gap-1">
-              <Zap className="w-3 h-3" /> Live prices at booking
+        <div className="mt-4">
+          {/* Header */}
+          <div className="flex items-center justify-between mb-3">
+            <div>
+              <p className="text-sm font-bold text-gray-900">{from} → {to}</p>
+              <p className="text-xs text-gray-500">{departure}{tripType === 'round-trip' ? ' · Return ' + returnDate : ''} · {passengers} pax</p>
+            </div>
+            <span className="text-xs text-emerald-600 font-semibold flex items-center gap-1">
+              <Zap className="w-3 h-3" /> Live prices on booking site
             </span>
           </div>
 
-          {results.map((result) => (
-            <div
-              key={result.id}
-              className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden"
-            >
-              {/* Flight summary row */}
-              <div className="p-4">
-                <div className="flex items-center justify-between mb-3">
-                  <div className="flex items-center gap-3">
-                    <div className="text-center">
-                      <p className="text-lg font-bold text-gray-900">{result.departure_time}</p>
-                      <p className="text-xs text-gray-500">{result.from}</p>
-                    </div>
-                    <div className="flex flex-col items-center gap-0.5">
-                      <p className="text-xs text-gray-400">{result.duration}</p>
-                      <div className="flex items-center gap-1">
-                        <div className="w-8 h-px bg-gray-300" />
-                        <ArrowRight className="w-3 h-3 text-gray-400" />
-                        <div className="w-8 h-px bg-gray-300" />
-                      </div>
-                      <p className="text-xs text-emerald-600 font-medium">
-                        {result.stops === 0 ? 'Direct' : `${result.stops} stop`}
-                      </p>
-                    </div>
-                    <div className="text-center">
-                      <p className="text-lg font-bold text-gray-900">{result.arrival_time}</p>
-                      <p className="text-xs text-gray-500">{result.to}</p>
-                    </div>
-                  </div>
-
-                  <div className="text-right">
-                    <p className="text-xl font-bold text-[#1B3A5C]">₹{result.price.toLocaleString('en-IN')}</p>
-                    <p className="text-xs text-gray-400">per person</p>
-                    <p className="text-xs text-gray-500 mt-0.5">{result.airline}</p>
-                  </div>
-                </div>
-
-                {/* Book on OTA buttons */}
-                <div className="mt-3">
-                  <p className="text-xs text-gray-500 mb-2 font-medium">Book on:</p>
-                  <div className="grid grid-cols-4 gap-2">
-                    {BOOKING_OPTIONS.map((option) => {
-                      const url = getBookingUrl(option, result, tripType);
-                      return (
-                        <a
-                          key={option.name}
-                          href={url}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="flex flex-col items-center justify-center py-2 px-1 rounded-xl border-2 border-gray-100 hover:border-gray-300 hover:shadow-sm transition-all group"
-                          style={{ borderColor: `${option.color}20` }}
-                        >
-                          <span
-                            className="text-[10px] font-bold tracking-tight"
-                            style={{ color: option.color }}
-                          >
-                            {option.logo}
-                          </span>
-                          <span className="text-[9px] text-gray-500 mt-0.5 group-hover:text-gray-700 leading-tight text-center">
-                            {option.name}
-                          </span>
-                          <ExternalLink className="w-2.5 h-2.5 text-gray-300 mt-0.5" />
-                        </a>
-                      );
-                    })}
-                  </div>
-                </div>
-
-                {/* Points hint if available */}
-                <div className="mt-3 pt-3 border-t border-gray-100 flex items-center justify-between">
-                  <p className="text-xs text-[#1B3A5C]">
-                    💳 Book via ${bank} card to earn rewards${pointsBalance > 0 ? ` · You have ${pointsBalance.toLocaleString('en-IN')} pts` : ''}
-                  </p>
-                  <button
-                    onClick={() => toggleCard(result.id)}
-                    className="text-xs text-[#C9972E] font-medium hover:underline"
-                  >
-                    {expandedCard === result.id ? 'Less ▲' : 'Optimize ▼'}
-                  </button>
-                </div>
-
-                {/* Expanded optimize section */}
-                {expandedCard === result.id && (
-                  <div className="mt-3 bg-amber-50 rounded-xl p-3 border border-amber-100">
-                    <p className="text-xs font-semibold text-amber-800 mb-2">💡 Points Optimization</p>
-                    <ul className="space-y-1.5 text-xs text-amber-700">
-                      <li>• Transfer HDFC points to KrisFlyer/Vistara for best value</li>
-                      <li>• Book on airline site directly (not OTA) for award tickets</li>
-                      <li>• Pay with Infinia/Diners Black for 3.3% reward rate</li>
-                      <li>• Use SmartBuy portal for 5x accelerated points on flights</li>
-                    </ul>
-                  </div>
-                )}
-              </div>
+          {/* CIRA tip */}
+          {pointsBalance > 0 && (
+            <div className="bg-amber-50 border border-amber-200 rounded-xl p-3 mb-3">
+              <p className="text-xs font-semibold text-amber-800 mb-1">💡 CIRA's tip for this route</p>
+              <p className="text-xs text-amber-700">
+                Pay with your {bank} card on any of these platforms to earn reward points. 
+                For award redemption, use the Points route above — transfers to KrisFlyer or Air India Flying Returns typically give 2-3x more value than cashback.
+              </p>
             </div>
-          ))}
+          )}
 
-          <p className="text-center text-xs text-gray-400 mt-2">
-            Prices are indicative. Final price confirmed at booking. Affiliate links may apply.
+          {/* OTA Cards */}
+          <div className="space-y-2">
+            {[
+              { name: 'KAYAK', desc: 'Compare all airlines · Best for price comparison', url: searchedLinks.kayak, color: '#FF690F', primary: true },
+              { name: 'MakeMyTrip', desc: 'Indian OTA · EMI options available', url: searchedLinks.mmt, color: '#E8334A', primary: false },
+              { name: 'EaseMyTrip', desc: '0 convenience fee · Good for budget routes', url: searchedLinks.emt, color: '#0473EA', primary: false },
+              { name: 'Goibibo', desc: 'GoCash rewards · Quick checkout', url: searchedLinks.goibibo, color: '#E8334A', primary: false },
+              { name: 'Google Flights', desc: 'Price tracking · Calendar view', url: searchedLinks.googleFlights, color: '#4285F4', primary: false },
+            ].map((ota) => (
+              <a
+                key={ota.name}
+                href={ota.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center justify-between p-3 bg-white rounded-xl border border-gray-200 hover:border-gray-300 hover:shadow-sm transition-all group"
+              >
+                <div className="flex items-center gap-3">
+                  <div
+                    className="w-8 h-8 rounded-lg flex items-center justify-center text-white text-xs font-black flex-shrink-0"
+                    style={{ background: ota.color }}
+                  >
+                    {ota.name[0]}
+                  </div>
+                  <div>
+                    <p className="text-sm font-bold text-gray-900">{ota.name}</p>
+                    <p className="text-xs text-gray-500">{ota.desc}</p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2">
+                  {ota.primary && (
+                    <span className="text-xs bg-orange-100 text-orange-700 font-semibold px-2 py-0.5 rounded-full">Recommended</span>
+                  )}
+                  <ExternalLink className="w-4 h-4 text-gray-400 group-hover:text-gray-600" />
+                </div>
+              </a>
+            ))}
+          </div>
+
+          <p className="text-center text-xs text-gray-400 mt-3">
+            Prices shown on booking sites are live and accurate. CreditIQ earns a small commission at no extra cost to you.
           </p>
         </div>
       )}
