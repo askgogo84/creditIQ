@@ -12,7 +12,7 @@ interface TruthReport {
   totalSpend: number; totalRewardsEarned: number;
   advertisedRate: number; actualRate: number; gapPercent: number;
   categoryBreakdown: { category: string; spend: number; rewardsEarned: number; advertisedRate: number; actualRate: number; moneyLeft: number }[];
-  verdict: string; verdictColor: string; totalMoneyLeft: number;
+  verdict: string; verdictColor: string; totalMoneyLeft: number; bestAlternative: string; insight: string;
 }
 
 export default function StatementTruthPage() {
@@ -143,7 +143,7 @@ export default function StatementTruthPage() {
                     Truth Verdict &bull; {report.cardName}
                   </div>
                   <div style={{ fontSize: 22, fontWeight: 800, color: verdictColor, marginBottom: 8, letterSpacing: '-0.01em' }}>{report.verdict}</div>
-                  <div style={{ fontSize: 14, color: 'var(--ink-2,#2A3F6B)', lineHeight: 1.65 }}>{report.insight}</div>
+                  <div style={{ fontSize: 14, color: 'var(--ink-2,#2A3F6B)', lineHeight: 1.65 }}>{(report.insights || [])[0]}</div>
                 </div>
 
                 {/* Key numbers */}
