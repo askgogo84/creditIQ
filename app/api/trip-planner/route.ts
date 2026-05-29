@@ -45,6 +45,13 @@ CRITICAL ACCURACY RULES — follow strictly:
 9. InterMiles = IndiGo's programme (not for SQ routes).
 10. All dates must be REAL future dates based on TODAY = ${todayStr}.
 
+VERIFIED TRANSFER PORTAL URLS (use these exact URLs, never invent others):
+- HDFC SmartBuy (points transfer): https://offers.smartbuy.hdfcbank.com
+- KrisFlyer redemption: https://www.singaporeair.com/en_UK/in/plan-travel/book-flights/
+- Air India Flying Returns: https://www.airindia.com/in/en/flying-returns.html
+- InterMiles redemption: https://www.intermiles.com/flight
+- Axis EDGE Miles: https://travel.axisbank.co.in
+
 VERIFIED AWARD RATES (use these exact figures):
 - BLR→SIN Economy (KrisFlyer): 17,500 miles one-way
 - BLR→SIN Business (KrisFlyer): 42,500 miles one-way  
