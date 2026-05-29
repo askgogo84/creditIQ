@@ -33,6 +33,7 @@ export default function UploadStatementPage() {
   const [pwdHint, setPwdHint] = useState('');
   const [userId, setUserId] = useState<string | null>(null);
   const [savedCount, setSavedCount] = useState(0);
+  const [manualPoints, setManualPoints] = useState('');
   const fileRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -44,7 +45,6 @@ export default function UploadStatementPage() {
     sb.auth.getUser().then(({ data: { user } }) => {
       if (user) {
         setUserId(user.id);
-        // Load how many cards already saved
         fetch(`/api/user-cards?userId=${user.id}`)
           .then(r => r.json())
           .then(d => setSavedCount(d.cards?.length || 0));
@@ -88,10 +88,34 @@ export default function UploadStatementPage() {
     setLoading(false);
   };
 
+  const handleSaveManualPoints = async () => {
+    const val = parseInt(manualPoints || '0');
+    if (!val || val <= 0) return;
+    if (userId) {
+      const sb = createBrowserClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL || '',
+        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || ''
+      );
+      await sb.from('statement_imports').upsert({
+        user_id: userId,
+        bank: result?.bank || selectedBank?.id,
+        card_name: result?.card_name,
+        card_last4: result?.card_last4,
+        points_balance: val,
+        points_currency: result?.points_currency || 'Reward Points',
+        confidence: 'manual',
+        imported_at: new Date().toISOString(),
+      });
+      setSavedCount(c => c + 1);
+    }
+    setResult({ ...result, points_balance: val });
+    setManualPoints('');
+  };
+
   const resetForAnother = () => {
     setResult(null); setFile(null);
     setNeedsPassword(false); setError('');
-    setSelectedBank(null);
+    setSelectedBank(null); setManualPoints('');
   };
 
   return (
@@ -112,32 +136,29 @@ export default function UploadStatementPage() {
             Download your monthly PDF from your bank app. Upload here. Points saved to your account -- never upload again.
           </p>
 
-          {/* Login nudge if not logged in */}
           {!userId && (
             <div className="rounded-xl p-4 mb-6 flex items-start gap-3" style={{ background: 'color-mix(in srgb, var(--accent) 8%, transparent)', border: '1px solid color-mix(in srgb, var(--accent) 25%, transparent)' }}>
               <LogIn className="w-4 h-4 shrink-0 mt-0.5" style={{ color: 'var(--accent)' }} />
               <div>
                 <p className="text-sm font-medium mb-1" style={{ color: 'var(--text)' }}>Sign in to save your points</p>
-                <p className="text-xs mb-2" style={{ color: 'var(--text-muted)' }}>You can upload without signing in but points won't be saved to your dashboard.</p>
-                <Link href="/login" className="text-xs font-medium" style={{ color: 'var(--accent)' }}>Sign in with Google →</Link>
+                <p className="text-xs mb-2" style={{ color: 'var(--text-muted)' }}>You can upload without signing in but points won&apos;t be saved to your dashboard.</p>
+                <Link href="/login" className="text-xs font-medium" style={{ color: 'var(--accent)' }}>Sign in with Google &rarr;</Link>
               </div>
             </div>
           )}
 
-          {/* Cards already saved indicator */}
           {userId && savedCount > 0 && !result && (
             <div className="rounded-xl p-3 mb-5 flex items-center justify-between" style={{ background: 'color-mix(in srgb, var(--emerald) 8%, transparent)', border: '1px solid color-mix(in srgb, var(--emerald) 20%, transparent)' }}>
               <div className="flex items-center gap-2">
                 <CheckCircle className="w-4 h-4" style={{ color: 'var(--emerald)' }} />
                 <span className="text-sm" style={{ color: 'var(--text)' }}>{savedCount} card{savedCount !== 1 ? 's' : ''} already saved to your dashboard</span>
               </div>
-              <Link href="/dashboard" className="text-xs" style={{ color: 'var(--accent)' }}>View dashboard →</Link>
+              <Link href="/dashboard" className="text-xs" style={{ color: 'var(--accent)' }}>View dashboard &rarr;</Link>
             </div>
           )}
 
           {!result && !needsPassword && (
             <div className="space-y-5">
-              {/* Bank selector */}
               <div>
                 <label className="text-xs font-mono uppercase tracking-widest mb-3 block" style={{ color: 'var(--text-dim)' }}>
                   1. Select your bank
@@ -156,7 +177,6 @@ export default function UploadStatementPage() {
                 </div>
               </div>
 
-              {/* File drop */}
               <div>
                 <label className="text-xs font-mono uppercase tracking-widest mb-3 block" style={{ color: 'var(--text-dim)' }}>
                   2. Upload PDF statement (unlocked)
@@ -212,7 +232,6 @@ export default function UploadStatementPage() {
             </div>
           )}
 
-          {/* Password unlock flow */}
           {needsPassword && !result && (
             <div className="space-y-4">
               <div className="rounded-2xl border p-6" style={{ borderColor: 'color-mix(in srgb, var(--accent) 30%, transparent)', background: 'color-mix(in srgb, var(--accent) 6%, transparent)' }}>
@@ -225,14 +244,12 @@ export default function UploadStatementPage() {
                     <p className="text-sm" style={{ color: 'var(--text-muted)' }}>Remove the password first using ilovepdf -- takes 30 seconds.</p>
                   </div>
                 </div>
-
                 <div className="rounded-xl p-4 mb-4" style={{ background: 'var(--bg-elevated)', border: '1px solid var(--border)' }}>
                   <div className="text-xs font-mono uppercase tracking-widest mb-2" style={{ color: 'var(--text-dim)' }}>
                     {selectedBank?.name || 'Your bank'} password format
                   </div>
                   <p className="text-sm font-medium" style={{ color: 'var(--text)' }}>{pwdHint || selectedBank?.pwdHint}</p>
                 </div>
-
                 <div className="space-y-3 mb-5">
                   {[
                     'Open your statement PDF and note the password (format above)',
@@ -246,19 +263,17 @@ export default function UploadStatementPage() {
                     </div>
                   ))}
                 </div>
-
                 <a href="https://www.ilovepdf.com/unlock_pdf" target="_blank" rel="noopener noreferrer"
                   className="btn-primary w-full flex items-center justify-center gap-2 text-sm">
                   Open ilovepdf.com/unlock_pdf <ExternalLink className="w-4 h-4" />
                 </a>
               </div>
               <button onClick={() => { setNeedsPassword(false); setFile(null); }} className="btn-ghost w-full text-sm">
-                ← Upload a different file
+                &larr; Upload a different file
               </button>
             </div>
           )}
 
-          {/* Success result */}
           {result && (
             <div className="space-y-4">
               <div className="rounded-2xl p-6 border" style={{ borderColor: 'color-mix(in srgb, var(--emerald) 30%, transparent)', background: 'color-mix(in srgb, var(--emerald) 6%, transparent)' }}>
@@ -275,27 +290,46 @@ export default function UploadStatementPage() {
                   </div>
                 </div>
 
-                {result.points_balance != null && (
-                  <div className="p-4 rounded-xl mb-3" style={{ background: 'var(--bg-elevated)', border: '1px solid var(--border)' }}>
+                {result.points_balance != null ? (
+                  <div className="p-4 rounded-xl" style={{ background: 'var(--bg-elevated)', border: '1px solid var(--border)' }}>
                     <div className="text-[10px] font-mono uppercase tracking-widest mb-1" style={{ color: 'var(--text-dim)' }}>
-                      {result.points_currency || 'Points'} balance
+                      {result.points_currency || 'Reward Points'} balance
                     </div>
                     <div className="font-display text-4xl tabular" style={{ color: 'var(--accent)' }}>
                       {result.points_balance.toLocaleString('en-IN')}
                     </div>
                     {result.points_expiry && <div className="text-xs mt-1" style={{ color: 'var(--text-dim)' }}>Expires: {result.points_expiry}</div>}
                   </div>
-                )}
-
-                {result.points_balance != null && (
-                  <div className="p-3 rounded-xl" style={{ background: 'var(--bg-elevated)', border: '1px solid var(--border)' }}>
-                    <div className="text-[10px] font-mono uppercase tracking-widest mb-1" style={{ color: 'var(--text-dim)' }}>Total points balance</div>
-                    <div className="font-display text-xl" style={{ color: 'var(--text)' }}>{result.points_balance.toLocaleString('en-IN')}</div>
+                ) : (
+                  <div className="p-4 rounded-xl" style={{ background: 'color-mix(in srgb, var(--accent) 6%, transparent)', border: '1px solid color-mix(in srgb, var(--accent) 25%, transparent)' }}>
+                    <div className="text-[10px] font-mono uppercase tracking-widest mb-2" style={{ color: 'var(--text-dim)' }}>
+                      Points not found &mdash; enter manually
+                    </div>
+                    <p className="text-xs mb-3" style={{ color: 'var(--text-muted)' }}>
+                      Check your bank app or net banking for your current {result.points_currency || 'reward points'} balance.
+                    </p>
+                    <div className="flex gap-2">
+                      <input
+                        type="number"
+                        placeholder="e.g. 12500"
+                        value={manualPoints}
+                        onChange={e => setManualPoints(e.target.value)}
+                        className="flex-1 px-3 py-2 rounded-xl text-sm border"
+                        style={{ background: 'var(--bg-elevated)', borderColor: 'var(--border)', color: 'var(--text)' }}
+                      />
+                      <button
+                        onClick={handleSaveManualPoints}
+                        disabled={!manualPoints || parseInt(manualPoints) <= 0}
+                        className="btn-primary text-sm px-4"
+                        style={{ opacity: !manualPoints || parseInt(manualPoints) <= 0 ? 0.5 : 1 }}
+                      >
+                        Save
+                      </button>
+                    </div>
                   </div>
                 )}
               </div>
 
-              {/* Action buttons */}
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                 <button onClick={resetForAnother} className="btn-ghost text-sm flex items-center justify-center gap-1.5">
                   <Upload className="w-4 h-4" /> Add another card
