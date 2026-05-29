@@ -86,27 +86,138 @@ function getBookingUrl(option: BookingOption, result: FlightResult, tripType: st
 }
 
 // Popular Indian airport codes
+// City name → IATA mapping for natural language detection
+const CITY_TO_IATA: Record<string, string> = {
+  'bangalore': 'BLR', 'bengaluru': 'BLR', 'blr': 'BLR',
+  'delhi': 'DEL', 'new delhi': 'DEL', 'del': 'DEL',
+  'mumbai': 'BOM', 'bombay': 'BOM', 'bom': 'BOM',
+  'chennai': 'MAA', 'madras': 'MAA', 'maa': 'MAA',
+  'hyderabad': 'HYD', 'hyd': 'HYD',
+  'kolkata': 'CCU', 'calcutta': 'CCU', 'ccu': 'CCU',
+  'kochi': 'COK', 'cochin': 'COK', 'cok': 'COK',
+  'goa': 'GOI', 'goi': 'GOI',
+  'pune': 'PNQ', 'pnq': 'PNQ',
+  'ahmedabad': 'AMD', 'amd': 'AMD',
+  'jaipur': 'JAI', 'jai': 'JAI',
+  'bali': 'DPS', 'denpasar': 'DPS', 'dps': 'DPS',
+  'singapore': 'SIN', 'sin': 'SIN',
+  'dubai': 'DXB', 'dxb': 'DXB',
+  'bangkok': 'BKK', 'bkk': 'BKK',
+  'london': 'LHR', 'lhr': 'LHR',
+  'new york': 'JFK', 'nyc': 'JFK', 'jfk': 'JFK',
+  'paris': 'CDG', 'cdg': 'CDG',
+  'tokyo': 'NRT', 'nrt': 'NRT',
+  'sydney': 'SYD', 'syd': 'SYD',
+  'kuala lumpur': 'KUL', 'kl': 'KUL', 'kul': 'KUL',
+  'hong kong': 'HKG', 'hkg': 'HKG',
+  'amsterdam': 'AMS', 'ams': 'AMS',
+  'frankfurt': 'FRA', 'fra': 'FRA',
+  'abu dhabi': 'AUH', 'auh': 'AUH',
+  'doha': 'DOH', 'doh': 'DOH',
+  'phuket': 'HKT', 'hkt': 'HKT',
+  'colombo': 'CMB', 'cmb': 'CMB',
+  'kathmandu': 'KTM', 'ktm': 'KTM',
+  'male': 'MLE', 'maldives': 'MLE', 'mle': 'MLE',
+  'istanbul': 'IST', 'ist': 'IST',
+  'zurich': 'ZRH', 'zrh': 'ZRH',
+  'rome': 'FCO', 'fco': 'FCO',
+  'barcelona': 'BCN', 'bcn': 'BCN',
+  'los angeles': 'LAX', 'la': 'LAX', 'lax': 'LAX',
+  'san francisco': 'SFO', 'sfo': 'SFO',
+  'toronto': 'YYZ', 'yyz': 'YYZ',
+  'nairobi': 'NBO', 'nbo': 'NBO',
+  'johannesburg': 'JNB', 'jnb': 'JNB',
+  'jakarta': 'CGK', 'cgk': 'CGK',
+  'manila': 'MNL', 'mnl': 'MNL',
+  'seoul': 'ICN', 'icn': 'ICN',
+  'taipei': 'TPE', 'tpe': 'TPE',
+  'shanghai': 'PVG', 'pvg': 'PVG',
+  'beijing': 'PEK', 'pek': 'PEK',
+  'cairo': 'CAI', 'cai': 'CAI',
+  'muscat': 'MCT', 'mct': 'MCT',
+};
+
+export function detectIataFromText(text: string): string | null {
+  const lower = text.toLowerCase();
+  for (const [city, iata] of Object.entries(CITY_TO_IATA)) {
+    if (lower.includes(city)) return iata;
+  }
+  return null;
+}
+
+// Indirect routing — which hub to connect via for a destination
+const INDIRECT_ROUTES: Record<string, { via: string; hub: string }> = {
+  'DPS': { via: 'SIN', hub: 'Singapore (Changi)' }, // Bali via Singapore
+  'MLE': { via: 'SIN', hub: 'Singapore (Changi)' }, // Maldives via Singapore or Colombo
+  'NRT': { via: 'SIN', hub: 'Singapore (Changi)' }, // Tokyo via Singapore
+  'SYD': { via: 'SIN', hub: 'Singapore (Changi)' }, // Sydney via Singapore
+  'HKG': { via: 'SIN', hub: 'Singapore (Changi)' }, // HK via Singapore
+  'ICN': { via: 'SIN', hub: 'Singapore (Changi)' }, // Seoul via Singapore
+  'CDG': { via: 'DXB', hub: 'Dubai (DXB)' },        // Paris via Dubai
+  'FCO': { via: 'DXB', hub: 'Dubai (DXB)' },        // Rome via Dubai
+  'LHR': { via: 'DXB', hub: 'Dubai (DXB)' },        // London via Dubai
+  'JFK': { via: 'DXB', hub: 'Dubai (DXB)' },        // NY via Dubai  
+  'LAX': { via: 'DOH', hub: 'Doha (HIA)' },         // LA via Doha
+  'IST': { via: 'DXB', hub: 'Dubai (DXB)' },        // Istanbul via Dubai
+};
+
+// Build KAYAK search URL (deeplink for booking)
+export function buildKayakUrl(from: string, to: string, depDate: string, retDate?: string, pax = 1): string {
+  const dateStr = depDate.replace(/-/g, '').slice(2); // YYMMDD
+  const retStr = retDate ? retDate.replace(/-/g, '').slice(2) : '';
+  if (retDate && retStr) {
+    return \`https://www.kayak.co.in/flights/\${from}-\${to}/\${depDate}/\${retDate}?adults=\${pax}&sort=bestflight_a\`;
+  }
+  return \`https://www.kayak.co.in/flights/\${from}-\${to}/\${depDate}?adults=\${pax}&sort=bestflight_a\`;
+}
+
+// Build MakeMyTrip URL
+export function buildMMTUrl(from: string, to: string, depDate: string, retDate?: string, pax = 1): string {
+  const fmt = (d: string) => d.replace(/-/g, '');
+  if (retDate) {
+    return \`https://www.makemytrip.com/flight/search?tripType=R&itinerary=\${from}-\${to}-\${fmt(depDate)}&paxType=A-\${pax}_C-0_I-0&intl=false&cabinClass=E\`;
+  }
+  return \`https://www.makemytrip.com/flight/search?tripType=O&itinerary=\${from}-\${to}-\${fmt(depDate)}&paxType=A-\${pax}_C-0_I-0&intl=false&cabinClass=E\`;
+}
+
 const AIRPORTS = [
-  { code: 'BLR', name: 'Bengaluru (KIA)' },
-  { code: 'DEL', name: 'Delhi (IGI)' },
-  { code: 'BOM', name: 'Mumbai (CSIA)' },
+  { code: 'BLR', name: 'Bengaluru (BLR)' },
+  { code: 'DEL', name: 'Delhi (DEL)' },
+  { code: 'BOM', name: 'Mumbai (BOM)' },
   { code: 'MAA', name: 'Chennai (MAA)' },
-  { code: 'HYD', name: 'Hyderabad (RGIA)' },
-  { code: 'CCU', name: 'Kolkata (NSCBI)' },
-  { code: 'COK', name: 'Kochi (CIAL)' },
-  { code: 'GOI', name: 'Goa (GOX)' },
-  { code: 'PNQ', name: 'Pune (LLA)' },
-  { code: 'AMD', name: 'Ahmedabad (SVP)' },
+  { code: 'HYD', name: 'Hyderabad (HYD)' },
+  { code: 'CCU', name: 'Kolkata (CCU)' },
+  { code: 'COK', name: 'Kochi (COK)' },
+  { code: 'GOI', name: 'Goa (GOI)' },
+  { code: 'PNQ', name: 'Pune (PNQ)' },
+  { code: 'AMD', name: 'Ahmedabad (AMD)' },
   { code: 'JAI', name: 'Jaipur (JAI)' },
-  { code: 'GAU', name: 'Guwahati (LGB)' },
-  { code: 'IXC', name: 'Chandigarh (IXC)' },
-  { code: 'LKO', name: 'Lucknow (AAAL)' },
-  { code: 'PAT', name: 'Patna (LJBR)' },
-  { code: 'DXB', name: 'Dubai (DXB)' },
+  { code: 'DPS', name: 'Bali (DPS)' },
   { code: 'SIN', name: 'Singapore (SIN)' },
+  { code: 'DXB', name: 'Dubai (DXB)' },
   { code: 'BKK', name: 'Bangkok (BKK)' },
+  { code: 'HKT', name: 'Phuket (HKT)' },
+  { code: 'KUL', name: 'Kuala Lumpur (KUL)' },
+  { code: 'HKG', name: 'Hong Kong (HKG)' },
+  { code: 'NRT', name: 'Tokyo (NRT)' },
+  { code: 'SYD', name: 'Sydney (SYD)' },
+  { code: 'MLE', name: 'Maldives (MLE)' },
+  { code: 'CMB', name: 'Colombo (CMB)' },
+  { code: 'KTM', name: 'Kathmandu (KTM)' },
   { code: 'LHR', name: 'London (LHR)' },
+  { code: 'CDG', name: 'Paris (CDG)' },
+  { code: 'AMS', name: 'Amsterdam (AMS)' },
+  { code: 'FCO', name: 'Rome (FCO)' },
+  { code: 'IST', name: 'Istanbul (IST)' },
+  { code: 'DOH', name: 'Doha (DOH)' },
+  { code: 'AUH', name: 'Abu Dhabi (AUH)' },
+  { code: 'MCT', name: 'Muscat (MCT)' },
   { code: 'JFK', name: 'New York (JFK)' },
+  { code: 'LAX', name: 'Los Angeles (LAX)' },
+  { code: 'SFO', name: 'San Francisco (SFO)' },
+  { code: 'YYZ', name: 'Toronto (YYZ)' },
+  { code: 'ICN', name: 'Seoul (ICN)' },
+  { code: 'NBO', name: 'Nairobi (NBO)' },
 ];
 
 function getTodayISO(): string {

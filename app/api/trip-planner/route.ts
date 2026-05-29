@@ -18,7 +18,30 @@ export async function POST(req: NextRequest) {
 
     const systemPrompt = buildRagSystemPrompt(context, devaluations)
 
+    // Parse natural language dates
+    const today = new Date();
+    const nextWeekend = new Date(today);
+    nextWeekend.setDate(today.getDate() + (6 - today.getDay() + 7) % 7 + 1);
+    const nextWeekendStr = nextWeekend.toISOString().split('T')[0];
+
     const userPrompt = 'Plan a trip and recommend the best credit cards to maximize value.\n\n' +
+      'TODAY\'S DATE: ' + today.toISOString().split('T')[0] + '\n' +
+      'NEXT WEEKEND: ' + nextWeekendStr + '\n\n' +
+      'ROUTING RULES (critical - follow these):\n' +
+      '- Bali (DPS): No direct from India. Route = BLR/DEL/BOM → SIN → DPS via Singapore Airlines/Air Asia/Scoot\n' +
+      '- Maldives (MLE): Route = via Colombo (CMB) or Singapore (SIN)\n' +
+      '- Tokyo (NRT): Route = via Singapore (SIN) or direct on Air India\n' +
+      '- Sydney (SYD): Route = via Singapore (SIN)\n' +
+      '- London (LHR): Direct Air India DEL-LHR, or via Dubai on Emirates\n' +
+      '- Paris (CDG): Via Dubai on Emirates or via London\n' +
+      '- New York (JFK): Via London or Dubai\n' +
+      '- Always show the connecting hub and airlines\n\n' +
+      'POINTS KNOWLEDGE (use exact values):\n' +
+      '- HDFC points → KrisFlyer 1:1 → BLR-SIN-DPS Business = 85,000 KrisFlyer miles\n' +
+      '- HDFC points → KrisFlyer 1:1 → BLR-SIN Economy = 17,500 KrisFlyer miles\n' +
+      '- HDFC points → InterMiles → BLR-DXB Economy = 20,000 InterMiles\n' +
+      '- Axis EDGE → Turkish Miles&Smiles 1:1 → Good for Europe routing\n' +
+      '- 1 HDFC point = Rs.0.25 cashback, but Rs.0.50-1.50 on SmartBuy\n\n' +
       'TRIP REQUEST: ' + tripQuery + '\n' +
       'User points balance: ' + (userPoints || 0) + ' points\n' +
       'Primary card bank: ' + (cardBank || 'Any') + '\n' +
@@ -54,7 +77,11 @@ export async function POST(req: NextRequest) {
       '      "cardNeeded": "HDFC Infinia",\n' +
       '      "cardId": "hdfc-infinia",\n' +
       '      "transferPartner": "InterMiles",\n' +
-      '      "bookingUrl": "https://intermiles.com",\n' +
+      '      "bookingUrl": "https://www.kayak.co.in/flights/BLR-SIN/2026-06-07/2026-06-10",\n' +
+      '      "mmtUrl": "https://www.makemytrip.com/...",\n' +
+      '      "connectionHub": "Singapore (SIN)",\n' +
+      '      "connectionAirline": "Scoot/Air Asia",\n' +
+      '      "totalFlightTime": "9h 30m (via SIN)",\n' +
       '      "available": true\n' +
       '    }\n' +
       '  ],\n' +

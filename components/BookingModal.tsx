@@ -11,6 +11,10 @@ interface FlightOption {
   cashPrice: number;
   saving: number;
   bookingUrl?: string;
+  mmtUrl?: string;
+  connectionHub?: string;
+  connectionAirline?: string;
+  totalFlightTime?: string;
   cardNeeded: string;
   cardId: string;
 }
@@ -113,12 +117,14 @@ export function BookingModal({ isOpen, onClose, destination, flight, hotel, user
     {
       num: 2,
       title: 'Book your flight on ' + flight.transferPartner,
-      subtitle: flight.airline + ' \u00b7 ' + flight.class + ' \u00b7 ' + flight.pointsNeeded.toLocaleString('en-IN') + ' pts',
-      detail: 'Search ' + destination + ' on ' + flight.transferPartner + '. Use the miles you just transferred to redeem for this route.',
+      subtitle: flight.airline + ' · ' + flight.class + ' · ' + flight.pointsNeeded.toLocaleString('en-IN') + ' pts' + (flight.connectionHub ? ' · via ' + flight.connectionHub : ''),
+      detail: (flight.connectionHub ? 'Route: ' + flight.airline + ' via ' + flight.connectionHub + '. ' : '') + 'Search ' + destination + ' on ' + flight.transferPartner + '. Use the miles you just transferred to redeem for this route.',
       cta: 'Search on ' + flight.transferPartner,
       url: flight.bookingUrl || flightSearchUrl,
       accent: '#1B3A5C',
       textColor: '#fff',
+      altCta: 'Or book for cash on KAYAK',
+      altUrl: 'https://www.kayak.co.in/flights/',
     },
     ...(hotel ? [{
       num: 3,

@@ -8,7 +8,7 @@ import { DesignFooter } from '@/components/design/Footer';
 import { getApplyUrl } from '@/lib/affiliate';
 import { BookingModal } from '@/components/BookingModal';
 import { TripComparison } from '@/components/TripComparison';
-import FlightSearch from '@/components/design/FlightSearch';
+import FlightSearch, { detectIataFromText, buildKayakUrl, buildMMTUrl, INDIRECT_ROUTES } from '@/components/design/FlightSearch';
 import { createBrowserClient } from '@supabase/ssr';
 
 interface TripResult {
@@ -39,6 +39,10 @@ interface TripResult {
     cardId: string;
     transferPartner: string;
     bookingUrl: string;
+    mmtUrl?: string;
+    connectionHub?: string;
+    connectionAirline?: string;
+    totalFlightTime?: string;
     available: boolean;
   }[];
   hotels: {
@@ -145,6 +149,7 @@ function TripPlannerPageInner() {
   const [showOriginPrompt, setShowOriginPrompt] = useState(false);
   const [modalFlight, setModalFlight] = useState<TripResult['flights'][0] | null>(null);
   const [modalHotel, setModalHotel] = useState<TripResult['hotels'][0] | null>(null);
+  const [detectedDestIata, setDetectedDestIata] = useState<string>('');
 
   const plan = async (overrideQuery?: string) => {
     const tripQuery = overrideQuery ?? query;
@@ -166,6 +171,9 @@ function TripPlannerPageInner() {
       const data = await res.json();
       if (data.error) throw new Error(data.error);
       setResult(data);
+      // Auto-detect destination IATA from query for FlightSearch
+      const detectedIata = detectIataFromText(tripQuery);
+      if (detectedIata) setDetectedDestIata(detectedIata);
     } catch {
       setError('Could not plan your trip. Please try again.');
     } finally {
@@ -415,7 +423,7 @@ function TripPlannerPageInner() {
             {/* Live Flight Search */}
             <div style={{ marginTop: 32, marginBottom: 32 }}>
               <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: '0.15em', textTransform: 'uppercase', color: 'var(--copper,#8C5F12)', marginBottom: 16 }}>SEARCH FLIGHTS</div>
-              <FlightSearch defaultFrom={originIata || 'BLR'} defaultTo={result?.destination ? result.destination.substring(0,3).toUpperCase() : ''} pointsBalance={parseInt((points || '0').replace(/,/g, '')) || 0} bank={cardBank || 'HDFC'} />
+              <FlightSearch defaultFrom={originIata || 'BLR'} defaultTo={detectedDestIata || (result?.destination ? result.destination.substring(0,3).toUpperCase() : '')} pointsBalance={parseInt((points || '0').replace(/,/g, '')) || 0} bank={cardBank || 'HDFC'} />
             </div>
 
 
