@@ -21,8 +21,8 @@ export async function POST(req: NextRequest) {
       'goa': 'GOI', 'mumbai': 'BOM', 'delhi': 'DEL', 'chennai': 'MAA',
     }
     const resolvedDest = DEST_CODES[(destination || '').toLowerCase()] || (destination || 'SIN').slice(0, 3).toUpperCase()
-    const searchStart = new Date(today.getTime() + 30*24*60*60*1000).toISOString().split('T')[0]
-    const searchEnd = new Date(today.getTime() + 60*24*60*60*1000).toISOString().split('T')[0]
+    const searchStart = new Date(Date.now() + 30*24*60*60*1000).toISOString().split('T')[0]
+    const searchEnd = new Date(Date.now() + 60*24*60*60*1000).toISOString().split('T')[0]
     let liveAvailability = ''
     try {
       const baseUrl = 'https://www.creditiq.app'
