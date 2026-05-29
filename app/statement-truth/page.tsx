@@ -28,6 +28,10 @@ export default function StatementTruthPage() {
   const [report, setReport] = useState<TruthReport | null>(null);
   const [error, setError] = useState('');
   const [step, setStep] = useState<'upload' | 'result'>('upload');
+  const [totalBalance, setTotalBalance] = useState('');
+  const [balanceSaved, setBalanceSaved] = useState(false);
+  const [totalBalance, setTotalBalance] = useState('');
+  const [balanceSaved, setBalanceSaved] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
 
   const handleFile = (f: File) => {
@@ -152,10 +156,39 @@ export default function StatementTruthPage() {
                   <div style={{ fontSize: 14, color: 'var(--ink-2,#2A3F6B)', lineHeight: 1.65 }}>{(report.insights||[])[0]||''}</div>
                 </div>
 
-                {/* Key numbers */}
+                {/* Total balance entry */}
+                <div style={{ background: 'var(--ink,#142950)', borderRadius: 18, padding: '20px 24px', marginBottom: 20 }}>
+                  <div style={{ fontFamily: 'var(--font-mono,monospace)', fontSize: 9, fontWeight: 700, letterSpacing: '0.16em', textTransform: 'uppercase' as const, color: 'var(--copper-3,#D89B2A)', marginBottom: 6 }}>EARNED THIS MONTH VS YOUR TOTAL BALANCE</div>
+                  <div style={{ display: 'flex', alignItems: 'baseline', gap: 12, marginBottom: 12 }}>
+                    <span style={{ fontSize: 36, fontWeight: 800, color: 'var(--copper-3,#D89B2A)' }}>+{(report.totalRewardsEarned||0).toLocaleString('en-IN')}</span>
+                    <span style={{ fontSize: 14, color: 'rgba(255,255,255,0.55)' }}>points earned this cycle</span>
+                  </div>
+                  <p style={{ fontSize: 13, color: 'rgba(255,255,255,0.55)', marginBottom: 14, lineHeight: 1.5 }}>
+                    What&apos;s your total HDFC balance? Check SmartBuy → My Points or HDFC app → Rewards.
+                  </p>
+                  {balanceSaved ? (
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                      <span style={{ fontSize: 24, fontWeight: 800, color: 'var(--copper-3,#D89B2A)' }}>{parseInt(totalBalance.replace(/,/g,'')).toLocaleString('en-IN')} pts total</span>
+                      <span style={{ fontSize: 12, color: '#2d7a56', fontWeight: 600 }}>✓ saved to wallet</span>
+                    </div>
+                  ) : (
+                    <div style={{ display: 'flex', gap: 10 }}>
+                      <input type="number" placeholder="e.g. 182164 (your total HDFC points)" value={totalBalance}
+                        onChange={e => setTotalBalance(e.target.value)}
+                        style={{ flex: 1, padding: '11px 14px', borderRadius: 10, border: '1px solid rgba(255,255,255,0.15)', fontSize: 14, color: 'var(--ink,#142950)', background: '#fff', outline: 'none', boxSizing: 'border-box' as const }} />
+                      <button onClick={() => { if (totalBalance) { localStorage.setItem('hdfc_total_points', totalBalance); setBalanceSaved(true); } }}
+                        disabled={!totalBalance}
+                        style={{ padding: '11px 20px', background: 'var(--copper-3,#D89B2A)', color: '#fff', border: 'none', borderRadius: 10, fontSize: 13, fontWeight: 700, cursor: 'pointer', whiteSpace: 'nowrap' as const, opacity: totalBalance ? 1 : 0.5 }}>
+                        Save to wallet
+                      </button>
+                    </div>
+                  )}
+                </div>
+
+          {/* Key numbers */}
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 12, marginBottom: 20 }}>
                   {[
-                    { label: 'Advertised rate', value: `${report.advertisedRate}%`, color: 'var(--ink,#142950)' },
+                    { label: 'Earned this month', value: `+${(report.totalRewardsEarned||0).toLocaleString('en-IN')} pts`, color: '#2d7a56' },
                     { label: 'Actual rate', value: `${report.actualRate}%`, color: report.actualRate < report.advertisedRate ? '#B84230' : '#2d7a56' },
                     { label: 'Left behind', value: `Rs.${report.totalMoneyLeft.toLocaleString('en-IN')}`, color: '#B84230' },
                   ].map((s, i) => (
