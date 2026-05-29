@@ -9,21 +9,10 @@ import Link from 'next/link';
 
 interface TruthReport {
   cardName: string; bank: string; period: string;
-  totalSpend: number; totalRewardsEarned: number; rewardsValueInr: number;
-  financeCharges: number; netBenefit: number;
-  advertisedRate: number; actualRate: number;
+  totalSpend: number; totalRewardsEarned: number;
+  advertisedRate: number; actualRate: number; gapPercent: number;
   categoryBreakdown: { category: string; spend: number; rewardsEarned: number; advertisedRate: number; actualRate: number; moneyLeft: number }[];
-  verdict: string; verdictColor: string; verdictText: string;
-  score: number; totalMoneyLeft: number;
-  insights: string[]; biggestMissedOpportunity: string;
-  financeChargeWarning: string; bestAction: string;
-  keepOrSwitch: string; keepSwitchReason: string;
-  rawData?: {
-    cardholderName: string; cardLastFour: string;
-    totalAmountDue: number; minimumDue: number;
-    creditLimit: number; availableCredit: number;
-    transactions: any[];
-  };
+  verdict: string; verdictColor: string; totalMoneyLeft: number;
 }
 
 export default function StatementTruthPage() {
@@ -141,7 +130,7 @@ export default function StatementTruthPage() {
                 {error && <p style={{ color: '#B84230', fontSize: 13, textAlign: 'center', marginBottom: 12 }}>{error}</p>}
 
                 <button onClick={analyze} disabled={loading || !file} style={{ width: '100%', padding: '16px', borderRadius: 14, background: loading || !file ? 'rgba(20,41,80,0.15)' : 'var(--copper-3,#D89B2A)', color: '#fff', border: 'none', fontSize: 16, fontWeight: 700, cursor: loading || !file ? 'not-allowed' : 'pointer', opacity: loading || !file ? 0.6 : 1 }}>
-                  {loading ? 'CIRA is reading your PDF (10-15 seconds)...' : 'Generate Truth Report'}
+                  {loading ? 'Analysing your statement...' : 'Generate Truth Report'}
                 </button>
               </Reveal>
             )}
@@ -153,26 +142,16 @@ export default function StatementTruthPage() {
                   <div style={{ fontFamily: 'var(--font-mono,monospace)', fontSize: 9, fontWeight: 700, letterSpacing: '0.16em', textTransform: 'uppercase', color: verdictColor, marginBottom: 8 }}>
                     Truth Verdict &bull; {report.cardName}
                   </div>
-                  <div style={{ fontSize: 22, fontWeight: 800, color: verdictColor, marginBottom: 8, letterSpacing: '-0.01em' }}>{report.verdictText || report.verdict}</div>
-                  <div style={{ fontSize: 14, color: 'var(--ink-2,#2A3F6B)', lineHeight: 1.65 }}>{(report.insights || [report.insight])[0]}</div>
+                  <div style={{ fontSize: 22, fontWeight: 800, color: verdictColor, marginBottom: 8, letterSpacing: '-0.01em' }}>{report.verdict}</div>
+                  <div style={{ fontSize: 14, color: 'var(--ink-2,#2A3F6B)', lineHeight: 1.65 }}>{report.insight}</div>
                 </div>
-
-                {/* Finance charge warning */}
-                {(report.financeCharges > 0) && (
-                  <div style={{ background: 'rgba(184,66,48,0.08)', border: '1.5px solid rgba(184,66,48,0.30)', borderRadius: 14, padding: '14px 18px', marginBottom: 16 }}>
-                    <div style={{ fontSize: 13, fontWeight: 700, color: '#B84230', marginBottom: 4 }}>⚠️ Finance charges wiping out your rewards</div>
-                    <div style={{ fontSize: 13, color: '#B84230', lineHeight: 1.6 }}>
-                      Rewards earned: ₹{(report.rewardsValueInr || 0).toLocaleString('en-IN')} — Interest paid: ₹{(report.financeCharges || 0).toLocaleString('en-IN')} — Net: {(report.netBenefit || 0) >= 0 ? '+' : ''}₹{(report.netBenefit || 0).toLocaleString('en-IN')}. Pay full balance to restore card value.
-                    </div>
-                  </div>
-                )}
 
                 {/* Key numbers */}
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 12, marginBottom: 20 }}>
                   {[
                     { label: 'Advertised rate', value: `${report.advertisedRate}%`, color: 'var(--ink,#142950)' },
                     { label: 'Actual rate', value: `${report.actualRate}%`, color: report.actualRate < report.advertisedRate ? '#B84230' : '#2d7a56' },
-                    { label: 'Left behind', value: `₹${(report.totalMoneyLeft || 0).toLocaleString('en-IN')}`, color: '#B84230' },
+                    { label: 'Left behind', value: `Rs.${report.totalMoneyLeft.toLocaleString('en-IN')}`, color: '#B84230' },
                   ].map((s, i) => (
                     <div key={i} style={{ background: 'var(--paper,#FAF5EB)', borderRadius: 14, border: '1px solid var(--line,rgba(20,41,80,0.08))', padding: '16px', textAlign: 'center' }}>
                       <div style={{ fontSize: 22, fontWeight: 800, color: s.color, fontVariantNumeric: 'tabular-nums' }}>{s.value}</div>
@@ -212,53 +191,12 @@ export default function StatementTruthPage() {
                   ))}
                 </div>
 
-                {/* Transactions read from PDF */}
-                {report.rawData?.transactions && report.rawData.transactions.length > 0 && (
-                  <div style={{ background: 'var(--paper,#FAF5EB)', borderRadius: 18, border: '1px solid var(--line,rgba(20,41,80,0.08))', overflow: 'hidden', marginBottom: 20 }}>
-                    <div style={{ padding: '14px 20px', borderBottom: '1px solid var(--line,rgba(20,41,80,0.08))' }}>
-                      <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--ink,#142950)' }}>Transactions CIRA read from your PDF</div>
-                      <div style={{ fontFamily: 'var(--font-mono,monospace)', fontSize: 9, color: 'var(--ink-3,#5A6A8A)', marginTop: 2 }}>Total {report.rawData.transactions.length} transactions found</div>
-                    </div>
-                    {report.rawData.transactions.slice(0,8).map((t: any, i: number) => (
-                      <div key={i} style={{ display: 'flex', justifyContent: 'space-between', padding: '10px 20px', borderBottom: '1px solid var(--line,rgba(20,41,80,0.06))', background: i%2===0?'var(--surface,#fff)':'var(--paper,#FAF5EB)' }}>
-                        <div>
-                          <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--ink,#142950)' }}>{t.description}</div>
-                          <div style={{ fontSize: 10, color: 'var(--ink-3,#5A6A8A)' }}>{t.date} · {t.category||'MISC'}</div>
-                        </div>
-                        <div style={{ textAlign: 'right' }}>
-                          <div style={{ fontSize: 12, fontWeight: 700, color: 'var(--ink,#142950)' }}>₹{(t.amount||0).toLocaleString('en-IN')}</div>
-                          <div style={{ fontSize: 10, fontWeight: 600, color: t.rewardsEarned>0?'#2d7a56':'var(--ink-3,#5A6A8A)' }}>{t.rewardsEarned>0?'+'+t.rewardsEarned+' pts':'No pts'}</div>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                )}
-
-                {/* Insights */}
-                {(report.insights||[]).length > 0 && (
-                  <div style={{ background: 'var(--paper,#FAF5EB)', borderRadius: 16, padding: '16px 18px', border: '1px solid var(--line,rgba(20,41,80,0.08))', marginBottom: 20 }}>
-                    <div style={{ fontFamily: 'var(--font-mono,monospace)', fontSize: 9, fontWeight: 700, letterSpacing: '0.14em', textTransform: 'uppercase', color: 'var(--copper,#8C5F12)', marginBottom: 12 }}>CIRA&apos;s honest take</div>
-                    {(report.insights||[]).map((ins: string, i: number) => (
-                      <div key={i} style={{ display: 'flex', gap: 10, marginBottom: 10 }}>
-                        <span style={{ color: 'var(--copper,#8C5F12)', flexShrink: 0 }}>→</span>
-                        <p style={{ fontSize: 13, color: 'var(--ink-2,#2A3F6B)', lineHeight: 1.65, margin: 0 }}>{ins}</p>
-                      </div>
-                    ))}
-                    {report.bestAction && (
-                      <div style={{ marginTop: 12, padding: '10px 14px', background: 'var(--ink,#142950)', borderRadius: 10 }}>
-                        <span style={{ fontSize: 11, fontWeight: 700, color: 'var(--copper-3,#D89B2A)' }}>Best action next month: </span>
-                        <span style={{ fontSize: 12, color: '#fff' }}>{report.bestAction}</span>
-                      </div>
-                    )}
-                  </div>
-                )}
-
                 {/* Best alternative */}
                 <div style={{ background: 'var(--ink,#142950)', borderRadius: 18, padding: '22px 24px', marginBottom: 16, position: 'relative', overflow: 'hidden' }}>
                   <div className="aurora" style={{ top: -30, right: -30, width: 200, height: 200, background: 'radial-gradient(circle,rgba(212,163,115,0.18),transparent 60%)' }} />
                   <div style={{ position: 'relative', zIndex: 2 }}>
                     <div style={{ fontFamily: 'var(--font-mono,monospace)', fontSize: 9, fontWeight: 700, letterSpacing: '0.16em', textTransform: 'uppercase', color: 'var(--copper-3,#D89B2A)', marginBottom: 10 }}>Better alternative</div>
-                    <div style={{ fontSize: 15, color: 'rgba(255,255,255,0.75)', lineHeight: 1.7, marginBottom: 16 }}>{report.bestAlternative}</div>
+                    <div style={{ fontSize: 15, color: 'rgba(255,255,255,0.75)', lineHeight: 1.7, marginBottom: 16 }}>{report.keepSwitchReason || 'Consider a card better matched to your spend pattern.'}</div>
                     <Link href="/spend-optimizer" style={{ display: 'inline-block', background: 'var(--copper-3,#D89B2A)', color: '#fff', padding: '11px 22px', borderRadius: 10, fontSize: 14, fontWeight: 700, textDecoration: 'none' }}>
                       Find my best card →
                     </Link>
