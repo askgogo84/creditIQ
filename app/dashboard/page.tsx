@@ -56,6 +56,9 @@ export default function DashboardPage() {
   });
   const [addLoading, setAddLoading] = useState(false);
   const [addSuccess, setAddSuccess] = useState(false);
+  const [editingCardId, setEditingCardId] = useState<string | null>(null);
+  const [editPoints, setEditPoints] = useState('');
+  const [editSaving, setEditSaving] = useState(false);
   const router = useRouter();
 
   useEffect(() => {
@@ -127,6 +130,24 @@ export default function DashboardPage() {
       });
     }
     await loadCards(user.id);
+  };
+
+  const handleUpdatePoints = async (card: SavedCard) => {
+    const val = parseInt(editPoints);
+    if (!val || val <= 0) return;
+    setEditSaving(true);
+    try {
+      const sb = createBrowserClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL || '',
+        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || ''
+      );
+      const table = card.source === 'manual' ? 'manual_cards' : 'statement_imports';
+      await sb.from(table).update({ points_balance: val, imported_at: new Date().toISOString() }).eq('id', card.id);
+      setCards(cards.map(c => c.id === card.id ? { ...c, points_balance: val } : c));
+      setEditingCardId(null);
+      setEditPoints('');
+    } catch {}
+    setEditSaving(false);
   };
 
   const signOut = async () => {
@@ -360,13 +381,45 @@ export default function DashboardPage() {
                         {new Date(card.imported_at).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })}
                       </div>
                       <div className="flex items-center gap-3">
-                        {card.source === 'manual' ? (
+                        {editingCardId === card.id ? (
+                          <div className="flex items-center gap-1.5">
+                            <input
+                              type="number"
+                              value={editPoints}
+                              onChange={e => setEditPoints(e.target.value)}
+                              placeholder="new points"
+                              autoFocus
+                              className="w-28 px-2 py-1 rounded-lg text-xs border"
+                              style={{ background: 'var(--bg-elevated)', borderColor: 'var(--accent)', color: 'var(--text)', outline: 'none' }}
+                            />
+                            <button
+                              onClick={() => handleUpdatePoints(card)}
+                              disabled={editSaving || !editPoints || parseInt(editPoints) <= 0}
+                              style={{ color: '#059669', opacity: editSaving ? 0.5 : 1 }}
+                            >
+                              <Check className="w-4 h-4" />
+                            </button>
+                            <button
+                              onClick={() => { setEditingCardId(null); setEditPoints(''); }}
+                              style={{ color: 'var(--text-dim)' }}
+                            >
+                              <X className="w-4 h-4" />
+                            </button>
+                          </div>
+                        ) : (
+                          <button
+                            onClick={() => { setEditingCardId(card.id); setEditPoints(String(card.points_balance || '')); }}
+                            className="text-xs"
+                            style={{ color: 'var(--text-dim)' }}
+                          >
+                            Update
+                          </button>
+                        )}
+                        {card.source === 'manual' && (
                           <button onClick={() => handleDeleteCard(card.id, card.source || 'manual')}
                             className="text-xs flex items-center gap-1" style={{ color: '#ef4444' }}>
                             <Trash2 className="w-3 h-3" /> Remove
                           </button>
-                        ) : (
-                          <Link href="/upload-statement" className="text-xs" style={{ color: 'var(--text-dim)' }}>Update</Link>
                         )}
                         <Link href={`/optimize?bank=${card.bank}&points=${card.points_balance}`}
                           className="text-xs flex items-center gap-1 font-medium" style={{ color: 'var(--accent)' }}>
@@ -423,8 +476,7 @@ export default function DashboardPage() {
 
           {/* Add cards CTA */}
           <div className="grid grid-cols-2 gap-3 mb-6">
-            <Link href="/upload-statement" className="rounded-xl border p-4 flex items-center gap-3 transition-all"
-             >
+            <Link href="/upload-statement" className="rounded-xl border p-4 flex items-center gap-3 transition-all">
               <div className="w-9 h-9 rounded-lg flex items-center justify-center shrink-0"
                 style={{ background: 'color-mix(in srgb, var(--accent) 12%, transparent)' }}>
                 <FileText className="w-4 h-4" style={{ color: 'var(--accent)' }} />
@@ -434,8 +486,7 @@ export default function DashboardPage() {
                 <div className="text-xs" style={{ color: 'var(--text-dim)' }}>PDF - saved points</div>
               </div>
             </Link>
-            <Link href="/sms-import" className="rounded-xl border p-4 flex items-center gap-3 transition-all"
-             >
+            <Link href="/sms-import" className="rounded-xl border p-4 flex items-center gap-3 transition-all">
               <div className="w-9 h-9 rounded-lg flex items-center justify-center shrink-0"
                 style={{ background: 'color-mix(in srgb, var(--accent) 12%, transparent)' }}>
                 <MessageSquare className="w-4 h-4" style={{ color: 'var(--accent)' }} />
@@ -469,6 +520,3 @@ export default function DashboardPage() {
     </main>
   );
 }
-
-
-
