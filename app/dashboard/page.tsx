@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 export const dynamic = 'force-dynamic';
 
 import { useState, useEffect } from 'react';
@@ -278,12 +278,12 @@ export default function DashboardPage() {
                     <div className="font-display text-4xl font-bold mb-1" style={{ color: '#C9972E' }}>
                       {totalPoints.toLocaleString('en-IN')}
                     </div>
-                    <div className="text-sm" style={{ color: 'rgba(255,255,255,0.5)' }}>total points across all cards</div>
+                    <div className="text-sm" style={{ color: 'var(--ink-3, #5A6A8A)' }}>total points across all cards</div>
                   </div>
                   <div className="text-right">
-                    <div className="text-xs mb-1" style={{ color: 'rgba(255,255,255,0.4)' }}>Best travel value</div>
+                    <div className="text-xs mb-1" style={{ color: 'var(--ink-3, #5A6A8A)' }}>Best travel value</div>
                     <div className="font-display text-2xl" style={{ color: '#22c55e' }}>Rs.{(bestValue/1000).toFixed(0)}K+</div>
-                    <div className="text-xs mt-1" style={{ color: 'rgba(255,255,255,0.3)' }}>vs Rs.{(conservativeValue/1000).toFixed(0)}K statement credit</div>
+                    <div className="text-xs mt-1" style={{ color: 'var(--ink-3, #5A6A8A)' }}>vs Rs.{(conservativeValue/1000).toFixed(0)}K statement credit</div>
                   </div>
                 </div>
                 <div className="mt-4 flex gap-2 flex-wrap">
@@ -294,7 +294,7 @@ export default function DashboardPage() {
                   </Link>
                   <Link href={`/trip-planner?points=${totalPoints}&bank=${primaryBank}`}
                     className="px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-1.5"
-                    style={{ background: 'rgba(255,255,255,0.1)', color: '#fff', border: '1px solid rgba(255,255,255,0.2)' }}>
+                    style={{ background: 'var(--bg-2, #EFE7D8)', color: 'var(--ink, #142950)', border: '1px solid var(--ink-3, #5A6A8A)' }}>
                     Plan a trip with all points
                   </Link>
                 </div>
