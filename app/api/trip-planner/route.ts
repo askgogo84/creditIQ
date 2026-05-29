@@ -84,6 +84,8 @@ ${liveAvailability ? `REAL-TIME AVAILABILITY FROM seats.aero (use these exact nu
 8. Air India Flying Returns is the correct programme post-Vistara merger.
 9. InterMiles = IndiGo's programme for domestic/short-haul only. NEVER use InterMiles for BLR-SIN or international SQ routes.
 10. All dates must be REAL future dates based on TODAY = ${todayStr}.
+11. FOR DOMESTIC INDIA ROUTES (BLR-GOA, BLR-DEL, BLR-BOM etc): Use ONLY IndiGo, Air India, SpiceJet, Akasa Air. NEVER Vistara for any route.
+12. SELF-CHECK before responding: Search your response for "Vistara" or "UK-" — if found, replace with "Air India" or "IndiGo" immediately.
 
 VERIFIED TRANSFER PORTAL URLS (use these exact URLs, never invent others):
 - HDFC SmartBuy (points transfer): https://offers.smartbuy.hdfcbank.com
@@ -196,7 +198,15 @@ Respond ONLY with valid JSON (no markdown, no preamble):
     const data = await response.json()
     const text = data.content?.[0]?.text ?? ''
     const clean = text.replace(/```json/g, '').replace(/```/g, '').trim()
-    const parsed = JSON.parse(clean)
+    let parsed = JSON.parse(clean)
+    // Post-process: remove Vistara (merged into Air India Nov 2024)
+    if (parsed.flights) {
+      parsed.flights = parsed.flights.map((f: any) => ({
+        ...f,
+        airline: f.airline?.replace(/Vistara/gi, "Air India").replace(/UK-\d+/g, "AI"),
+        option: f.option?.replace(/Vistara/gi, "Air India"),
+      }))
+    }
     return NextResponse.json(parsed)
   } catch (err) {
     console.error('Trip planner error:', err)
