@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from 'next/server'
+﻿import { NextRequest, NextResponse } from 'next/server'
 import { retrieveRelevantCards, buildRagSystemPrompt } from '@/lib/rag'
 
 export const runtime = 'nodejs'
@@ -74,7 +74,7 @@ ${travelers ? 'Travelers: ' + travelers : ''}
 ${budget ? 'Budget: Rs.' + budget : ''}
 
 ${liveAvailability ? `REAL-TIME AVAILABILITY FROM seats.aero (use these exact numbers, do not estimate):\n${liveAvailability}\n` : ""}CRITICAL ACCURACY RULES — follow strictly:
-1. VISTARA DOES NOT EXIST � permanently merged into Air India on November 12, 2024. NEVER show Vistara, UK flight codes, or IndiGo 6E for international routes. If you are about to write "Vistara" anywhere in your response, replace it with "Air India" instead.
+1. VISTARA DOES NOT EXIST � permanently merged into Air India on November 12, 2024. NEVER show Vistara, UK flight codes, or IndiGo 6E for international routes. If you are about to write "Vistara" anywhere in your response, replace it with "Air India" instead.
 2. NO DIRECT INDIA→BALI flights. BLR-DPS route = BLR→SIN→DPS via Singapore Airlines (SQ), Scoot (TR), or Air Asia (AK).
 3. NO DIRECT INDIA→SYDNEY. Route = via Singapore (SIN).
 4. NO DIRECT INDIA→TOKYO. Route = via Singapore or direct Air India DEL-NRT.
