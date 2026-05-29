@@ -50,7 +50,7 @@ export async function POST(req: NextRequest) {
           }
         }
       }
-    } catch {}
+    } catch (e) { console.error("seats.aero fetch error:", e) }
 
     const today = new Date()
     const todayStr = today.toISOString().split('T')[0]
@@ -78,11 +78,11 @@ ${liveAvailability ? `REAL-TIME AVAILABILITY FROM seats.aero (use these exact nu
 2. NO DIRECT INDIA→BALI flights. BLR-DPS route = BLR→SIN→DPS via Singapore Airlines (SQ), Scoot (TR), or Air Asia (AK).
 3. NO DIRECT INDIA→SYDNEY. Route = via Singapore (SIN).
 4. NO DIRECT INDIA→TOKYO. Route = via Singapore or direct Air India DEL-NRT.
-5. NEVER invent flight numbers (like UK-2537). Only state airline name and hub.
+5. NEVER invent flight numbers. NEVER use UK- prefix codes (those were Vistara which no longer exists). Only state airline name.
 6. NEVER invent specific prices — give realistic RANGES based on seasonal norms.
-7. Points values: HDFC→KrisFlyer 1:1. BLR-SIN-DPS Business = ~85,000 KrisFlyer miles. BLR-SIN Economy = ~17,500 KrisFlyer miles.
+7. Points values: HDFC→KrisFlyer 1:1. BLR-SIN Business = ~42,500 KrisFlyer miles one-way. BLR-SIN-DPS Business = ~67,500 KrisFlyer miles total. BLR-SIN Economy = ~17,500 KrisFlyer miles.
 8. Air India Flying Returns is the correct programme post-Vistara merger.
-9. InterMiles = IndiGo's programme (not for SQ routes).
+9. InterMiles = IndiGo's programme for domestic/short-haul only. NEVER use InterMiles for BLR-SIN or international SQ routes.
 10. All dates must be REAL future dates based on TODAY = ${todayStr}.
 
 VERIFIED TRANSFER PORTAL URLS (use these exact URLs, never invent others):
