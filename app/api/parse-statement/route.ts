@@ -83,7 +83,7 @@ export async function POST(req: NextRequest) {
   "customer_name": "first name only",
   "confidence": "high / medium / low"
 }
-Use CLOSING/TOTAL BALANCE for points_balance. Return ONLY the JSON.`
+For points_balance: use the closing/total balance shown in the Reward Points summary box. If no summary box exists, sum all the reward points earned from individual transactions (the +XXX values). Never return null if any points data exists. Return ONLY the JSON.`
             }
           ]
         }],
