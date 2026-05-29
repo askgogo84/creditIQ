@@ -287,10 +287,10 @@ export default function UploadStatementPage() {
                   </div>
                 )}
 
-                {result.closing_balance != null && (
+                {result.points_balance != null && (
                   <div className="p-3 rounded-xl" style={{ background: 'var(--bg-elevated)', border: '1px solid var(--border)' }}>
                     <div className="text-[10px] font-mono uppercase tracking-widest mb-1" style={{ color: 'var(--text-dim)' }}>Total points balance</div>
-                    <div className="font-display text-xl" style={{ color: 'var(--text)' }}>{result.closing_balance.toLocaleString('en-IN')}</div>
+                    <div className="font-display text-xl" style={{ color: 'var(--text)' }}>{result.points_balance.toLocaleString('en-IN')}</div>
                   </div>
                 )}
               </div>
