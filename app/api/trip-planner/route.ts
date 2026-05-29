@@ -20,7 +20,10 @@ export async function POST(req: NextRequest) {
       'maldives': 'MLE', 'colombo': 'CMB', 'kuala lumpur': 'KUL', 'hong kong': 'HKG',
       'goa': 'GOI', 'mumbai': 'BOM', 'delhi': 'DEL', 'chennai': 'MAA',
     }
-    const resolvedDest = DEST_CODES[(destination || '').toLowerCase()] || (destination || 'SIN').slice(0, 3).toUpperCase()
+        const queryLower = tripQuery.toLowerCase()
+    const resolvedDest = Object.entries(DEST_CODES).find(([k]) => queryLower.includes(k))?.[1] 
+      || DEST_CODES[(destination || '').toLowerCase()] 
+      || 'SIN'
     const searchStart = new Date(Date.now() + 30*24*60*60*1000).toISOString().split('T')[0]
     const searchEnd = new Date(Date.now() + 60*24*60*60*1000).toISOString().split('T')[0]
     let liveAvailability = ''
@@ -71,7 +74,7 @@ ${travelers ? 'Travelers: ' + travelers : ''}
 ${budget ? 'Budget: Rs.' + budget : ''}
 
 ${liveAvailability ? `REAL-TIME AVAILABILITY FROM seats.aero (use these exact numbers, do not estimate):\n${liveAvailability}\n` : ""}CRITICAL ACCURACY RULES — follow strictly:
-1. VISTARA NO LONGER EXISTS — merged into Air India on November 12, 2024. NEVER mention Vistara or UK-flight codes.
+1. VISTARA DOES NOT EXIST � permanently merged into Air India on November 12, 2024. NEVER show Vistara, UK flight codes, or IndiGo 6E for international routes. If you are about to write "Vistara" anywhere in your response, replace it with "Air India" instead.
 2. NO DIRECT INDIA→BALI flights. BLR-DPS route = BLR→SIN→DPS via Singapore Airlines (SQ), Scoot (TR), or Air Asia (AK).
 3. NO DIRECT INDIA→SYDNEY. Route = via Singapore (SIN).
 4. NO DIRECT INDIA→TOKYO. Route = via Singapore or direct Air India DEL-NRT.
