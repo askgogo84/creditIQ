@@ -6,7 +6,7 @@ const SEATS_AERO_BASE = 'https://seats.aero/partnerapi';
 
 // Map program names to seats.aero source codes
 const PROGRAM_TO_SOURCE: Record<string, string> = {
-  'KrisFlyer': 'krisflyer',
+  'KrisFlyer': 'singapore',
   'Singapore Airlines': 'krisflyer',
   'Air India Flying Returns': 'flyingblue', // closest available
   'Emirates Skywards': 'emirates',
