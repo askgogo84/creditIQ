@@ -263,25 +263,7 @@ export function Header() {
               )}
             </div>
 
-            <div style={{ position: 'relative' }} className="ciq-dropdown-parent">
-              <Link href={user ? '/dashboard' : '/login'} className={`ciq-nav-item${isActive('/dashboard') || isActive('/loyalty-tracker') ? ' active' : ''}`} style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-                My Wallet <span style={{ fontSize: 9 }}>▾</span>
-              </Link>
-              <div className="ciq-dropdown" style={{ minWidth: 200 }}>
-                <Link href={user ? '/dashboard' : '/login'} className="ciq-dropdown-item">
-                  <span>💳</span>
-                  <div><div style={{ fontWeight: 600 }}>My Cards</div><div style={{ fontSize: 11, opacity: 0.6 }}>Points & card portfolio</div></div>
-                </Link>
-                <Link href={user ? '/loyalty-tracker' : '/login'} className="ciq-dropdown-item">
-                  <span>✈️</span>
-                  <div><div style={{ fontWeight: 600 }}>Loyalty Programs</div><div style={{ fontSize: 11, opacity: 0.6 }}>Miles, points & expiry alerts</div></div>
-                </Link>
-                <Link href={user ? '/trip-planner' : '/login'} className="ciq-dropdown-item">
-                  <span>🗺️</span>
-                  <div><div style={{ fontWeight: 600 }}>Trip Planner</div><div style={{ fontSize: 11, opacity: 0.6 }}>Plan trips with your points</div></div>
-                </Link>
-              </div>
-            </div>
+            <Link href={user ? '/dashboard' : '/login'} className={`ciq-nav-item${isActive('/dashboard') ? ' active' : ''}`}>My Wallet</Link>
           </nav>
 
           {/* Right side */}
