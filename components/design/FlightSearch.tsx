@@ -212,7 +212,7 @@ export default function FlightSearch({
   const [departure, setDeparture] = useState(getDatePlusDays(7));
   const [returnDate, setReturnDate] = useState(getDatePlusDays(10));
   const [passengers, setPassengers] = useState(1);
-  // results removed — we now use real OTA deeplinks instead of mock data
+
   const [loading, setLoading] = useState(false);
   const [searched, setSearched] = useState(false);
   const [expandedCard, setExpandedCard] = useState<string | null>(null);
@@ -463,13 +463,6 @@ export default function FlightSearch({
         </div>
       )}
 
-      {searched && results.length === 0 && (
-        <div className="mt-4 text-center py-8 text-gray-500">
-          <p className="text-2xl mb-2">✈️</p>
-          <p className="font-medium">No flights found</p>
-          <p className="text-sm mt-1">Try different dates or airports</p>
-        </div>
-      )}
     </div>
   );
 }
