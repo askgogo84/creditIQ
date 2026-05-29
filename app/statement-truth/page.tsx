@@ -9,10 +9,16 @@ import Link from 'next/link';
 
 interface TruthReport {
   cardName: string; bank: string; period: string;
-  totalSpend: number; totalRewardsEarned: number;
-  advertisedRate: number; actualRate: number; gapPercent: number;
+  totalSpend: number; totalRewardsEarned: number; rewardsValueInr?: number;
+  financeCharges?: number; netBenefit?: number;
+  advertisedRate: number; actualRate: number;
   categoryBreakdown: { category: string; spend: number; rewardsEarned: number; advertisedRate: number; actualRate: number; moneyLeft: number }[];
-  verdict: string; verdictColor: string; totalMoneyLeft: number; bestAlternative: string; insight: string;
+  verdict: string; verdictText?: string; verdictColor: string;
+  score?: number; totalMoneyLeft: number;
+  insights?: string[]; biggestMissedOpportunity?: string;
+  financeChargeWarning?: string; bestAction?: string;
+  keepOrSwitch?: string; keepSwitchReason?: string;
+  rawData?: { cardholderName?: string; cardLastFour?: string; totalAmountDue?: number; minimumDue?: number; creditLimit?: number; availableCredit?: number; transactions?: any[]; };
 }
 
 export default function StatementTruthPage() {
@@ -143,7 +149,7 @@ export default function StatementTruthPage() {
                     Truth Verdict &bull; {report.cardName}
                   </div>
                   <div style={{ fontSize: 22, fontWeight: 800, color: verdictColor, marginBottom: 8, letterSpacing: '-0.01em' }}>{report.verdict}</div>
-                  <div style={{ fontSize: 14, color: 'var(--ink-2,#2A3F6B)', lineHeight: 1.65 }}>{(report.insights || [])[0]}</div>
+                  <div style={{ fontSize: 14, color: 'var(--ink-2,#2A3F6B)', lineHeight: 1.65 }}>{(report.insights||[])[0]||''}</div>
                 </div>
 
                 {/* Key numbers */}
@@ -196,7 +202,7 @@ export default function StatementTruthPage() {
                   <div className="aurora" style={{ top: -30, right: -30, width: 200, height: 200, background: 'radial-gradient(circle,rgba(212,163,115,0.18),transparent 60%)' }} />
                   <div style={{ position: 'relative', zIndex: 2 }}>
                     <div style={{ fontFamily: 'var(--font-mono,monospace)', fontSize: 9, fontWeight: 700, letterSpacing: '0.16em', textTransform: 'uppercase', color: 'var(--copper-3,#D89B2A)', marginBottom: 10 }}>Better alternative</div>
-                    <div style={{ fontSize: 15, color: 'rgba(255,255,255,0.75)', lineHeight: 1.7, marginBottom: 16 }}>{report.keepSwitchReason || 'Consider a card better matched to your spend pattern.'}</div>
+                    <div style={{ fontSize: 15, color: 'rgba(255,255,255,0.75)', lineHeight: 1.7, marginBottom: 16 }}>{report.keepSwitchReason||'Consider switching to a better card for your spend.'}</div>
                     <Link href="/spend-optimizer" style={{ display: 'inline-block', background: 'var(--copper-3,#D89B2A)', color: '#fff', padding: '11px 22px', borderRadius: 10, fontSize: 14, fontWeight: 700, textDecoration: 'none' }}>
                       Find my best card →
                     </Link>
