@@ -25,18 +25,26 @@ export async function POST(req: NextRequest) {
     const searchEnd = new Date(Date.now() + 60*24*60*60*1000).toISOString().split('T')[0]
     let liveAvailability = ''
     try {
-      const baseUrl = 'https://www.creditiq.app'
-      const leg1 = resolvedDest === 'DPS' ? 'SIN' : resolvedDest
-      const r1 = await fetch(`${baseUrl}/api/seats-aero?origin=${originCode}&destination=${leg1}&start_date=${searchStart}&end_date=${searchEnd}&program=KrisFlyer&mode=best`)
-      if (r1.ok) {
-        const d1 = await r1.json()
-        if (d1.available) liveAvailability += `LIVE DATA (seats.aero) ${originCode}?${leg1} Business KrisFlyer: ${d1.minMileage} miles, ${d1.seats} seats, airlines: ${d1.airlines}. `
-      }
-      if (resolvedDest === 'DPS') {
-        const r2 = await fetch(`${baseUrl}/api/seats-aero?origin=SIN&destination=DPS&start_date=${searchStart}&end_date=${searchEnd}&mode=best`)
-        if (r2.ok) {
-          const d2 = await r2.json()
-          if (d2.available) liveAvailability += `LIVE DATA (seats.aero) SIN?DPS Business: ${d2.minMileage} miles, ${d2.seats} seats, airlines: ${d2.airlines}. `
+      const apiKey = process.env.SEATS_AERO_API_KEY
+      if (apiKey) {
+        const leg1 = resolvedDest === 'DPS' ? 'SIN' : resolvedDest
+        const r1 = await fetch(`https://seats.aero/partnerapi/search?origin_airport=${originCode}&destination_airport=${leg1}&start_date=${searchStart}&end_date=${searchEnd}&sources=singapore&take=5&order_by=lowest_mileage`, {
+          headers: { 'Partner-Authorization': apiKey }
+        })
+        if (r1.ok) {
+          const d1 = await r1.json()
+          const best = (d1.data || []).find((x: any) => x.JAvailable && parseInt(x.JMileageCost) > 0)
+          if (best) liveAvailability += `LIVE DATA (seats.aero) ${originCode}?${leg1} Business KrisFlyer: ${best.JMileageCost} miles, ${best.JRemainingSeats} seats, airlines: ${best.JAirlines}. `
+        }
+        if (resolvedDest === 'DPS') {
+          const r2 = await fetch(`https://seats.aero/partnerapi/search?origin_airport=SIN&destination_airport=DPS&start_date=${searchStart}&end_date=${searchEnd}&take=5&order_by=lowest_mileage`, {
+            headers: { 'Partner-Authorization': apiKey }
+          })
+          if (r2.ok) {
+            const d2 = await r2.json()
+            const best2 = (d2.data || []).find((x: any) => x.JAvailable && parseInt(x.JMileageCost) > 0)
+            if (best2) liveAvailability += `LIVE DATA (seats.aero) SIN?DPS Business: ${best2.JMileageCost} miles, ${best2.JRemainingSeats} seats, airlines: ${best2.JAirlines}. `
+          }
         }
       }
     } catch {}
