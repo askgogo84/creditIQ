@@ -12,6 +12,35 @@ export async function POST(req: NextRequest) {
     const { context, devaluations } = await retrieveRelevantCards(tripQuery, { topK: 8, intent: 'travel' })
     const systemPrompt = buildRagSystemPrompt(context, devaluations)
 
+    // Pre-fetch real award availability from seats.aero
+    const originCode = (!origin || origin === 'Bangalore') ? 'BLR' : origin.slice(0, 3).toUpperCase()
+    const DEST_CODES: Record<string, string> = {
+      'bali': 'DPS', 'singapore': 'SIN', 'bangkok': 'BKK', 'dubai': 'DXB',
+      'london': 'LHR', 'tokyo': 'NRT', 'paris': 'CDG', 'sydney': 'SYD',
+      'maldives': 'MLE', 'colombo': 'CMB', 'kuala lumpur': 'KUL', 'hong kong': 'HKG',
+      'goa': 'GOI', 'mumbai': 'BOM', 'delhi': 'DEL', 'chennai': 'MAA',
+    }
+    const resolvedDest = DEST_CODES[(destination || '').toLowerCase()] || (destination || 'SIN').slice(0, 3).toUpperCase()
+    const searchStart = new Date(today.getTime() + 30*24*60*60*1000).toISOString().split('T')[0]
+    const searchEnd = new Date(today.getTime() + 60*24*60*60*1000).toISOString().split('T')[0]
+    let liveAvailability = ''
+    try {
+      const baseUrl = 'https://www.creditiq.app'
+      const leg1 = resolvedDest === 'DPS' ? 'SIN' : resolvedDest
+      const r1 = await fetch(`${baseUrl}/api/seats-aero?origin=${originCode}&destination=${leg1}&start_date=${searchStart}&end_date=${searchEnd}&program=KrisFlyer&mode=best`)
+      if (r1.ok) {
+        const d1 = await r1.json()
+        if (d1.available) liveAvailability += `LIVE DATA (seats.aero) ${originCode}?${leg1} Business KrisFlyer: ${d1.minMileage} miles, ${d1.seats} seats, airlines: ${d1.airlines}. `
+      }
+      if (resolvedDest === 'DPS') {
+        const r2 = await fetch(`${baseUrl}/api/seats-aero?origin=SIN&destination=DPS&start_date=${searchStart}&end_date=${searchEnd}&mode=best`)
+        if (r2.ok) {
+          const d2 = await r2.json()
+          if (d2.available) liveAvailability += `LIVE DATA (seats.aero) SIN?DPS Business: ${d2.minMileage} miles, ${d2.seats} seats, airlines: ${d2.airlines}. `
+        }
+      }
+    } catch {}
+
     const today = new Date()
     const todayStr = today.toISOString().split('T')[0]
     // Next weekend calculation
@@ -33,7 +62,7 @@ Origin: ${origin || 'Bangalore'}
 ${travelers ? 'Travelers: ' + travelers : ''}
 ${budget ? 'Budget: Rs.' + budget : ''}
 
-CRITICAL ACCURACY RULES — follow strictly:
+${liveAvailability ? `REAL-TIME AVAILABILITY FROM seats.aero (use these exact numbers, do not estimate):\n${liveAvailability}\n` : ""}CRITICAL ACCURACY RULES — follow strictly:
 1. VISTARA NO LONGER EXISTS — merged into Air India on November 12, 2024. NEVER mention Vistara or UK-flight codes.
 2. NO DIRECT INDIA→BALI flights. BLR-DPS route = BLR→SIN→DPS via Singapore Airlines (SQ), Scoot (TR), or Air Asia (AK).
 3. NO DIRECT INDIA→SYDNEY. Route = via Singapore (SIN).
