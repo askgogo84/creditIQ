@@ -6,7 +6,7 @@ import { CopperCTA, GhostCTA } from '@/components/design/CTAs';
 
 
 // ─────────────────────────────────────────────────
-// 1. MEET THE C — Character moment
+// 1. MEET CIRA — AI Character moment
 // Position: after BankLogoStrip / ShowcaseStrip
 // ─────────────────────────────────────────────────
 export function MeetTheC() {
@@ -41,7 +41,7 @@ export function MeetTheC() {
                 your card sucks
               </div>
               <div style={{ position: 'absolute', bottom: -10, left: 30, padding: '8px 13px', background: 'var(--surface,#fff)', border: '1px solid var(--copper-3,#D89B2A)', color: 'var(--copper,#8C5F12)', borderRadius: '12px 12px 12px 3px', fontSize: 11, fontWeight: 700, fontFamily: 'var(--font-mono,monospace)', letterSpacing: '0.05em', textTransform: 'uppercase' as const, transform: 'rotate(-3deg)' }}>
-                ✦ I HAVE OPINIONS
+                ✦ CIRA HAS OPINIONS
               </div>
             </div>
           </Reveal>
@@ -49,16 +49,16 @@ export function MeetTheC() {
           {/* RIGHT — Copy */}
           <div>
             <Reveal>
-              <div style={{ fontFamily: 'var(--font-mono,monospace)', fontSize: 10, fontWeight: 700, letterSpacing: '0.16em', textTransform: 'uppercase' as const, color: 'var(--copper,#8C5F12)', marginBottom: 22 }}>MEET YOUR FINANCIAL ROAST MASTER</div>
+              <div style={{ fontFamily: 'var(--font-mono,monospace)', fontSize: 10, fontWeight: 700, letterSpacing: '0.16em', textTransform: 'uppercase' as const, color: 'var(--copper,#8C5F12)', marginBottom: 22 }}>MEET CIRA · YOUR CREDIT INTELLIGENCE</div>
               <h2 style={{ fontSize: 'clamp(36px,6vw,88px)', letterSpacing: '-0.04em', lineHeight: 1.0, fontWeight: 800, marginBottom: 24, color: 'var(--ink,#142950)' }}>
                 Hi, I'm{' '}
-                <span style={{ fontFamily: 'var(--font-serif,Georgia,serif)', color: 'var(--copper,#8C5F12)', fontStyle: 'italic', fontWeight: 400 }}>C</span>.<br />
+                <span style={{ fontFamily: 'var(--font-serif,Georgia,serif)', color: 'var(--copper,#8C5F12)', fontStyle: 'italic', fontWeight: 400 }}>CIRA</span>.<br />
                 Your wallet's<br />new best friend.
               </h2>
               <p style={{ fontSize: 'clamp(15px,1.4vw,19px)', color: 'var(--ink-2,#2A3F6B)', lineHeight: 1.6, maxWidth: 520, marginBottom: 32 }}>
-                I read every credit card MITC so you don't have to. I track devaluations within hours. I'll{' '}
+                CIRA reads every credit card MITC so you don't have to. I track devaluations within hours. She'll{' '}
                 <span style={{ fontFamily: 'var(--font-serif,Georgia,serif)', color: 'var(--ink,#142950)' }}>roast your current card</span>,{' '}
-                pick your next one, and find sweet spots in your reward points other people miss.
+                picks your next one, and finds sweet spots in your reward points other people miss.
               </p>
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10, marginBottom: 32 }}>
                 {[
@@ -73,7 +73,7 @@ export function MeetTheC() {
                 ))}
               </div>
               <div style={{ display: 'flex', gap: 14, flexWrap: 'wrap' }}>
-                <CopperCTA href="/card-roast">Get roasted →</CopperCTA>
+                <CopperCTA href="/card-roast">Ask CIRA →</CopperCTA>
                 <GhostCTA href="/travel">Try Travel AI →</GhostCTA>
               </div>
             </Reveal>
@@ -166,7 +166,7 @@ export function BigStatement() {
 // ─────────────────────────────────────────────────
 export function TestimonialStrip() {
   const testimonials = [
-    { stars: 5, name: 'Rahul S.', location: 'Bangalore', role: 'HDFC Infinia holder', text: 'C found me ₹18,000/year I was leaving on the table. Switched to Magnus, confirmed within a week.' },
+    { stars: 5, name: 'Rahul S.', location: 'Bangalore', role: 'HDFC Infinia holder', text: 'CIRA found me ₹18,000/year I was leaving on the table. Switched to Magnus, confirmed within a week.' },
     { stars: 5, name: 'Priya K.', location: 'Mumbai', role: 'Travel card optimizer', text: "The devaluation tracker alone is worth it. Got an alert the day Axis removed Marriott. Transferred my points before it happened." },
     { stars: 5, name: 'Arjun M.', location: 'Delhi', role: 'First-time premium user', text: "Told me not to apply for Infinia yet — I'd have been rejected. Got Regalia Gold first. Now I'm approved. Actually honest advice." },
     { stars: 4, name: 'Sneha T.', location: 'Hyderabad', role: 'Frequent flyer', text: "The KrisFlyer sweet spot guide alone saved me ₹85,000 on a Singapore business class ticket I was about to buy in cash." },
@@ -255,7 +255,7 @@ export function BuiltForMoments() {
 export function AppStoreSection() {
   const reviews = [
     { stars: 5, title: 'Genuinely useful', text: "Finally a card site that isn't a thinly disguised affiliate dump. The roast feature is hilarious AND accurate.", name: '— Aditi V.' },
-    { stars: 5, title: 'Saved me ₹40K/yr', text: 'C told me my Regalia was earning 1.2% effective on my spend. Switched to Diners Black. Maths checks out.', name: '— Rohit M.' },
+    { stars: 5, title: 'Saved me ₹40K/yr', text: 'CIRA told me my Regalia was earning 1.2% effective on my spend. Switched to Diners Black. Maths checks out.', name: '— Rohit M.' },
     { stars: 5, title: 'Should be illegal', text: 'The honesty bias-free disclosure thing alone is worth it. Plus the Travel AI is unreal for award flights.', name: '— Priya K.' },
   ];
   return (

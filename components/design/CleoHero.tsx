@@ -90,7 +90,7 @@ function Phone({ scene, msgs }: { scene: SceneKey; msgs: Msg[] }) {
     <div style={{ width: '100%', height: '100%', background: 'linear-gradient(180deg,#FBF7F0,#F2EAD8)', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
       <div style={{ padding: '52px 16px 10px', borderBottom: '1px solid rgba(20,41,80,0.08)', display: 'flex', alignItems: 'center', gap: 10, background: 'rgba(251,247,240,0.95)', position: 'sticky', top: 0, zIndex: 5 }}>
         <div style={{ width: 34, height: 34, borderRadius: 999, background: 'linear-gradient(135deg,#D89B2A,#B5811E)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-          <span style={{ fontSize: 15, color: '#142950', fontWeight: 800 }}>C</span>
+          <span style={{ fontSize: 13, color: '#142950', fontWeight: 800, letterSpacing: '-0.02em' }}>CIRA</span>
         </div>
         <div style={{ flex: 1 }}>
           <div style={{ fontWeight: 700, fontSize: 13, color: '#142950' }}>CreditIQ</div>
@@ -108,7 +108,7 @@ function Phone({ scene, msgs }: { scene: SceneKey; msgs: Msg[] }) {
         {msgs.map((m, i) => m.text === '...' ? <Dots key={i} delay={m.delay} /> : <Bubble key={i} role={m.role} text={m.text} delay={m.delay} />)}
       </div>
       <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, padding: '8px 12px 22px', background: 'rgba(251,247,240,0.96)', borderTop: '1px solid rgba(20,41,80,0.06)', display: 'flex', gap: 6, alignItems: 'center' }}>
-        <div style={{ flex: 1, padding: '8px 13px', borderRadius: 999, background: '#FFF', border: '1px solid rgba(20,41,80,0.10)', fontSize: 12, color: '#9A95AE' }}>Ask anything...</div>
+        <div style={{ flex: 1, padding: '8px 13px', borderRadius: 999, background: '#FFF', border: '1px solid rgba(20,41,80,0.10)', fontSize: 12, color: '#9A95AE' }}>Ask CIRA anything...</div>
         <div style={{ width: 32, height: 32, borderRadius: 999, background: '#142950', color: '#FFF', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14 }}>↑</div>
       </div>
     </div>
@@ -194,7 +194,7 @@ export function CleoHero() {
               />
               <button onClick={send}
                 style={{ padding: '12px 20px', borderRadius: 999, background: 'var(--ink,#142950)', color: 'var(--bg,#F5EFE6)', border: 'none', fontSize: 14, fontWeight: 600, cursor: 'pointer', whiteSpace: 'nowrap' }}>
-                Ask →
+                Ask CIRA →
               </button>
             </div>
             <div style={{ marginTop: 12, fontSize: 12, color: 'var(--ink-3,#5A6A8A)', display: 'flex', gap: 16, flexWrap: 'wrap' }}>
