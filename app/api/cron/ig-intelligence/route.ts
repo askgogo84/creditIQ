@@ -11,7 +11,7 @@ const TARGET_HANDLES = [
   "cashoverflow.in",
 ];
 
-const APIFY_ACTOR = "futurizerush~instagram-profile-posts-scraper";
+const APIFY_ACTOR = "apify~instagram-scraper";
 const APIFY_BASE = "https://api.apify.com/v2";
 
 async function scrapeHandle(handle: string, apifyToken: string): Promise<any[]> {
@@ -44,7 +44,7 @@ async function extractInsights(post: any, anthropicKey: string): Promise<any | n
     type: "text",
     text: `Instagram post from @${post.ownerUsername} about Indian credit cards.\nCaption: "${post.caption}"\n\nExtract insights. Return ONLY valid JSON:\n{"insight_type":"transfer_hack|devaluation|card_comparison|sweet_spot|strategy|general","insight_summary":"one clear sentence","is_valuable":true,"structured_data":{"cards_mentioned":[],"transfer_ratios":{},"devaluation_details":{},"sweet_spots":[],"actionable_tip":""}}`
   }];
-  for (const imgUrl of (post.mediaDownloadUrl || []).slice(0, 4)) {
+  for (const imgUrl of (post.images || []).slice(0, 4)) {
     try {
       const imgRes = await fetch(imgUrl);
       if (!imgRes.ok) continue;
