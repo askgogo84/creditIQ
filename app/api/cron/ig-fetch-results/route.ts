@@ -13,6 +13,7 @@ async function extractInsights(post: any, anthropicKey: string): Promise<any | n
     'Return ONLY valid JSON, no markdown:',
     '{"insight_type":"transfer_hack|devaluation|card_comparison|sweet_spot|strategy|general","insight_summary":"one clear sentence","is_valuable":true,"structured_data":{"cards_mentioned":[],"actionable_tip":""}}'
   ].join('\n');
+  console.log('extractInsights caption preview:', (post.caption || '').slice(0, 100));
   const res = await fetch('https://api.anthropic.com/v1/messages', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', 'x-api-key': anthropicKey, 'anthropic-version': '2023-06-01' },
@@ -21,6 +22,7 @@ async function extractInsights(post: any, anthropicKey: string): Promise<any | n
   if (!res.ok) return null;
   const data = await res.json();
   const text = (data.content?.[0]?.text || '').replace(/\\json|\\/g, '').trim();
+  console.log('Claude raw response:', text.slice(0, 300));
   try {
     const parsed = JSON.parse(text);
     if (!parsed.is_valuable) return null;
