@@ -103,8 +103,32 @@ export async function GET(req: NextRequest) {
           if (embedding) (insight as any).embedding = embedding;
         }
         const { error } = await sb.from('ig_knowledge_base').upsert(insight, { onConflict: 'post_id' });
-        if (!error) results.insights_saved++;
-        else results.errors.push('insert: ' + JSON.stringify(error));
+        if (!error) {
+          results.insights_saved++;
+          // Layer 3: auto-detect devaluations from community signals
+          if (insight.insight_type === 'devaluation' && insight.structured_data?.cards_mentioned?.length > 0) {
+            for (const cardName of insight.structured_data.cards_mentioned) {
+              const { data: existing } = await sb
+                .from('devaluation_events')
+                .select('id')
+                .ilike('card_name', '%' + cardName + '%')
+                .gte('event_date', new Date(Date.now() - 30*24*60*60*1000).toISOString().split('T')[0])
+                .limit(1);
+              if (!existing?.length) {
+                await sb.from('devaluation_events').insert({
+                  card_name: cardName,
+                  description: insight.insight_summary,
+                  impact: 'medium',
+                  event_date: new Date().toISOString().split('T')[0],
+                  status: 'community_detected',
+                  source: 'ig_pipeline',
+                  source_url: insight.post_url,
+                  detected_at: new Date().toISOString(),
+                });
+              }
+            }
+          }
+        } else results.errors.push('insert: ' + JSON.stringify(error));
       }
     } catch (e: any) { results.errors.push(handle + ': ' + e.message); }
   }
