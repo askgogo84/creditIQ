@@ -4,6 +4,19 @@ export const runtime = 'nodejs';
 export const maxDuration = 60;
 const APIFY_BASE = 'https://api.apify.com/v2';
 
+async function getEmbedding(text: string, openaiKey: string): Promise<number[] | null> {
+  try {
+    const res = await fetch('https://api.openai.com/v1/embeddings', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + openaiKey },
+      body: JSON.stringify({ model: 'text-embedding-3-small', input: text }),
+    });
+    if (!res.ok) return null;
+    const data = await res.json();
+    return data.data?.[0]?.embedding || null;
+  } catch { return null; }
+}
+
 async function extractInsights(post: any, anthropicKey: string): Promise<any | null> {
   if (!post.caption || post.caption.length < 50) return null;
   const prompt = [
@@ -49,6 +62,7 @@ export async function GET(req: NextRequest) {
   if (secret !== process.env.CRON_SECRET) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   const apifyToken = process.env.APIFY_TOKEN;
   const anthropicKey = process.env.ANTHROPIC_API_KEY;
+  const openaiKey = process.env.OPENAI_API_KEY || '';
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
   if (!apifyToken || !anthropicKey || !supabaseUrl || !supabaseKey)
@@ -83,6 +97,11 @@ export async function GET(req: NextRequest) {
         const insight = await extractInsights(post, anthropicKey);
         if (!insight) continue;
         results.insights_extracted++;
+        if (openaiKey) {
+          const embText = insight.insight_type + ': ' + insight.insight_summary + ' (via @' + insight.source_handle + ')';
+          const embedding = await getEmbedding(embText, openaiKey);
+          if (embedding) (insight as any).embedding = embedding;
+        }
         const { error } = await sb.from('ig_knowledge_base').upsert(insight, { onConflict: 'post_id' });
         if (!error) results.insights_saved++;
         else results.errors.push('insert: ' + JSON.stringify(error));

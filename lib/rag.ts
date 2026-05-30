@@ -36,7 +36,22 @@ export function cardToText(card: any): string {
   return parts.join('\n')
 }
 
-export async function getIgInsights(limit = 20): Promise<string> {
+async function getQueryEmbedding(query: string): Promise<number[] | null> {
+  try {
+    const openaiKey = process.env.OPENAI_API_KEY;
+    if (!openaiKey) return null;
+    const res = await fetch('https://api.openai.com/v1/embeddings', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + openaiKey },
+      body: JSON.stringify({ model: 'text-embedding-3-small', input: query }),
+    });
+    if (!res.ok) return null;
+    const data = await res.json();
+    return data.data?.[0]?.embedding || null;
+  } catch { return null; }
+}
+
+export async function getIgInsights(limit = 20, query?: string): Promise<string> {
   try {
     const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
     const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY
