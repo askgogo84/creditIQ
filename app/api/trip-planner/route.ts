@@ -206,7 +206,6 @@ Respond ONLY with valid JSON (no markdown, no preamble):
     const data = await response.json()
     const text = data.content?.[0]?.text ?? ''
     const clean = text.replace(/```json/g, '').replace(/```/g, '').trim()
-    let parsed = JSON.parse(clean)
     // Nuclear strip on raw string BEFORE parse — catches every field
     const sanitized = stripVistara(clean)
     let parsed = JSON.parse(sanitized)
