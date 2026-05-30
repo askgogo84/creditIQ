@@ -106,8 +106,8 @@ export default function AdminPage() {
       const sUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
       const sKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
       if (!sUrl || !sKey) return;
-      const { createClient } = await import('@supabase/ssr');
-      const sb = createClient(sUrl, sKey);
+      const { createBrowserClient } = await import('@supabase/ssr');
+      const sb = createBrowserClient(sUrl, sKey);
       const { data } = await sb
         .from('ig_knowledge_base')
         .select('*')
