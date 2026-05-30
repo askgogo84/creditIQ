@@ -21,11 +21,12 @@ async function extractInsights(post: any, anthropicKey: string): Promise<any | n
   });
   if (!res.ok) return null;
   const data = await res.json();
-  const text = (data.content?.[0]?.text || '').replace(/\\json|\\/g, '').trim();
+  const raw = data.content?.[0]?.text || '';
+  const text = raw.replace(/`json|`|'''json|'''/g, '').replace(/^[^{]*/,'').replace(/[^}]*$/,'').trim();
   console.log('Claude raw response:', text.slice(0, 300));
   try {
     const parsed = JSON.parse(text);
-    if (!parsed.is_valuable) return null;
+    if (parsed.is_valuable === false) return null;
     const handle = post.ownerUsername || post.owner?.username || 'unknown';
     const shortCode = post.shortCode || '';
     return {
