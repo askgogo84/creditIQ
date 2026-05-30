@@ -3,14 +3,22 @@ import { retrieveRelevantCards, buildRagSystemPrompt } from '@/lib/rag'
 
 export const runtime = 'nodejs'
 
+// Nuclear Vistara strip — runs on the entire JSON string before parse
+function stripVistara(raw: string): string {
+  return raw
+    .replace(/Vistara/gi, 'Air India')
+    .replace(/\bUK-\d+\b/g, 'AI')
+}
+
+
 export async function POST(req: NextRequest) {
   try {
     const { query, userPoints, cardBank, destination, origin, travelers, budget } = await req.json()
     const tripQuery = query || ('travel to ' + (destination || 'unknown'))
     if (!tripQuery.trim()) return NextResponse.json({ error: 'Missing trip query' }, { status: 400 })
 
-    const { context, devaluations } = await retrieveRelevantCards(tripQuery, { topK: 8, intent: 'travel' })
-    const systemPrompt = buildRagSystemPrompt(context, devaluations)
+    const { context, devaluations, igInsights } = await retrieveRelevantCards(tripQuery, { topK: 8, intent: 'travel' })
+    const systemPrompt = buildRagSystemPrompt(context, devaluations, igInsights)
 
     // Pre-fetch real award availability from seats.aero
     const originCode = (!origin || origin === 'Bangalore') ? 'BLR' : origin.slice(0, 3).toUpperCase()
@@ -199,14 +207,22 @@ Respond ONLY with valid JSON (no markdown, no preamble):
     const text = data.content?.[0]?.text ?? ''
     const clean = text.replace(/```json/g, '').replace(/```/g, '').trim()
     let parsed = JSON.parse(clean)
-    // Post-process: remove Vistara (merged into Air India Nov 2024)
+    // Nuclear strip on raw string BEFORE parse — catches every field
+    const sanitized = stripVistara(clean)
+    let parsed = JSON.parse(sanitized)
+
+    // Field-level strip as secondary safety net
+    const vr = (s: string) => s?.replace(/Vistara/gi, 'Air India').replace(/\bUK-\d+\b/g, 'AI') ?? s
     if (parsed.flights) {
       parsed.flights = parsed.flights.map((f: any) => ({
         ...f,
-        airline: f.airline?.replace(/Vistara/gi, "Air India").replace(/UK-\d+/g, "AI"),
-        option: f.option?.replace(/Vistara/gi, "Air India"),
+        airline: vr(f.airline),
+        option: vr(f.option),
+        connectionAirline: vr(f.connectionAirline),
       }))
     }
+    if (parsed.summary) parsed.summary = vr(parsed.summary)
+    if (parsed.proTip) parsed.proTip = vr(parsed.proTip)
     return NextResponse.json(parsed)
   } catch (err) {
     console.error('Trip planner error:', err)
