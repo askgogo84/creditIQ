@@ -13,7 +13,7 @@ import {
 interface CronLog { id: string; job: string; result: any; ran_at: string }
 interface DevalEvent { id: string; card_name: string; bank: string; category: string; description: string; impact: string; date: string; status: string; detected_at: string }
 interface PendingCard { id: string; slug: string; name: string; bank: string; annual_fee_inr: number; tier: string; status: string; discovered_at: string }
-interface IgInsight { id: string; source_handle: string; post_id: string; post_url: string; caption: string; post_date: string; insight_type: string; insight_summary: string; structured_data: any; likes: number; scraped_at: string }
+interface IgInsight { id: string; source_handle: string; post_id: string; post_url: string; caption: string; post_date: string; insight_type: string; insight_summary: string; structured_data: any; likes: number; scraped_at: string; click_count?: number }
 
 const IMPACT_COLOR: Record<string, string> = {
   high: '#B84230', medium: 'var(--copper,#8C5F12)', low: '#2d7a56',
@@ -523,7 +523,7 @@ export default function AdminPage() {
                         <span style={{ fontSize: 11, padding: '2px 8px', borderRadius: 6, background: 'rgba(20,41,80,0.06)', color: 'var(--ink-3,#5A6A8A)' }}>
                           → {CIRA_USAGE[insight.insight_type]}
                         </span>
-                        <a href={insight.post_url} target="_blank" rel="noopener noreferrer" style={{ fontSize: 11, color: '#0369a1' }}>View post â†—</a>
+                        <a href={insight.post_url} target="_blank" rel="noopener noreferrer" onClick={() => fetch('/api/ig-click', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ insight_id: insight.id, query_context: 'admin_view' }) })} style={{ fontSize: 11, color: '#0369a1' }}>View post â†—</a>
                       </div>
                       {insight.structured_data?.cards_mentioned?.length > 0 && (
                         <div style={{ marginTop: 8, display: 'flex', gap: 6, flexWrap: 'wrap' }}>
