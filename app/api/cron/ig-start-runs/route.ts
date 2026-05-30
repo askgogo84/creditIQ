@@ -8,11 +8,14 @@ export const runtime = 'nodejs';
 export const maxDuration = 30;
 
 const TARGET_HANDLES = [
-  'creditcardtalks',
+  'thatcreditcardguy',
   'everypaisamatters',
+  'creditcardtalks',
   'thegreatindianmiles',
   'the.financial.boss',
   'cashoverflow.in',
+  'niyo_global',
+  'cardexpert.in',
 ];
 
 const APIFY_BASE = 'https://api.apify.com/v2';

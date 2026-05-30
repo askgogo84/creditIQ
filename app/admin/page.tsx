@@ -436,7 +436,7 @@ export default function AdminPage() {
               <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 24, flexWrap: 'wrap', gap: 12 }}>
                 <div>
                   <h2 style={{ fontSize: 20, fontWeight: 700, color: 'var(--ink,#142950)', marginBottom: 4 }}>🧠 Instagram CC Intelligence</h2>
-                  <p style={{ fontSize: 13, color: 'var(--ink-3,#5A6A8A)', margin: 0 }}>Insights scraped from @creditcardtalks, @everypaisamatters, @thegreatindianmiles & more</p>
+                  <p style={{ fontSize: 13, color: 'var(--ink-3,#5A6A8A)', margin: 0 }}>Insights scraped from @thatcreditcardguy, @everypaisamatters, @creditcardtalks, @thegreatindianmiles & more</p>
                 </div>
                 <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
                   <button onClick={triggerIgScrape} style={{ padding: '8px 14px', borderRadius: 8, fontSize: 12, fontWeight: 600, cursor: 'pointer', background: '#7c3aed', color: '#fff', border: 'none' }}>
