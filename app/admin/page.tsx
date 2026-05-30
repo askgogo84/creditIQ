@@ -7,13 +7,13 @@ import { SEED_CARDS } from '@/lib/data/seed-cards';
 import {
   Lock, RefreshCw, Database, Eye, EyeOff,
   AlertTriangle, CheckCircle, Clock, Activity,
-  TrendingDown, Search, Play, Zap
+  TrendingDown, Search, Zap, Brain
 } from 'lucide-react';
 
-// ── Types ──────────────────────────────────────────────────────
 interface CronLog { id: string; job: string; result: any; ran_at: string }
 interface DevalEvent { id: string; card_name: string; bank: string; category: string; description: string; impact: string; date: string; status: string; detected_at: string }
 interface PendingCard { id: string; slug: string; name: string; bank: string; annual_fee_inr: number; tier: string; status: string; discovered_at: string }
+interface IgInsight { id: string; source_handle: string; post_id: string; post_url: string; caption: string; post_date: string; insight_type: string; insight_summary: string; structured_data: any; likes: number; scraped_at: string }
 
 const IMPACT_COLOR: Record<string, string> = {
   high: '#B84230', medium: 'var(--copper,#8C5F12)', low: '#2d7a56',
@@ -21,8 +21,23 @@ const IMPACT_COLOR: Record<string, string> = {
 const STATUS_COLOR: Record<string, string> = {
   detected: '#0369a1', confirmed: 'var(--copper,#8C5F12)', published: '#2d7a56', dismissed: 'var(--ink-3,#5A6A8A)',
 };
+const INSIGHT_COLORS: Record<string, string> = {
+  transfer_hack: '#7c3aed', devaluation: '#b91c1c', card_comparison: '#0369a1',
+  sweet_spot: '#065f46', strategy: '#92400e', general: '#374151',
+};
+const INSIGHT_ICONS: Record<string, string> = {
+  transfer_hack: '🔄', devaluation: '📉', card_comparison: '⚖️',
+  sweet_spot: '🎯', strategy: '🧠', general: '📌',
+};
+const CIRA_USAGE: Record<string, string> = {
+  transfer_hack: 'Points Optimizer + Trip Planner',
+  devaluation: 'Card Roast + Devaluation Detector',
+  card_comparison: 'Smart Match + Best Cards',
+  sweet_spot: 'Trip Planner + Loyalty Tracker',
+  strategy: 'All CIRA features',
+  general: 'CIRA knowledge base',
+};
 
-// ── Stat Card ─────────────────────────────────────────────────
 function Stat({ label, value, sub, color }: { label: string; value: string | number; sub?: string; color?: string }) {
   return (
     <div style={{ background: 'var(--surface,#fff)', border: '1px solid var(--line,rgba(20,41,80,0.08))', borderRadius: 14, padding: '18px 20px' }}>
@@ -38,14 +53,16 @@ export default function AdminPage() {
   const [password, setPassword] = useState('');
   const [showPwd, setShowPwd] = useState(false);
   const [error, setError] = useState('');
-  const [activeTab, setActiveTab] = useState<'overview' | 'devaluations' | 'pending' | 'cards' | 'logs'>('overview');
+  const [activeTab, setActiveTab] = useState<'overview' | 'devaluations' | 'pending' | 'cards' | 'logs' | 'intelligence'>('overview');
 
-  // Data state
   const [cronLogs, setCronLogs] = useState<CronLog[]>([]);
   const [devalEvents, setDevalEvents] = useState<DevalEvent[]>([]);
   const [pendingCards, setPendingCards] = useState<PendingCard[]>([]);
+  const [igInsights, setIgInsights] = useState<IgInsight[]>([]);
   const [loading, setLoading] = useState(false);
+  const [igLoading, setIgLoading] = useState(false);
   const [triggerStatus, setTriggerStatus] = useState('');
+  const [igTriggerStatus, setIgTriggerStatus] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
 
   useEffect(() => {
@@ -83,6 +100,24 @@ export default function AdminPage() {
     setLoading(false);
   }, [password]);
 
+  const loadIgInsights = useCallback(async () => {
+    setIgLoading(true);
+    try {
+      const sUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+      const sKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+      if (!sUrl || !sKey) return;
+      const { createClient } = await import('@supabase/ssr');
+      const sb = createClient(sUrl, sKey);
+      const { data } = await sb
+        .from('ig_knowledge_base')
+        .select('*')
+        .order('likes', { ascending: false })
+        .limit(50);
+      setIgInsights(data || []);
+    } catch {}
+    setIgLoading(false);
+  }, []);
+
   useEffect(() => { if (authed) loadData(); }, [authed, loadData]);
 
   const triggerJob = async (job: 'scrape' | 'cards-sync' | 'detect-devaluations', bank?: string) => {
@@ -101,6 +136,33 @@ export default function AdminPage() {
       setTimeout(loadData, 5000);
     } catch (e: any) {
       setTriggerStatus(`Error: ${e.message}`);
+    }
+  };
+
+  const triggerIgScrape = async () => {
+    setIgTriggerStatus('Starting Apify runs for all 5 handles...');
+    try {
+      const res = await fetch('/api/cron/ig-start-runs', {
+        headers: { 'x-cron-secret': 'CreditIQ-cron-2026' },
+      });
+      const data = await res.json();
+      setIgTriggerStatus(`Started ${data.runs_started} runs. Fetch results in 10 mins.`);
+    } catch (e: any) {
+      setIgTriggerStatus(`Error: ${e.message}`);
+    }
+  };
+
+  const triggerIgFetch = async () => {
+    setIgTriggerStatus('Fetching completed Apify runs + extracting insights...');
+    try {
+      const res = await fetch('/api/cron/ig-fetch-results', {
+        headers: { 'x-cron-secret': 'CreditIQ-cron-2026' },
+      });
+      const data = await res.json();
+      setIgTriggerStatus(`Done: ${data.insights_saved || 0} insights saved from ${data.posts_scraped || 0} posts.`);
+      setTimeout(loadIgInsights, 2000);
+    } catch (e: any) {
+      setIgTriggerStatus(`Error: ${e.message}`);
     }
   };
 
@@ -127,8 +189,8 @@ export default function AdminPage() {
   const lastScrape = cronLogs.find(l => l.job === 'scrape');
   const lastDetect = cronLogs.find(l => l.job === 'detect-devaluations');
   const highDevals = devalEvents.filter(d => d.impact === 'high' && d.status === 'detected').length;
+  const byType = igInsights.reduce((acc: any, i: any) => { acc[i.insight_type] = (acc[i.insight_type] || 0) + 1; return acc; }, {});
 
-  // ── Login screen ────────────────────────────────────────────
   if (!authed) {
     return (
       <>
@@ -159,14 +221,12 @@ export default function AdminPage() {
     );
   }
 
-  // ── Admin dashboard ─────────────────────────────────────────
   return (
     <>
       <Header />
       <div className="page-fade" style={{ paddingTop: 'clamp(80px,12vw,100px)', paddingBottom: 80 }}>
         <div className="shell">
 
-          {/* Header */}
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 32, flexWrap: 'wrap', gap: 12 }}>
             <div>
               <div style={{ fontFamily: 'var(--font-mono,monospace)', fontSize: 9, fontWeight: 700, letterSpacing: '0.18em', textTransform: 'uppercase', color: 'var(--copper,#8C5F12)', marginBottom: 6 }}>Internal</div>
@@ -184,7 +244,6 @@ export default function AdminPage() {
             </div>
           </div>
 
-          {/* Alert banner */}
           {highDevals > 0 && (
             <div style={{ background: 'rgba(184,66,48,0.08)', border: '1px solid rgba(184,66,48,0.25)', borderRadius: 14, padding: '14px 20px', marginBottom: 24, display: 'flex', alignItems: 'center', gap: 12 }}>
               <AlertTriangle style={{ width: 18, height: 18, color: '#B84230', flexShrink: 0 }} />
@@ -201,12 +260,16 @@ export default function AdminPage() {
           <div style={{ display: 'flex', gap: 4, marginBottom: 24, background: 'var(--paper,#FAF5EB)', padding: 4, borderRadius: 12, border: '1px solid var(--line,rgba(20,41,80,0.08))', width: 'fit-content', flexWrap: 'wrap' }}>
             {([
               ['overview', 'Overview', Activity],
-              ['devaluations', `Devaluations ${devalEvents.filter(d => d.status === 'detected').length > 0 ? `(${devalEvents.filter(d => d.status === 'detected').length})` : ''}`, TrendingDown],
-              ['pending', `Pending Cards ${pendingCards.length > 0 ? `(${pendingCards.length})` : ''}`, Zap],
+              ['devaluations', `Devaluations${devalEvents.filter(d => d.status === 'detected').length > 0 ? ` (${devalEvents.filter(d => d.status === 'detected').length})` : ''}`, TrendingDown],
+              ['pending', `Pending${pendingCards.length > 0 ? ` (${pendingCards.length})` : ''}`, Zap],
               ['cards', `Cards (${SEED_CARDS.length})`, Database],
-              ['logs', 'Cron Logs', Clock],
+              ['logs', 'Logs', Clock],
+              ['intelligence', `Intelligence${igInsights.length > 0 ? ` (${igInsights.length})` : ''}`, Brain],
             ] as [string, string, any][]).map(([tab, label, Icon]) => (
-              <button key={tab} onClick={() => setActiveTab(tab as any)} style={{
+              <button key={tab} onClick={() => {
+                setActiveTab(tab as any);
+                if (tab === 'intelligence') loadIgInsights();
+              }} style={{
                 display: 'flex', alignItems: 'center', gap: 6, padding: '8px 16px', borderRadius: 8, border: 'none', fontSize: 13, fontWeight: 600, cursor: 'pointer',
                 background: activeTab === tab ? 'var(--ink,#142950)' : 'transparent',
                 color: activeTab === tab ? '#fff' : 'var(--ink-2,#2A3F6B)',
@@ -216,23 +279,20 @@ export default function AdminPage() {
             ))}
           </div>
 
-          {/* ── OVERVIEW TAB ── */}
+          {/* OVERVIEW TAB */}
           {activeTab === 'overview' && (
             <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
-              {/* Stats */}
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(160px,1fr))', gap: 12 }}>
                 <Stat label="Total Cards" value={SEED_CARDS.length} sub="in seed database" />
                 <Stat label="Devaluations" value={devalEvents.filter(d => d.status === 'detected').length} sub="awaiting review" color={devalEvents.filter(d => d.status === 'detected').length > 0 ? '#B84230' : undefined} />
                 <Stat label="Pending Cards" value={pendingCards.length} sub="from discovery" color={pendingCards.length > 0 ? 'var(--copper,#8C5F12)' : undefined} />
+                <Stat label="IG Insights" value={igInsights.length} sub="in knowledge base" color="#7c3aed" />
                 <Stat label="Last Scrape" value={lastScrape ? new Date(lastScrape.ran_at).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' }) : '—'} sub={lastScrape ? new Date(lastScrape.ran_at).toLocaleDateString('en-IN') : 'Never run'} />
-                <Stat label="Last Detection" value={lastDetect ? new Date(lastDetect.ran_at).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' }) : '—'} sub={lastDetect ? `${lastDetect.result?.checked || 0} pages checked` : 'Never run'} />
               </div>
 
-              {/* Manual triggers */}
               <div style={{ background: 'var(--paper,#FAF5EB)', border: '1px solid var(--line,rgba(20,41,80,0.08))', borderRadius: 18, padding: 24 }}>
-                <div style={{ fontSize: 16, fontWeight: 700, color: 'var(--ink,#142950)', marginBottom: 6, letterSpacing: '-0.01em' }}>Manual triggers</div>
-                <p style={{ fontSize: 13, color: 'var(--ink-3,#5A6A8A)', margin: '0 0 20px' }}>Run any pipeline job immediately without waiting for the cron schedule.</p>
-
+                <div style={{ fontSize: 16, fontWeight: 700, color: 'var(--ink,#142950)', marginBottom: 6 }}>Manual triggers</div>
+                <p style={{ fontSize: 13, color: 'var(--ink-3,#5A6A8A)', margin: '0 0 20px' }}>Run any pipeline job immediately.</p>
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(200px,1fr))', gap: 12, marginBottom: 16 }}>
                   {[
                     { label: '🔍 Scrape All Banks', job: 'scrape' as const, desc: 'Fetches all 12 bank pages + Claude AI parse' },
@@ -245,7 +305,6 @@ export default function AdminPage() {
                     </button>
                   ))}
                 </div>
-
                 <div style={{ marginBottom: 12 }}>
                   <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--ink-2,#2A3F6B)', marginBottom: 10 }}>Scrape specific bank:</div>
                   <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
@@ -256,7 +315,6 @@ export default function AdminPage() {
                     ))}
                   </div>
                 </div>
-
                 {triggerStatus && (
                   <div style={{ padding: '12px 16px', background: 'var(--ink,#142950)', borderRadius: 10, fontFamily: 'var(--font-mono,monospace)', fontSize: 12, color: 'var(--copper-3,#D89B2A)', marginTop: 12 }}>
                     {triggerStatus}
@@ -266,86 +324,62 @@ export default function AdminPage() {
             </div>
           )}
 
-          {/* ── DEVALUATIONS TAB ── */}
+          {/* DEVALUATIONS TAB */}
           {activeTab === 'devaluations' && (
             <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
               {devalEvents.length === 0 ? (
                 <div style={{ textAlign: 'center', padding: '48px 20px', background: 'var(--paper,#FAF5EB)', borderRadius: 18, border: '1px solid var(--line,rgba(20,41,80,0.08))' }}>
                   <CheckCircle style={{ width: 40, height: 40, color: '#2d7a56', margin: '0 auto 16px' }} />
                   <p style={{ fontSize: 16, fontWeight: 700, color: 'var(--ink,#142950)', margin: '0 0 6px' }}>No devaluations detected yet</p>
-                  <p style={{ fontSize: 13, color: 'var(--ink-3,#5A6A8A)', margin: 0 }}>First detection run will compare today vs tomorrow. Check back after 6am IST tomorrow.</p>
                 </div>
-              ) : (
-                devalEvents.map(d => (
-                  <div key={d.id} style={{ background: 'var(--paper,#FAF5EB)', border: `1px solid ${IMPACT_COLOR[d.impact] || 'var(--line)'}30`, borderRadius: 16, padding: 20 }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: 12, marginBottom: 12 }}>
-                      <div>
-                        <div style={{ fontSize: 15, fontWeight: 700, color: 'var(--ink,#142950)', marginBottom: 4 }}>{d.card_name} · {d.bank}</div>
-                        <div style={{ fontSize: 13, color: 'var(--ink-2,#2A3F6B)', lineHeight: 1.6 }}>{d.description}</div>
-                      </div>
-                      <div style={{ display: 'flex', gap: 8, flexShrink: 0 }}>
-                        <span style={{ padding: '3px 10px', borderRadius: 100, fontSize: 10, fontWeight: 700, fontFamily: 'var(--font-mono,monospace)', textTransform: 'uppercase', background: `${IMPACT_COLOR[d.impact]}15`, color: IMPACT_COLOR[d.impact] }}>
-                          {d.impact} impact
-                        </span>
-                        <span style={{ padding: '3px 10px', borderRadius: 100, fontSize: 10, fontWeight: 700, fontFamily: 'var(--font-mono,monospace)', textTransform: 'uppercase', background: `${STATUS_COLOR[d.status]}15`, color: STATUS_COLOR[d.status] }}>
-                          {d.status}
-                        </span>
-                      </div>
+              ) : devalEvents.map(d => (
+                <div key={d.id} style={{ background: 'var(--paper,#FAF5EB)', border: `1px solid ${IMPACT_COLOR[d.impact] || 'var(--line)'}30`, borderRadius: 16, padding: 20 }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: 12, marginBottom: 12 }}>
+                    <div>
+                      <div style={{ fontSize: 15, fontWeight: 700, color: 'var(--ink,#142950)', marginBottom: 4 }}>{d.card_name} · {d.bank}</div>
+                      <div style={{ fontSize: 13, color: 'var(--ink-2,#2A3F6B)', lineHeight: 1.6 }}>{d.description}</div>
                     </div>
-                    <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center' }}>
-                      <span style={{ fontFamily: 'var(--font-mono,monospace)', fontSize: 10, color: 'var(--ink-3,#5A6A8A)' }}>
-                        Detected: {new Date(d.detected_at).toLocaleString('en-IN')}
-                      </span>
-                      <div style={{ display: 'flex', gap: 6, marginLeft: 'auto' }}>
-                        {['confirmed', 'published', 'dismissed'].map(s => (
-                          <button key={s} onClick={() => updateDevalStatus(d.id, s)} style={{
-                            padding: '5px 12px', borderRadius: 8, border: '1px solid var(--line,rgba(20,41,80,0.12))', fontSize: 11, fontWeight: 600, cursor: 'pointer',
-                            background: d.status === s ? 'var(--ink,#142950)' : 'var(--surface,#fff)',
-                            color: d.status === s ? '#fff' : 'var(--ink-2,#2A3F6B)',
-                          }}>
-                            {s}
-                          </button>
-                        ))}
-                      </div>
+                    <div style={{ display: 'flex', gap: 8, flexShrink: 0 }}>
+                      <span style={{ padding: '3px 10px', borderRadius: 100, fontSize: 10, fontWeight: 700, fontFamily: 'var(--font-mono,monospace)', textTransform: 'uppercase', background: `${IMPACT_COLOR[d.impact]}15`, color: IMPACT_COLOR[d.impact] }}>{d.impact} impact</span>
+                      <span style={{ padding: '3px 10px', borderRadius: 100, fontSize: 10, fontWeight: 700, fontFamily: 'var(--font-mono,monospace)', textTransform: 'uppercase', background: `${STATUS_COLOR[d.status]}15`, color: STATUS_COLOR[d.status] }}>{d.status}</span>
                     </div>
                   </div>
-                ))
-              )}
+                  <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center' }}>
+                    <span style={{ fontFamily: 'var(--font-mono,monospace)', fontSize: 10, color: 'var(--ink-3,#5A6A8A)' }}>Detected: {new Date(d.detected_at).toLocaleString('en-IN')}</span>
+                    <div style={{ display: 'flex', gap: 6, marginLeft: 'auto' }}>
+                      {['confirmed', 'published', 'dismissed'].map(s => (
+                        <button key={s} onClick={() => updateDevalStatus(d.id, s)} style={{ padding: '5px 12px', borderRadius: 8, border: '1px solid var(--line,rgba(20,41,80,0.12))', fontSize: 11, fontWeight: 600, cursor: 'pointer', background: d.status === s ? 'var(--ink,#142950)' : 'var(--surface,#fff)', color: d.status === s ? '#fff' : 'var(--ink-2,#2A3F6B)' }}>{s}</button>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              ))}
             </div>
           )}
 
-          {/* ── PENDING CARDS TAB ── */}
+          {/* PENDING CARDS TAB */}
           {activeTab === 'pending' && (
             <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
               {pendingCards.length === 0 ? (
                 <div style={{ textAlign: 'center', padding: '48px 20px', background: 'var(--paper,#FAF5EB)', borderRadius: 18, border: '1px solid var(--line,rgba(20,41,80,0.08))' }}>
                   <p style={{ fontSize: 16, fontWeight: 700, color: 'var(--ink,#142950)', margin: '0 0 6px' }}>No pending cards</p>
-                  <p style={{ fontSize: 13, color: 'var(--ink-3,#5A6A8A)', margin: 0 }}>New cards discovered by the AI will appear here for review before publishing.</p>
                 </div>
-              ) : (
-                pendingCards.map(card => (
-                  <div key={card.id} style={{ background: 'var(--paper,#FAF5EB)', border: '1px solid var(--line,rgba(20,41,80,0.08))', borderRadius: 16, padding: 20, display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 12 }}>
-                    <div>
-                      <div style={{ fontSize: 15, fontWeight: 700, color: 'var(--ink,#142950)', marginBottom: 4 }}>{card.name}</div>
-                      <div style={{ fontFamily: 'var(--font-mono,monospace)', fontSize: 11, color: 'var(--ink-3,#5A6A8A)' }}>
-                        {card.bank} · {card.tier} · Rs.{card.annual_fee_inr}/yr · Discovered {new Date(card.discovered_at).toLocaleDateString('en-IN')}
-                      </div>
-                    </div>
-                    <div style={{ display: 'flex', gap: 8 }}>
-                      <button onClick={() => publishPendingCard(card.id)} style={{ padding: '8px 18px', background: '#2d7a56', color: '#fff', border: 'none', borderRadius: 8, fontSize: 13, fontWeight: 700, cursor: 'pointer' }}>
-                        Publish
-                      </button>
-                      <button onClick={() => updateDevalStatus(card.id, 'dismissed')} style={{ padding: '8px 14px', background: 'transparent', border: '1px solid var(--line,rgba(20,41,80,0.12))', borderRadius: 8, fontSize: 13, cursor: 'pointer', color: 'var(--ink-3,#5A6A8A)' }}>
-                        Dismiss
-                      </button>
-                    </div>
+              ) : pendingCards.map(card => (
+                <div key={card.id} style={{ background: 'var(--paper,#FAF5EB)', border: '1px solid var(--line,rgba(20,41,80,0.08))', borderRadius: 16, padding: 20, display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 12 }}>
+                  <div>
+                    <div style={{ fontSize: 15, fontWeight: 700, color: 'var(--ink,#142950)', marginBottom: 4 }}>{card.name}</div>
+                    <div style={{ fontFamily: 'var(--font-mono,monospace)', fontSize: 11, color: 'var(--ink-3,#5A6A8A)' }}>{card.bank} · {card.tier} · Rs.{card.annual_fee_inr}/yr</div>
                   </div>
-                ))
-              )}
+                  <div style={{ display: 'flex', gap: 8 }}>
+                    <button onClick={() => publishPendingCard(card.id)} style={{ padding: '8px 18px', background: '#2d7a56', color: '#fff', border: 'none', borderRadius: 8, fontSize: 13, fontWeight: 700, cursor: 'pointer' }}>Publish</button>
+                    <button onClick={() => updateDevalStatus(card.id, 'dismissed')} style={{ padding: '8px 14px', background: 'transparent', border: '1px solid var(--line,rgba(20,41,80,0.12))', borderRadius: 8, fontSize: 13, cursor: 'pointer', color: 'var(--ink-3,#5A6A8A)' }}>Dismiss</button>
+                  </div>
+                </div>
+              ))}
             </div>
           )}
 
-          {/* ── CARDS TAB ── */}
+          {/* CARDS TAB */}
           {activeTab === 'cards' && (
             <div>
               <div style={{ position: 'relative', marginBottom: 16 }}>
@@ -376,31 +410,135 @@ export default function AdminPage() {
             </div>
           )}
 
-          {/* ── LOGS TAB ── */}
+          {/* LOGS TAB */}
           {activeTab === 'logs' && (
             <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
               {cronLogs.length === 0 ? (
-                <div style={{ textAlign: 'center', padding: '48px 20px', background: 'var(--paper,#FAF5EB)', borderRadius: 18, border: '1px solid var(--line,rgba(20,41,80,0.08))' }}>
+                <div style={{ textAlign: 'center', padding: '48px 20px', background: 'var(--paper,#FAF5EB)', borderRadius: 18 }}>
                   <p style={{ fontSize: 16, fontWeight: 700, color: 'var(--ink,#142950)', margin: '0 0 6px' }}>No logs yet</p>
-                  <p style={{ fontSize: 13, color: 'var(--ink-3,#5A6A8A)', margin: 0 }}>Cron logs will appear here after the first pipeline run (tonight at 2am IST).</p>
+                </div>
+              ) : cronLogs.map(log => (
+                <div key={log.id} style={{ background: 'var(--paper,#FAF5EB)', border: '1px solid var(--line,rgba(20,41,80,0.08))', borderRadius: 14, padding: '14px 18px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 12 }}>
+                  <div>
+                    <div style={{ fontFamily: 'var(--font-mono,monospace)', fontSize: 11, fontWeight: 700, color: 'var(--ink,#142950)', marginBottom: 4 }}>{log.job}</div>
+                    <div style={{ fontFamily: 'var(--font-mono,monospace)', fontSize: 11, color: 'var(--ink-3,#5A6A8A)' }}>{JSON.stringify(log.result)}</div>
+                  </div>
+                  <div style={{ fontFamily: 'var(--font-mono,monospace)', fontSize: 10, color: 'var(--ink-3,#5A6A8A)', flexShrink: 0 }}>{new Date(log.ran_at).toLocaleString('en-IN')}</div>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {/* INTELLIGENCE TAB */}
+          {activeTab === 'intelligence' && (
+            <div>
+              {/* Header */}
+              <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 24, flexWrap: 'wrap', gap: 12 }}>
+                <div>
+                  <h2 style={{ fontSize: 20, fontWeight: 700, color: 'var(--ink,#142950)', marginBottom: 4 }}>🧠 Instagram CC Intelligence</h2>
+                  <p style={{ fontSize: 13, color: 'var(--ink-3,#5A6A8A)', margin: 0 }}>Insights scraped from @creditcardtalks, @everypaisamatters, @thegreatindianmiles & more</p>
+                </div>
+                <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                  <button onClick={triggerIgScrape} style={{ padding: '8px 14px', borderRadius: 8, fontSize: 12, fontWeight: 600, cursor: 'pointer', background: '#7c3aed', color: '#fff', border: 'none' }}>
+                    ▶ Start Scrape
+                  </button>
+                  <button onClick={triggerIgFetch} style={{ padding: '8px 14px', borderRadius: 8, fontSize: 12, fontWeight: 600, cursor: 'pointer', background: 'var(--ink,#142950)', color: '#fff', border: 'none' }}>
+                    ⬇ Fetch Results
+                  </button>
+                  <button onClick={loadIgInsights} style={{ padding: '8px 14px', borderRadius: 8, fontSize: 12, fontWeight: 600, cursor: 'pointer', background: 'var(--paper,#FAF5EB)', color: 'var(--ink,#142950)', border: '1px solid var(--line,rgba(20,41,80,0.12))' }}>
+                    ↻ Refresh
+                  </button>
+                </div>
+              </div>
+
+              {igTriggerStatus && (
+                <div style={{ padding: '10px 16px', borderRadius: 8, marginBottom: 16, background: 'rgba(124,58,237,0.08)', border: '1px solid rgba(124,58,237,0.2)', fontSize: 13, color: '#7c3aed' }}>
+                  {igTriggerStatus}
+                </div>
+              )}
+
+              {/* Stats */}
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))', gap: 10, marginBottom: 24 }}>
+                {[
+                  { label: 'Total Insights', value: igInsights.length, color: '#7c3aed' },
+                  { label: 'Transfer Hacks', value: byType.transfer_hack || 0, color: '#7c3aed' },
+                  { label: 'Devaluations', value: byType.devaluation || 0, color: '#b91c1c' },
+                  { label: 'Sweet Spots', value: byType.sweet_spot || 0, color: '#065f46' },
+                  { label: 'Comparisons', value: byType.card_comparison || 0, color: '#0369a1' },
+                  { label: 'Strategies', value: byType.strategy || 0, color: '#92400e' },
+                ].map((s, i) => (
+                  <div key={i} style={{ background: 'var(--surface,#fff)', border: '1px solid var(--line,rgba(20,41,80,0.08))', borderRadius: 12, padding: '12px 14px' }}>
+                    <div style={{ fontSize: 9, fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', color: 'var(--ink-3,#5A6A8A)', marginBottom: 6 }}>{s.label}</div>
+                    <div style={{ fontSize: 26, fontWeight: 800, color: s.color }}>{s.value}</div>
+                  </div>
+                ))}
+              </div>
+
+              {/* Flow diagram */}
+              <div style={{ background: 'var(--surface,#fff)', border: '1px solid var(--line,rgba(20,41,80,0.08))', borderRadius: 14, padding: 20, marginBottom: 24 }}>
+                <h3 style={{ fontSize: 14, fontWeight: 700, color: 'var(--ink,#142950)', marginBottom: 14 }}>How Intelligence Powers CIRA</h3>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 10 }}>
+                  {[
+                    { icon: '🔄', type: 'Transfer Hacks', flow: 'Points Optimizer → Finnair route over direct Qatar (100K RP = 100K vs 50K Avios)', color: '#7c3aed' },
+                    { icon: '📉', type: 'Devaluations', flow: 'Card Roast → "SBI PhonePe Black gutted July 2026 — avoid this card"', color: '#b91c1c' },
+                    { icon: '🎯', type: 'Sweet Spots', flow: 'Trip Planner → "BLR-SIN Business 42,500 KrisFlyer — best value in Asia"', color: '#065f46' },
+                    { icon: '⚖️', type: 'Comparisons', flow: 'Smart Match → Diners Black outperforms Infinia for moderate spenders', color: '#0369a1' },
+                  ].map((item, i) => (
+                    <div key={i} style={{ padding: 12, borderRadius: 10, background: `${item.color}08`, border: `1px solid ${item.color}20` }}>
+                      <div style={{ fontSize: 18, marginBottom: 6 }}>{item.icon}</div>
+                      <div style={{ fontSize: 12, fontWeight: 700, color: item.color, marginBottom: 4 }}>{item.type}</div>
+                      <div style={{ fontSize: 11, color: 'var(--ink-3,#5A6A8A)', lineHeight: 1.5 }}>{item.flow}</div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Insights list */}
+              {igLoading ? (
+                <div style={{ textAlign: 'center', padding: 40, color: 'var(--ink-3,#5A6A8A)' }}>Loading insights...</div>
+              ) : igInsights.length === 0 ? (
+                <div style={{ textAlign: 'center', padding: 40, background: 'var(--paper,#FAF5EB)', borderRadius: 18, border: '1px solid var(--line,rgba(20,41,80,0.08))' }}>
+                  <div style={{ fontSize: 32, marginBottom: 12 }}>🧠</div>
+                  <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--ink,#142950)', marginBottom: 8 }}>No insights yet</div>
+                  <div style={{ fontSize: 12, color: 'var(--ink-3,#5A6A8A)' }}>Click "Start Scrape" then wait 10 mins and click "Fetch Results"</div>
                 </div>
               ) : (
-                cronLogs.map(log => (
-                  <div key={log.id} style={{ background: 'var(--paper,#FAF5EB)', border: '1px solid var(--line,rgba(20,41,80,0.08))', borderRadius: 14, padding: '14px 18px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 12 }}>
-                    <div>
-                      <div style={{ fontFamily: 'var(--font-mono,monospace)', fontSize: 11, fontWeight: 700, color: 'var(--ink,#142950)', marginBottom: 4 }}>{log.job}</div>
-                      <div style={{ fontFamily: 'var(--font-mono,monospace)', fontSize: 11, color: 'var(--ink-3,#5A6A8A)' }}>
-                        {JSON.stringify(log.result)}
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                  {igInsights.map((insight, i) => (
+                    <div key={i} style={{ background: 'var(--surface,#fff)', border: '1px solid var(--line,rgba(20,41,80,0.08))', borderRadius: 12, padding: 16 }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8, flexWrap: 'wrap' }}>
+                        <span style={{ fontSize: 16 }}>{INSIGHT_ICONS[insight.insight_type] || '📌'}</span>
+                        <span style={{ padding: '2px 8px', borderRadius: 6, fontSize: 10, fontWeight: 700, textTransform: 'uppercase', background: `${INSIGHT_COLORS[insight.insight_type]}15`, color: INSIGHT_COLORS[insight.insight_type] || '#374151' }}>
+                          {insight.insight_type?.replace('_', ' ')}
+                        </span>
+                        <span style={{ fontSize: 11, color: 'var(--ink-3,#5A6A8A)' }}>@{insight.source_handle}</span>
+                        <span style={{ fontSize: 11, color: 'var(--ink-3,#5A6A8A)' }}>❤️ {insight.likes}</span>
+                        <span style={{ fontSize: 11, color: 'var(--ink-3,#5A6A8A)', marginLeft: 'auto' }}>{new Date(insight.scraped_at).toLocaleDateString('en-IN')}</span>
                       </div>
+                      <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--ink,#142950)', marginBottom: 6 }}>{insight.insight_summary}</div>
+                      {insight.structured_data?.actionable_tip && (
+                        <div style={{ fontSize: 12, color: 'var(--ink-3,#5A6A8A)', marginBottom: 8 }}>💡 {insight.structured_data.actionable_tip}</div>
+                      )}
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
+                        <span style={{ fontSize: 11, padding: '2px 8px', borderRadius: 6, background: 'rgba(20,41,80,0.06)', color: 'var(--ink-3,#5A6A8A)' }}>
+                          → {CIRA_USAGE[insight.insight_type]}
+                        </span>
+                        <a href={insight.post_url} target="_blank" rel="noopener noreferrer" style={{ fontSize: 11, color: '#0369a1' }}>View post ↗</a>
+                      </div>
+                      {insight.structured_data?.cards_mentioned?.length > 0 && (
+                        <div style={{ marginTop: 8, display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+                          {insight.structured_data.cards_mentioned.map((card: string, j: number) => (
+                            <span key={j} style={{ fontSize: 10, padding: '2px 6px', borderRadius: 4, background: 'rgba(20,41,80,0.06)', color: 'var(--ink-3,#5A6A8A)' }}>{card}</span>
+                          ))}
+                        </div>
+                      )}
                     </div>
-                    <div style={{ fontFamily: 'var(--font-mono,monospace)', fontSize: 10, color: 'var(--ink-3,#5A6A8A)', flexShrink: 0 }}>
-                      {new Date(log.ran_at).toLocaleString('en-IN')}
-                    </div>
-                  </div>
-                ))
+                  ))}
+                </div>
               )}
             </div>
           )}
+
         </div>
       </div>
       <DesignFooter />
