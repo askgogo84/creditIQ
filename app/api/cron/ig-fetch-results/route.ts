@@ -76,7 +76,8 @@ export async function GET(req: NextRequest) {
       if (!dataRes.ok) continue;
       const posts = await dataRes.json();
       results.posts_scraped += posts.length;
-      const newPosts = (posts as any[]).filter((p: any) => !existingIds.has(p.id || p.shortCode) && (p.caption?.length || 0) > 50);
+      const newPosts = (posts as any[]).filter((p: any) => (p.caption?.length || 0) > 50);
+      console.log(handle + ' newPosts:' + newPosts.length + ' first caption:' + (newPosts[0]?.caption || '').slice(0, 80));
       for (const post of newPosts.slice(0, 3)) {
         if (Date.now() > deadline) break;
         const insight = await extractInsights(post, anthropicKey);
