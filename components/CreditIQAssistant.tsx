@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 import { useState, useRef, useEffect } from 'react';
 
 interface Message {
@@ -98,6 +98,8 @@ export function CreditIQAssistant() {
 
         <button
           onClick={() => setOpen(o => !o)}
+          aria-label={open ? 'Close chat assistant' : 'Open chat assistant'}
+          aria-expanded={open}
           style={{
             width: 56, height: 56,
             borderRadius: '50%',
@@ -294,3 +296,4 @@ export function CreditIQAssistant() {
     </>
   );
 }
+
