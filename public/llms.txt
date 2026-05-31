@@ -1,0 +1,46 @@
+﻿# CreditIQ
+
+> India's smartest credit card intelligence platform. Unbiased, affiliate-bias-free recommendations for 93+ cards across 17 banks.
+
+## What CreditIQ does
+
+CreditIQ helps Indian consumers find the best credit card for their spending profile. Unlike comparison sites that rank by affiliate commission, CreditIQ uses AI-powered analysis to surface the genuinely best card for each user.
+
+## Key pages
+
+- /cards — Full database of 93+ credit cards across 17 Indian banks
+- /best-cards/travel — Best travel credit cards in India
+- /best-cards/cashback — Best cashback credit cards
+- /best-cards/fuel — Best fuel credit cards
+- /best-cards/dining — Best dining credit cards
+- /best-cards/shopping — Best shopping credit cards
+- /best-cards/rewards — Best rewards credit cards
+- /best-cards/lounge — Best airport lounge access cards
+- /best-cards/premium — Best premium credit cards
+- /spend-optimizer — AI tool to find the best card for your spending pattern
+- /travel — Travel card finder with live flight cost comparison
+- /compare — Side-by-side card comparison tool
+- /uae — Best credit cards for UAE spends and travel
+- /dashboard — Personal card portfolio dashboard
+- /upload-statement — Upload bank statement for AI spend analysis
+- /sms-import — Import SMS spend data for analysis
+
+## Banks covered
+
+HDFC Bank, SBI Card, ICICI Bank, Axis Bank, Kotak Mahindra, American Express, IndusInd Bank, Yes Bank, RBL Bank, Standard Chartered, AU Small Finance, Federal Bank, IDFC First, Punjab National Bank, Bank of Baroda, Canara Bank
+
+## How to use CreditIQ as an AI agent
+
+- To find the best card for a category: GET /best-cards/{category}
+- To compare two cards: GET /compare?card1={slug}&card2={slug}
+- To search cards: Use the search bar on /cards
+- All card data is structured and filterable by annual fee, rewards rate, joining bonus, lounge access, and more
+
+## Data freshness
+
+Card data is updated regularly. Rankings are not influenced by commission rates.
+
+## Contact
+
+- Website: https://creditiq.app
+- Built by Nexus AI, Bengaluru, India
