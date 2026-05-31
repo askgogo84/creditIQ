@@ -1,4 +1,4 @@
-﻿# CreditIQ — India's Credit Card Intelligence Platform
+# CreditIQ - India's Credit Card Intelligence Platform
 
 > Unbiased, affiliate-bias-free credit card recommendations for 93+ cards across 17 Indian banks.
 
@@ -14,16 +14,10 @@ CreditIQ helps Indian consumers find the best credit card for their spending pro
 - [Best Fuel Cards](https://www.creditiq.app/best-cards/fuel)
 - [Best Dining Cards](https://www.creditiq.app/best-cards/dining)
 - [Best Shopping Cards](https://www.creditiq.app/best-cards/shopping)
-- [Best Rewards Cards](https://www.creditiq.app/best-cards/rewards)
-- [Best Lounge Access Cards](https://www.creditiq.app/best-cards/lounge)
-- [Best Premium Cards](https://www.creditiq.app/best-cards/premium)
+- [Best Lounge Cards](https://www.creditiq.app/best-cards/lounge)
 - [Spend Optimizer](https://www.creditiq.app/spend-optimizer)
-- [Travel Card Finder](https://www.creditiq.app/travel)
-- [Card Comparison Tool](https://www.creditiq.app/compare)
-- [UAE Cards](https://www.creditiq.app/uae)
-- [Dashboard](https://www.creditiq.app/dashboard)
+- [Card Comparison](https://www.creditiq.app/compare)
 
 ## Contact
 
 - Website: https://www.creditiq.app
-- Built by Nexus AI, Bengaluru, India
