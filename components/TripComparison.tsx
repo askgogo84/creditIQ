@@ -251,7 +251,7 @@ export function TripComparison({ destination, origin = 'Bangalore', nights = 3, 
           </div>
           {[
             { n: '1', text: 'Transfer ' + cardBank + ' points to loyalty program (HDFC SmartBuy)' },
-            { n: '2', text: 'Search & book on InterMiles / KrisFlyer / Vistara' },
+            { n: '2', text: 'Search & book on InterMiles / KrisFlyer / Air India' },
             { n: '3', text: 'Use transferred miles to pay at checkout' },
           ].map((s, i) => (
             <div key={i} style={{ display: 'flex', gap: 8, alignItems: 'flex-start', marginBottom: 6 }}>

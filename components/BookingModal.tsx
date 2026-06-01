@@ -58,7 +58,7 @@ function getTransferPartnerUrl(partner: string): string {
   if (partner.includes('InterMiles')) return 'https://www.intermiles.com/earn-miles/transfer-points';
   if (partner.includes('KrisFlyer') || partner.includes('Singapore')) return 'https://www.singaporeair.com/en_UK/in/plan-travel/book-flights/';
   if (partner.includes('Marriott')) return 'https://www.marriott.com/loyalty/redeem/travel/redeem-points-for-flights.mi';
-  if (partner.includes('Vistara')) return 'https://www.airvistara.com/in/en/plan-your-travel/book/flight';
+  if (partner.includes('Air India')) return 'https://www.airindia.com/in/en/plan-my-travel/book-flights.html';
   return 'https://www.intermiles.com/earn-miles/transfer-points';
 }
 
@@ -66,7 +66,7 @@ function buildFlightSearchUrl(partner: string, destination: string): string {
   const dest = encodeURIComponent(destination);
   if (partner.includes('InterMiles')) return 'https://www.intermiles.com/flights/search?to=' + dest;
   if (partner.includes('KrisFlyer') || partner.includes('Singapore')) return 'https://www.singaporeair.com/en_UK/in/plan-travel/book-flights/';
-  if (partner.includes('Vistara')) return 'https://www.airvistara.com/in/en/plan-your-travel/book/flight';
+  if (partner.includes('Air India')) return 'https://www.airindia.com/in/en/plan-my-travel/book-flights.html';
   return "https://bitli.in/cv7BwVU";
 }
 
