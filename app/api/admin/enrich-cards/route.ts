@@ -54,7 +54,7 @@ export async function POST(req: NextRequest) {
   // Fetch cards that need enrichment
   let query = sb.from('cards').select('*');
   if (!force) {
-    query = query.or('highlights.eq.,highlights.is.null,category_rewards.eq.,category_rewards.is.null');
+    query = query.or('highlights.eq."",highlights.is.null,highlights.eq.[]');
   }
   const { data: cards, error } = await query.limit(limit);
   if (error || !cards?.length) return NextResponse.json({ success: true, message: 'No cards need enrichment', enriched: 0 });
@@ -67,14 +67,15 @@ export async function POST(req: NextRequest) {
       if (!enriched) { results.failed++; results.details.push({ id: card.id, status: 'parse_failed' }); continue; }
 
       // Build update object ? only update fields that are empty
+      const isEmpty = (v: any) => !v || v === '' || v === '[]' || v === '""' || (Array.isArray(v) && v.length === 0);
       const update: any = {};
-      if (!card.highlights || card.highlights === '' || card.highlights === '[]') update.highlights = JSON.stringify(enriched.highlights || []);
-      if (!card.drawbacks || card.drawbacks === '' || card.drawbacks === '[]') update.drawbacks = JSON.stringify(enriched.drawbacks || []);
-      if (!card.category_rewards || card.category_rewards === '' || card.category_rewards === '[]') update.category_rewards = JSON.stringify(enriched.category_rewards || []);
-      if (!card.redemption_options || card.redemption_options === '' || card.redemption_options === '[]') update.redemption_options = JSON.stringify(enriched.redemption_options || []);
-      if (!card.lounges || card.lounges === '' || card.lounges === '[]') update.lounges = JSON.stringify(enriched.lounges || []);
+      if (isEmpty(card.highlights)) update.highlights = JSON.stringify(enriched.highlights || []);
+      if (isEmpty(card.drawbacks)) update.drawbacks = JSON.stringify(enriched.drawbacks || []);
+      if (isEmpty(card.category_rewards)) update.category_rewards = JSON.stringify(enriched.category_rewards || []);
+      if (isEmpty(card.redemption_options)) update.redemption_options = JSON.stringify(enriched.redemption_options || []);
+      if (isEmpty(card.lounges)) update.lounges = JSON.stringify(enriched.lounges || []);
       if (!card.expert_rating) update.expert_rating = enriched.expert_rating;
-      if (!card.best_for || card.best_for?.includes('???')) update.best_for = enriched.best_for;
+      if (isEmpty(card.best_for) || card.best_for?.includes('???')) update.best_for = enriched.best_for;
       if (card.forex_markup_percent === 3.5 || !card.forex_markup_percent) update.forex_markup_percent = enriched.forex_markup_percent;
       update.last_verified = new Date().toISOString().split('T')[0];
       update.updated_at = new Date().toISOString();
