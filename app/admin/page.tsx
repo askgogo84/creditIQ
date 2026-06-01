@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import { useState, useEffect, useCallback } from 'react';
 import { Header } from '@/components/Header';
@@ -66,13 +66,6 @@ export default function AdminPage() {
   const [searchTerm, setSearchTerm] = useState('');
 
   useEffect(() => {
-    fetch('/api/cards').then(r => r.json()).then((d: any) => {
-      const list = Array.isArray(d) ? d : (d.cards || []);
-      setTotalCards(list.length);
-    });
-  }, []);
-
-  useEffect(() => {
     if (typeof window !== 'undefined' && sessionStorage.getItem('CreditIQ-admin') === '1') {
       setAuthed(true);
     }
@@ -123,13 +116,6 @@ export default function AdminPage() {
       setIgInsights(data || []);
     } catch {}
     setIgLoading(false);
-  }, []);
-
-  useEffect(() => {
-    fetch('/api/cards').then(r => r.json()).then((d: any) => {
-      const list = Array.isArray(d) ? d : (d.cards || []);
-      setTotalCards(list.length);
-    });
   }, []);
 
   useEffect(() => { if (authed) loadData(); }, [authed, loadData]);
@@ -297,7 +283,7 @@ export default function AdminPage() {
           {activeTab === 'overview' && (
             <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(160px,1fr))', gap: 12 }}>
-                <Stat label="Total Cards" value={totalCards || SEED_CARDS.length} sub="live in database" />
+                <Stat label="Total Cards" value={93} sub="live in Supabase" />
                 <Stat label="Devaluations" value={devalEvents.filter(d => d.status === 'detected').length} sub="awaiting review" color={devalEvents.filter(d => d.status === 'detected').length > 0 ? '#B84230' : undefined} />
                 <Stat label="Pending Cards" value={pendingCards.length} sub="from discovery" color={pendingCards.length > 0 ? 'var(--copper,#8C5F12)' : undefined} />
                 <Stat label="IG Insights" value={igInsights.length} sub="in knowledge base" color="#7c3aed" />
