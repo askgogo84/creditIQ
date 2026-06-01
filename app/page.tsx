@@ -89,6 +89,8 @@ export default function HomePage() {
 
         <CleoHero />
 
+        <RewardsHeroWidget />
+
         <ShowcaseStrip />
 
         <MeetTheC />
