@@ -20,15 +20,15 @@ export function cardToText(card: any): string {
     'Best For: ' + card.best_for,
   ]
   if (parseField(card.category_rewards)?.length > 0) {
-    const catRewards = card.category_rewards.map((cr: any) => cr.category + ': ' + cr.rate + (cr.unit === 'percent' ? '%' : 'x') + (cr.cap_inr_monthly ? ' (cap Rs.' + cr.cap_inr_monthly + '/mo)' : '')).join(', ')
+    const catRewards = parseField(card.category_rewards).map((cr: any) => cr.category + ': ' + cr.rate + (cr.unit === 'percent' ? '%' : 'x') + (cr.cap_inr_monthly ? ' (cap Rs.' + cr.cap_inr_monthly + '/mo)' : '')).join(', ')
     parts.push('Category Rewards: ' + catRewards)
   }
   if (parseField(card.lounges)?.length > 0) {
-    const loungeStr = card.lounges.map((l: any) => { const isUnlimited = l.notes?.toLowerCase().includes('unlimited') || (!l.visits_per_year && !l.visits_per_quarter); const visitCount = isUnlimited ? 'Unlimited' : (l.visits_per_year ?? (l.visits_per_quarter ?? 0) * 4) + ' visits/year'; const spendNote = l.notes && !isUnlimited ? ' (' + l.notes + ')' : isUnlimited && l.notes ? ' (' + l.notes + ')' : ''; return l.type + ' lounge: ' + visitCount + ' via ' + l.network + spendNote }).join(', ')
+    const loungeStr = parseField(card.lounges).map((l: any) => { const isUnlimited = l.notes?.toLowerCase().includes('unlimited') || (!l.visits_per_year && !l.visits_per_quarter); const visitCount = isUnlimited ? 'Unlimited' : (l.visits_per_year ?? (l.visits_per_quarter ?? 0) * 4) + ' visits/year'; const spendNote = l.notes && !isUnlimited ? ' (' + l.notes + ')' : isUnlimited && l.notes ? ' (' + l.notes + ')' : ''; return l.type + ' lounge: ' + visitCount + ' via ' + l.network + spendNote }).join(', ')
     parts.push('Lounge Access: ' + loungeStr)
   }
   if (parseField(card.redemption_options)?.length > 0) {
-    const redStr = card.redemption_options.map((r: any) => r.type + (r.partner ? ' (' + r.partner + ')' : '') + ': Rs.' + r.value_per_point_inr + '/point').join(', ')
+    const redStr = parseField(card.redemption_options).map((r: any) => r.type + (r.partner ? ' (' + r.partner + ')' : '') + ': Rs.' + r.value_per_point_inr + '/point').join(', ')
     parts.push('Redemption: ' + redStr)
   }
   if (parseField(card.highlights)?.length > 0) parts.push('Highlights: ' + parseField(card.highlights).join('; '))
@@ -36,7 +36,7 @@ export function cardToText(card: any): string {
   if (card.forex_markup_percent !== undefined) parts.push('Forex Markup: ' + card.forex_markup_percent + '%')
   if (card.min_income_inr_monthly) parts.push('Min Income: Rs.' + card.min_income_inr_monthly + '/month')
   if (parseField(card.devaluations)?.length > 0) {
-    const recent = card.devaluations.slice(0, 3).map((d: any) => d.date + ': ' + d.description + ' (' + d.impact + ' impact)').join('; ')
+    const recent = parseField(card.devaluations).slice(0, 3).map((d: any) => d.date + ': ' + d.description + ' (' + d.impact + ' impact)').join('; ')
     parts.push('Recent Devaluations: ' + recent)
   }
   return parts.join('\n')
