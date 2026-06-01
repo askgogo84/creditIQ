@@ -22,6 +22,14 @@ const AI_TOOLS = [
   { label: 'Lounge Tracker', href: '/lounge-tracker', icon: '🛋', desc: 'Never get turned away at the gate', badge: '' },
 ]
 
+const AI_PATHS = AI_TOOLS.map(t => t.href).concat(['/smart-match', '/rewards-calculator', '/card-roast', '/spend-optimizer', '/points-optimizer', '/statement-truth', '/card-switch', '/lounge-tracker'])
+
+const BROWSE_LINKS = [
+  { label: 'All Cards', href: '/cards', icon: '💳' },
+  { label: 'Compare', href: '/compare', icon: '⚖️' },
+  { label: 'UAE Cards', href: '/uae', icon: '🇦🇪' },
+]
+
 export function Header() {
   const pathname = usePathname()
   const router = useRouter()
@@ -33,7 +41,6 @@ export function Header() {
   const [mobileOpen, setMobileOpen] = useState(false)
   const [scrolled, setScrolled] = useState(false)
 
-  // Close timers — prevent flicker on fast mouse movements
   const closeTimers = {
     discover: { ref: null as any },
     cards:    { ref: null as any },
@@ -71,8 +78,15 @@ export function Header() {
 
   const isActive = (href: string) => {
     if (href === '/') return pathname === '/'
-    if (href === '/smart-match') return AI_TOOLS.some(t => pathname.startsWith(t.href))
+    if (href === '/smart-match') return AI_PATHS.some(p => pathname.startsWith(p))
     return pathname.startsWith(href)
+  }
+
+  const isTabActive = (tab: { href: string; label: string }) => {
+    if (tab.href === '/') return pathname === '/'
+    if (tab.label === 'AI') return AI_PATHS.some(p => pathname.startsWith(p))
+    if (tab.label === 'Trip') return pathname.startsWith('/trip-planner')
+    return pathname.startsWith(tab.href)
   }
 
   return (
@@ -95,8 +109,6 @@ export function Header() {
         .ciq-cta:hover { opacity: 0.88; }
         .ciq-hamburger { display: none; flex-direction: column; gap: 5px; padding: 8px; background: none; border: none; cursor: pointer; }
         .ciq-bar { width: 22px; height: 2px; background: var(--ink,#142950); border-radius: 2px; display: block; transition: all 0.2s; }
-
-        /* AI Tools mega dropdown */
         .ciq-ai-dropdown { position: absolute; top: calc(100% + 8px); left: 50%; transform: translateX(-50%); background: var(--surface,#fff); border: 1px solid var(--line,rgba(20,41,80,0.08)); border-radius: 20px; box-shadow: 0 12px 40px rgba(0,0,0,0.12); padding: 8px; width: 280px; display: flex; flex-direction: column; gap: 2px; z-index: 300; }
         .ciq-ai-item { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: 12px; text-decoration: none; transition: background 0.1s; }
         .ciq-ai-item:hover { background: var(--bg-2,#EFE7D8); }
@@ -106,20 +118,15 @@ export function Header() {
         .ciq-badge.new { background: #2E7D32; }
         .ciq-badge.beta { background: #1565C0; }
         .ciq-badge.popular { background: #C9972E; }
-
-        /* Mobile menu */
         .ciq-mobile-menu { position: absolute; top: 100%; left: 0; right: 0; background: var(--surface,#fff); border-bottom: 1px solid var(--line,rgba(20,41,80,0.08)); box-shadow: 0 8px 32px rgba(0,0,0,0.1); padding: 12px 20px 20px; max-height: 80vh; overflow-y: auto; }
         .ciq-mobile-section { font-size: 10px; font-weight: 700; color: #C9972E; letter-spacing: 1.5px; text-transform: uppercase; padding: 12px 0 6px; }
         .ciq-mobile-link { display: flex; align-items: center; gap: 10px; padding: 11px 0; font-size: 15px; font-weight: 600; color: var(--ink,#142950); text-decoration: none; border-bottom: 1px solid var(--line-soft,rgba(20,41,80,0.04)); }
-
-        /* Bottom tab bar */
         .ciq-tab-bar { display: none; position: fixed; bottom: 0; left: 0; right: 0; background: var(--surface,#fff); border-top: 1px solid var(--line,rgba(20,41,80,0.08)); z-index: 200; padding-bottom: env(safe-area-inset-bottom,0px); }
         .ciq-tab { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; padding: 7px 0 4px; flex: 1; text-decoration: none; color: #94a3b8; transition: color 0.15s; }
         .ciq-tab.active { color: #C9972E; }
         .ciq-tab-label { font-size: 9px; font-weight: 500; letter-spacing: 0.2px; }
         .ciq-tab.active .ciq-tab-label { font-weight: 700; }
         .ciq-tab-dot { width: 3px; height: 3px; border-radius: 50%; background: #C9972E; }
-
         @media (max-width: 768px) {
           .ciq-nav { display: none !important; }
           .ciq-cta { display: none !important; }
@@ -170,7 +177,7 @@ export function Header() {
                     { label: 'Sweet Spots', href: '/sweet-spots', icon: '💎', desc: '8 best redemption strategies' },
                     { label: 'Blog', href: '/blog', icon: '📝', desc: 'Honest card reviews & guides' },
                     { label: 'Glossary', href: '/glossary', icon: '📖', desc: 'Every credit card term explained' },
-                    { label: 'Devaluation Tracker', href: '/blog/credit-card-devaluations-india-2026', icon: '⚠', desc: 'Every 2026 benefit cut tracked' },
+                    { label: 'Devaluation Tracker', href: '/blog/credit-card-devaluations-india-2026', icon: '⚠️', desc: 'Every 2026 benefit cut tracked' },
                   ].map(item => (
                     <Link key={item.href} href={item.href} className="ciq-ai-item">
                       <div className="ciq-ai-icon">{item.icon}</div>
@@ -195,8 +202,8 @@ export function Header() {
                 <div className="ciq-ai-dropdown" style={{ width: 220 }}>
                   {[
                     { label: 'All Cards', href: '/cards', icon: '💳', desc: '100+ cards ranked honestly' },
-                    { label: 'Compare', href: '/compare', icon: '⚖', desc: 'Side by side comparison' },
-                    { label: 'Best Travel Cards', href: '/best-cards/travel', icon: '✈', desc: 'Top cards for travel' },
+                    { label: 'Compare', href: '/compare', icon: '⚖️', desc: 'Side by side comparison' },
+                    { label: 'Best Travel Cards', href: '/best-cards/travel', icon: '✈️', desc: 'Top cards for travel' },
                     { label: 'Best Cashback', href: '/best-cards/cashback', icon: '💰', desc: 'Maximum cashback cards' },
                     { label: 'UAE Cards', href: '/uae', icon: '🇦🇪', desc: 'Cards for UAE residents' },
                   ].map(item => (
@@ -247,9 +254,9 @@ export function Header() {
               {travelOpen && (
                 <div className="ciq-ai-dropdown" style={{ width: 220 }}>
                   {[
-                    { label: 'Trip Planner', href: '/trip-planner', icon: '🗺', desc: 'Plan with your points' },
-                    { label: 'Travel AI', href: '/travel', icon: '✈', desc: 'Chat about miles + transfers' },
-                    { label: 'Lounge Tracker', href: '/lounge-tracker', icon: '🛋', desc: 'Never get turned away' },
+                    { label: 'Trip Planner', href: '/trip-planner', icon: '🗺️', desc: 'Plan with your points' },
+                    { label: 'Travel AI', href: '/travel', icon: '✈️', desc: 'Chat about miles + transfers' },
+                    { label: 'Lounge Tracker', href: '/lounge-tracker', icon: '🛋️', desc: 'Never get turned away' },
                   ].map(item => (
                     <Link key={item.href} href={item.href} className="ciq-ai-item">
                       <div className="ciq-ai-icon">{item.icon}</div>
@@ -268,7 +275,6 @@ export function Header() {
 
           {/* Right side */}
           <div className="ciq-right">
-            {/* Theme toggle desktop */}
             <button className="ciq-theme-btn ciq-theme-desktop" onClick={() => {
               const html = document.documentElement
               html.classList.toggle('dark')
@@ -284,9 +290,7 @@ export function Header() {
             </button>
 
             {user ? (
-              <>
-                <button onClick={signOut} className="ciq-theme-desktop" style={{ padding: '8px 16px', fontSize: 13, fontWeight: 600, color: '#fff', background: '#C9972E', border: 'none', borderRadius: 100, cursor: 'pointer' }}>Sign Out</button>
-              </>
+              <button onClick={signOut} className="ciq-theme-desktop" style={{ padding: '8px 16px', fontSize: 13, fontWeight: 600, color: '#fff', background: '#C9972E', border: 'none', borderRadius: 100, cursor: 'pointer' }}>Sign Out</button>
             ) : (
               <Link href="/login" className="ciq-theme-desktop" style={{ padding: '8px 16px', fontSize: 13, fontWeight: 600, color: '#fff', background: '#C9972E', textDecoration: 'none', borderRadius: 100 }}>Sign In</Link>
             )}
@@ -298,7 +302,6 @@ export function Header() {
               </svg>
             </Link>
 
-            {/* Hamburger mobile */}
             <button className="ciq-hamburger" onClick={() => setMobileOpen(v => !v)} aria-label="Menu">
               <span className="ciq-bar" style={{ transform: mobileOpen ? 'rotate(45deg) translate(5px,5px)' : 'none' }}/>
               <span className="ciq-bar" style={{ opacity: mobileOpen ? 0 : 1 }}/>
@@ -307,21 +310,28 @@ export function Header() {
           </div>
         </div>
 
-        {/* Mobile menu */}
+        {/* Mobile menu — all emoji as proper Unicode, no hardcoded garbled strings */}
         {mobileOpen && (
           <div className="ciq-mobile-menu">
             <div className="ciq-mobile-section">Browse</div>
-            {[{label:'All Cards',href:'/cards',icon:'ðŸ’³'},{label:'Compare',href:'/compare',icon:'='},{label:'UAE Cards',href:'/uae',icon:'ðŸ‡¦ðŸ‡ª'}].map(i=>(
-              <Link key={i.href} href={i.href} className="ciq-mobile-link"><span style={{fontSize:20,width:28,textAlign:'center'}}>{i.icon}</span>{i.label}</Link>
+            {BROWSE_LINKS.map(i => (
+              <Link key={i.href} href={i.href} className="ciq-mobile-link">
+                <span style={{ fontSize: 20, width: 28, textAlign: 'center' }}>{i.icon}</span>
+                {i.label}
+              </Link>
             ))}
             <div className="ciq-mobile-section">AI Tools</div>
-            {AI_TOOLS.map(i=>(
-              <Link key={i.href} href={i.href} className="ciq-mobile-link"><span style={{fontSize:18,width:28,textAlign:'center'}}>{i.icon}</span>{i.label}{i.badge&&<span className={`ciq-badge ${i.badge.toLowerCase()}`} style={{marginLeft:8}}>{i.badge}</span>}</Link>
+            {AI_TOOLS.map(i => (
+              <Link key={i.href} href={i.href} className="ciq-mobile-link">
+                <span style={{ fontSize: 18, width: 28, textAlign: 'center' }}>{i.icon}</span>
+                {i.label}
+                {i.badge && <span className={`ciq-badge ${i.badge.toLowerCase()}`} style={{ marginLeft: 8 }}>{i.badge}</span>}
+              </Link>
             ))}
-            <div style={{marginTop:16,paddingTop:16,borderTop:'1px solid var(--line,rgba(20,41,80,0.08))'}}>
+            <div style={{ marginTop: 16, paddingTop: 16, borderTop: '1px solid rgba(20,41,80,0.08)' }}>
               {user
-                ? <button onClick={signOut} style={{width:'100%',padding:'13px',background:'#C9972E',color:'#0a0a0a',border:'none',borderRadius:12,fontSize:15,fontWeight:700,cursor:'pointer'}}>Sign Out</button>
-                : <Link href="/login" style={{display:'block',textAlign:'center',padding:'13px',background:'#142950',color:'#fff',borderRadius:12,fontSize:15,fontWeight:700,textDecoration:'none'}}>Sign In</Link>
+                ? <button onClick={signOut} style={{ width: '100%', padding: '13px', background: '#C9972E', color: '#fff', border: 'none', borderRadius: 12, fontSize: 15, fontWeight: 700, cursor: 'pointer' }}>Sign Out</button>
+                : <Link href="/login" style={{ display: 'block', textAlign: 'center', padding: '13px', background: '#142950', color: '#fff', borderRadius: 12, fontSize: 15, fontWeight: 700, textDecoration: 'none' }}>Sign In</Link>
               }
             </div>
           </div>
@@ -336,13 +346,13 @@ export function Header() {
           { label: 'Trip', href: '/trip-planner', d: 'M22 2L11 13 M22 2L15 22 11 13 2 9l20-7z' },
           { label: 'AI', href: '/smart-match', d: 'M13 2L3 14h9l-1 8 10-12h-9l1-8z' },
           { label: 'My Cards', href: user ? '/dashboard' : '/login', d: 'M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2 M12 3a4 4 0 100 8 4 4 0 000-8z' },
-        ] as {label:string;href:string;d:string}[]).map(tab => {
-          const active = pathname === tab.href || (tab.href !== '/' && pathname.startsWith(tab.href))
-          const paths = tab.d.split(' M').map((p,i) => i===0 ? p : 'M'+p)
+        ] as { label: string; href: string; d: string }[]).map(tab => {
+          const active = isTabActive(tab)
+          const paths = tab.d.split(' M').map((p, i) => i === 0 ? p : 'M' + p)
           return (
-            <Link key={tab.href} href={tab.href} className={`ciq-tab${active?' active':''}`}>
+            <Link key={tab.href} href={tab.href} className={`ciq-tab${active ? ' active' : ''}`}>
               <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-                {paths.map((p,i) => <path key={i} d={p}/>)}
+                {paths.map((p, i) => <path key={i} d={p}/>)}
               </svg>
               <span className="ciq-tab-label">{tab.label}</span>
               {active && <span className="ciq-tab-dot"/>}
@@ -351,7 +361,6 @@ export function Header() {
         })}
       </nav>
 
-      {/* Chat widget above tab bar */}
       <style>{`
         @media (max-width: 768px) {
           div[style*="position: fixed"][style*="bottom: 24"] { bottom: 80px !important; }
@@ -363,8 +372,3 @@ export function Header() {
     </>
   )
 }
-
-
-
-
-
