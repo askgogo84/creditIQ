@@ -59,7 +59,7 @@ export function SavePromptBanner({ feature, data }: SavePromptProps) {
       </div>
       <div style={{ display: 'flex', gap: 10, flexShrink: 0 }}>
         <button
-          onClick={() => router.push('/auth/signup?from=' + feature)}
+          onClick={() => router.push('/sign-in?from=' + feature)}
           style={{ padding: '10px 20px', borderRadius: 8, background: '#C9972E', color: 'white', fontWeight: 700, fontSize: 13, border: 'none', cursor: 'pointer', whiteSpace: 'nowrap' }}>
           {msg.cta}
         </button>
