@@ -51,6 +51,13 @@ async function getQueryEmbedding(query: string): Promise<number[] | null> {
   } catch { return null; }
 }
 
+export async function getCardNameList(): Promise<string> {
+  try {
+    const cards = await getAllCards();
+    return cards.map(c => c.name + ' (' + c.bank + ')').join(', ');
+  } catch { return ''; }
+}
+
 export async function getIgInsights(limit = 20, query?: string): Promise<string> {
   try {
     const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL

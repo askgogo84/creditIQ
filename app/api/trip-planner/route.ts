@@ -211,7 +211,7 @@ Respond ONLY with valid JSON (no markdown, no preamble):
         'anthropic-version': '2023-06-01',
       },
       body: JSON.stringify({
-        model: 'claude-sonnet-4-20250514',
+        model: 'claude-opus-4-8',
         max_tokens: 2500,
         system: systemPrompt,
         messages: [{ role: 'user', content: userPrompt }],
