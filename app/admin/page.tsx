@@ -283,7 +283,7 @@ export default function AdminPage() {
           {activeTab === 'overview' && (
             <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(160px,1fr))', gap: 12 }}>
-                <Stat label="Total Cards" value={SEED_CARDS.length} sub="in seed database" />
+                <Stat label="Total Cards" value={cards.length || SEED_CARDS.length} sub="live in database" />
                 <Stat label="Devaluations" value={devalEvents.filter(d => d.status === 'detected').length} sub="awaiting review" color={devalEvents.filter(d => d.status === 'detected').length > 0 ? '#B84230' : undefined} />
                 <Stat label="Pending Cards" value={pendingCards.length} sub="from discovery" color={pendingCards.length > 0 ? 'var(--copper,#8C5F12)' : undefined} />
                 <Stat label="IG Insights" value={igInsights.length} sub="in knowledge base" color="#7c3aed" />
