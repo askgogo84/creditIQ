@@ -67,20 +67,19 @@ export async function POST(req: NextRequest) {
       if (!enriched) { results.failed++; results.details.push({ id: card.id, status: 'parse_failed' }); continue; }
 
       // Build update object ? only update fields that are empty
-      const isEmpty = (v: any) => !v || v === '' || v === '[]' || v === '""' || (Array.isArray(v) && v.length === 0);
-      const update: any = {};
-      if (isEmpty(card.highlights)) update.highlights = JSON.stringify(enriched.highlights || []);
-      if (isEmpty(card.drawbacks)) update.drawbacks = JSON.stringify(enriched.drawbacks || []);
-      if (isEmpty(card.category_rewards)) update.category_rewards = JSON.stringify(enriched.category_rewards || []);
-      if (isEmpty(card.redemption_options)) update.redemption_options = JSON.stringify(enriched.redemption_options || []);
-      if (isEmpty(card.lounges)) update.lounges = JSON.stringify(enriched.lounges || []);
-      if (!card.expert_rating) update.expert_rating = enriched.expert_rating;
-      if (isEmpty(card.best_for) || card.best_for?.includes('???')) update.best_for = enriched.best_for;
-      if (card.forex_markup_percent === 3.5 || !card.forex_markup_percent) update.forex_markup_percent = enriched.forex_markup_percent;
+      const update: any = {
+        highlights: JSON.stringify(enriched.highlights || []),
+        drawbacks: JSON.stringify(enriched.drawbacks || []),
+        category_rewards: JSON.stringify(enriched.category_rewards || []),
+        redemption_options: JSON.stringify(enriched.redemption_options || []),
+        lounges: JSON.stringify(enriched.lounges || []),
+        expert_rating: enriched.expert_rating,
+        best_for: enriched.best_for,
+        base_reward_rate: enriched.base_reward_rate,
+        forex_markup_percent: enriched.forex_markup_percent,
+      };
       update.last_verified = new Date().toISOString().split('T')[0];
       update.updated_at = new Date().toISOString();
-
-      if (Object.keys(update).length <= 2) { results.skipped++; results.details.push({ id: card.id, status: 'already_enriched' }); continue; }
 
       const { error: updateError } = await sb.from('cards').update(update).eq('id', card.id);
       if (updateError) { results.failed++; results.details.push({ id: card.id, status: 'update_failed', error: updateError.message }); }
