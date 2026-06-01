@@ -16,6 +16,8 @@ const TARGET_HANDLES = [
   'cashoverflow.in',
   'niyo_global',
   'cardexpert.in',
+  'milesbeyondborders',
+  'pointsdecoded',
 ];
 
 const APIFY_BASE = 'https://api.apify.com/v2';
