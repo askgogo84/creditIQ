@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { useState } from 'react';
 import { Search, ArrowRight, ArrowLeftRight, ExternalLink, Zap } from 'lucide-react';
@@ -80,13 +80,13 @@ function formatDateForOTA(isoDate: string, format: 'mmt' | 'emt' | 'standard'): 
 }
 
 function getBookingUrl(option: BookingOption, result: FlightResult, tripType: string): string {
-  // Each OTA needs slightly different date format — handled inside getUrl
+  // Each OTA needs slightly different date format â€” handled inside getUrl
   // We pass ISO date and let each builder format it
   return option.getUrl(result.from, result.to, result.date, result.return_date, tripType);
 }
 
 // Popular Indian airport codes
-// City name → IATA for natural language detection
+// City name â†’ IATA for natural language detection
 export const CITY_TO_IATA: Record<string, string> = {
   'bangalore': 'BLR', 'bengaluru': 'BLR', 'delhi': 'DEL', 'new delhi': 'DEL',
   'mumbai': 'BOM', 'bombay': 'BOM', 'chennai': 'MAA', 'madras': 'MAA',
@@ -133,7 +133,7 @@ export function buildKayakUrl(from: string, to: string, dep: string, ret?: strin
 
 export function buildMMTUrl(from: string, to: string, dep: string): string {
   const d = dep.replace(/-/g, '');
-  return 'https://www.makemytrip.com/flight/search?tripType=O&itinerary=' + from + '-' + to + '-' + d + '&paxType=A-1_C-0_I-0&intl=false&cabinClass=E';
+  return 'https://www.makemytrip.com/flight/search?tripType=O&itinerary=' + from + '-' + to + '-' + d + '&paxType=A-1_C-0_I-0&intl=true&cabinClass=E';
 }
 
 const AIRPORTS = [
@@ -242,10 +242,10 @@ export default function FlightSearch({
         ? 'https://www.kayak.co.in/flights/' + from + '-' + to + '/' + departure + '/' + ret + '?adults=' + pax + '&sort=bestflight_a'
         : 'https://www.kayak.co.in/flights/' + from + '-' + to + '/' + departure + '?adults=' + pax + '&sort=bestflight_a',
       mmt: ret
-        ? 'https://www.makemytrip.com/flight/search?tripType=R&itinerary=' + from + '-' + to + '-' + depMMT + '&paxType=A-' + pax + '_C-0_I-0&intl=false&cabinClass=E'
-        : 'https://www.makemytrip.com/flight/search?tripType=O&itinerary=' + from + '-' + to + '-' + depMMT + '&paxType=A-' + pax + '_C-0_I-0&intl=false&cabinClass=E',
-      emt: 'https://www.easemytrip.com/flight/search-result?org=' + from + '&dest=' + to + '&dd=' + departure.split('-').reverse().join('/') + '&ad=' + pax + '&cd=0&id=0&class=Economy&type=' + (ret ? 'R' : 'O'),
-      goibibo: 'https://www.goibibo.com/flights/search?srcCity=' + from + '&destCity=' + to + '&travelDate=' + departure.replace(/-/g,'') + '&adults=' + pax + '&children=0&infants=0&class=E&source=metasearch',
+        ? 'https://www.makemytrip.com/flight/search?tripType=R&itinerary=' + from + '-' + to + '-' + depMMT + '&paxType=A-' + pax + '_C-0_I-0&intl=true&cabinClass=E'
+        : 'https://www.makemytrip.com/flight/search?tripType=O&itinerary=' + from + '-' + to + '-' + depMMT + '&paxType=A-' + pax + '_C-0_I-0&intl=true&cabinClass=E',
+      emt: 'https://www.easemytrip.com/flights/search?org=' + from + '&dest=' + to + '&dd=' + departure.split('-').reverse().join('/') + '&ad=' + pax + '&cd=0&id=0&tt=' + (ret ? '2' : '1'),
+      goibibo: 'https://www.goibibo.com/flights/search/' + from + '/' + to + '/' + departure.replace(/-/g,'') + '/1/0/0/E/' + (ret ? '2' : '1') + '/',
       googleFlights: 'https://www.google.com/travel/flights?q=Flights+from+' + from + '+to+' + to + '+on+' + departure,
     };
 
@@ -271,7 +271,7 @@ export default function FlightSearch({
               : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
           }`}
         >
-          ⇄ Round Trip
+          â‡„ Round Trip
         </button>
         <button
           onClick={() => setTripType('one-way')}
@@ -281,7 +281,7 @@ export default function FlightSearch({
               : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
           }`}
         >
-          → One Way
+          â†’ One Way
         </button>
       </div>
 
@@ -298,7 +298,7 @@ export default function FlightSearch({
             >
               {AIRPORTS.map((a) => (
                 <option key={a.code} value={a.code}>
-                  {a.code} — {a.name}
+                  {a.code} â€” {a.name}
                 </option>
               ))}
             </select>
@@ -322,7 +322,7 @@ export default function FlightSearch({
               <option value="">Select destination</option>
               {AIRPORTS.filter((a) => a.code !== from).map((a) => (
                 <option key={a.code} value={a.code}>
-                  {a.code} — {a.name}
+                  {a.code} â€” {a.name}
                 </option>
               ))}
             </select>
@@ -394,14 +394,14 @@ export default function FlightSearch({
         </button>
       </div>
 
-      {/* Results — Real OTA Links */}
+      {/* Results â€” Real OTA Links */}
       {searched && (
         <div className="mt-4">
           {/* Header */}
           <div className="flex items-center justify-between mb-3">
             <div>
-              <p className="text-sm font-bold text-gray-900">{from} → {to}</p>
-              <p className="text-xs text-gray-500">{departure}{tripType === 'round-trip' ? ' · Return ' + returnDate : ''} · {passengers} pax</p>
+              <p className="text-sm font-bold text-gray-900">{from} â†’ {to}</p>
+              <p className="text-xs text-gray-500">{departure}{tripType === 'round-trip' ? ' \u00b7 Return ' + returnDate : ''} \u00b7 {passengers} pax</p>
             </div>
             <span className="text-xs text-emerald-600 font-semibold flex items-center gap-1">
               <Zap className="w-3 h-3" /> Live prices on booking site
@@ -411,10 +411,10 @@ export default function FlightSearch({
           {/* CIRA tip */}
           {pointsBalance > 0 && (
             <div className="bg-amber-50 border border-amber-200 rounded-xl p-3 mb-3">
-              <p className="text-xs font-semibold text-amber-800 mb-1">💡 CIRA's tip for this route</p>
+              <p className="text-xs font-semibold text-amber-800 mb-1">ðŸ’¡ CIRA's tip for this route</p>
               <p className="text-xs text-amber-700">
                 Pay with your {bank} card on any of these platforms to earn reward points. 
-                For award redemption, use the Points route above — transfers to KrisFlyer or Air India Flying Returns typically give 2-3x more value than cashback.
+                For award redemption, use the Points route above â€” transfers to KrisFlyer or Air India Flying Returns typically give 2-3x more value than cashback.
               </p>
             </div>
           )}
@@ -422,11 +422,11 @@ export default function FlightSearch({
           {/* OTA Cards */}
           <div className="space-y-2">
             {[
-              { name: 'KAYAK', desc: 'Compare all airlines · Best for price comparison', url: searchedLinks.kayak, color: '#FF690F', primary: true },
-              { name: 'MakeMyTrip', desc: 'Indian OTA · EMI options available', url: searchedLinks.mmt, color: '#E8334A', primary: false },
-              { name: 'EaseMyTrip', desc: '0 convenience fee · Good for budget routes', url: searchedLinks.emt, color: '#0473EA', primary: false },
-              { name: 'Goibibo', desc: 'GoCash rewards · Quick checkout', url: searchedLinks.goibibo, color: '#E8334A', primary: false },
-              { name: 'Google Flights', desc: 'Price tracking · Calendar view', url: searchedLinks.googleFlights, color: '#4285F4', primary: false },
+              { name: 'KAYAK', desc: 'Compare all airlines \u00b7 Best for price comparison', url: searchedLinks.kayak, color: '#FF690F', primary: true },
+              { name: 'MakeMyTrip', desc: 'Indian OTA \u00b7 EMI options available', url: searchedLinks.mmt, color: '#E8334A', primary: false },
+              { name: 'EaseMyTrip', desc: '0 convenience fee \u00b7 Good for budget routes', url: searchedLinks.emt, color: '#0473EA', primary: false },
+              { name: 'Goibibo', desc: 'GoCash rewards \u00b7 Quick checkout', url: searchedLinks.goibibo, color: '#E8334A', primary: false },
+              { name: 'Google Flights', desc: 'Price tracking \u00b7 Calendar view', url: searchedLinks.googleFlights, color: '#4285F4', primary: false },
             ].map((ota) => (
               <a
                 key={ota.name}
@@ -466,3 +466,4 @@ export default function FlightSearch({
     </div>
   );
 }
+
