@@ -1,5 +1,6 @@
-'use client';
-import { useState, useEffect } from 'react';
+﻿'use client';
+import { useState, useEffect, Suspense } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { Header } from '@/components/Header';
 import { DesignFooter } from '@/components/design/Footer';
 import { SavePromptBanner } from '@/components/design/SavePromptBanner';
@@ -13,7 +14,8 @@ const CATEGORIES = [
   { key: 'utilities', label: 'Bills and Utilities',default: 5000 },
 ];
 
-export default function RewardsCalculator() {
+function RewardsCalculatorInner() {
+  const searchParams = useSearchParams();
   const [cards, setCards] = useState<any[]>([]);
   const [banks, setBanks] = useState<string[]>([]);
   const [selectedBank, setSelectedBank] = useState('');
@@ -23,6 +25,7 @@ export default function RewardsCalculator() {
   );
   const [result, setResult] = useState<any>(null);
   const [loading, setLoading] = useState(false);
+  const [autoCalculated, setAutoCalculated] = useState(false);
 
   useEffect(() => {
     fetch('/api/cards').then(r => r.json()).then((data: any) => {
@@ -30,19 +33,50 @@ export default function RewardsCalculator() {
       setCards(list);
       const ub = [...new Set(list.map((c: any) => c.bank))].sort() as string[];
       setBanks(ub);
+
+      // Read URL params from widget
+      const paramBank = searchParams.get('bank');
+      const paramCardId = searchParams.get('card_id');
+      const paramSpend = searchParams.get('spend');
+
+      if (paramBank) setSelectedBank(paramBank);
+      if (paramCardId) setSelectedCard(paramCardId);
+
+      if (paramSpend) {
+        const total = parseInt(paramSpend);
+        setSpends({
+          online:    Math.round(total * 0.30),
+          dining:    Math.round(total * 0.15),
+          travel:    Math.round(total * 0.10),
+          fuel:      Math.round(total * 0.10),
+          groceries: Math.round(total * 0.20),
+          utilities: Math.round(total * 0.15),
+        });
+      }
     });
   }, []);
+
+  // Auto-calculate once cards + params are loaded
+  useEffect(() => {
+    if (autoCalculated) return;
+    const paramCardId = searchParams.get('card_id');
+    if (paramCardId && selectedCard === paramCardId && cards.length > 0) {
+      setAutoCalculated(true);
+      handleCalculate(paramCardId);
+    }
+  }, [selectedCard, cards]);
 
   const filteredCards = selectedBank ? cards.filter(c => c.bank === selectedBank) : cards;
   const totalSpend = Object.values(spends).reduce((a, b) => a + b, 0);
 
-  const calculate = async () => {
-    if (!selectedCard) return;
+  const handleCalculate = async (overrideCard?: string) => {
+    const cardToUse = overrideCard || selectedCard;
+    if (!cardToUse) return;
     setLoading(true);
     try {
       const res = await fetch('/api/rewards-calculator', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ card_id: selectedCard, spends }),
+        body: JSON.stringify({ card_id: cardToUse, spends }),
       });
       setResult(await res.json());
     } finally { setLoading(false); }
@@ -107,7 +141,7 @@ export default function RewardsCalculator() {
           ))}
         </div>
 
-        <button onClick={calculate} disabled={!selectedCard || loading}
+        <button onClick={() => handleCalculate()} disabled={!selectedCard || loading}
           style={{ width: '100%', padding: '18px', borderRadius: 14, background: selectedCard ? 'linear-gradient(135deg,#1B3A5C,#2A5A8C)' : '#CBD5E0', color: 'white', fontSize: 16, fontWeight: 800, border: 'none', cursor: selectedCard ? 'pointer' : 'not-allowed', marginBottom: 20, boxShadow: selectedCard ? '0 8px 24px rgba(27,58,92,0.25)' : 'none', letterSpacing: '-0.01em' }}>
           {loading ? 'Calculating your gap...' : 'Calculate My Rewards'}
         </button>
@@ -170,5 +204,13 @@ export default function RewardsCalculator() {
       </div>
       <DesignFooter />
     </div>
+  );
+}
+
+export default function RewardsCalculator() {
+  return (
+    <Suspense fallback={<div style={{ minHeight: '100vh', background: '#F0F4F8' }} />}>
+      <RewardsCalculatorInner />
+    </Suspense>
   );
 }
