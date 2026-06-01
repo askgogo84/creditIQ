@@ -2,6 +2,12 @@
 import { createClient } from '@supabase/supabase-js'
 import type { CreditCard } from './types'
 
+function parseField(v: any): any {
+  if (Array.isArray(v)) return v;
+  if (typeof v === 'string') { try { return JSON.parse(v); } catch { return []; } }
+  return [];
+}
+
 export function cardToText(card: any): string {
   const parts: string[] = [
     'Card: ' + card.name + ' by ' + card.bank,
@@ -13,23 +19,23 @@ export function cardToText(card: any): string {
     'Tier: ' + card.tier,
     'Best For: ' + card.best_for,
   ]
-  if (card.category_rewards?.length > 0) {
+  if (parseField(card.category_rewards)?.length > 0) {
     const catRewards = card.category_rewards.map((cr: any) => cr.category + ': ' + cr.rate + (cr.unit === 'percent' ? '%' : 'x') + (cr.cap_inr_monthly ? ' (cap Rs.' + cr.cap_inr_monthly + '/mo)' : '')).join(', ')
     parts.push('Category Rewards: ' + catRewards)
   }
-  if (card.lounges?.length > 0) {
+  if (parseField(card.lounges)?.length > 0) {
     const loungeStr = card.lounges.map((l: any) => { const isUnlimited = l.notes?.toLowerCase().includes('unlimited') || (!l.visits_per_year && !l.visits_per_quarter); const visitCount = isUnlimited ? 'Unlimited' : (l.visits_per_year ?? (l.visits_per_quarter ?? 0) * 4) + ' visits/year'; const spendNote = l.notes && !isUnlimited ? ' (' + l.notes + ')' : isUnlimited && l.notes ? ' (' + l.notes + ')' : ''; return l.type + ' lounge: ' + visitCount + ' via ' + l.network + spendNote }).join(', ')
     parts.push('Lounge Access: ' + loungeStr)
   }
-  if (card.redemption_options?.length > 0) {
+  if (parseField(card.redemption_options)?.length > 0) {
     const redStr = card.redemption_options.map((r: any) => r.type + (r.partner ? ' (' + r.partner + ')' : '') + ': Rs.' + r.value_per_point_inr + '/point').join(', ')
     parts.push('Redemption: ' + redStr)
   }
-  if (card.highlights?.length > 0) parts.push('Highlights: ' + card.highlights.join('; '))
-  if (card.drawbacks?.length > 0) parts.push('Drawbacks: ' + card.drawbacks.join('; '))
+  if (parseField(card.highlights)?.length > 0) parts.push('Highlights: ' + parseField(card.highlights).join('; '))
+  if (parseField(card.drawbacks)?.length > 0) parts.push('Drawbacks: ' + parseField(card.drawbacks).join('; '))
   if (card.forex_markup_percent !== undefined) parts.push('Forex Markup: ' + card.forex_markup_percent + '%')
   if (card.min_income_inr_monthly) parts.push('Min Income: Rs.' + card.min_income_inr_monthly + '/month')
-  if (card.devaluations?.length > 0) {
+  if (parseField(card.devaluations)?.length > 0) {
     const recent = card.devaluations.slice(0, 3).map((d: any) => d.date + ': ' + d.description + ' (' + d.impact + ' impact)').join('; ')
     parts.push('Recent Devaluations: ' + recent)
   }
@@ -91,15 +97,15 @@ export async function retrieveRelevantCards(
   const scored = allCards.map(card => {
     let score = 0
     const cardText = cardToText(card).toLowerCase()
-    if (intent === 'travel') { if (card.category?.includes('travel')) score += 30; if ((card.lounges?.length ?? 0) > 0) score += 20; if (card.forex_markup_percent !== undefined && card.forex_markup_percent < 2) score += 15 }
+    if (intent === 'travel') { if (card.category?.includes('travel')) score += 30; if ((parseField(card.lounges)?.length ?? 0) > 0) score += 20; if (card.forex_markup_percent !== undefined && card.forex_markup_percent < 2) score += 15 }
     if (intent === 'cashback') { if (card.category?.includes('cashback')) score += 30; if (card.reward_currency === 'cashback') score += 20 }
-    if (intent === 'dining') { if (card.category_rewards?.some((cr: any) => cr.category === 'dining')) score += 25 }
-    if (intent === 'fuel') { if ((card as any).fuel_surcharge_waiver) score += 20; if (card.category_rewards?.some((cr: any) => cr.category === 'fuel')) score += 20 }
-    if (intent === 'shopping') { if (card.category?.includes('shopping')) score += 25; if (card.category_rewards?.some((cr: any) => ['online', 'amazon', 'flipkart'].includes(cr.category))) score += 20 }
+    if (intent === 'dining') { if (parseField(card.category_rewards)?.some((cr: any) => cr.category === 'dining')) score += 25 }
+    if (intent === 'fuel') { if ((card as any).fuel_surcharge_waiver) score += 20; if (parseField(card.category_rewards)?.some((cr: any) => cr.category === 'fuel')) score += 20 }
+    if (intent === 'shopping') { if (card.category?.includes('shopping')) score += 25; if (parseField(card.category_rewards)?.some((cr: any) => ['online', 'amazon', 'flipkart'].includes(cr.category))) score += 20 }
     const keywords = queryLower.split(' ').filter((w: string) => w.length > 3)
     for (const kw of keywords) { if (cardText.includes(kw)) score += 5 }
     if (maxFee !== undefined && card.annual_fee_inr > maxFee) score = -100
-    for (const cat of spendCategories) { if (card.category_rewards?.some((cr: any) => cr.category === cat)) score += 15 }
+    for (const cat of spendCategories) { if (parseField(card.category_rewards)?.some((cr: any) => cr.category === cat)) score += 15 }
     score += (card.expert_rating ?? 7) * 2
     return { card, score }
   })
