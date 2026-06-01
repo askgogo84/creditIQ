@@ -10,30 +10,30 @@ const SCENES: Record<SceneKey, {
   intro: string; placeholder: string; messages: Msg[];
 }> = {
   roast: {
-    label: 'Roast my card', emoji: '\U0001f525', accent: '#C46A52', bg: 'rgba(196,106,82,0.10)',
+    label: 'Roast my card', emoji: '🔥', accent: '#C46A52', bg: 'rgba(196,106,82,0.10)',
     intro: "Drop your card. I'll tell you the truth.",
     placeholder: 'Try: "I have SBI SimplyCLICK"',
     messages: [
-      { role: 'user', text: 'I have HDFC Regalia. \u20b92,500 fee.' },
-      { role: 'bot',  text: 'Grade: C+\n\nYou\u2019re earning ~1.2% effective on your spend. For \u20b92,500/yr, you need \u20b92L+ monthly to break even.\n\nVerdict: Overpriced for your profile. You\u2019d do better with Axis Magnus or IDFC Wealth.' },
+      { role: 'user', text: 'I have HDFC Regalia. ₹2,500 fee.' },
+      { role: 'bot',  text: 'Grade: C+\n\nYou’re earning ~1.2% effective. For ₹2,500/yr fee, you need ₹2L+ monthly to break even.\n\nVerdict: Overpriced. Switch to Axis Magnus or IDFC Wealth.' },
     ],
   },
   match: {
-    label: 'Find my card', emoji: '\U0001f3af', accent: '#1B3A5C', bg: 'rgba(27,58,92,0.10)',
+    label: 'Find my card', emoji: '🎯', accent: '#1B3A5C', bg: 'rgba(27,58,92,0.10)',
     intro: 'Tell me how you spend. I find the right card.',
-    placeholder: 'Try: "I spend \u20b980K/mo, travel twice a year"',
+    placeholder: 'Try: "I spend ₹80K/mo, travel twice a year"',
     messages: [
-      { role: 'user', text: 'I spend \u20b980K/mo. Travel twice a year. No annual fee preference.' },
-      { role: 'bot',  text: 'Top match: HDFC Infinia (94/100)\n\n\u2022 3.3% effective on your profile\n\u2022 Unlimited Priority Pass\n\u2022 \u20b947,000/yr back after fees\n\nBreak-even: \u20b96.2L. You\u2019re way past it.' },
+      { role: 'user', text: 'I spend ₹80K/mo. Travel twice a year.' },
+      { role: 'bot',  text: 'Top match: HDFC Infinia (94/100)\n\n• 3.3% effective on your profile\n• Unlimited Priority Pass\n• ₹47,000/yr back after fees' },
     ],
   },
   points: {
-    label: 'Use my points', emoji: '\U0001f48e', accent: '#7C5CBF', bg: 'rgba(124,92,191,0.10)',
+    label: 'Use my points', emoji: '💎', accent: '#7C5CBF', bg: 'rgba(124,92,191,0.10)',
     intro: 'Tell me your points. I find the sweet spot.',
     placeholder: 'Try: "I have 80K Axis Edge points"',
     messages: [
       { role: 'user', text: 'I have 80,000 Axis Edge points. Best use?' },
-      { role: 'bot',  text: 'Best path: Transfer to KrisFlyer at 2:1\n\nYou get 40,000 KrisFlyer miles.\nRedemption: BLR\u2192SIN economy = 17,500 miles.\nThat\u2019s 2 flights \u2014 worth \u20b928,000 in cash.\n\nEffective rate: \u20b90.70/Axis point vs \u20b90.20 on vouchers.' },
+      { role: 'bot',  text: 'Transfer to KrisFlyer at 2:1\n\n40,000 miles → 2x BLR→SIN flights\nWorth ₹28,000 in cash.\n\nRate: ₹0.70/pt vs ₹0.20 on vouchers.' },
     ],
   },
 }
@@ -120,27 +120,23 @@ export function CleoHero() {
     <section style={{ position: 'relative', paddingTop: 'clamp(72px,10vw,140px)', paddingBottom: 60, overflow: 'hidden' }}>
       <div style={{ position: 'absolute', top: -120, right: -100, width: 540, height: 540, borderRadius: '50%', background: `radial-gradient(circle,${d.accent}40,transparent 60%)`, filter: 'blur(80px)', opacity: 0.6, pointerEvents: 'none', transition: 'background 0.8s' }} />
       <div style={{ position: 'absolute', top: 200, left: -120, width: 420, height: 420, borderRadius: '50%', background: 'radial-gradient(circle,rgba(212,163,115,0.30),transparent 60%)', filter: 'blur(80px)', opacity: 0.6, pointerEvents: 'none' }} />
-
       <div style={{ maxWidth: 1280, margin: '0 auto', padding: '0 clamp(20px,5vw,80px)', position: 'relative', zIndex: 2 }}>
         <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0,1.1fr) minmax(0,0.9fr)', gap: 'clamp(40px,6vw,80px)', alignItems: 'center' }} className="grid-1-mobile">
           <div>
             <div style={{ display: 'inline-flex', alignItems: 'center', gap: 10, padding: '8px 14px', borderRadius: 999, background: d.bg, border: `1px solid ${d.accent}40`, marginBottom: 28, transition: 'all 0.6s' }}>
               <span>{d.emoji}</span>
-              <span style={{ fontFamily: 'var(--font-mono,monospace)', fontSize: 11, letterSpacing: '0.1em', color: d.accent, textTransform: 'uppercase', fontWeight: 600 }}>Live &middot; India&apos;s smartest card AI</span>
+              <span style={{ fontFamily: 'var(--font-mono,monospace)', fontSize: 11, letterSpacing: '0.1em', color: d.accent, textTransform: 'uppercase', fontWeight: 600 }}>Live · India’s smartest card AI</span>
             </div>
-
             <h1 style={{ fontSize: 'clamp(36px,6vw,82px)', letterSpacing: '-0.035em', lineHeight: 1.02, fontWeight: 800, marginBottom: 24, color: 'var(--ink,#142950)' }}>
-              India&apos;s smartest{' '}
+              India’s smartest{' '}
               <span style={{ fontFamily: 'var(--font-serif,Georgia,serif)', fontStyle: 'italic', fontWeight: 400, color: d.accent, transition: 'color 0.6s' }}>credit card AI</span>
-              {' '}&mdash; built to earn you more.
+              {' '}— built to earn you more.
             </h1>
-
             <p style={{ fontSize: 'clamp(15px,1.3vw,18px)', color: 'var(--ink-2,#2A3F6B)', maxWidth: 520, lineHeight: 1.55, marginBottom: 32 }}>
               Compare 100+ cards with{' '}
               <span style={{ fontFamily: 'var(--font-serif,Georgia,serif)', fontStyle: 'italic', color: 'var(--ink,#142950)' }}>zero affiliate bias</span>.{' '}
-              Our AI finds every rupee you&apos;re leaving on the table &mdash; smarter points, better matches, live devaluation alerts.
+              Our AI finds every rupee you’re leaving on the table — smarter points, better matches, live devaluation alerts.
             </p>
-
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: 24 }}>
               {(Object.entries(SCENES) as [SceneKey, typeof d][]).map(([k, s]) => (
                 <button key={k} onClick={() => { setMode(k); setSent(false); setInput('') }}
@@ -149,28 +145,20 @@ export function CleoHero() {
                 </button>
               ))}
             </div>
-
             <div style={{ display: 'flex', gap: 8, alignItems: 'center', padding: '6px 6px 6px 18px', background: 'var(--surface,#fff)', border: '1px solid var(--line-strong,rgba(20,41,80,0.2))', borderRadius: 999, boxShadow: '0 4px 14px rgba(20,41,80,0.07)', maxWidth: 520 }}>
-              <input
-                value={input}
-                onChange={e => setInput(e.target.value)}
-                onKeyDown={e => e.key === 'Enter' && send()}
-                placeholder={d.placeholder}
-                style={{ flex: 1, border: 'none', outline: 'none', background: 'transparent', color: 'var(--ink,#142950)', fontSize: 15, padding: '12px 0', fontFamily: 'inherit' }}
-              />
-              <button onClick={send}
-                style={{ padding: '12px 20px', borderRadius: 999, background: 'var(--ink,#142950)', color: 'var(--bg,#F5EFE6)', border: 'none', fontSize: 14, fontWeight: 600, cursor: 'pointer', whiteSpace: 'nowrap' }}>
-                Ask CIRA &rarr;
+              <input value={input} onChange={e => setInput(e.target.value)} onKeyDown={e => e.key === 'Enter' && send()} placeholder={d.placeholder}
+                style={{ flex: 1, border: 'none', outline: 'none', background: 'transparent', color: 'var(--ink,#142950)', fontSize: 15, padding: '12px 0', fontFamily: 'inherit' }} />
+              <button onClick={send} style={{ padding: '12px 20px', borderRadius: 999, background: 'var(--ink,#142950)', color: 'var(--bg,#F5EFE6)', border: 'none', fontSize: 14, fontWeight: 600, cursor: 'pointer', whiteSpace: 'nowrap' }}>
+                Ask CIRA →
               </button>
             </div>
             <div style={{ marginTop: 12, fontSize: 12, color: 'var(--ink-3,#5A6A8A)', display: 'flex', gap: 16, flexWrap: 'wrap' }}>
-              <span>&#9889; Live AI &middot; responses in seconds</span>
-              <span>&#128274; No login &middot; No data stored</span>
+              <span>⚡ Live AI · responses in seconds</span>
+              <span>🔒 No login · No data stored</span>
             </div>
           </div>
-
           <div style={{ display: 'flex', justifyContent: 'center', position: 'relative' }} className="hide-mobile">
-            <div style={{ fontFamily: 'var(--font-serif,Georgia,serif)', position: 'absolute', top: 50, left: -80, transform: 'rotate(-8deg)', zIndex: 5, fontSize: 19, fontStyle: 'italic', color: 'var(--ink-2,#2A3F6B)', maxWidth: 130, lineHeight: 1.1 }}>it actually talks back &#8600;</div>
+            <div style={{ fontFamily: 'var(--font-serif,Georgia,serif)', position: 'absolute', top: 50, left: -80, transform: 'rotate(-8deg)', zIndex: 5, fontSize: 19, fontStyle: 'italic', color: 'var(--ink-2,#2A3F6B)', maxWidth: 130, lineHeight: 1.1 }}>it actually talks back ↘</div>
             <div style={{ width: 290, height: 600, background: '#0F0F0F', borderRadius: 50, padding: 8, boxShadow: `${d.accent}55 -25px 60px 60px,0 40px 80px -30px rgba(20,41,80,0.45),inset 0 0 0 1.5px rgba(255,255,255,0.06)`, position: 'relative', transition: 'box-shadow 0.8s', transform: 'scale(0.92)', transformOrigin: 'center top' }}>
               <div style={{ position: 'absolute', top: 13, left: '50%', transform: 'translateX(-50%)', width: 80, height: 24, background: '#000', borderRadius: 999, zIndex: 10 }} />
               <div style={{ width: '100%', height: '100%', borderRadius: 42, overflow: 'hidden', background: '#FFF', position: 'relative' }}>
@@ -180,7 +168,6 @@ export function CleoHero() {
           </div>
         </div>
       </div>
-
       <style>{`
         @keyframes bIn { from { opacity:0; transform:translateY(8px) scale(0.96) } to { opacity:1; transform:none } }
         @keyframes dots { 0%,60%,100% { transform:translateY(0); opacity:0.4 } 30% { transform:translateY(-4px); opacity:1 } }
