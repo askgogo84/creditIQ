@@ -15,10 +15,6 @@ export function SavePromptBanner({ feature, data }: SavePromptProps) {
   useEffect(() => {
     const key = 'save_prompt_dismissed_' + feature;
     if (localStorage.getItem(key)) setDismissed(true);
-    // Check if already logged in
-    import('@/lib/supabase-client').then(({ getUser }) => {
-      getUser().then(u => { if (u) setDismissed(true); });
-    }).catch(() => {});
   }, [feature]);
 
   if (dismissed) return null;
