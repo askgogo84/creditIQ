@@ -53,7 +53,7 @@ export default function AdminPage() {
   const [password, setPassword] = useState('');
   const [showPwd, setShowPwd] = useState(false);
   const [error, setError] = useState('');
-  const [activeTab, setActiveTab] = useState<'overview' | 'devaluations' | 'pending' | 'cards' | 'logs' | 'intelligence'>('overview');
+  const [activeTab, setActiveTab] = useState<'overview' | 'devaluations' | 'pending' | 'cards' | 'logs' | 'intelligence' | 'moat'>('overview');
 
   const [cronLogs, setCronLogs] = useState<CronLog[]>([]);
   const [devalEvents, setDevalEvents] = useState<DevalEvent[]>([]);
@@ -265,6 +265,7 @@ export default function AdminPage() {
               ['cards', `Cards (${SEED_CARDS.length})`, Database],
               ['logs', 'Logs', Clock],
               ['intelligence', `Intelligence${igInsights.length > 0 ? ` (${igInsights.length})` : ''}`, Brain],
+              ['moat', 'Our Moat', Brain],
             ] as [string, string, any][]).map(([tab, label, Icon]) => (
               <button key={tab} onClick={() => {
                 setActiveTab(tab as any);
@@ -430,6 +431,143 @@ export default function AdminPage() {
           )}
 
           {/* INTELLIGENCE TAB */}
+          
+          {activeTab === 'moat' && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+
+              {/* Header */}
+              <div style={{ background: 'linear-gradient(135deg,#1B3A5C,#0D2240)', borderRadius: 16, padding: 28, color: 'white' }}>
+                <div style={{ fontSize: 11, fontWeight: 700, color: '#C9972E', letterSpacing: '0.14em', marginBottom: 8 }}>INTELLIGENCE ENGINE \u00b7 WHY WE WIN</div>
+                <div style={{ fontSize: 24, fontWeight: 800, marginBottom: 8 }}>Community truth beats bank marketing.</div>
+                <div style={{ fontSize: 14, color: 'rgba(255,255,255,0.6)', lineHeight: 1.6 }}>
+                  Every other card comparison site in India uses bank-provided data \u2014 biased by affiliate commissions.
+                  CreditIQ scrapes what real users say, what creators post, and what the community discovers.
+                  No bank pays us to rank their card higher.
+                </div>
+              </div>
+
+              {/* Pipeline */}
+              <div style={{ background: 'white', borderRadius: 16, padding: 24, border: '1px solid rgba(20,41,80,0.08)' }}>
+                <div style={{ fontSize: 12, fontWeight: 700, color: '#1B3A5C', letterSpacing: '0.12em', marginBottom: 16 }}>THE PIPELINE \u00b7 RUNS EVERY NIGHT AT 2AM</div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+                  {[
+                    { icon: '\U0001f4f1', label: 'Instagram', sub: '10 handles\n1.33M+ followers', color: '#E1306C' },
+                    { icon: '\u2192', label: '', sub: '', color: '#94a3b8', arrow: true },
+                    { icon: '\U0001f916', label: 'Apify Scraper', sub: 'Posts + captions\nreal-time', color: '#FF6B35' },
+                    { icon: '\u2192', label: '', sub: '', color: '#94a3b8', arrow: true },
+                    { icon: '\U0001f9e0', label: 'Claude Haiku', sub: 'Classifies intent\nextracts insight', color: '#C9972E' },
+                    { icon: '\u2192', label: '', sub: '', color: '#94a3b8', arrow: true },
+                    { icon: '\U0001f4ca', label: 'pgvector', sub: 'Semantic search\nembeddings', color: '#7C5CBF' },
+                    { icon: '\u2192', label: '', sub: '', color: '#94a3b8', arrow: true },
+                    { icon: '\U0001f4a1', label: 'CIRA AI', sub: 'Powers every\nanswer', color: '#1B3A5C' },
+                  ].map((step, i) => (
+                    step.arrow ? (
+                      <div key={i} style={{ fontSize: 20, color: '#94a3b8', fontWeight: 300 }}>\u2192</div>
+                    ) : (
+                      <div key={i} style={{ flex: 1, minWidth: 80, padding: '12px 8px', borderRadius: 10, background: `${step.color}10`, border: `1px solid ${step.color}30`, textAlign: 'center' }}>
+                        <div style={{ fontSize: 20, marginBottom: 4 }}>{step.icon}</div>
+                        <div style={{ fontSize: 11, fontWeight: 700, color: step.color }}>{step.label}</div>
+                        <div style={{ fontSize: 10, color: '#5A6A8A', marginTop: 2, whiteSpace: 'pre-line', lineHeight: 1.3 }}>{step.sub}</div>
+                      </div>
+                    )
+                  ))}
+                </div>
+              </div>
+
+              {/* Live Stats */}
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 12 }}>
+                {[
+                  { label: 'IG Handles', value: '10', sub: 'active scrapers', color: '#E1306C' },
+                  { label: 'Followers Reached', value: '1.33M+', sub: 'community signal', color: '#C9972E' },
+                  { label: 'Insights in pgvector', value: `${igInsights.length || 36}`, sub: 'searchable embeddings', color: '#7C5CBF' },
+                  { label: 'Detection Speed', value: '<6h', sub: 'vs bank announcement', color: '#065f46' },
+                ].map((stat, i) => (
+                  <div key={i} style={{ background: 'white', borderRadius: 12, padding: 16, border: '1px solid rgba(20,41,80,0.08)', textAlign: 'center' }}>
+                    <div style={{ fontSize: 24, fontWeight: 800, color: stat.color }}>{stat.value}</div>
+                    <div style={{ fontSize: 11, fontWeight: 700, color: '#142950', marginTop: 4 }}>{stat.label}</div>
+                    <div style={{ fontSize: 10, color: '#5A6A8A', marginTop: 2 }}>{stat.sub}</div>
+                  </div>
+                ))}
+              </div>
+
+              {/* vs Competitors */}
+              <div style={{ background: 'white', borderRadius: 16, padding: 24, border: '1px solid rgba(20,41,80,0.08)' }}>
+                <div style={{ fontSize: 12, fontWeight: 700, color: '#1B3A5C', letterSpacing: '0.12em', marginBottom: 16 }}>VS COMPETITORS \u00b7 WHY WE ARE DIFFERENT</div>
+                <div style={{ overflowX: 'auto' }}>
+                  <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
+                    <thead>
+                      <tr style={{ background: '#F8F9FC' }}>
+                        <th style={{ padding: '10px 14px', textAlign: 'left', fontWeight: 700, color: '#1B3A5C', borderRadius: '8px 0 0 8px' }}>Feature</th>
+                        <th style={{ padding: '10px 14px', textAlign: 'center', fontWeight: 700, color: '#C9972E' }}>CreditIQ</th>
+                        <th style={{ padding: '10px 14px', textAlign: 'center', fontWeight: 600, color: '#5A6A8A' }}>PaisaBazaar</th>
+                        <th style={{ padding: '10px 14px', textAlign: 'center', fontWeight: 600, color: '#5A6A8A' }}>BankBazaar</th>
+                        <th style={{ padding: '10px 14px', textAlign: 'center', fontWeight: 600, color: '#5A6A8A', borderRadius: '0 8px 8px 0' }}>SaveSage</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {[
+                        { feature: 'Affiliate bias', ciq: '\u2714 Zero', pb: '\u2718 High', bb: '\u2718 High', ss: '\u2718 Medium' },
+                        { feature: 'Community intelligence', ciq: '\u2714 Live IG scraping', pb: '\u2718 None', bb: '\u2718 None', ss: '\u2718 None' },
+                        { feature: 'Devaluation detection', ciq: '\u2714 <6 hours', pb: '\u2718 Days/never', bb: '\u2718 Days/never', ss: '\u2718 Manual' },
+                        { feature: 'AI card roast', ciq: '\u2714 Built', pb: '\u2718 None', bb: '\u2718 None', ss: '\u2718 None' },
+                        { feature: 'Trip planner with points', ciq: '\u2714 Built', pb: '\u2718 None', bb: '\u2718 None', ss: '\u2718 None' },
+                        { feature: 'pgvector semantic search', ciq: '\u2714 36+ insights', pb: '\u2718 None', bb: '\u2718 None', ss: '\u2718 None' },
+                        { feature: 'Revenue model', ciq: '\u2714 Flat fee, unbiased', pb: '\u2718 CPA commission', bb: '\u2718 CPA commission', ss: '\u2718 CPA commission' },
+                      ].map((row, i) => (
+                        <tr key={i} style={{ borderBottom: '1px solid rgba(20,41,80,0.06)' }}>
+                          <td style={{ padding: '10px 14px', fontWeight: 500, color: '#2A3F6B' }}>{row.feature}</td>
+                          <td style={{ padding: '10px 14px', textAlign: 'center', color: '#065f46', fontWeight: 600 }}>{row.ciq}</td>
+                          <td style={{ padding: '10px 14px', textAlign: 'center', color: '#b91c1c' }}>{row.pb}</td>
+                          <td style={{ padding: '10px 14px', textAlign: 'center', color: '#b91c1c' }}>{row.bb}</td>
+                          <td style={{ padding: '10px 14px', textAlign: 'center', color: '#b91c1c' }}>{row.ss}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+              {/* Roadmap */}
+              <div style={{ background: 'white', borderRadius: 16, padding: 24, border: '1px solid rgba(20,41,80,0.08)' }}>
+                <div style={{ fontSize: 12, fontWeight: 700, color: '#1B3A5C', letterSpacing: '0.12em', marginBottom: 16 }}>INTELLIGENCE ROADMAP \u00b7 SOURCES WE ARE ADDING</div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                  {[
+                    { status: 'live', icon: '\U0001f4f1', source: 'Instagram Posts + Captions', detail: '10 handles \u00b7 1.33M+ followers \u00b7 text extraction', color: '#065f46' },
+                    { status: 'next', icon: '\U0001f3a5', source: 'Instagram Reels (Whisper AI)', detail: 'Audio transcription of video content \u00b7 10x more alpha', color: '#C9972E' },
+                    { status: 'next', icon: '\U0001f4fa', source: 'YouTube CC Channels', detail: '50+ Indian credit card creators \u00b7 1,000+ hours of content', color: '#C9972E' },
+                    { status: 'next', icon: '\U0001f3a7', source: 'Podcasts (RSS + Whisper)', detail: 'Expert analysis \u00b7 weekly card news \u00b7 auto-transcribed', color: '#C9972E' },
+                    { status: 'next', icon: '\U0001f4ac', source: 'Reddit r/IndiaInvestments', detail: 'Real user experiences \u00b7 unfiltered community feedback', color: '#C9972E' },
+                    { status: 'next', icon: '\U0001f4c4', source: 'Bank MITC PDFs', detail: 'Ground truth card data \u00b7 auto-scraped on change', color: '#C9972E' },
+                  ].map((item, i) => (
+                    <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '12px 16px', borderRadius: 10, background: item.status === 'live' ? 'rgba(6,95,70,0.05)' : 'rgba(201,151,46,0.05)', border: `1px solid ${item.status === 'live' ? 'rgba(6,95,70,0.2)' : 'rgba(201,151,46,0.2)'}` }}>
+                      <div style={{ fontSize: 24, flexShrink: 0 }}>{item.icon}</div>
+                      <div style={{ flex: 1 }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 2 }}>
+                          <span style={{ fontSize: 14, fontWeight: 700, color: '#142950' }}>{item.source}</span>
+                          <span style={{ fontSize: 9, fontWeight: 700, padding: '2px 8px', borderRadius: 999, background: item.status === 'live' ? '#065f46' : '#C9972E', color: 'white', letterSpacing: '0.08em' }}>
+                            {item.status === 'live' ? 'LIVE' : 'COMING SOON'}
+                          </span>
+                        </div>
+                        <div style={{ fontSize: 12, color: '#5A6A8A' }}>{item.detail}</div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* The Moat Statement */}
+              <div style={{ background: 'linear-gradient(135deg,#C9972E,#8C5F12)', borderRadius: 16, padding: 24, color: 'white', textAlign: 'center' }}>
+                <div style={{ fontSize: 18, fontWeight: 800, marginBottom: 8 }}>The Moat: Distribution + Intelligence</div>
+                <div style={{ fontSize: 13, color: 'rgba(255,255,255,0.8)', lineHeight: 1.7, maxWidth: 600, margin: '0 auto' }}>
+                  Winners won\u2019t have the best AI \u2014 they\u2019ll have the fastest distribution and the richest data.
+                  CreditIQ is building both: community intelligence no competitor can replicate,
+                  and distribution through creators who already trust us with their audience.
+                </div>
+              </div>
+
+            </div>
+          )}
+
           {activeTab === 'intelligence' && (
             <div>
               {/* Header */}
