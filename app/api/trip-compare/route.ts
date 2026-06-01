@@ -139,7 +139,7 @@ export async function POST(req: NextRequest) {
     const TRANSFER_PARTNERS: Record<string, { partner: string; ratio: number; program: string }[]> = {
       'HDFC':   [{ partner: 'InterMiles', ratio: 1.0, program: 'intermiles' }, { partner: 'Singapore KrisFlyer', ratio: 1.0, program: 'krisflyer' }],
       'Axis':   [{ partner: 'InterMiles', ratio: 1.0, program: 'intermiles' }, { partner: 'Club Vistara', ratio: 1.0, program: 'vistara' }],
-      'SBI':    [{ partner: 'Club Vistara', ratio: 1.0, program: 'vistara' }, { partner: 'Air India Flying Returns', ratio: 1.0, program: 'flying-returns' }],
+      'SBI':    [{ partner: 'Air India Flying Returns', ratio: 1.0, program: 'flying-returns' }],
       'ICICI':  [{ partner: 'InterMiles', ratio: 1.0, program: 'intermiles' }],
       'Amex':   [{ partner: 'Singapore KrisFlyer', ratio: 1.0, program: 'krisflyer' }, { partner: 'Marriott Bonvoy', ratio: 1.0, program: 'marriott' }],
       'default':[{ partner: 'InterMiles', ratio: 1.0, program: 'intermiles' }],
@@ -247,7 +247,7 @@ Respond ONLY with valid JSON:
         'anthropic-version': '2023-06-01',
       },
       body: JSON.stringify({
-        model: 'claude-sonnet-4-20250514',
+        model: 'claude-opus-4-8',
         max_tokens: 2500,
         messages: [{ role: 'user', content: prompt }],
       }),
