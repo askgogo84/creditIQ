@@ -4,6 +4,19 @@ import { retrieveRelevantCards, buildRagSystemPrompt } from '@/lib/rag'
 export const runtime = 'nodejs'
 
 // Nuclear Vistara strip — runs on the entire JSON string before parse
+function normalizeDestination(query: string): string {
+  const q = query.toLowerCase()
+  const aliases: Record<string, string> = {
+    'nagkok': 'bangkok', 'bangok': 'bangkok', 'bangkock': 'bangkok',
+    'singapor': 'singapore', 'singapur': 'singapore',
+    'dubay': 'dubai', 'tokio': 'tokyo', 'sydeny': 'sydney',
+  }
+  for (const [typo, correct] of Object.entries(aliases)) {
+    if (q.includes(typo)) return q.replace(typo, correct)
+  }
+  return q
+}
+
 function stripVistara(raw: string): string {
   return raw
     .replace(/Vistara/gi, 'Air India')
@@ -14,7 +27,8 @@ function stripVistara(raw: string): string {
 export async function POST(req: NextRequest) {
   try {
     const { query, userPoints, cardBank, destination, origin, travelers, budget } = await req.json()
-    const tripQuery = query || ('travel to ' + (destination || 'unknown'))
+    const rawQuery = query || ('travel to ' + (destination || 'unknown'))
+    const tripQuery = normalizeDestination(rawQuery)
     if (!tripQuery.trim()) return NextResponse.json({ error: 'Missing trip query' }, { status: 400 })
 
     const { context, devaluations, igInsights } = await retrieveRelevantCards(tripQuery, { topK: 8, intent: 'travel' })
@@ -27,6 +41,7 @@ export async function POST(req: NextRequest) {
       'london': 'LHR', 'tokyo': 'NRT', 'paris': 'CDG', 'sydney': 'SYD',
       'maldives': 'MLE', 'colombo': 'CMB', 'kuala lumpur': 'KUL', 'hong kong': 'HKG',
       'goa': 'GOI', 'mumbai': 'BOM', 'delhi': 'DEL', 'chennai': 'MAA',
+      'phuket': 'HKT', 'kathmandu': 'KTM', 'new york': 'JFK',
     }
         const queryLower = tripQuery.toLowerCase()
     const resolvedDest = Object.entries(DEST_CODES).find(([k]) => queryLower.includes(k))?.[1] 
