@@ -2,6 +2,29 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 
+function BankBadge({ name, bank, imageUrl }: { name: string; bank: string; imageUrl?: string }) {
+  const initial = (bank || name || '?')[0].toUpperCase();
+  const colors: Record<string, string> = {
+    HDFC: '#004C8F', AXIS: '#97144D', ICICI: '#F58220', SBI: '#22409A',
+    AMEX: '#016FD0', IDFC: '#9B2335', RBL: '#E31837', YES: '#00518A',
+    AU: '#E4A115', BOB: '#F7A800', KOTAK: '#EF1923', INDUSIND: '#1B3A5C',
+  };
+  const bg = colors[bank?.toUpperCase?.() || ''] || '#1B3A5C';
+  if (imageUrl) {
+    return (
+      <img src={imageUrl} alt={name}
+        style={{ width: 44, height: 44, borderRadius: 8, objectFit: 'cover', border: '2px solid rgba(255,255,255,0.2)' }}
+        onError={e => { (e.target as HTMLImageElement).style.display = 'none'; }}
+      />
+    );
+  }
+  return (
+    <div style={{ width: 44, height: 44, borderRadius: 8, background: bg, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 20, fontWeight: 800, color: 'white', border: '2px solid rgba(255,255,255,0.2)', flexShrink: 0 }}>
+      {initial}
+    </div>
+  );
+}
+
 export function RewardsHeroWidget() {
   const [cards, setCards] = useState<any[]>([]);
   const [banks, setBanks] = useState<string[]>([]);
@@ -99,35 +122,49 @@ export function RewardsHeroWidget() {
           {result && !result.is_best && result.annual_gap > 0 && (
             <div style={{ borderTop: '1px solid var(--line,rgba(20,41,80,0.08))', paddingTop: 20 }}>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr auto 1fr', alignItems: 'center', gap: 12, marginBottom: 16 }}>
+
+                {/* YOUR CARD */}
                 <div style={{ background: 'var(--surface,#F8F9FC)', borderRadius: 12, padding: 16, textAlign: 'center' }}>
-                  <div style={{ fontSize: 11, color: 'var(--ink-3,#5A6A8A)', fontWeight: 700, marginBottom: 4 }}>YOUR CARD</div>
+                  <div style={{ fontSize: 11, color: 'var(--ink-3,#5A6A8A)', fontWeight: 700, marginBottom: 8 }}>YOUR CARD</div>
+                  <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 8 }}>
+                    <BankBadge name={result.current_card.name} bank={result.current_card.bank} imageUrl={result.current_card.image_url} />
+                  </div>
                   <div style={{ fontSize: 20, fontWeight: 800, color: 'var(--ink-2,#2A3F6B)' }}>{fmt(result.current_card.rewards_monthly)}</div>
                   <div style={{ fontSize: 11, color: 'var(--ink-3,#5A6A8A)' }}>per month</div>
                 </div>
-                <div style={{ fontSize: 20, color: 'var(--ink-3,#5A6A8A)', fontWeight: 300 }}>vs</div>
+
+                <div style={{ fontSize: 18, color: 'var(--ink-3,#5A6A8A)', fontWeight: 300 }}>vs</div>
+
+                {/* BEST CARD */}
                 <div style={{ background: 'var(--navy,#1B3A5C)', borderRadius: 12, padding: 16, textAlign: 'center' }}>
-                  <div style={{ fontSize: 11, color: 'var(--copper,#C9972E)', fontWeight: 700, marginBottom: 4 }}>BEST FOR YOU</div>
-                  <div style={{ fontSize: 12, fontWeight: 700, color: 'white', marginBottom: 4, opacity: 0.9 }}>{result.best_card.name}</div>
+                  <div style={{ fontSize: 11, color: 'var(--copper,#C9972E)', fontWeight: 700, marginBottom: 8 }}>BEST FOR YOU</div>
+                  <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 6 }}>
+                    <BankBadge name={result.best_card.name} bank={result.best_card.bank} imageUrl={result.best_card.image_url} />
+                  </div>
+                  <div style={{ fontSize: 11, fontWeight: 700, color: 'white', marginBottom: 4, opacity: 0.9, lineHeight: 1.2 }}>{result.best_card.name}</div>
                   <div style={{ fontSize: 20, fontWeight: 800, color: 'var(--copper,#C9972E)' }}>{fmt(result.best_card.rewards_monthly)}</div>
                   <div style={{ fontSize: 11, color: '#A0BADC' }}>per month</div>
                 </div>
               </div>
+
               <div style={{ background: 'var(--navy,#1B3A5C)', borderRadius: 12, padding: '16px 20px', textAlign: 'center', marginBottom: 16 }}>
                 <div style={{ fontSize: 12, color: '#A0BADC', marginBottom: 4 }}>You are leaving on the table every year</div>
                 <div style={{ fontSize: 36, fontWeight: 900, color: 'var(--copper,#C9972E)' }}>{fmt(result.annual_gap)}</div>
               </div>
+
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
                 <button onClick={goToFullCalculator}
                   style={{ padding: '12px', borderRadius: 8, background: 'var(--copper,#C9972E)', color: 'white', fontWeight: 700, fontSize: 13, border: 'none', cursor: 'pointer' }}>
                   See full breakdown
                 </button>
-                <button onClick={() => { const card = cards.find(c => c.id === result.best_card.id); router.push('/cards/' + (card?.slug || result.best_card.id)); }}
+                <button onClick={() => { router.push('/cards/' + (result.best_card.slug || result.best_card.id)); }}
                   style={{ padding: '12px', borderRadius: 8, background: 'var(--surface,#F8F9FC)', color: 'var(--navy,#1B3A5C)', fontWeight: 700, fontSize: 13, border: '1px solid var(--line,rgba(20,41,80,0.15))', cursor: 'pointer' }}>
                   View {result.best_card.name.split(' ').slice(0,3).join(' ')} +
                 </button>
               </div>
             </div>
           )}
+
           {result && result.is_best && (
             <div style={{ borderTop: '1px solid var(--line,rgba(20,41,80,0.08))', paddingTop: 20, textAlign: 'center' }}>
               <div style={{ fontSize: 20, fontWeight: 800, color: '#065F46' }}>Great choice! You have the best card for your spend.</div>

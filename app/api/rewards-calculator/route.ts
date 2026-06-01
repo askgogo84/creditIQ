@@ -1,4 +1,4 @@
-// app/api/rewards-calculator/route.ts
+﻿// app/api/rewards-calculator/route.ts
 import { NextRequest, NextResponse } from 'next/server';
 export const runtime = 'nodejs';
 
@@ -28,18 +28,15 @@ export async function POST(req: NextRequest) {
     const { createClient } = await import('@supabase/supabase-js');
     const sb = createClient(supabaseUrl, supabaseKey);
 
-    // Get current card
     const { data: card } = await sb.from('cards').select('*').eq('id', card_id).single();
     if (!card) return NextResponse.json({ error: 'Card not found' }, { status: 404 });
 
-    // Get all cards for comparison
     const { data: allCards } = await sb.from('cards').select('*').eq('active', true);
     const cards = allCards || [];
 
     const totalMonthly = Object.values(spends as Record<string, number>).reduce((a, b) => a + b, 0);
     const currentRewards = calcRewards(card, spends);
 
-    // Find best alternative
     let bestCard = card;
     let bestRewards = currentRewards;
     for (const c of cards) {
@@ -51,11 +48,10 @@ export async function POST(req: NextRequest) {
     const monthlyGap = bestRewards - currentRewards;
     const annualGap = monthlyGap * 12;
 
-    // Get AI explanation if there's a meaningful gap
     let aiExplanation = '';
     if (monthlyGap > 100 && process.env.ANTHROPIC_API_KEY) {
       const prompt = 'User has ' + card.name + ' earning Rs.' + currentRewards + '/month rewards on Rs.' + totalMonthly + '/month spend. '
-        + bestCard.name + ' would earn Rs.' + bestRewards + '/month. In 2 sentences max, explain why ' + bestCard.name + ' is better for their spend pattern. Be specific about rates.';
+        + bestCard.name + ' would earn Rs.' + bestRewards + '/month. In 2 sentences max, explain why ' + bestCard.name + ' is better for their spend pattern. Be specific about rates. Do not use markdown formatting.';
       const res = await fetch('https://api.anthropic.com/v1/messages', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'x-api-key': process.env.ANTHROPIC_API_KEY!, 'anthropic-version': '2023-06-01' },
@@ -68,8 +64,23 @@ export async function POST(req: NextRequest) {
     }
 
     return NextResponse.json({
-      current_card: { id: card.id, name: card.name, bank: card.bank, rewards_monthly: currentRewards },
-      best_card: { id: bestCard.id, name: bestCard.name, bank: bestCard.bank, rewards_monthly: bestRewards, apply_url: bestCard.apply_url_affiliate || bestCard.apply_url },
+      current_card: {
+        id: card.id,
+        name: card.name,
+        bank: card.bank,
+        slug: card.slug || '',
+        image_url: card.image_url || '',
+        rewards_monthly: currentRewards,
+      },
+      best_card: {
+        id: bestCard.id,
+        name: bestCard.name,
+        bank: bestCard.bank,
+        slug: bestCard.slug || '',
+        image_url: bestCard.image_url || '',
+        rewards_monthly: bestRewards,
+        apply_url: bestCard.apply_url_affiliate || bestCard.apply_url || '',
+      },
       monthly_gap: monthlyGap,
       annual_gap: annualGap,
       total_monthly_spend: totalMonthly,
