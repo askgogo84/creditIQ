@@ -19,6 +19,7 @@ import { DesignFooter }   from '@/components/design/Footer';
 import { ScrollButton }   from '@/components/design/ScrollButton';
 import { ShowcaseStrip } from '@/components/design/ShowcaseStrip'
 import { CleoHero }       from '@/components/design/CleoHero';
+import { RewardsHeroWidget } from '@/components/design/RewardsHeroWidget';
 import { SEED_CARDS }     from '@/lib/data/seed-cards';
 import { MeetTheC, BigStatement, TestimonialStrip, BuiltForMoments, AppStoreSection, FAQSection } from '@/components/design/HomeSections';
 import type { CreditCard } from '@/lib/types';
