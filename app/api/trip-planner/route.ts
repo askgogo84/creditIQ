@@ -237,6 +237,17 @@ Respond ONLY with valid JSON (no markdown, no preamble):
     }
     if (parsed.summary) parsed.summary = vr(parsed.summary)
     if (parsed.proTip) parsed.proTip = vr(parsed.proTip)
+
+    // Domestic route airline validation
+    const domesticDests = ['GOI','BOM','DEL','MAA','CCU','HYD','COK','AMD','PNQ']
+    const validDomestic = ['IndiGo','Air India','SpiceJet','Akasa Air','GoFirst','StarAir']
+    if (parsed.flights && domesticDests.includes(resolvedDest)) {
+      parsed.flights = parsed.flights.map((f: any) => ({
+        ...f,
+        airline: validDomestic.some(a => f.airline?.includes(a)) ? f.airline : 'IndiGo',
+        connectionAirline: vr(f.connectionAirline),
+      }))
+    }
     return NextResponse.json(parsed)
   } catch (err) {
     console.error('Trip planner error:', err)
