@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation'
 
 const SCENES = {
   roast: {
-    label: 'Roast my card', emoji: '🔥', accent: '#C46A52', bg: 'rgba(196,106,82,0.10)',
+    label: 'Roast my card', emoji: 'ðŸ”¥', accent: '#C46A52', bg: 'rgba(196,106,82,0.10)',
     intro: "Drop your card. I'll tell you the truth.",
     placeholder: 'Try: "I have SBI SimplyCLICK"',
     href: '/card-roast',
@@ -13,13 +13,13 @@ const SCENES = {
       { role: 'user', text: 'I have HDFC Regalia. ₹2,500 fee.' },
       { role: 'bot',  text: 'Oof. Sweetie.' },
       { role: 'bot',  text: "Your Regalia earns 1.4% effective.\n\nOn ₹8L/yr spend: ₹11,200 back.\nHDFC Infinia: ₹26,400 back.\n\nGap: ₹15,200/yr you're handing back." },
-      { role: 'bot',  text: 'Grade: D−' },
+      { role: 'bot',  text: 'Grade: Dâˆ’' },
       { role: 'user', text: 'What should I switch to?' },
-      { role: 'bot',  text: "Tell me your monthly spend and I'll match you. ✨" },
+      { role: 'bot',  text: "Tell me your monthly spend and I'll match you. âœ¨" },
     ],
   },
   match: {
-    label: 'Find my card', emoji: '🎯', accent: '#D89B2A', bg: 'rgba(212,163,115,0.12)',
+    label: 'Find my card', emoji: 'ðŸŽ¯', accent: '#D89B2A', bg: 'rgba(212,163,115,0.12)',
     intro: "Tell me how you spend. I'll pick one card.",
     placeholder: 'Try: "₹8L spend, 50% online"',
     href: '/smart-match',
@@ -32,16 +32,16 @@ const SCENES = {
     ],
   },
   optimize: {
-    label: 'Use my points', emoji: '✨', accent: '#7C8970', bg: 'rgba(124,137,112,0.14)',
+    label: 'Use my points', emoji: 'âœ¨', accent: '#7C8970', bg: 'rgba(124,137,112,0.14)',
     intro: "Got points sitting there? Let's use them.",
     placeholder: 'Try: "I have 80k Axis Edge points"',
     href: '/points-optimizer',
     messages: [
       { role: 'user', text: 'I have 150,000 HDFC points.' },
       { role: 'bot',  text: 'Excellent. Time to make them work.' },
-      { role: 'bot',  text: "Best path:\n\n→ Transfer to Turkish Miles&Smiles (1:1)\n→ Book DEL-IST-NRT in business\n→ Cost: 90,000 miles + ₹18,000 taxes\n→ Cash price: ₹3,40,000\n\nValue: ₹5.30 per point. Elite." },
+      { role: 'bot',  text: "Best path:\n\nâ†’ Transfer to Turkish Miles&Smiles (1:1)\nâ†’ Book DEL-IST-NRT in business\nâ†’ Cost: 90,000 miles + ₹18,000 taxes\nâ†’ Cash price: ₹3,40,000\n\nValue: ₹5.30 per point. Elite." },
       { role: 'user', text: 'Business class?? With 90k miles??' },
-      { role: 'bot',  text: 'Welcome to the sweet spot 🌶' },
+      { role: 'bot',  text: 'Welcome to the sweet spot ðŸŒ¶' },
     ],
   },
 } as const
@@ -109,7 +109,7 @@ function Phone({ scene, msgs }: { scene: SceneKey; msgs: Msg[] }) {
       </div>
       <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, padding: '8px 12px 22px', background: 'rgba(251,247,240,0.96)', borderTop: '1px solid rgba(20,41,80,0.06)', display: 'flex', gap: 6, alignItems: 'center' }}>
         <div style={{ flex: 1, padding: '8px 13px', borderRadius: 999, background: '#FFF', border: '1px solid rgba(20,41,80,0.10)', fontSize: 12, color: '#9A95AE' }}>Ask CIRA anything...</div>
-        <div style={{ width: 32, height: 32, borderRadius: 999, background: '#142950', color: '#FFF', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14 }}>↑</div>
+        <div style={{ width: 32, height: 32, borderRadius: 999, background: '#142950', color: '#FFF', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14 }}>â†‘</div>
       </div>
     </div>
   )
@@ -137,7 +137,7 @@ export function CleoHero() {
   }, [mode, sent])
 
   const send = () => {
-    // Always navigate to the dedicated tool page — clean, no broken inline experience
+    // Always navigate to the dedicated tool page â€” clean, no broken inline experience
     const destinations: Record<SceneKey, string> = {
       roast: '/card-roast',
       match: '/smart-match',
@@ -149,7 +149,7 @@ export function CleoHero() {
   const d = SCENES[mode]
 
   return (
-    <section style={{ position: 'relative', paddingTop: 'clamp(110px,14vw,140px)', paddingBottom: 60, overflow: 'hidden' }}>
+    <section style={{ position: 'relative', paddingTop: 'clamp(72px,10vw,140px)', paddingBottom: 60, overflow: 'hidden' }}>
       <div style={{ position: 'absolute', top: -120, right: -100, width: 540, height: 540, borderRadius: '50%', background: `radial-gradient(circle,${d.accent}40,transparent 60%)`, filter: 'blur(80px)', opacity: 0.6, pointerEvents: 'none', transition: 'background 0.8s' }} />
       <div style={{ position: 'absolute', top: 200, left: -120, width: 420, height: 420, borderRadius: '50%', background: 'radial-gradient(circle,rgba(212,163,115,0.30),transparent 60%)', filter: 'blur(80px)', opacity: 0.6, pointerEvents: 'none' }} />
 
@@ -164,13 +164,13 @@ export function CleoHero() {
             <h1 style={{ fontSize: 'clamp(36px,6vw,82px)', letterSpacing: '-0.035em', lineHeight: 1.02, fontWeight: 800, marginBottom: 24, color: 'var(--ink,#142950)' }}>
               India's smartest{' '}
               <span style={{ fontFamily: 'var(--font-serif,Georgia,serif)', fontStyle: 'italic', fontWeight: 400, color: d.accent, transition: 'color 0.6s' }}> credit card AI</span>
-              {' '}— built to earn you more.
+              {' '}â€” built to earn you more.
             </h1>
 
             <p style={{ fontSize: 'clamp(15px,1.3vw,18px)', color: 'var(--ink-2,#2A3F6B)', maxWidth: 520, lineHeight: 1.55, marginBottom: 32 }}>
               Compare 100+ cards with{' '}
               <span style={{ fontFamily: 'var(--font-serif,Georgia,serif)', fontStyle: 'italic', color: 'var(--ink,#142950)' }}>zero affiliate bias</span>.{' '}
-              Our AI finds every rupee you're leaving on the table — smarter points, better matches, live devaluation alerts.
+              Our AI finds every rupee you're leaving on the table â€” smarter points, better matches, live devaluation alerts.
             </p>
 
             {/* Mode selector buttons */}
@@ -183,7 +183,7 @@ export function CleoHero() {
               ))}
             </div>
 
-            {/* Ask bar — tapping always goes to the right tool page */}
+            {/* Ask bar â€” tapping always goes to the right tool page */}
             <div style={{ display: 'flex', gap: 8, alignItems: 'center', padding: '6px 6px 6px 18px', background: 'var(--surface,#fff)', border: '1px solid var(--line-strong,rgba(20,41,80,0.2))', borderRadius: 999, boxShadow: '0 4px 14px rgba(20,41,80,0.07)', maxWidth: 520 }}>
               <input
                 value={input}
@@ -194,18 +194,18 @@ export function CleoHero() {
               />
               <button onClick={send}
                 style={{ padding: '12px 20px', borderRadius: 999, background: 'var(--ink,#142950)', color: 'var(--bg,#F5EFE6)', border: 'none', fontSize: 14, fontWeight: 600, cursor: 'pointer', whiteSpace: 'nowrap' }}>
-                Ask CIRA →
+                Ask CIRA â†’
               </button>
             </div>
             <div style={{ marginTop: 12, fontSize: 12, color: 'var(--ink-3,#5A6A8A)', display: 'flex', gap: 16, flexWrap: 'wrap' }}>
               <span>⚡ Live AI · responses in seconds</span>
-              <span>🔒 No login · No data stored</span>
+              <span>ðŸ”’ No login · No data stored</span>
             </div>
           </div>
 
-          {/* Phone mockup — desktop only */}
+          {/* Phone mockup â€” desktop only */}
           <div style={{ display: 'flex', justifyContent: 'center', position: 'relative' }} className="hide-mobile">
-            <div style={{ fontFamily: 'var(--font-serif,Georgia,serif)', position: 'absolute', top: 50, left: -80, transform: 'rotate(-8deg)', zIndex: 5, fontSize: 19, fontStyle: 'italic', color: 'var(--ink-2,#2A3F6B)', maxWidth: 130, lineHeight: 1.1 }}>it actually talks back ↘</div>
+            <div style={{ fontFamily: 'var(--font-serif,Georgia,serif)', position: 'absolute', top: 50, left: -80, transform: 'rotate(-8deg)', zIndex: 5, fontSize: 19, fontStyle: 'italic', color: 'var(--ink-2,#2A3F6B)', maxWidth: 130, lineHeight: 1.1 }}>it actually talks back â†˜</div>
             <div style={{ width: 290, height: 600, background: '#0F0F0F', borderRadius: 50, padding: 8, boxShadow: `${d.accent}55 -25px 60px 60px,0 40px 80px -30px rgba(20,41,80,0.45),inset 0 0 0 1.5px rgba(255,255,255,0.06)`, position: 'relative', transition: 'box-shadow 0.8s', transform: 'scale(0.92)', transformOrigin: 'center top' }}>
               <div style={{ position: 'absolute', top: 13, left: '50%', transform: 'translateX(-50%)', width: 80, height: 24, background: '#000', borderRadius: 999, zIndex: 10 }} />
               <div style={{ width: '100%', height: '100%', borderRadius: 42, overflow: 'hidden', background: '#FFF', position: 'relative' }}>
@@ -224,3 +224,4 @@ export function CleoHero() {
     </section>
   )
 }
+

@@ -22,7 +22,7 @@ const AI_TOOLS = [
   { label: 'Lounge Tracker', href: '/lounge-tracker', icon: '🛋', desc: 'Never get turned away at the gate', badge: '' },
 ]
 
-const AI_PATHS = AI_TOOLS.map(t => t.href).concat(['/smart-match', '/rewards-calculator', '/card-roast', '/spend-optimizer', '/points-optimizer', '/statement-truth', '/card-switch', '/lounge-tracker'])
+const AI_PATHS = AI_TOOLS.map(t => t.href).concat(['/smart-match', '/rewards-calculator', '/rewards-calculator', '/card-roast', '/spend-optimizer', '/points-optimizer', '/statement-truth', '/card-switch', '/lounge-tracker'])
 
 const BROWSE_LINKS = [
   { label: 'All Cards', href: '/cards', icon: '💳' },

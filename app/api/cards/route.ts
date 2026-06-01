@@ -1,9 +1,9 @@
-import { NextResponse } from 'next/server';
+﻿import { NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 import { SEED_CARDS } from '@/lib/data/seed-cards';
 
 export const runtime = 'nodejs';
-export const revalidate = 300; // Cache 5 minutes
+export const revalidate = 0; // Cache 5 minutes
 
 export async function GET() {
   try {
