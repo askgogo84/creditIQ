@@ -249,8 +249,8 @@ Respond ONLY with valid JSON (no markdown, no preamble):
       }))
     }
     return NextResponse.json(parsed)
-  } catch (err) {
+  } catch (err: any) {
     console.error('Trip planner error:', err)
-    return NextResponse.json({ error: 'Trip planning failed' }, { status: 500 })
+    return NextResponse.json({ error: 'Trip planning failed', detail: err?.message || String(err) }, { status: 500 })
   }
 }
