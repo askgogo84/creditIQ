@@ -14,6 +14,15 @@ const CATEGORIES = [
   { key: 'utilities', label: 'Bills and Utilities',default: 5000 },
 ];
 
+function cleanMarkdown(text: string): string {
+  return text
+    .replace(/\*\*(.*?)\*\*/g, '$1')
+    .replace(/\*(.*?)\*/g, '$1')
+    .replace(/#{1,6}\s/g, '')
+    .replace(/`(.*?)`/g, '$1')
+    .trim();
+}
+
 function RewardsCalculatorInner() {
   const searchParams = useSearchParams();
   const [cards, setCards] = useState<any[]>([]);
@@ -34,7 +43,6 @@ function RewardsCalculatorInner() {
       const ub = [...new Set(list.map((c: any) => c.bank))].sort() as string[];
       setBanks(ub);
 
-      // Read URL params from widget
       const paramBank = searchParams.get('bank');
       const paramCardId = searchParams.get('card_id');
       const paramSpend = searchParams.get('spend');
@@ -56,7 +64,6 @@ function RewardsCalculatorInner() {
     });
   }, []);
 
-  // Auto-calculate once cards + params are loaded
   useEffect(() => {
     if (autoCalculated) return;
     const paramCardId = searchParams.get('card_id');
@@ -181,7 +188,7 @@ function RewardsCalculatorInner() {
             {result.ai_explanation && (
               <div style={{ background: 'white', borderRadius: 16, padding: 22, marginBottom: 14, boxShadow: '0 2px 16px rgba(20,41,80,0.08)', borderLeft: '4px solid #C9972E' }}>
                 <div style={{ fontSize: 10, fontWeight: 800, color: '#8C5F12', letterSpacing: '0.14em', marginBottom: 10 }}>CIRA INTELLIGENCE</div>
-                <div style={{ fontSize: 14, color: '#2A3F6B', lineHeight: 1.75 }}>{result.ai_explanation}</div>
+                <div style={{ fontSize: 14, color: '#2A3F6B', lineHeight: 1.75 }}>{cleanMarkdown(result.ai_explanation)}</div>
               </div>
             )}
             {!result.is_best && (
