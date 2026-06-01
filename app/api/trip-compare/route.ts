@@ -138,7 +138,7 @@ export async function POST(req: NextRequest) {
     // Points transfer rates per bank (realistic values)
     const TRANSFER_PARTNERS: Record<string, { partner: string; ratio: number; program: string }[]> = {
       'HDFC':   [{ partner: 'InterMiles', ratio: 1.0, program: 'intermiles' }, { partner: 'Singapore KrisFlyer', ratio: 1.0, program: 'krisflyer' }],
-      'Axis':   [{ partner: 'InterMiles', ratio: 1.0, program: 'intermiles' }, { partner: 'Club Vistara', ratio: 1.0, program: 'vistara' }],
+      'Axis':   [{ partner: 'InterMiles', ratio: 1.0, program: 'intermiles' }],
       'SBI':    [{ partner: 'Air India Flying Returns', ratio: 1.0, program: 'flying-returns' }],
       'ICICI':  [{ partner: 'InterMiles', ratio: 1.0, program: 'intermiles' }],
       'Amex':   [{ partner: 'Singapore KrisFlyer', ratio: 1.0, program: 'krisflyer' }, { partner: 'Marriott Bonvoy', ratio: 1.0, program: 'marriott' }],
@@ -178,7 +178,7 @@ RULES:
 2. Rank by VALUE = savings + points efficiency, not just cheapest price
 3. Flight 1 = best value (uses points if user has enough), Flight 2 = best price, Flight 3 = premium option
 4. Hotel 1 = best value for money, Hotel 2 = luxury/points option, Hotel 3 = budget
-5. Use REAL airline names for ${origin}-${destination} route (IndiGo, Air India, SpiceJet, Vistara, GoAir)
+5. Use REAL airline names for ${origin}-${destination} route (IndiGo, Air India, SpiceJet, Akasa Air. NEVER use Vistara - merged into Air India Nov 2024)
 6. Use REAL hotel chains for ${destination}
 7. points_saving = what user saves by using points vs cash (e.g. if flight costs Rs.5000 cash and 12000 pts, saving = Rs.5000 - (12000 * 0.35) = Rs.800)
 8. Every cashPrice MUST be within the price constraint ranges above
