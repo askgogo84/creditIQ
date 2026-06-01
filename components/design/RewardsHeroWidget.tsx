@@ -98,6 +98,7 @@ export function RewardsHeroWidget() {
                 <div style={{ fontSize: 24, color: 'var(--ink-3,#5A6A8A)' }}>?</div>
                 <div style={{ background: 'var(--navy,#1B3A5C)', borderRadius: 12, padding: 16, textAlign: 'center' }}>
                   <div style={{ fontSize: 11, color: 'var(--copper,#C9972E)', fontWeight: 700, marginBottom: 4 }}>BEST FOR YOU</div>
+                  <div style={{ fontSize: 12, fontWeight: 700, color: 'white', marginBottom: 4, opacity: 0.9 }}>{result.best_card.name}</div>
                   <div style={{ fontSize: 20, fontWeight: 800, color: 'var(--copper,#C9972E)' }}>{fmt(result.best_card.rewards_monthly)}</div>
                   <div style={{ fontSize: 11, color: '#A0BADC' }}>per month</div>
                 </div>
@@ -113,7 +114,7 @@ export function RewardsHeroWidget() {
                 </button>
                 <button onClick={() => router.push('/cards/' + result.best_card.id)}
                   style={{ padding: '12px', borderRadius: 8, background: 'var(--surface,#F8F9FC)', color: 'var(--navy,#1B3A5C)', fontWeight: 700, fontSize: 13, border: '1px solid var(--line,rgba(20,41,80,0.15))', cursor: 'pointer' }}>
-                  View {result.best_card.name.split(' ').slice(0,2).join(' ')} ?
+                  View {result.best_card.name.split(' ').slice(0,3).join(' ')} +
                 </button>
               </div>
             </div>

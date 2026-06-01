@@ -2,6 +2,7 @@
 import { useState, useEffect } from 'react';
 import { Header } from '@/components/Header';
 import { DesignFooter } from '@/components/design/Footer';
+import { SavePromptBanner } from '@/components/design/SavePromptBanner';
 
 const CATEGORIES = [
   { key: 'online',    label: 'Online Shopping',  default: 10000 },
@@ -163,6 +164,7 @@ export default function RewardsCalculator() {
                 </a>
               </div>
             )}
+            {!result.is_best && <SavePromptBanner feature='calculator' />}
           </div>
         )}
       </div>
