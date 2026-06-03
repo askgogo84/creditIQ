@@ -1,5 +1,25 @@
 // app/api/cron/ig-fetch-results/route.ts
 import { NextRequest, NextResponse } from 'next/server';
+
+async function embedAndSave(sb: any, id: string, text: string): Promise<void> {
+  try {
+    const res = await fetch('https://api.openai.com/v1/embeddings', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer ' + process.env.OPENAI_API_KEY,
+      },
+      body: JSON.stringify({ model: 'text-embedding-3-small', input: text.slice(0, 8000) }),
+    })
+    if (!res.ok) return
+    const data = await res.json()
+    const embedding = data.data?.[0]?.embedding
+    if (embedding) {
+      await sb.from('intelligence_kb').update({ embedding }).eq('id', id)
+    }
+  } catch { /* non-fatal */ }
+}
+
 export const runtime = 'nodejs';
 export const maxDuration = 60;
 const APIFY_BASE = 'https://api.apify.com/v2';
