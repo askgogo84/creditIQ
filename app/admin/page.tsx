@@ -13,7 +13,7 @@ import {
 interface CronLog { id: string; job: string; result: any; ran_at: string }
 interface DevalEvent { id: string; card_name: string; bank: string; category: string; description: string; impact: string; date: string; status: string; detected_at: string }
 interface PendingCard { id: string; slug: string; name: string; bank: string; annual_fee_inr: number; tier: string; status: string; discovered_at: string }
-interface IgInsight { id: string; source_handle: string; post_id: string; post_url: string; caption: string; post_date: string; insight_type: string; insight_summary: string; structured_data: any; likes: number; scraped_at: string; click_count?: number }
+interface IgInsight { id: string; source: string; source_url: string; creator_handle: string; creator_name: string; title: string; content: string; insight_type: string; trust_score: number; engagement: number; card_mentions: string[]; scraped_at: string; published_at: string; }
 
 const IMPACT_COLOR: Record<string, string> = {
   high: '#B84230', medium: 'var(--copper,#8C5F12)', low: '#2d7a56',
@@ -109,9 +109,10 @@ export default function AdminPage() {
       const { createBrowserClient } = await import('@supabase/ssr');
       const sb = createBrowserClient(sUrl, sKey);
       const { data } = await sb
-        .from('ig_knowledge_base')
+        .from('intelligence_kb')
         .select('*')
-        .order('likes', { ascending: false })
+        .eq('active', true)
+        .order('scraped_at', { ascending: false })
         .limit(50);
       setIgInsights(data || []);
     } catch {}
@@ -649,23 +650,23 @@ export default function AdminPage() {
                         <span style={{ padding: '2px 8px', borderRadius: 6, fontSize: 10, fontWeight: 700, textTransform: 'uppercase', background: `${INSIGHT_COLORS[insight.insight_type]}15`, color: INSIGHT_COLORS[insight.insight_type] || '#374151' }}>
                           {insight.insight_type?.replace('_', ' ')}
                         </span>
-                        <span style={{ fontSize: 11, color: 'var(--ink-3,#5A6A8A)' }}>@{insight.source_handle}</span>
-                        <span style={{ fontSize: 11, color: 'var(--ink-3,#5A6A8A)' }}>â¤ï¸ {insight.likes}</span>
+                        <span style={{ fontSize: 11, color: 'var(--ink-3,#5A6A8A)' }}>@{insight.creator_handle}</span>
+                        <span style={{ fontSize: 11, color: 'var(--ink-3,#5A6A8A)' }}>â¤ï¸ {insight.trust_score ?? 0}</span>
                         <span style={{ fontSize: 11, color: 'var(--ink-3,#5A6A8A)', marginLeft: 'auto' }}>{new Date(insight.scraped_at).toLocaleDateString('en-IN')}</span>
                       </div>
-                      <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--ink,#142950)', marginBottom: 6 }}>{insight.insight_summary}</div>
-                      {insight.structured_data?.actionable_tip && (
-                        <div style={{ fontSize: 12, color: 'var(--ink-3,#5A6A8A)', marginBottom: 8 }}>ðŸ’¡ {insight.structured_data.actionable_tip}</div>
+                      <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--ink,#142950)', marginBottom: 6 }}>{insight.title || insight.content?.slice(0, 120)}</div>
+                      {insight.content && (
+                        <div style={{ fontSize: 12, color: 'var(--ink-3,#5A6A8A)', marginBottom: 8 }}>ðŸ’¡ {insight.content?.slice(0,150)}</div>
                       )}
                       <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
                         <span style={{ fontSize: 11, padding: '2px 8px', borderRadius: 6, background: 'rgba(20,41,80,0.06)', color: 'var(--ink-3,#5A6A8A)' }}>
                           → {CIRA_USAGE[insight.insight_type]}
                         </span>
-                        <a href={insight.post_url} target="_blank" rel="noopener noreferrer" onClick={() => fetch('/api/ig-click', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ insight_id: insight.id, query_context: 'admin_view' }) })} style={{ fontSize: 11, color: '#0369a1' }}>View post â†—</a>
+                        <a href={insight.source_url} target="_blank" rel="noopener noreferrer" onClick={() => fetch('/api/ig-click', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ insight_id: insight.id, query_context: 'admin_view' }) })} style={{ fontSize: 11, color: '#0369a1' }}>View post â†—</a>
                       </div>
-                      {insight.structured_data?.cards_mentioned?.length > 0 && (
+                      {insight.card_mentions?.length > 0 && (
                         <div style={{ marginTop: 8, display: 'flex', gap: 6, flexWrap: 'wrap' }}>
-                          {insight.structured_data.cards_mentioned.map((card: string, j: number) => (
+                          {insight.card_mentions.map((card: string, j: number) => (
                             <span key={j} style={{ fontSize: 10, padding: '2px 6px', borderRadius: 4, background: 'rgba(20,41,80,0.06)', color: 'var(--ink-3,#5A6A8A)' }}>{card}</span>
                           ))}
                         </div>
