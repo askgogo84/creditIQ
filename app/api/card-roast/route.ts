@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { retrieveRelevantCards, buildRagSystemPrompt, cardToText } from '@/lib/rag'
+import { retrieveRelevantCards, buildRagSystemPrompt, cardToText, getIgInsights } from '@/lib/rag'
 import { getAllCards } from '@/lib/supabase'
 
 export const runtime = 'nodejs'
@@ -21,7 +21,7 @@ export async function POST(req: NextRequest) {
 
     const cardInfo = cardToText(card)
 
-    const userPrompt = 'Grade this card for this user:\n\n' +
+    const userPrompt = 'Grade this card. If community intelligence shows devaluations or problems, lower the grade and cite them.\n\n' +
       'CARD BEING GRADED:\n' + cardInfo + '\n\n' +
       'USER PROFILE:\n' +
       'Monthly spend: Rs.' + (monthlySpend || 0) + '\n' +

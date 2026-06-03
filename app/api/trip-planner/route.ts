@@ -1,4 +1,4 @@
-﻿import { NextRequest, NextResponse } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
 import { retrieveRelevantCards, buildRagSystemPrompt } from '@/lib/rag'
 
 export const runtime = 'nodejs'
@@ -117,7 +117,7 @@ VERIFIED TRANSFER PORTAL URLS (use these exact URLs, never invent others):
 - InterMiles redemption: https://www.intermiles.com/flight
 - Axis EDGE Miles: https://travel.axisbank.co.in
 
-VERIFIED AWARD RATES (use these exact figures):
+AWARD RATES (use community intelligence sweet spots above when available, otherwise use these baselines — prefer creator-found rates over these):
 - BLR→SIN Economy (KrisFlyer): 17,500 miles one-way
 - BLR→SIN Business (KrisFlyer): 42,500 miles one-way  
 - SIN→DPS Economy (KrisFlyer): 12,500 miles one-way
