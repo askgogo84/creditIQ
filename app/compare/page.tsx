@@ -164,7 +164,30 @@ export default function ComparePage() {
           </div>
         </section>
 
-        <DesignFooter />
+        
+          {/* Popular Comparisons - SEO section */}
+          <div style={{ marginTop: 48 }}>
+            <div style={{ fontFamily: 'var(--font-mono,monospace)', fontSize: 9, fontWeight: 700, letterSpacing: '0.18em', textTransform: 'uppercase', color: 'var(--ink-3,#5A6A8A)', marginBottom: 16 }}>Popular Comparisons</div>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(280px,1fr))', gap: 10 }}>
+              {[
+                { slug: 'hdfc-infinia-vs-axis-magnus-burgundy', label: 'HDFC Infinia vs Axis Magnus' },
+                { slug: 'hdfc-regalia-gold-vs-axis-magnus-burgundy', label: 'HDFC Regalia Gold vs Axis Magnus' },
+                { slug: 'hdfc-infinia-vs-icici-emeralde-private-metal', label: 'HDFC Infinia vs ICICI Emeralde' },
+                { slug: 'axis-magnus-burgundy-vs-hdfc-diners-club-black', label: 'Axis Magnus vs HDFC Diners Black' },
+                { slug: 'sbi-cashback-vs-amazon-pay-icici', label: 'SBI Cashback vs Amazon Pay ICICI' },
+                { slug: 'hdfc-millennia-vs-axis-ace-credit-card', label: 'HDFC Millennia vs Axis ACE' },
+                { slug: 'amazon-pay-icici-vs-flipkart-axis-bank-credit-card', label: 'Amazon Pay ICICI vs Flipkart Axis' },
+                { slug: 'scapia-federal-bank-credit-card-vs-niyo-global', label: 'Scapia vs Niyo Global' },
+              ].map(({ slug, label }) => (
+                <Link key={slug} href={`/compare/${slug}`} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '14px 16px', background: 'var(--paper,#FAF5EB)', border: '1px solid var(--line,rgba(20,41,80,0.08))', borderRadius: 12, textDecoration: 'none' }}>
+                  <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--ink,#142950)' }}>{label}</span>
+                  <span style={{ fontSize: 13, color: 'var(--ink-3,#5A6A8A)' }}>&rarr;</span>
+                </Link>
+              ))}
+            </div>
+          </div>
+
+<DesignFooter />
       </div>
     </>
   );

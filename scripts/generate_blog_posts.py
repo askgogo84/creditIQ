@@ -1,0 +1,85 @@
+﻿import json
+
+posts = [
+    {
+        "slug": "best-travel-credit-card-india-2026",
+        "title": "Best Travel Credit Cards in India 2026 — Honest Rankings",
+        "tag": "Guide",
+        "tag_color": "#0ea5e9",
+        "date": "June 3, 2026",
+        "read_time": "8 min read",
+        "intro": "The best travel credit card for you depends on one question: do you want airport lounge access, airline miles, or zero forex markup? Most Indians need all three but most cards deliver only one. Here are the honest rankings for 2026.",
+        "sections": json.dumps([
+            {"heading": "The three things that matter for travel cards", "body": "Airport lounge access keeps you sane on long travel days. Airline miles pay for premium cabin flights you would never book with cash. Zero forex markup saves 3-3.5% on every international transaction — Rs.17,500 on a Rs.5L trip.\n\nMost Indian cards optimise for one of these three. Very few deliver all three. The best approach is a two-card strategy: one for earning miles domestically, one with zero forex for spending internationally."},
+            {"heading": "Best overall: HDFC Infinia Metal Edition", "body": "Unlimited Priority Pass lounge access. 1:1 KrisFlyer transfer. 10X on SmartBuy flights. Rs.12,500 annual fee waived on Rs.10L spend.\n\nInfinia is the only Indian card with unlimited Priority Pass for self — no quarterly caps, no spend triggers. For frequent flyers doing 6+ trips annually, this alone justifies the fee. The 1:1 KrisFlyer transfer ratio is the best among Indian premium cards for Singapore Airlines redemptions."},
+            {"heading": "Best for earning miles: Axis Magnus Burgundy", "body": "12 EDGE Miles per Rs.100 on travel aggregators (MakeMyTrip, Yatra, EaseMyTrip). Each EDGE Mile transfers to KrisFlyer at 1.33:1.\n\nFor travellers booking Rs.1L+/month via OTAs, Magnus earns 24% effective return on those bookings — unmatched in India. Surviving strong partners post-April 2026 devaluation: KrisFlyer, Turkish Miles and Smiles, Air France-KLM Flying Blue."},
+            {"heading": "Best zero forex card: Scapia Federal Bank", "body": "Zero forex markup on all international transactions. Lifetime free. Reward points on every foreign spend. Complimentary domestic lounge access as milestone benefit.\n\nScapia is the default card to carry internationally. On Rs.5L annual international spend, zero forex saves Rs.17,500 compared to HDFC Infinia abroad. Stack Scapia for spending with Infinia or Magnus for earning — total fee: Rs.0."},
+            {"heading": "Best mid-tier travel card: HSBC TravelOne", "body": "Rs.4,999 annual fee. 1.5% forex markup. Instant transfers to 18 airline and hotel programmes. 6 international lounge visits included.\n\nHSBC TravelOne is the best option for travellers who want flexibility without Infinia fees. The 18-partner transfer network is broader than any other mid-tier Indian card. The 1.5% forex markup is not zero but acceptable."},
+            {"heading": "The honest two-card strategy", "body": "Card 1 — Scapia Federal Bank (Free): All international spending. Zero forex, earn points.\nCard 2 — HDFC Infinia or Axis Magnus: All domestic earning. Accumulate miles, redeem for flights.\n\nThis combination gives zero forex costs plus best-in-class domestic earning. Total annual fee: Rs.0 to Rs.12,500 depending on which premium card you hold. Total saved on Rs.5L international spend vs using Infinia abroad: Rs.17,500 per year."},
+        ]),
+        "verdict": "HDFC Infinia for unlimited lounges and KrisFlyer transfers. Axis Magnus for OTA-heavy spenders targeting miles. Scapia for zero forex on international spending. For most Indian travellers doing 2-4 trips/year, the Scapia plus Infinia combination is optimal.",
+        "related_card": "HDFC Infinia Metal Edition",
+        "related_card_slug": "hdfc-infinia",
+        "published": True,
+        "published_at": "2026-06-03"
+    },
+    {
+        "slug": "credit-card-reward-points-calculator-india",
+        "title": "Credit Card Reward Points Calculator India — What Are Your Points Actually Worth?",
+        "tag": "Guide",
+        "tag_color": "#6366f1",
+        "date": "June 3, 2026",
+        "read_time": "6 min read",
+        "intro": "Most Indians have no idea what their reward points are actually worth. Bank marketing says your HDFC points are worth Rs.0.50 each. Reality: they can be worth Rs.0.20 or Rs.2.00+ depending on how you redeem. Here is the complete guide.",
+        "sections": json.dumps([
+            {"heading": "Why the advertised rate is almost always wrong", "body": "Banks advertise the best-case redemption rate. HDFC says 1 point = Rs.0.50. That is only true for cash vouchers via specific partners. For Amazon vouchers or merchandise, the same point is worth Rs.0.20-0.25. For flight redemptions via SmartBuy, Rs.1.00. For KrisFlyer transfers on business class routes, Rs.2.00+.\n\nThe range is 10x between worst and best redemption. Most cardholders stay at the bottom of that range by default."},
+            {"heading": "HDFC reward points — full value map", "body": "HDFC reward points to cash: Rs.0.25 per point (standard catalogue)\nHDFC points to Amazon vouchers: Rs.0.25 per point\nHDFC SmartBuy flight redemption: Rs.1.00 per point\nHDFC SmartBuy hotel redemption: Rs.0.50-1.00 per point\nHDFC to KrisFlyer (1:1 transfer): Rs.1.50-2.50+ per point on premium cabin routes\nHDFC to Marriott Bonvoy (1:1 transfer): Rs.0.80-1.50 per point\n\nConclusion: Never redeem for catalogue or Amazon vouchers. Always use SmartBuy or airline transfers."},
+            {"heading": "Axis EDGE Miles — full value map", "body": "Axis EDGE Miles to statement credit: Rs.0.25 per mile\nAxis EDGE Miles to flight vouchers: Rs.1.00 per mile\nAxis EDGE Miles to KrisFlyer (1.33:1): Rs.1.50-2.00 per mile on economy\nAxis EDGE Miles to Turkish Miles and Smiles: Rs.2.00+ per mile on business class\n\nThe April 2026 devaluation removed Marriott Bonvoy and Qatar. Remaining value: KrisFlyer and Turkish are still strong. Never redeem for statement credit."},
+            {"heading": "SBI reward points — the most misunderstood", "body": "SBI Reward Points: 1 point = Rs.0.25 via Rewards catalogue\n1 point = Rs.0.25 via statement credit\n1 point = Rs.0.25 via partner vouchers\n\nSBI points have almost no high-value redemption path. The SBI Cashback card gives direct cashback which is better than points for most users. If you hold a regular SBI card, the points are real money — just mediocre at Rs.0.25 per point regardless of path."},
+            {"heading": "How to calculate your annual reward value", "body": "Step 1: Take your monthly spend.\nStep 2: Multiply by your card earn rate (e.g. HDFC Regalia Gold = 2.66%).\nStep 3: Multiply earned points by your redemption rate (Rs.0.25-2.50 depending on path).\nStep 4: Subtract annual fee.\n\nExample: Rs.50,000/month on HDFC Regalia Gold\nEarn: 50,000 x 2.66% = 1,333 points/month = 16,000 points/year\nAt Rs.1.00 (SmartBuy): Rs.16,000\nFee: Rs.2,500\nNet: Rs.13,500/year\n\nAt Rs.0.25 (catalogue): only Rs.4,000. Fee wipes out most value."},
+        ]),
+        "verdict": "Your points are only worth what your redemption path delivers. HDFC holders: use SmartBuy flights (Rs.1/pt) or KrisFlyer transfers (Rs.2+/pt). Never use the merchandise catalogue. Axis holders: KrisFlyer and Turkish are your best paths post-2026 devaluation.",
+        "related_card": "HDFC Infinia Metal Edition",
+        "related_card_slug": "hdfc-infinia",
+        "published": True,
+        "published_at": "2026-06-03"
+    },
+    {
+        "slug": "best-credit-card-airport-lounge-india-2026",
+        "title": "Best Credit Cards for Airport Lounge Access India 2026",
+        "tag": "Guide",
+        "tag_color": "#7c3aed",
+        "date": "June 3, 2026",
+        "read_time": "7 min read",
+        "intro": "Airport lounge access in India has become the most aggressively marketed credit card benefit — and the most aggressively cut. In 2026, most cards that advertised lounge access now require minimum quarterly spend to unlock it. Here is what actually gives you lounges.",
+        "sections": json.dumps([
+            {"heading": "The lounge access cuts of 2026 — what changed", "body": "HDFC Regalia Gold: Now requires Rs.60,000 per quarter spend to unlock 3 lounge visits. Previously spend-free.\nAxis Magnus: Lounge access reduced and spend-linked at higher tiers.\nSBI Elite: Domestic lounge visits halved.\nIDFC FIRST cards: Lounge visits halved, now requires Rs.20,000/month minimum spend.\n\nThe only cards where unlimited lounge access survived 2026 intact: HDFC Infinia (self unlimited via Priority Pass), ICICI Emeralde Private Metal (unlimited), and a handful of super-premium cards."},
+            {"heading": "Best for unlimited domestic lounges: HDFC Regalia Gold (conditional)", "body": "HDFC Regalia Gold gives 3 domestic lounge visits per quarter (12/year) via Dreamfolks — but only if you spend Rs.60,000 that quarter. For most urban professionals spending Rs.20,000+/month on the card, this threshold is easy to meet.\n\nAt Rs.2,500 annual fee (often waived on Rs.3L spend), Regalia Gold remains the best value lounge card under Rs.5,000. The conditional structure is annoying but manageable for consistent spenders."},
+            {"heading": "Best for unlimited international lounges: HDFC Infinia", "body": "Unlimited Priority Pass for self. No spend trigger. No quarterly cap. Works at 1,400+ lounges in 148 countries.\n\nFor frequent international travellers, Infinia Priority Pass is the only truly unlimited option on an Indian card. Guest access now costs Rs.2,000 per visit (changed 2024), so bring guests rarely. The Rs.12,500 fee is steep but the lounge benefit alone is worth Rs.8,000-15,000 annually for 4+ international trips."},
+            {"heading": "Best free card with lounges: IDFC FIRST Select or Millennia", "body": "IDFC FIRST Select (Lifetime Free): 4 domestic lounge visits per quarter (16/year) subject to Rs.20,000/month minimum spend. Zero annual fee.\n\nFor users spending Rs.20,000+/month who want free lounge access, IDFC FIRST Select is the best option. The spend requirement is the catch — but at that spend level the rewards also justify holding the card."},
+            {"heading": "Lounge network guide: Dreamfolks vs Priority Pass vs LoungeKey", "body": "Dreamfolks: Covers most Indian domestic airport lounges. Used by SBI, Axis, IDFC, HDFC mid-tier cards. App-based access — download and link your card.\n\nPriority Pass: International network. Used by HDFC Infinia, ICICI Emeralde. 1,400+ lounges globally. Essential for international travel.\n\nLoungeKey: Similar international coverage to Priority Pass. Used by some HSBC and Standard Chartered cards.\n\nFor domestic travel only: Dreamfolks covers you. For international: Priority Pass or LoungeKey required. Many cards give Dreamfolks for domestic and Priority Pass for international — check both."},
+        ]),
+        "verdict": "For unlimited domestic lounges without premium fees: HDFC Regalia Gold (Rs.2,500, spend-conditioned). For unlimited international Priority Pass: HDFC Infinia only. For free cards with lounges: IDFC FIRST Select. Never assume your lounge benefit is spend-free — check your card's current MITC.",
+        "related_card": "HDFC Infinia Metal Edition",
+        "related_card_slug": "hdfc-infinia",
+        "published": True,
+        "published_at": "2026-06-03"
+    },
+]
+
+# Build SQL insert
+values = []
+for p in posts:
+    def esc(s):
+        if s is None: return 'NULL'
+        return "'" + str(s).replace("'", "''") + "'"
+    
+    values.append(f"({esc(p['slug'])},{esc(p['title'])},{esc(p['tag'])},{esc(p['tag_color'])},{esc(p['date'])},{esc(p['read_time'])},{esc(p['intro'])},{esc(p['sections'])},{esc(p.get('verdict'))},{esc(p.get('related_card'))},{esc(p.get('related_card_slug'))},true,{esc(p['published_at'])})")
+
+sql = """insert into blog_posts (slug,title,tag,tag_color,date,read_time,intro,sections,verdict,related_card,related_card_slug,published,published_at) values
+""" + ",\n".join(values) + "\non conflict (slug) do nothing;"
+
+with open(r'scripts\seed_blog_posts.sql', 'w', encoding='utf-8', newline='\n') as f:
+    f.write(sql)
+print("OK: scripts/seed_blog_posts.sql written")
+print("Run this SQL in Supabase to add 3 new Tier-1 keyword blog posts")
