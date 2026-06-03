@@ -1,4 +1,6 @@
-import { NextResponse } from 'next/server'
+﻿filepath = r'app/api/ticker/route.ts'
+
+new_content = r"""import { NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 
 export const revalidate = 3600
@@ -36,3 +38,8 @@ export async function GET() {
     return NextResponse.json({ items: [] })
   }
 }
+"""
+
+with open(filepath, 'w', encoding='utf-8', newline='\n') as f:
+    f.write(new_content)
+print("OK: ticker API rewritten cleanly")
