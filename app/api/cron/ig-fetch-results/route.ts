@@ -122,7 +122,30 @@ export async function GET(req: NextRequest) {
           const embedding = await getEmbedding(embText, openaiKey);
           if (embedding) (insight as any).embedding = embedding;
         }
+        // Map to intelligence_kb schema
+        const kbRecord = {
+          source: 'instagram',
+          source_url: insight.post_url,
+          creator_handle: insight.source_handle,
+          creator_name: insight.source_handle,
+          title: insight.insight_summary,
+          content: insight.caption,
+          insight_type: insight.insight_type,
+          card_mentions: insight.structured_data?.cards_mentioned || [],
+          trust_score: Math.min(1.0, (insight.likes || 0) / 10000),
+          engagement: insight.likes || 0,
+          published_at: insight.post_date,
+          scraped_at: new Date().toISOString(),
+          active: true,
+        }
+        // Also keep ig_knowledge_base for legacy admin view
         const { error } = await sb.from('ig_knowledge_base').upsert(insight, { onConflict: 'post_id' });
+        // Save to intelligence_kb
+        const { data: kbInserted } = await sb.from('intelligence_kb').upsert(kbRecord, { onConflict: 'source_url' }).select('id').single();
+        if (kbInserted?.id) {
+          const embedText = [kbRecord.insight_type, kbRecord.title, kbRecord.content?.slice(0,500), kbRecord.card_mentions.join(', ')].filter(Boolean).join(' | ')
+          await embedAndSave(sb, kbInserted.id, embedText)
+        }
         if (!error) {
           results.insights_saved++;
           // Layer 3: auto-detect devaluations from community signals
