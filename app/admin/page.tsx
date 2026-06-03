@@ -26,8 +26,9 @@ const INSIGHT_COLORS: Record<string, string> = {
   sweet_spot: '#065f46', strategy: '#92400e', general: '#374151',
 };
 const INSIGHT_ICONS: Record<string, string> = {
-  transfer_hack: '🔄', devaluation: '📉', card_comparison: '⚖️',
-  sweet_spot: '🎯', strategy: '🧠', general: '📌',
+  transfer_hack: '⇄', devaluation: '↓', card_comparison: '≈',
+  sweet_spot: '★', strategy: '◆', general: '●',
+  card_review: '✓', reward_tip: '▶', lounge: '■', forex: '¥',
 };
 const CIRA_USAGE: Record<string, string> = {
   transfer_hack: 'Points Optimizer + Trip Planner',
