@@ -40,3 +40,6 @@ node_modules/
 
 .env.local
 .env*.local
+
+app/compare/[comparison]/
+app/compare/[slug1]-vs-[slug2]/
