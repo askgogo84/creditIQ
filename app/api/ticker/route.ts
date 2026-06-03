@@ -31,12 +31,13 @@ export async function GET() {
       const prefix = row.insight_type === 'devaluation' ? 'DEVALUATION' :
                      row.insight_type === 'sweet_spot' ? 'SWEET SPOT' : 'HACK'
       const cards = row.card_mentions?.slice(0, 2).join(', ')
-      const body = (row.title && row.title.trim()) ? row.title : (row.content ? row.content.slice(0, 80) : null)
+      const body = (row.title && row.title.trim()) ? row.title.slice(0, 90) : (row.content ? row.content.slice(0, 90) : null)
       if (!body) return null
       return cards ? `${prefix} — ${cards}: ${body}` : `${prefix} — ${body}`
     })
 
-    return NextResponse.json({ items })
+    const filtered = (items as (string|null)[]).filter((x): x is string => x !== null)
+    return NextResponse.json({ items: filtered.length ? filtered : [] })
   } catch {
     return NextResponse.json({ items: [] })
   }
