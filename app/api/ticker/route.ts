@@ -31,7 +31,8 @@ export async function GET() {
       const prefix = row.insight_type === 'devaluation' ? 'DEVALUATION' :
                      row.insight_type === 'sweet_spot' ? 'SWEET SPOT' : 'HACK'
       const cards = row.card_mentions?.slice(0, 2).join(', ')
-      const body = row.title || row.content?.slice(0, 80) || 'New insight'
+      const body = (row.title && row.title.trim()) ? row.title : (row.content ? row.content.slice(0, 80) : null)
+      if (!body) return null
       return cards ? `${prefix} — ${cards}: ${body}` : `${prefix} — ${body}`
     })
 
