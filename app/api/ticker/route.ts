@@ -31,7 +31,8 @@ export async function GET() {
       const prefix = row.insight_type === 'devaluation' ? 'DEVALUATION' :
                      row.insight_type === 'sweet_spot' ? 'SWEET SPOT' : 'HACK'
       const cards = row.card_mentions?.slice(0, 2).join(', ')
-      return cards ? `${prefix} — ${cards}: ${row.title}` : `${prefix} — ${row.title}`
+      const body = row.title || row.content?.slice(0, 80) || 'New insight'
+      return cards ? `${prefix} — ${cards}: ${body}` : `${prefix} — ${body}`
     })
 
     return NextResponse.json({ items })
