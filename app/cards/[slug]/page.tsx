@@ -2,6 +2,7 @@ import { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import { SEED_CARDS } from '@/lib/data/seed-cards';
+import { createClient } from '@supabase/supabase-js';
 import { Header } from '@/components/Header';
 import { getApplyUrl } from '@/lib/affiliate';
 
@@ -29,9 +30,28 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   };
 }
 
-export default function CardDetailPage({ params }: Props) {
+export default async function CardDetailPage({ params }: Props) {
   const card = SEED_CARDS.find(c => c.id === params.slug);
   if (!card) notFound();
+
+  // Fetch community signals from intelligence_kb
+  let communityInsights: any[] = []
+  try {
+    const sb = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+    )
+    const cardName = card.name.toLowerCase()
+    const bankName = card.bank.toLowerCase()
+    const { data } = await sb
+      .from('intelligence_kb')
+      .select('insight_type, title, content, creator_handle, trust_score, source, scraped_at')
+      .eq('active', true)
+      .or(`card_mentions.cs.{"${card.name}"},card_mentions.cs.{"${card.bank}"}`)
+      .order('trust_score', { ascending: false })
+      .limit(3)
+    communityInsights = data || []
+  } catch {}
 
   const { url: applyUrl, label: applyLabel } = getApplyUrl(card.id);
   const annualFee = (card as any).annual_fee_inr ?? 0;
@@ -232,7 +252,35 @@ export default function CardDetailPage({ params }: Props) {
                 </div>
               </div>
 
-              {/* FAQ Schema */}
+              {/* Community Intelligence Panel */}
+        {communityInsights.length > 0 && (
+          <div style={{ backgroundColor: '#fff', borderRadius: 16, border: '1px solid #e2e8f0', overflow: 'hidden', marginBottom: 20 }}>
+            <div style={{ padding: '20px 24px', borderBottom: '1px solid #f1f5f9', display: 'flex', alignItems: 'center', gap: 10 }}>
+              <div style={{ width: 8, height: 8, borderRadius: 999, background: '#7c3aed' }} />
+              <h2 style={{ fontSize: 18, fontWeight: 700, color: '#1B3A5C', margin: 0 }}>What the community says</h2>
+              <span style={{ fontSize: 11, padding: '2px 8px', borderRadius: 999, background: 'rgba(124,58,237,0.1)', color: '#7c3aed', fontWeight: 700, letterSpacing: '0.08em' }}>LIVE</span>
+            </div>
+            {communityInsights.map((insight: any, i: number) => (
+              <div key={i} style={{ padding: '16px 24px', borderBottom: i < communityInsights.length - 1 ? '1px solid #f8fafc' : 'none' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
+                  <span style={{ fontSize: 10, padding: '2px 8px', borderRadius: 4, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em',
+                    background: insight.insight_type === 'devaluation' ? '#fef2f2' : insight.insight_type === 'sweet_spot' ? '#f0fdf4' : '#f5f3ff',
+                    color: insight.insight_type === 'devaluation' ? '#dc2626' : insight.insight_type === 'sweet_spot' ? '#16a34a' : '#7c3aed'
+                  }}>{insight.insight_type?.replace('_', ' ')}</span>
+                  {insight.creator_handle && <span style={{ fontSize: 12, color: '#94a3b8' }}>@{insight.creator_handle}</span>}
+                  <span style={{ fontSize: 11, color: '#94a3b8', marginLeft: 'auto' }}>{insight.source?.toUpperCase()}</span>
+                </div>
+                <div style={{ fontSize: 14, fontWeight: 600, color: '#1B3A5C', marginBottom: 4 }}>{insight.title}</div>
+                {insight.content && <div style={{ fontSize: 13, color: '#64748b', lineHeight: 1.5 }}>{insight.content.slice(0, 140)}...</div>}
+              </div>
+            ))}
+            <div style={{ padding: '12px 24px', background: '#fafafa' }}>
+              <a href="/intelligence" style={{ fontSize: 13, color: '#7c3aed', fontWeight: 600, textDecoration: 'none' }}>View all community intelligence &rarr;</a>
+            </div>
+          </div>
+        )}
+
+        {/* FAQ Schema */}
               <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify({
                 '@context': 'https://schema.org',
                 '@type': 'FAQPage',

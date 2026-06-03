@@ -1,4 +1,12 @@
-import { createClient } from '@supabase/supabase-js'
+﻿import os
+
+# Check if sweet-spots page exists
+sp = r'app/sweet-spots/page.tsx'
+if not os.path.exists(sp):
+    print("sweet-spots page not found - creating")
+    os.makedirs(r'app/sweet-spots', exist_ok=True)
+
+page = r"""import { createClient } from '@supabase/supabase-js'
 import { Header } from '@/components/Header'
 import { DesignFooter } from '@/components/design/Footer'
 import Link from 'next/link'
@@ -112,3 +120,7 @@ export default async function SweetSpotsPage() {
     </>
   )
 }
+"""
+with open(sp, 'w', encoding='utf-8', newline='\n') as f:
+    f.write(page)
+print("OK: sweet-spots page now reads live from intelligence_kb")
