@@ -444,7 +444,7 @@ a:hover .arrow,
 .marquee__track {
   display: flex;
   gap: 56px;
-  animation: marquee 48s linear infinite;
+  animation: marquee 90s linear infinite;
   flex-shrink: 0;
   padding-right: 56px;
 }
