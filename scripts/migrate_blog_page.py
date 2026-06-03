@@ -1,4 +1,11 @@
-import { notFound } from 'next/navigation'
+﻿import os
+
+filepath = r'app/blog/[slug]/page.tsx'
+with open(filepath, 'r', encoding='utf-8-sig') as f:
+    content = f.read()
+
+# Replace the entire file with a DB-backed version
+new_content = r"""import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import { Header } from '@/components/Header'
 import { DesignFooter } from '@/components/design/Footer'
@@ -147,3 +154,8 @@ export default async function BlogArticlePage({ params }: { params: { slug: stri
     </>
   )
 }
+"""
+
+with open(filepath, 'w', encoding='utf-8', newline='\n') as f:
+    f.write(new_content)
+print("OK: blog page now DB-backed")
