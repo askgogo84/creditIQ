@@ -55,10 +55,10 @@ export async function GET(req: NextRequest) {
 
   for (const source of sources) {
     try {
-      // Use Arctic Shift API — works from Vercel, updated through Apr 2026
+      // Use Arctic Shift API — correct params: after=YYYY-MM-DD, sort=desc (by date)
       const since = new Date(Date.now() - 72 * 60 * 60 * 1000).toISOString().split('T')[0]
       const res = await fetch(
-        `https://arctic-shift.photon-reddit.com/api/posts/search?subreddit=${source.subreddit}&after=${since}&limit=15&sort=score`,
+        `https://arctic-shift.photon-reddit.com/api/posts/search?subreddit=${source.subreddit}&after=${since}&limit=15&sort=desc`,
         { headers: { 'User-Agent': 'CreditIQ/1.0 (creditiq.app)' } }
       )
       if (!res.ok) {
