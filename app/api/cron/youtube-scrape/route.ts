@@ -25,7 +25,7 @@ Title: "${title}"
 Transcript excerpt: "${transcript.slice(0, 1500)}"
 
 Return ONLY valid JSON:
-{"insight_type":"transfer_hack|devaluation|card_comparison|sweet_spot|strategy|general","title":"one clear insight headline","content":"2-3 sentence summary of the key insight","card_mentions":[],"is_valuable":true}`
+{"insight_type":"transfer_hack|devaluation|sweet_spot|strategy|general|card_review|reward_tip","title":"one clear insight headline","content":"2-3 sentence summary of the key insight","card_mentions":[],"is_valuable":true}`
 
   const res = await fetch('https://api.anthropic.com/v1/messages', {
     method: 'POST',
@@ -104,7 +104,7 @@ export async function GET(req: NextRequest) {
           creator_followers: channel.subscriber_count || 0,
           title: insight.title,
           content: insight.content,
-          insight_type: insight.insight_type,
+          insight_type: (['transfer_hack','devaluation','sweet_spot','strategy','general','card_review','reward_tip','lounge','forex'].includes(insight.insight_type) ? insight.insight_type : 'strategy'),
           card_mentions: insight.card_mentions || [],
           trust_score: Math.min(1.0, (channel.subscriber_count || 0) / 500000),
           published_at: video.snippet?.publishedAt,

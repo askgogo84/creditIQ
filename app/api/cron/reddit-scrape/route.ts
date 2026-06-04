@@ -25,7 +25,7 @@ Title: "${title}"
 Body: "${body.slice(0, 800)}"
 
 Return ONLY valid JSON:
-{"insight_type":"transfer_hack|devaluation|card_comparison|sweet_spot|strategy|general","title":"one clear insight headline","content":"2-3 sentence summary","card_mentions":[],"is_valuable":true}`
+{"insight_type":"transfer_hack|devaluation|sweet_spot|strategy|general|card_review|reward_tip","title":"one clear insight headline","content":"2-3 sentence summary","card_mentions":[],"is_valuable":true}`
 
   const res = await fetch('https://api.anthropic.com/v1/messages', {
     method: 'POST',
@@ -64,7 +64,7 @@ export async function GET(req: NextRequest) {
       const posts = data.data?.children || []
 
       for (const { data: post } of posts) {
-        if (!post.title || post.score < 10) continue
+        if (!post.title || post.score < 3) continue
 
         // Check already processed
         const { data: existing } = await sb.from('intelligence_kb')
@@ -85,7 +85,7 @@ export async function GET(req: NextRequest) {
           creator_followers: post.score,
           title: insight.title,
           content: insight.content,
-          insight_type: insight.insight_type,
+          insight_type: (['transfer_hack','devaluation','sweet_spot','strategy','general','card_review','reward_tip','lounge','forex'].includes(insight.insight_type) ? insight.insight_type : 'strategy'),
           card_mentions: insight.card_mentions || [],
           trust_score: Math.min(1.0, post.score / 1000),
           published_at: new Date(post.created_utc * 1000).toISOString(),
