@@ -25,7 +25,7 @@ Title: "${title}"
 Body: "${body.slice(0, 800)}"
 
 Return ONLY valid JSON:
-{"insight_type":"transfer_hack|devaluation|sweet_spot|strategy|general|card_review|reward_tip","title":"one clear insight headline","content":"2-3 sentence summary","card_mentions":[],"is_valuable":true}`
+{"insight_type":"transfer_hack|devaluation|sweet_spot|strategy|general|card_review|reward_tip","title":"one clear insight headline under 15 words","content":"2-3 sentence summary of what Indian CC users would find useful","card_mentions":["any card names mentioned"],"is_valuable":true}`
 
   const res = await fetch('https://api.anthropic.com/v1/messages', {
     method: 'POST',
@@ -38,7 +38,7 @@ Return ONLY valid JSON:
   const clean = raw.replace(/```json|```/g, '').replace(/^[^{]*/,'').replace(/[^}]*$/,'').trim()
   try {
     const parsed = JSON.parse(clean)
-    if (!parsed.is_valuable) return null
+    // Save all insights, trust score handles quality filtering
     return parsed
   } catch { return null }
 }
@@ -64,7 +64,7 @@ export async function GET(req: NextRequest) {
       const posts = data.data?.children || []
 
       for (const { data: post } of posts) {
-        if (!post.title || post.score < 3) continue
+        if (!post.title) continue
 
         // Check already processed
         const { data: existing } = await sb.from('intelligence_kb')
