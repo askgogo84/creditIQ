@@ -55,14 +55,14 @@ export async function GET(req: NextRequest) {
 
   for (const source of sources) {
     try {
-      // Reddit blocks Vercel IPs — use Pullpush.io (community Pushshift)
-      const since = Math.floor((Date.now() - 48 * 60 * 60 * 1000) / 1000)
+      // Use Arctic Shift API — works from Vercel, updated through Apr 2026
+      const since = new Date(Date.now() - 72 * 60 * 60 * 1000).toISOString().split('T')[0]
       const res = await fetch(
-        `https://api.pullpush.io/reddit/search/submission/?subreddit=${source.subreddit}&sort=score&sort_type=desc&size=15&after=${since}`,
+        `https://arctic-shift.photon-reddit.com/api/posts/search?subreddit=${source.subreddit}&after=${since}&limit=15&sort=score`,
         { headers: { 'User-Agent': 'CreditIQ/1.0 (creditiq.app)' } }
       )
       if (!res.ok) {
-        errors.push(source.subreddit + ': pullpush HTTP ' + res.status)
+        errors.push(source.subreddit + ': arctic HTTP ' + res.status)
         continue
       }
       const data = await res.json()
@@ -70,7 +70,7 @@ export async function GET(req: NextRequest) {
       const posts = rawPosts.map((p: any) => ({ data: p }))
 
       for (const { data: post } of posts) { if (!post) continue
-        if (!post.title) continue
+        if (!post?.title) continue
 
         // Check already processed
         const { data: existing } = await sb.from('intelligence_kb')
