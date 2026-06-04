@@ -55,25 +55,21 @@ export async function GET(req: NextRequest) {
 
   for (const source of sources) {
     try {
-      // Reddit blocks Vercel IPs on public JSON — use Pushshift/alternative
-      // Use old.reddit.com which has different IP routing
+      // Reddit blocks Vercel IPs — use Pullpush.io (community Pushshift)
+      const since = Math.floor((Date.now() - 48 * 60 * 60 * 1000) / 1000)
       const res = await fetch(
-        `https://old.reddit.com/r/${source.subreddit}/hot.json?limit=15&raw_json=1`,
-        { 
-          headers: { 
-            'User-Agent': 'Mozilla/5.0 (compatible; CreditIQ/1.0; +https://creditiq.app)',
-            'Accept': 'application/json',
-          } 
-        }
+        `https://api.pullpush.io/reddit/search/submission/?subreddit=${source.subreddit}&sort=score&sort_type=desc&size=15&after=${since}`,
+        { headers: { 'User-Agent': 'CreditIQ/1.0 (creditiq.app)' } }
       )
       if (!res.ok) {
-        errors.push(source.subreddit + ': HTTP ' + res.status)
+        errors.push(source.subreddit + ': pullpush HTTP ' + res.status)
         continue
       }
       const data = await res.json()
-      const posts = data.data?.children || []
+      const rawPosts = data.data || []
+      const posts = rawPosts.map((p: any) => ({ data: p }))
 
-      for (const { data: post } of posts) {
+      for (const { data: post } of posts) { if (!post) continue
         if (!post.title) continue
 
         // Check already processed
@@ -89,7 +85,7 @@ export async function GET(req: NextRequest) {
 
         const record = {
           source: 'reddit',
-          source_url: `https://reddit.com${post.permalink}`,
+          source_url: `https://reddit.com${post.permalink || '/r/' + source.subreddit}`,
           creator_handle: post.author,
           creator_name: 'r/' + source.subreddit,
           creator_followers: post.score,
@@ -98,7 +94,7 @@ export async function GET(req: NextRequest) {
           insight_type: (['transfer_hack','devaluation','sweet_spot','strategy','general','card_review','reward_tip','lounge','forex'].includes(insight.insight_type) ? insight.insight_type : 'strategy'),
           card_mentions: insight.card_mentions || [],
           trust_score: Math.min(1.0, post.score / 1000),
-          published_at: new Date(post.created_utc * 1000).toISOString(),
+          published_at: post.created_utc ? new Date(post.created_utc * 1000).toISOString() : new Date().toISOString(),
           scraped_at: new Date().toISOString(),
           active: true,
           ...(embedding ? { embedding } : {}),
