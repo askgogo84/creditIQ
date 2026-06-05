@@ -37,7 +37,7 @@ interface ArcticPost {
 interface ProcessedInsight {
   insight_type: string;
   content: string;
-  card_mentioned: string | null;
+  card_mentions: string | null;
   source_url: string;
   relevance_score: number;
 }
@@ -120,7 +120,7 @@ Return a JSON array. Each item must have:
 {
   "insight_type": one of: "devaluation_alert" | "reward_hack" | "card_comparison" | "benefit_tip" | "offer_alert" | "community_discussion",
   "content": "1-2 sentence insight in plain English, specific and actionable",
-  "card_mentioned": "primary card name or null if generic",
+  "card_mentions": "primary card name or null if generic",
   "source_url": "the post URL",
   "relevance_score": integer 1-10 (10 = highly specific, actionable intelligence)
 }
@@ -187,7 +187,7 @@ async function embedAndSave(
       insight_type: insight.insight_type,
       content: insight.content,
       title: null, // Reddit posts don't need a separate title field
-      card_mentioned: insight.card_mentioned,
+      card_mentions: insight.card_mentions,
       source_url: insight.source_url,
       relevance_score: insight.relevance_score,
       embedding,
