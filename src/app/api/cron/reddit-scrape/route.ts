@@ -250,9 +250,13 @@ export async function GET(req: NextRequest) {
       job_name: "reddit-scrape",
       status: errors.length === 0 ? "success" : "partial",
       ran_at: new Date().toISOString(),
-      records_inserted: savedCount.value,
-      error_message: errors.length > 0 ? errors.join(" | ") : null,
-      duration_ms: Date.now() - startTime,
+      details: {
+        records_saved: savedCount.value,
+        posts_fetched: totalFetched,
+        insights_extracted: totalInsights,
+        errors: errors.length > 0 ? errors : null,
+        duration_ms: Date.now() - startTime,
+      },
     });
 
     return NextResponse.json({
@@ -270,9 +274,7 @@ export async function GET(req: NextRequest) {
       job_name: "reddit-scrape",
       status: "error",
       ran_at: new Date().toISOString(),
-      records_inserted: 0,
-      error_message: msg,
-      duration_ms: Date.now() - startTime,
+      details: { error: msg, duration_ms: Date.now() - startTime },
     });
 
     return NextResponse.json({ success: false, error: msg }, { status: 500 });
