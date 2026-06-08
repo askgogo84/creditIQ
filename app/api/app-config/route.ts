@@ -1,4 +1,4 @@
-import { NextResponse } from 'next/server'
+﻿import { NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 
 const supabase = createClient(
@@ -34,7 +34,7 @@ export async function GET() {
       .order('date', { ascending: false })
       .limit(5)
 
-    // App config — change any of this without an APK update
+    // App config â€” change any of this without an APK update
     const config = {
       version: '1.0.0',
       lastUpdated: new Date().toISOString(),
@@ -42,11 +42,11 @@ export async function GET() {
       // Home screen
       home: {
         heroTitle: 'Find your perfect card',
-        heroSubtitle: 'Tell CIRA your spends → unbiased recommendation',
+        heroSubtitle: 'Tell CIRA your spends â†’ unbiased recommendation',
         statsBar: [
           { value: `${topCards?.length ? '170+' : '100+'}`, label: 'Cards' },
           { value: '3', label: 'Sources' },
-          { value: '₹0', label: 'Bias' },
+          { value: 'â‚¹0', label: 'Bias' },
         ],
         quickActions: [
           { id: 'match', icon: 'sparkles-outline', label: 'Find my card', route: '/cira', color: '#142950' },
@@ -80,17 +80,17 @@ export async function GET() {
         date: d.date,
       })),
 
-      // CIRA suggested questions — update anytime
+      // CIRA suggested questions â€” update anytime
       ciraPrompts: [
-        'Best card for ₹50K monthly spend',
-        'Is HDFC Infinia worth ₹12,500?',
+        'Best card for â‚¹50K monthly spend',
+        'Is HDFC Infinia worth â‚¹12,500?',
         'Roast my Axis Magnus card',
-        'Best lounge access card under ₹2000 fee',
+        'Best lounge access card under â‚¹2000 fee',
         'Which card for Air India flights?',
         'Best cashback card for Swiggy and Amazon',
       ],
 
-      // Onboarding flow — update questions without APK update
+      // Onboarding flow â€” update questions without APK update
       onboarding: {
         steps: [
           {
@@ -98,12 +98,12 @@ export async function GET() {
             title: 'What do you spend most on?',
             type: 'multi',
             options: [
-              { id: 'shopping', label: '🛍️ Online Shopping', sub: 'Amazon, Flipkart, Myntra' },
-              { id: 'dining', label: '🍽️ Dining & Food', sub: 'Swiggy, Zomato, restaurants' },
-              { id: 'travel', label: '✈️ Travel', sub: 'Flights, hotels, cabs' },
-              { id: 'fuel', label: '⛽ Fuel', sub: 'Petrol & diesel' },
-              { id: 'groceries', label: '🛒 Groceries', sub: 'BigBasket, supermarkets' },
-              { id: 'utility', label: '💡 Bills', sub: 'Electricity, mobile recharges' },
+              { id: 'shopping', label: 'ðŸ›ï¸ Online Shopping', sub: 'Amazon, Flipkart, Myntra' },
+              { id: 'dining', label: 'ðŸ½ï¸ Dining & Food', sub: 'Swiggy, Zomato, restaurants' },
+              { id: 'travel', label: 'âœˆï¸ Travel', sub: 'Flights, hotels, cabs' },
+              { id: 'fuel', label: 'â›½ Fuel', sub: 'Petrol & diesel' },
+              { id: 'groceries', label: 'ðŸ›’ Groceries', sub: 'BigBasket, supermarkets' },
+              { id: 'utility', label: 'ðŸ’¡ Bills', sub: 'Electricity, mobile recharges' },
             ],
           },
           {
@@ -111,11 +111,11 @@ export async function GET() {
             title: 'Monthly credit card spend?',
             type: 'single',
             options: [
-              { id: '10k', label: 'Under ₹10,000' },
-              { id: '25k', label: '₹10K – ₹25K' },
-              { id: '50k', label: '₹25K – ₹50K' },
-              { id: '1L', label: '₹50K – ₹1L' },
-              { id: '1L+', label: 'Over ₹1L' },
+              { id: '10k', label: 'Under â‚¹10,000' },
+              { id: '25k', label: 'â‚¹10K â€“ â‚¹25K' },
+              { id: '50k', label: 'â‚¹25K â€“ â‚¹50K' },
+              { id: '1L', label: 'â‚¹50K â€“ â‚¹1L' },
+              { id: '1L+', label: 'Over â‚¹1L' },
             ],
           },
           {
@@ -123,32 +123,32 @@ export async function GET() {
             title: "What's your primary goal?",
             type: 'single',
             options: [
-              { id: 'cashback', label: '💰 Maximum cashback' },
-              { id: 'travel', label: '🌏 Free flights & hotels' },
-              { id: 'lounge', label: '🛋️ Airport lounge access' },
-              { id: 'simple', label: '✅ Simple, no-fee card' },
+              { id: 'cashback', label: 'ðŸ’° Maximum cashback' },
+              { id: 'travel', label: 'ðŸŒ Free flights & hotels' },
+              { id: 'lounge', label: 'ðŸ›‹ï¸ Airport lounge access' },
+              { id: 'simple', label: 'âœ… Simple, no-fee card' },
             ],
           },
         ],
       },
 
-      // Feature flags — turn on/off features without APK
+      // Feature flags â€” turn on/off features without APK
       features: {
-        showIntelligenceFeed: True,
-        showDevaluationAlerts: True,
-        showOnboarding: True,
-        showRewards: True,
-        showScan: True,
-        enableCiraVoice: False,  # future feature
-        enableCardComparison: True,
+        showIntelligenceFeed: true,
+        showDevaluationAlerts: true,
+        showOnboarding: true,
+        showRewards: true,
+        showScan: true,
+        enableCiraVoice: false, // future feature
+        enableCardComparison: true,
       },
 
       // Play Store metadata
       appInfo: {
         version: '1.0.0',
-        minAppVersion: '1.0.0',  # force update if below this
-        updateMessage: None,
-        maintenanceMode: False,
+        minAppVersion: '1.0.0', // force update if below this
+        updateMessage: null,
+        maintenanceMode: false,
       },
     }
 
@@ -161,10 +161,10 @@ export async function GET() {
 
 function getIcon(type: string): string {
   const map: Record<string, string> = {
-    transfer_hack: '⇄', devaluation: '↓', sweet_spot: '★',
-    strategy: '◆', card_review: '✓', general: '●', reward_tip: '▶',
+    transfer_hack: 'â‡„', devaluation: 'â†“', sweet_spot: 'â˜…',
+    strategy: 'â—†', card_review: 'âœ“', general: 'â—', reward_tip: 'â–¶',
   }
-  return map[type] || '●'
+  return map[type] || 'â—'
 }
 
 function getColor(type: string): string {
