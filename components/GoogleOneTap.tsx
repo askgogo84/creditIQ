@@ -9,7 +9,6 @@ export default function GoogleOneTap() {
 
   async function handleCredential(response: { credential: string }) {
     try {
-      // Direct client-side sign in - no custom API route needed
       const supabase = createClient(
         process.env.NEXT_PUBLIC_SUPABASE_URL!,
         process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
@@ -21,17 +20,13 @@ export default function GoogleOneTap() {
       })
 
       if (error) {
-        console.error('Sign in error:', error.message, error)
+        console.error('Sign in error:', error.message)
         alert('Sign in failed: ' + error.message)
         return
       }
 
       if (data.session) {
-        console.log('Session set successfully, redirecting...')
-        // Small delay to ensure cookie is written before redirect
         setTimeout(() => { window.location.href = '/dashboard' }, 500)
-      } else {
-        console.error('No session returned:', JSON.stringify(data))
       }
     } catch (err) {
       console.error('Google sign-in error:', err)
@@ -45,10 +40,12 @@ export default function GoogleOneTap() {
     google.accounts.id.initialize({
       client_id: process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID!,
       callback: handleCredential,
-      auto_select: true,
-      cancel_on_tap_outside: false,
+      auto_select: false,           // disable auto-select to avoid FedCM rate limiting
+      cancel_on_tap_outside: true,
+      use_fedcm_for_prompt: false,  // force classic One Tap, not FedCM
     })
 
+    // Only render button — don't call prompt() which triggers FedCM
     google.accounts.id.renderButton(buttonRef.current, {
       type: 'standard',
       theme: 'outline',
@@ -58,8 +55,6 @@ export default function GoogleOneTap() {
       logo_alignment: 'left',
       width: buttonRef.current.offsetWidth || 320,
     })
-
-    google.accounts.id.prompt()
   }
 
   return (
