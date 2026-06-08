@@ -294,6 +294,10 @@ export function CardDetailClient({ card }: { card: CreditCard }) {
       )}
     </div>
   );
+      {/* ── What creators say — live intelligence ── */}
+      <section style={{ padding: '60px clamp(20px,5vw,80px)', maxWidth: 900, margin: '0 auto' }}>
+        <WhatCreatorsSay cardSlug={card.slug ?? card.id} />
+      </section>
 }
 
 function Metric({ label, value, highlight }: { label: string; value: string; highlight?: boolean }) {
