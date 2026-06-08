@@ -1,13 +1,11 @@
-﻿'use client'
+'use client'
 
 import Script from 'next/script'
 import { useRef } from 'react'
-import { useRouter } from 'next/navigation'
 import { createClient } from '@supabase/supabase-js'
 
 export default function GoogleOneTap() {
   const buttonRef = useRef<HTMLDivElement>(null)
-  const router = useRouter()
 
   async function handleCredential(response: { credential: string }) {
     try {
@@ -21,15 +19,17 @@ export default function GoogleOneTap() {
       const data = await res.json()
 
       if (data.ok && data.access_token && data.refresh_token) {
-        // Set the Supabase session on the client
-        const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!)
+        const supabase = createClient(
+          process.env.NEXT_PUBLIC_SUPABASE_URL!,
+          process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+        )
         const { error } = await supabase.auth.setSession({
           access_token: data.access_token,
           refresh_token: data.refresh_token,
         })
         if (error) throw error
-        router.push('/dashboard')
-        router.refresh()
+        // Full reload so server reads the new session cookie
+        window.location.href = '/dashboard'
       }
     } catch (err) {
       console.error('Google sign-in error:', err)
