@@ -1,4 +1,4 @@
-import { OAuth2Client } from 'google-auth-library'
+﻿import { OAuth2Client } from 'google-auth-library'
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 
@@ -17,7 +17,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'No credential' }, { status: 400 })
     }
 
-    // Verify Google JWT server-side
+    // 1. Verify Google JWT server-side
     const ticket = await googleClient.verifyIdToken({
       idToken: credential,
       audience: process.env.GOOGLE_CLIENT_ID,
@@ -29,48 +29,73 @@ export async function POST(req: NextRequest) {
 
     const { email, name, picture, sub: googleId } = payload
 
-    // Find or create user
-    let userId: string
-
+    // 2. Find or create user
     const { data: list } = await supabaseAdmin.auth.admin.listUsers({ perPage: 1000 })
     const existing = list?.users?.find((u) => u.email === email)
 
     if (existing) {
-      userId = existing.id
-      await supabaseAdmin.auth.admin.updateUserById(userId, {
+      await supabaseAdmin.auth.admin.updateUserById(existing.id, {
         user_metadata: { full_name: name, avatar_url: picture, google_id: googleId },
       })
     } else {
-      const { data: created, error: createErr } = await supabaseAdmin.auth.admin.createUser({
+      const { error: createErr } = await supabaseAdmin.auth.admin.createUser({
         email,
         email_confirm: true,
         user_metadata: { full_name: name, avatar_url: picture, google_id: googleId, provider: 'google' },
       })
-      if (createErr || !created?.user) {
-        return NextResponse.json({ error: createErr?.message ?? 'Create failed' }, { status: 500 })
+      if (createErr) {
+        return NextResponse.json({ error: createErr.message }, { status: 500 })
       }
-      userId = created.user.id
     }
 
-    // Generate a magic link and extract the access + refresh tokens from it
+    // 3. Generate magic link â€” extract hashed_token from the URL
     const { data: linkData, error: linkErr } = await supabaseAdmin.auth.admin.generateLink({
       type: 'magiclink',
       email,
-      options: { redirectTo: `${process.env.NEXT_PUBLIC_SITE_URL ?? 'https://creditiq.app'}/dashboard` }
     })
+
     if (linkErr || !linkData) {
-      return NextResponse.json({ error: 'Session generation failed' }, { status: 500 })
+      return NextResponse.json({ error: 'Link generation failed' }, { status: 500 })
     }
 
-    // Return tokens so client can call supabase.auth.setSession()
-    const props = (linkData as any).properties
+    // Extract hashed_token from the action_link URL
+    // URL format: https://xxx.supabase.co/auth/v1/verify?token=HASH&type=magiclink&...
+    const actionLink = (linkData as any).properties?.action_link ?? ''
+    const tokenMatch = actionLink.match(/token=([^&]+)/)
+    const hashedToken = tokenMatch?.[1]
+
+    if (!hashedToken) {
+      console.error('No token in action_link:', actionLink, 'Full data:', JSON.stringify(linkData))
+      return NextResponse.json({ error: 'Could not extract token' }, { status: 500 })
+    }
+
+    // 4. Exchange hashed_token for a real session via Supabase verify endpoint
+    const verifyRes = await fetch(
+      `${process.env.NEXT_PUBLIC_SUPABASE_URL}/auth/v1/verify`,
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'apikey': process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+        },
+        body: JSON.stringify({ token: hashedToken, type: 'magiclink', redirect_to: '' }),
+      }
+    )
+
+    const session = await verifyRes.json()
+
+    if (!session.access_token) {
+      console.error('Verify failed:', JSON.stringify(session))
+      return NextResponse.json({ error: 'Session exchange failed' }, { status: 500 })
+    }
+
     return NextResponse.json({
       ok: true,
       email,
       name,
       picture,
-      access_token: props?.access_token,
-      refresh_token: props?.refresh_token,
+      access_token: session.access_token,
+      refresh_token: session.refresh_token,
     })
 
   } catch (err) {
