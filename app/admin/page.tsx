@@ -299,8 +299,8 @@ export default function AdminPage() {
                 <p style={{ fontSize: 13, color: 'var(--ink-3,#5A6A8A)', margin: '0 0 20px' }}>Run any pipeline job immediately.</p>
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(200px,1fr))', gap: 12, marginBottom: 16 }}>
                   {[
-                    { label: 'Ã°Å¸" Scrape All Banks', job: 'scrape' as const, desc: 'Fetches all 12 bank pages + Claude AI parse' },
-                    { label: 'Ã°Å¸" "¢ Discover New Cards', job: 'cards-sync' as const, desc: 'Scans Paisabazaar + Finology for new cards' },
+                    { label: ' Scrape All Banks', job: 'scrape' as const, desc: 'Fetches all 12 bank pages + Claude AI parse' },
+                    { label: ' "¢ Discover New Cards', job: 'cards-sync' as const, desc: 'Scans Paisabazaar + Finology for new cards' },
                     { label: 'âš ï¸ Detect Devaluations', job: 'detect-devaluations' as const, desc: 'Diffs yesterday vs today snapshots' },
                   ].map(({ label, job, desc }) => (
                     <button key={job} onClick={() => triggerJob(job)} style={{ padding: '14px 16px', background: 'var(--surface,#fff)', border: '1px solid var(--line,rgba(20,41,80,0.08))', borderRadius: 12, textAlign: 'left', cursor: 'pointer' }}>
@@ -340,7 +340,7 @@ export default function AdminPage() {
                 <div key={d.id} style={{ background: 'var(--paper,#FAF5EB)', border: `1px solid ${IMPACT_COLOR[d.impact] || 'var(--line)'}30`, borderRadius: 16, padding: 20 }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: 12, marginBottom: 12 }}>
                     <div>
-                      <div style={{ fontSize: 15, fontWeight: 700, color: 'var(--ink,#142950)', marginBottom: 4 }}>{d.card_name} Ã‚· {d.bank}</div>
+                      <div style={{ fontSize: 15, fontWeight: 700, color: 'var(--ink,#142950)', marginBottom: 4 }}>{d.card_name} · {d.bank}</div>
                       <div style={{ fontSize: 13, color: 'var(--ink-2,#2A3F6B)', lineHeight: 1.6 }}>{d.description}</div>
                     </div>
                     <div style={{ display: 'flex', gap: 8, flexShrink: 0 }}>
@@ -372,7 +372,7 @@ export default function AdminPage() {
                 <div key={card.id} style={{ background: 'var(--paper,#FAF5EB)', border: '1px solid var(--line,rgba(20,41,80,0.08))', borderRadius: 16, padding: 20, display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 12 }}>
                   <div>
                     <div style={{ fontSize: 15, fontWeight: 700, color: 'var(--ink,#142950)', marginBottom: 4 }}>{card.name}</div>
-                    <div style={{ fontFamily: 'var(--font-mono,monospace)', fontSize: 11, color: 'var(--ink-3,#5A6A8A)' }}>{card.bank} Ã‚· {card.tier} Ã‚· Rs.{card.annual_fee_inr}/yr</div>
+                    <div style={{ fontFamily: 'var(--font-mono,monospace)', fontSize: 11, color: 'var(--ink-3,#5A6A8A)' }}>{card.bank} · {card.tier} · Rs.{card.annual_fee_inr}/yr</div>
                   </div>
                   <div style={{ display: 'flex', gap: 8 }}>
                     <button onClick={() => publishPendingCard(card.id)} style={{ padding: '8px 18px', background: '#2d7a56', color: '#fff', border: 'none', borderRadius: 8, fontSize: 13, fontWeight: 700, cursor: 'pointer' }}>Publish</button>
@@ -581,13 +581,13 @@ export default function AdminPage() {
                 </div>
                 <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
                   <button onClick={triggerIgScrape} style={{ padding: '8px 14px', borderRadius: 8, fontSize: 12, fontWeight: 600, cursor: 'pointer', background: '#7c3aed', color: '#fff', border: 'none' }}>
-                    Ã¢"“¶ Start Scrape
+                    "“¶ Start Scrape
                   </button>
                   <button onClick={triggerIgFetch} style={{ padding: '8px 14px', borderRadius: 8, fontSize: 12, fontWeight: 600, cursor: 'pointer', background: 'var(--ink,#142950)', color: '#fff', border: 'none' }}>
-                    Ã¢¬"¡ Fetch Results
+                    ¬"¡ Fetch Results
                   </button>
                   <button onClick={loadIgInsights} style={{ padding: '8px 14px', borderRadius: 8, fontSize: 12, fontWeight: 600, cursor: 'pointer', background: 'var(--paper,#FAF5EB)', color: 'var(--ink,#142950)', border: '1px solid var(--line,rgba(20,41,80,0.12))' }}>
-                    Ã¢" » Refresh
+                    " » Refresh
                   </button>
                 </div>
               </div>
@@ -622,7 +622,7 @@ export default function AdminPage() {
                   {[
                     { icon: 'ðŸ”„', type: 'Transfer Hacks', flow: 'Points Optimizer â†’ Finnair route over direct Qatar (100K RP = 100K vs 50K Avios)', color: '#7c3aed' },
                     { icon: 'ðŸ“‰', type: 'Devaluations', flow: 'Card Roast â†’ "SBI PhonePe Black gutted July 2026 "” avoid this card"', color: '#b91c1c' },
-                    { icon: 'Ã°Å¸Å½¯', type: 'Sweet Spots', flow: 'Trip Planner â†’ "BLR-SIN Business 42,500 KrisFlyer "” best value in Asia"', color: '#065f46' },
+                    { icon: 'Å½¯', type: 'Sweet Spots', flow: 'Trip Planner â†’ "BLR-SIN Business 42,500 KrisFlyer "” best value in Asia"', color: '#065f46' },
                     { icon: 'âš–ï¸', type: 'Comparisons', flow: 'Smart Match â†’ Diners Black outperforms Infinia for moderate spenders', color: '#0369a1' },
                   ].map((item, i) => (
                     <div key={i} style={{ padding: 12, borderRadius: 10, background: `${item.color}08`, border: `1px solid ${item.color}20` }}>
@@ -653,18 +653,18 @@ export default function AdminPage() {
                           {insight.insight_type?.replace('_', ' ')}
                         </span>
                         <span style={{ fontSize: 11, color: 'var(--ink-3,#5A6A8A)' }}>@{insight.creator_handle}</span>
-                        <span style={{ fontSize: 11, color: 'var(--ink-3,#5A6A8A)' }}>Ã¢¤Ã¯¸ {insight.trust_score ?? 0}</span>
+                        <span style={{ fontSize: 11, color: 'var(--ink-3,#5A6A8A)' }}>¤¸ {insight.trust_score ?? 0}</span>
                         <span style={{ fontSize: 11, color: 'var(--ink-3,#5A6A8A)', marginLeft: 'auto' }}>{new Date(insight.scraped_at).toLocaleDateString('en-IN')}</span>
                       </div>
                       <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--ink,#142950)', marginBottom: 6 }}>{insight.title || insight.content?.slice(0, 120)}</div>
                       {insight.content && (
-                        <div style={{ fontSize: 12, color: 'var(--ink-3,#5A6A8A)', marginBottom: 8 }}>Ã°Å¸'¡ {insight.content?.slice(0,150)}</div>
+                        <div style={{ fontSize: 12, color: 'var(--ink-3,#5A6A8A)', marginBottom: 8 }}>'¡ {insight.content?.slice(0,150)}</div>
                       )}
                       <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
                         <span style={{ fontSize: 11, padding: '2px 8px', borderRadius: 6, background: 'rgba(20,41,80,0.06)', color: 'var(--ink-3,#5A6A8A)' }}>
                           â†’ {CIRA_USAGE[insight.insight_type]}
                         </span>
-                        <a href={insight.source_url} target="_blank" rel="noopener noreferrer" onClick={() => fetch('/api/ig-click', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ insight_id: insight.id, query_context: 'admin_view' }) })} style={{ fontSize: 11, color: '#0369a1' }}>View post Ã¢" "”</a>
+                        <a href={insight.source_url} target="_blank" rel="noopener noreferrer" onClick={() => fetch('/api/ig-click', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ insight_id: insight.id, query_context: 'admin_view' }) })} style={{ fontSize: 11, color: '#0369a1' }}>View post " "”</a>
                       </div>
                       {insight.card_mentions?.length > 0 && (
                         <div style={{ marginTop: 8, display: 'flex', gap: 6, flexWrap: 'wrap' }}>
