@@ -9,26 +9,23 @@ export default function GoogleOneTap() {
 
   async function handleCredential(response: { credential: string }) {
     try {
-      const res = await fetch('/api/auth/google', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ credential: response.credential }),
+      // Direct client-side sign in - no custom API route needed
+      const supabase = createClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL!,
+        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+      )
+
+      const { data, error } = await supabase.auth.signInWithIdToken({
+        provider: 'google',
+        token: response.credential,
       })
 
-      if (!res.ok) throw new Error('Auth failed')
-      const data = await res.json()
+      if (error) {
+        console.error('Sign in error:', error.message)
+        return
+      }
 
-      if (data.ok && data.access_token && data.refresh_token) {
-        const supabase = createClient(
-          process.env.NEXT_PUBLIC_SUPABASE_URL!,
-          process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-        )
-        const { error } = await supabase.auth.setSession({
-          access_token: data.access_token,
-          refresh_token: data.refresh_token,
-        })
-        if (error) throw error
-        // Full reload so server reads the new session cookie
+      if (data.session) {
         window.location.href = '/dashboard'
       }
     } catch (err) {
