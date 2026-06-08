@@ -577,18 +577,18 @@ export default function AdminPage() {
               {/* Header */}
               <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 24, flexWrap: 'wrap', gap: 12 }}>
                 <div>
-                  <h2 style={{ fontSize: 20, fontWeight: 700, color: 'var(--ink,#142950)', marginBottom: 4 }}>ðŸ§  Instagram CC Intelligence</h2>
+                  <h2 style={{ fontSize: 20, fontWeight: 700, color: 'var(--ink,#142950)', marginBottom: 4 }}>📷 Instagram CC Intelligence</h2>
                   <p style={{ fontSize: 13, color: 'var(--ink-3,#5A6A8A)', margin: 0 }}>Insights scraped from @thatcreditcardguy, @everypaisamatters, @creditcardtalks, @thegreatindianmiles & more</p>
                 </div>
                 <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
                   <button onClick={triggerIgScrape} style={{ padding: '8px 14px', borderRadius: 8, fontSize: 12, fontWeight: 600, cursor: 'pointer', background: '#7c3aed', color: '#fff', border: 'none' }}>
-                    "“¶ Start Scrape
+                    ▶ Start Scrape
                   </button>
                   <button onClick={triggerIgFetch} style={{ padding: '8px 14px', borderRadius: 8, fontSize: 12, fontWeight: 600, cursor: 'pointer', background: 'var(--ink,#142950)', color: '#fff', border: 'none' }}>
-                    ¬"¡ Fetch Results
+                    ↓ Fetch Results
                   </button>
                   <button onClick={loadIgInsights} style={{ padding: '8px 14px', borderRadius: 8, fontSize: 12, fontWeight: 600, cursor: 'pointer', background: 'var(--paper,#FAF5EB)', color: 'var(--ink,#142950)', border: '1px solid var(--line,rgba(20,41,80,0.12))' }}>
-                    " » Refresh
+                    ↻ Refresh
                   </button>
                 </div>
               </div>
@@ -621,10 +621,10 @@ export default function AdminPage() {
                 <h3 style={{ fontSize: 14, fontWeight: 700, color: 'var(--ink,#142950)', marginBottom: 14 }}>How Intelligence Powers CIRA</h3>
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 10 }}>
                   {[
-                    { icon: 'ðŸ”„', type: 'Transfer Hacks', flow: 'Points Optimizer  Finnair route over direct Qatar (100K RP = 100K vs 50K Avios)', color: '#7c3aed' },
-                    { icon: 'ðŸ“‰', type: 'Devaluations', flow: 'Card Roast  "SBI PhonePe Black gutted July 2026 "” avoid this card"', color: '#b91c1c' },
-                    { icon: 'Å½¯', type: 'Sweet Spots', flow: 'Trip Planner  "BLR-SIN Business 42,500 KrisFlyer "” best value in Asia"', color: '#065f46' },
-                    { icon: '', type: 'Comparisons', flow: 'Smart Match  Diners Black outperforms Infinia for moderate spenders', color: '#0369a1' },
+                    { icon: '⇄', type: 'Transfer Hacks', flow: 'Points Optimizer  Finnair route over direct Qatar (100K RP = 100K vs 50K Avios)', color: '#7c3aed' },
+                    { icon: '↓', type: 'Devaluations', flow: 'Card Roast  "SBI PhonePe Black gutted July 2026 "” avoid this card"', color: '#b91c1c' },
+                    { icon: '⭐', type: 'Sweet Spots', flow: 'Trip Planner  "BLR-SIN Business 42,500 KrisFlyer "” best value in Asia"', color: '#065f46' },
+                    { icon: '≈', type: 'Comparisons', flow: 'Smart Match  Diners Black outperforms Infinia for moderate spenders', color: '#0369a1' },
                   ].map((item, i) => (
                     <div key={i} style={{ padding: 12, borderRadius: 10, background: `${item.color}08`, border: `1px solid ${item.color}20` }}>
                       <div style={{ fontSize: 18, marginBottom: 6 }}>{item.icon}</div>
@@ -649,7 +649,7 @@ export default function AdminPage() {
                   {igInsights.map((insight, i) => (
                     <div key={i} style={{ background: 'var(--surface,#fff)', border: '1px solid var(--line,rgba(20,41,80,0.08))', borderRadius: 12, padding: 16 }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8, flexWrap: 'wrap' }}>
-                        <span style={{ fontSize: 16 }}>{INSIGHT_ICONS[insight.insight_type] || 'ðŸ“Œ'}</span>
+                        <span style={{ fontSize: 16 }}>{INSIGHT_ICONS[insight.insight_type] || '●'}</span>
                         <span style={{ padding: '2px 8px', borderRadius: 6, fontSize: 10, fontWeight: 700, textTransform: 'uppercase', background: `${INSIGHT_COLORS[insight.insight_type]}15`, color: INSIGHT_COLORS[insight.insight_type] || '#374151' }}>
                           {insight.insight_type?.replace('_', ' ')}
                         </span>
