@@ -1,0 +1,176 @@
+import { NextResponse } from 'next/server'
+import { createClient } from '@supabase/supabase-js'
+
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+)
+
+export const revalidate = 300 // 5 min cache
+
+export async function GET() {
+  try {
+    // Fetch latest intelligence for home feed
+    const { data: intel } = await supabase
+      .from('intelligence_kb')
+      .select('id, source, creator_handle, title, content, insight_type, trust_score, card_mentions')
+      .eq('active', true)
+      .order('scraped_at', { ascending: false })
+      .limit(10)
+
+    // Fetch top cards by IQ score
+    const { data: topCards } = await supabase
+      .from('cards')
+      .select('id, slug, name, bank, tier, annual_fee_inr, iq_score, network, best_for, category')
+      .eq('active', true)
+      .order('iq_score', { ascending: false })
+      .limit(20)
+
+    // Fetch recent devaluations
+    const { data: devals } = await supabase
+      .from('devaluation_events')
+      .select('id, card_name, bank, description, impact, date')
+      .eq('status', 'confirmed')
+      .order('date', { ascending: false })
+      .limit(5)
+
+    // App config — change any of this without an APK update
+    const config = {
+      version: '1.0.0',
+      lastUpdated: new Date().toISOString(),
+
+      // Home screen
+      home: {
+        heroTitle: 'Find your perfect card',
+        heroSubtitle: 'Tell CIRA your spends → unbiased recommendation',
+        statsBar: [
+          { value: `${topCards?.length ? '170+' : '100+'}`, label: 'Cards' },
+          { value: '3', label: 'Sources' },
+          { value: '₹0', label: 'Bias' },
+        ],
+        quickActions: [
+          { id: 'match', icon: 'sparkles-outline', label: 'Find my card', route: '/cira', color: '#142950' },
+          { id: 'compare', icon: 'git-compare-outline', label: 'Compare', route: '/cards', color: '#7C3AED' },
+          { id: 'roast', icon: 'flame-outline', label: 'Roast my card', route: '/cira', color: '#C0392B' },
+          { id: 'optimize', icon: 'trending-up-outline', label: 'Optimize', route: '/rewards', color: '#16A34A' },
+        ],
+      },
+
+      // Live intelligence feed for home screen
+      intelligenceFeed: (intel || []).slice(0, 5).map(item => ({
+        id: item.id,
+        type: item.insight_type,
+        icon: getIcon(item.insight_type),
+        text: item.title || item.content?.slice(0, 120),
+        color: getColor(item.insight_type),
+        handle: item.creator_handle,
+        source: item.source,
+      })),
+
+      // Featured cards (top 10 by IQ)
+      featuredCards: (topCards || []).slice(0, 10),
+
+      // Devaluation alerts
+      alerts: (devals || []).map(d => ({
+        id: d.id,
+        title: `${d.card_name} devalued`,
+        description: d.description,
+        impact: d.impact,
+        bank: d.bank,
+        date: d.date,
+      })),
+
+      // CIRA suggested questions — update anytime
+      ciraPrompts: [
+        'Best card for ₹50K monthly spend',
+        'Is HDFC Infinia worth ₹12,500?',
+        'Roast my Axis Magnus card',
+        'Best lounge access card under ₹2000 fee',
+        'Which card for Air India flights?',
+        'Best cashback card for Swiggy and Amazon',
+      ],
+
+      // Onboarding flow — update questions without APK update
+      onboarding: {
+        steps: [
+          {
+            id: 'spend',
+            title: 'What do you spend most on?',
+            type: 'multi',
+            options: [
+              { id: 'shopping', label: '🛍️ Online Shopping', sub: 'Amazon, Flipkart, Myntra' },
+              { id: 'dining', label: '🍽️ Dining & Food', sub: 'Swiggy, Zomato, restaurants' },
+              { id: 'travel', label: '✈️ Travel', sub: 'Flights, hotels, cabs' },
+              { id: 'fuel', label: '⛽ Fuel', sub: 'Petrol & diesel' },
+              { id: 'groceries', label: '🛒 Groceries', sub: 'BigBasket, supermarkets' },
+              { id: 'utility', label: '💡 Bills', sub: 'Electricity, mobile recharges' },
+            ],
+          },
+          {
+            id: 'monthly',
+            title: 'Monthly credit card spend?',
+            type: 'single',
+            options: [
+              { id: '10k', label: 'Under ₹10,000' },
+              { id: '25k', label: '₹10K – ₹25K' },
+              { id: '50k', label: '₹25K – ₹50K' },
+              { id: '1L', label: '₹50K – ₹1L' },
+              { id: '1L+', label: 'Over ₹1L' },
+            ],
+          },
+          {
+            id: 'goal',
+            title: "What's your primary goal?",
+            type: 'single',
+            options: [
+              { id: 'cashback', label: '💰 Maximum cashback' },
+              { id: 'travel', label: '🌏 Free flights & hotels' },
+              { id: 'lounge', label: '🛋️ Airport lounge access' },
+              { id: 'simple', label: '✅ Simple, no-fee card' },
+            ],
+          },
+        ],
+      },
+
+      // Feature flags — turn on/off features without APK
+      features: {
+        showIntelligenceFeed: True,
+        showDevaluationAlerts: True,
+        showOnboarding: True,
+        showRewards: True,
+        showScan: True,
+        enableCiraVoice: False,  # future feature
+        enableCardComparison: True,
+      },
+
+      // Play Store metadata
+      appInfo: {
+        version: '1.0.0',
+        minAppVersion: '1.0.0',  # force update if below this
+        updateMessage: None,
+        maintenanceMode: False,
+      },
+    }
+
+    return NextResponse.json(config)
+  } catch (err) {
+    console.error('App config error:', err)
+    return NextResponse.json({ error: 'Config unavailable' }, { status: 500 })
+  }
+}
+
+function getIcon(type: string): string {
+  const map: Record<string, string> = {
+    transfer_hack: '⇄', devaluation: '↓', sweet_spot: '★',
+    strategy: '◆', card_review: '✓', general: '●', reward_tip: '▶',
+  }
+  return map[type] || '●'
+}
+
+function getColor(type: string): string {
+  const map: Record<string, string> = {
+    transfer_hack: '#7c3aed', devaluation: '#b91c1c', sweet_spot: '#065f46',
+    strategy: '#92400e', card_review: '#0369a1', general: '#374151',
+  }
+  return map[type] || '#374151'
+}
