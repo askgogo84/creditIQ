@@ -88,6 +88,10 @@ export function CardsClient({ initialCards }: Props) {
 
   return (
     <div className="shell" style={{ paddingTop: 48, paddingBottom: 80 }}>
+      {/* Count bar */}
+      <div style={{ marginBottom: 16, fontSize: 13, color: 'var(--ink-2)', fontWeight: 600 }}>
+        Showing {filtered.length} of {initialCards.length} cards
+      </div>
       {/* Search */}
       <input
         type="text"

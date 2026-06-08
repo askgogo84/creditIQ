@@ -106,7 +106,7 @@ export default function CategoryPage({ params }: { params: { category: string } 
             {cards.length === 0 ? (
               <div style={{ textAlign: 'center', padding: '60px 20px', color: 'var(--ink-3,#5A6A8A)' }}>
                 <p style={{ fontSize: 18 }}>No cards found for this category yet.</p>
-                <Link href="/cards" style={{ marginTop: 16, display: 'inline-block', color: 'var(--copper-3,#D89B2A)', textDecoration: 'none' }}>Browse all 100+ cards</Link>
+                <Link href="/cards" style={{ marginTop: 16, display: 'inline-block', color: 'var(--copper-3,#D89B2A)', textDecoration: 'none' }}>Browse all 170+ cards</Link>
               </div>
             ) : (
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 24 }} className="grid-1-mobile">

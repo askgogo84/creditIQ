@@ -7,7 +7,7 @@ import { Check, Zap, Shield, Star, CreditCard, TrendingUp, Bell, Plane, Building
 import Link from 'next/link';
 
 const FREE_FEATURES = [
-  '100+ cards across 17 banks',
+  '170+ cards across 17 banks',
   'Smart Match card finder',
   'Points optimizer (basic)',
   'Devaluation tracker',

@@ -174,7 +174,7 @@ export default function HomePage() {
               ))}
             </div>
             <Reveal style={{ marginTop: 48, textAlign: 'center' }}>
-              <Link href="/cards" style={{ padding: '14px 32px', borderRadius: 999, border: '1.5px solid var(--ink,#142950)', color: 'var(--ink,#142950)', textDecoration: 'none', fontSize: 15, fontWeight: 600, display: 'inline-block' }}>See all 100+ cards</Link>
+              <Link href="/cards" style={{ padding: '14px 32px', borderRadius: 999, border: '1.5px solid var(--ink,#142950)', color: 'var(--ink,#142950)', textDecoration: 'none', fontSize: 15, fontWeight: 600, display: 'inline-block' }}>See all 170+ cards</Link>
             </Reveal>
           </div>
         </section>

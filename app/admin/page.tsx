@@ -59,7 +59,8 @@ export default function AdminPage() {
   const [cronLogs, setCronLogs] = useState<CronLog[]>([]);
   const [devalEvents, setDevalEvents] = useState<DevalEvent[]>([]);
   const [pendingCards, setPendingCards] = useState<PendingCard[]>([]);
-  const [igInsights, setIgInsights] = useState<IgInsight[]>([]);
+  const [igInsights, setIgInsights] = useState<IgInsight[]>([])
+  const [totalCards, setTotalCards] = useState<number>(93);
   const [loading, setLoading] = useState(false);
   const [igLoading, setIgLoading] = useState(false);
   const [triggerStatus, setTriggerStatus] = useState('');
@@ -286,7 +287,7 @@ export default function AdminPage() {
           {activeTab === 'overview' && (
             <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(160px,1fr))', gap: 12 }}>
-                <Stat label="Total Cards" value={93} sub="live in Supabase" />
+                <Stat label="Total Cards" value={totalCards} sub="live in Supabase" />
                 <Stat label="Devaluations" value={devalEvents.filter(d => d.status === 'detected').length} sub="awaiting review" color={devalEvents.filter(d => d.status === 'detected').length > 0 ? '#B84230' : undefined} />
                 <Stat label="Pending Cards" value={pendingCards.length} sub="from discovery" color={pendingCards.length > 0 ? 'var(--copper,#8C5F12)' : undefined} />
                 <Stat label="IG Insights" value={igInsights.length} sub="in knowledge base" color="#7c3aed" />
