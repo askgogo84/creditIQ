@@ -1,16 +1,32 @@
 {
   "crons": [
     {
-      "path": "/api/scrape",
+      "path": "/api/cron/ig-start-runs",
+      "schedule": "0 1 * * *"
+    },
+    {
+      "path": "/api/cron/ig-fetch-results",
+      "schedule": "30 1 * * *"
+    },
+    {
+      "path": "/api/cron/ig-intelligence",
       "schedule": "0 2 * * *"
     },
     {
-      "path": "/api/cards-sync",
-      "schedule": "0 9 * * 1,4"
+      "path": "/api/cron/reddit-scrape",
+      "schedule": "0 3 * * *"
+    },
+    {
+      "path": "/api/cron/youtube-scrape",
+      "schedule": "0 4 * * *"
     },
     {
       "path": "/api/cron/detect-devaluations",
       "schedule": "0 6 * * *"
+    },
+    {
+      "path": "/api/cards-sync",
+      "schedule": "0 9 * * 1,4"
     }
   ]
 }
