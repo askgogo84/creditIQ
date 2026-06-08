@@ -1339,12 +1339,6 @@ html.dark [style*="background: 'var(--bg-surface"] {
     grid-template-columns: 1fr !important;
   }
 
-  /* General padding reduction on mobile */
-  main {
-    padding-left: 16px !important;
-    padding-right: 16px !important;
-  }
-
   /* Card catalog grid - 1 column on mobile */
   .cards-grid {
     grid-template-columns: 1fr !important;
@@ -1389,4 +1383,25 @@ html.dark [style*="background: 'var(--bg-surface"] {
   div[style*="z-index: 1000"][style*="bottom"] {
     bottom: 80px !important;
   }
+}
+
+
+/* ============================================
+   BOTTOM TAB BAR CLEARANCE — June 2026
+   Ensures no content is hidden behind the
+   72px fixed bottom tab bar on mobile.
+   Only applies to mobile (≤768px).
+   Does NOT add side padding (that breaks heroes).
+   ============================================ */
+@media (max-width: 768px) {
+  /* Every possible top-level content wrapper */
+  body,
+  main,
+  .page-fade,
+  section.section:last-of-type {
+    padding-bottom: 80px !important;
+  }
+
+  /* But DON'T add side padding — heroes need full width */
+  /* Individual inner .shell divs handle their own px */
 }
