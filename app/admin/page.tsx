@@ -299,9 +299,9 @@ export default function AdminPage() {
                 <p style={{ fontSize: 13, color: 'var(--ink-3,#5A6A8A)', margin: '0 0 20px' }}>Run any pipeline job immediately.</p>
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(200px,1fr))', gap: 12, marginBottom: 16 }}>
                   {[
-                    { label: ' Scrape All Banks', job: 'scrape' as const, desc: 'Fetches all 12 bank pages + Claude AI parse' },
-                    { label: ' "¢ Discover New Cards', job: 'cards-sync' as const, desc: 'Scans Paisabazaar + Finology for new cards' },
-                    { label: 'âš ï¸ Detect Devaluations', job: 'detect-devaluations' as const, desc: 'Diffs yesterday vs today snapshots' },
+                    { label: '↻ Scrape All Banks', job: 'scrape' as const, desc: 'Fetches all 12 bank pages + Claude AI parse' },
+                    { label: '+ Discover New Cards', job: 'cards-sync' as const, desc: 'Scans Paisabazaar + Finology for new cards' },
+                    { label: '! Detect Devaluations', job: 'detect-devaluations' as const, desc: 'Diffs yesterday vs today snapshots' },
                   ].map(({ label, job, desc }) => (
                     <button key={job} onClick={() => triggerJob(job)} style={{ padding: '14px 16px', background: 'var(--surface,#fff)', border: '1px solid var(--line,rgba(20,41,80,0.08))', borderRadius: 12, textAlign: 'left', cursor: 'pointer' }}>
                       <div style={{ fontSize: 14, fontWeight: 700, color: 'var(--ink,#142950)', marginBottom: 4 }}>{label}</div>
@@ -454,15 +454,15 @@ export default function AdminPage() {
                 <div style={{ fontSize: 12, fontWeight: 700, color: '#1B3A5C', letterSpacing: '0.12em', marginBottom: 16 }}>THE PIPELINE \u00b7 RUNS EVERY NIGHT AT 2AM</div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
                   {[
-                    { icon: '\📱', label: 'Instagram', sub: '10 handles\n1.33M+ followers', color: '#E1306C' },
-                    { icon: '\u2192', label: '', sub: '', color: '#94a3b8', arrow: true },
-                    { icon: '\🤖', label: 'Apify Scraper', sub: 'Posts + captions\nreal-time', color: '#FF6B35' },
-                    { icon: '\u2192', label: '', sub: '', color: '#94a3b8', arrow: true },
-                    { icon: '\🧠', label: 'Claude Haiku', sub: 'Classifies intent\nextracts insight', color: '#C9972E' },
-                    { icon: '\u2192', label: '', sub: '', color: '#94a3b8', arrow: true },
-                    { icon: '\📊', label: 'pgvector', sub: 'Semantic search\nembeddings', color: '#7C5CBF' },
-                    { icon: '\u2192', label: '', sub: '', color: '#94a3b8', arrow: true },
-                    { icon: '\💡', label: 'CIRA AI', sub: 'Powers every\nanswer', color: '#1B3A5C' },
+                    { icon: '📷', label: 'Instagram', sub: '10 handles\n1.33M+ followers', color: '#E1306C' },
+                    { icon: '●', label: '', sub: '', color: '#94a3b8', arrow: true },
+                    { icon: '⚡', label: 'Apify Scraper', sub: 'Posts + captions\nreal-time', color: '#FF6B35' },
+                    { icon: '●', label: '', sub: '', color: '#94a3b8', arrow: true },
+                    { icon: '🧠', label: 'Claude Haiku', sub: 'Classifies intent\nextracts insight', color: '#C9972E' },
+                    { icon: '●', label: '', sub: '', color: '#94a3b8', arrow: true },
+                    { icon: '🔍', label: 'pgvector', sub: 'Semantic search\nembeddings', color: '#7C5CBF' },
+                    { icon: '●', label: '', sub: '', color: '#94a3b8', arrow: true },
+                    { icon: '⚡', label: 'CIRA AI', sub: 'Powers every\nanswer', color: '#1B3A5C' },
                   ].map((step, i) => (
                     step.arrow ? (
                       <div key={i} style={{ fontSize: 20, color: '#94a3b8', fontWeight: 300 }}>\u2192</div>
@@ -535,12 +535,12 @@ export default function AdminPage() {
                 <div style={{ fontSize: 12, fontWeight: 700, color: '#1B3A5C', letterSpacing: '0.12em', marginBottom: 16 }}>INTELLIGENCE ROADMAP \u00b7 SOURCES WE ARE ADDING</div>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
                   {[
-                    { status: 'live', icon: '\📱', source: 'Instagram Posts + Captions', detail: '10 handles \u00b7 1.33M+ followers \u00b7 text extraction', color: '#065f46' },
-                    { status: 'next', icon: '\🎥', source: 'Instagram Reels (Whisper AI)', detail: 'Audio transcription of video content \u00b7 10x more alpha', color: '#C9972E' },
-                    { status: 'next', icon: '\U0001f4fa', source: 'YouTube CC Channels', detail: '50+ Indian credit card creators \u00b7 1,000+ hours of content', color: '#C9972E' },
-                    { status: 'next', icon: '\🎧', source: 'Podcasts (RSS + Whisper)', detail: 'Expert analysis \u00b7 weekly card news \u00b7 auto-transcribed', color: '#C9972E' },
-                    { status: 'next', icon: '\U0001f4ac', source: 'Reddit r/IndiaInvestments', detail: 'Real user experiences \u00b7 unfiltered community feedback', color: '#C9972E' },
-                    { status: 'next', icon: '\📄', source: 'Bank MITC PDFs', detail: 'Ground truth card data \u00b7 auto-scraped on change', color: '#C9972E' },
+                    { status: 'live', icon: '📷', source: 'Instagram Posts + Captions', detail: '10 handles \u00b7 1.33M+ followers \u00b7 text extraction', color: '#065f46' },
+                    { status: 'next', icon: '📡', source: 'Instagram Reels (Whisper AI)', detail: 'Audio transcription of video content \u00b7 10x more alpha', color: '#C9972E' },
+                    { status: 'next', icon: '📡', source: 'YouTube CC Channels', detail: '50+ Indian credit card creators \u00b7 1,000+ hours of content', color: '#C9972E' },
+                    { status: 'next', icon: '📡', source: 'Podcasts (RSS + Whisper)', detail: 'Expert analysis \u00b7 weekly card news \u00b7 auto-transcribed', color: '#C9972E' },
+                    { status: 'next', icon: '📡', source: 'Reddit r/IndiaInvestments', detail: 'Real user experiences \u00b7 unfiltered community feedback', color: '#C9972E' },
+                    { status: 'next', icon: '📡', source: 'Bank MITC PDFs', detail: 'Ground truth card data \u00b7 auto-scraped on change', color: '#C9972E' },
                   ].map((item, i) => (
                     <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '12px 16px', borderRadius: 10, background: item.status === 'live' ? 'rgba(6,95,70,0.05)' : 'rgba(201,151,46,0.05)', border: `1px solid ${item.status === 'live' ? 'rgba(6,95,70,0.2)' : 'rgba(201,151,46,0.2)'}` }}>
                       <div style={{ fontSize: 24, flexShrink: 0 }}>{item.icon}</div>
@@ -620,10 +620,10 @@ export default function AdminPage() {
                 <h3 style={{ fontSize: 14, fontWeight: 700, color: 'var(--ink,#142950)', marginBottom: 14 }}>How Intelligence Powers CIRA</h3>
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 10 }}>
                   {[
-                    { icon: 'ðŸ”„', type: 'Transfer Hacks', flow: 'Points Optimizer â†’ Finnair route over direct Qatar (100K RP = 100K vs 50K Avios)', color: '#7c3aed' },
-                    { icon: 'ðŸ“‰', type: 'Devaluations', flow: 'Card Roast â†’ "SBI PhonePe Black gutted July 2026 "” avoid this card"', color: '#b91c1c' },
-                    { icon: 'Å½¯', type: 'Sweet Spots', flow: 'Trip Planner â†’ "BLR-SIN Business 42,500 KrisFlyer "” best value in Asia"', color: '#065f46' },
-                    { icon: 'âš–ï¸', type: 'Comparisons', flow: 'Smart Match â†’ Diners Black outperforms Infinia for moderate spenders', color: '#0369a1' },
+                    { icon: 'ðŸ”„', type: 'Transfer Hacks', flow: 'Points Optimizer  Finnair route over direct Qatar (100K RP = 100K vs 50K Avios)', color: '#7c3aed' },
+                    { icon: 'ðŸ“‰', type: 'Devaluations', flow: 'Card Roast  "SBI PhonePe Black gutted July 2026 "” avoid this card"', color: '#b91c1c' },
+                    { icon: 'Å½¯', type: 'Sweet Spots', flow: 'Trip Planner  "BLR-SIN Business 42,500 KrisFlyer "” best value in Asia"', color: '#065f46' },
+                    { icon: '', type: 'Comparisons', flow: 'Smart Match  Diners Black outperforms Infinia for moderate spenders', color: '#0369a1' },
                   ].map((item, i) => (
                     <div key={i} style={{ padding: 12, borderRadius: 10, background: `${item.color}08`, border: `1px solid ${item.color}20` }}>
                       <div style={{ fontSize: 18, marginBottom: 6 }}>{item.icon}</div>
@@ -662,7 +662,7 @@ export default function AdminPage() {
                       )}
                       <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
                         <span style={{ fontSize: 11, padding: '2px 8px', borderRadius: 6, background: 'rgba(20,41,80,0.06)', color: 'var(--ink-3,#5A6A8A)' }}>
-                          â†’ {CIRA_USAGE[insight.insight_type]}
+                           {CIRA_USAGE[insight.insight_type]}
                         </span>
                         <a href={insight.source_url} target="_blank" rel="noopener noreferrer" onClick={() => fetch('/api/ig-click', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ insight_id: insight.id, query_context: 'admin_view' }) })} style={{ fontSize: 11, color: '#0369a1' }}>View post " "”</a>
                       </div>
