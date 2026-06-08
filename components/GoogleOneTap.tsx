@@ -29,7 +29,7 @@ export default function GoogleOneTap() {
       if (data.session) {
         console.log('Session set successfully, redirecting...')
         // Small delay to ensure cookie is written before redirect
-        setTimeout(() => { window.location.href = '/' }, 100)
+        setTimeout(() => { window.location.href = '/dashboard' }, 500)
       } else {
         console.error('No session returned:', JSON.stringify(data))
       }
