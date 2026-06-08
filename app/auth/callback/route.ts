@@ -1,4 +1,4 @@
-import { createServerClient } from '@supabase/ssr'
+﻿import { createServerClient } from '@supabase/ssr'
 import { cookies } from 'next/headers'
 import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
@@ -25,10 +25,10 @@ export async function GET(request: NextRequest) {
     )
     const { error } = await supabase.auth.exchangeCodeForSession(code)
     if (!error) {
-      // Always go to dashboard — hardcoded, no param stripping issues
-      return NextResponse.redirect('https://www.creditiq.app/dashboard')
+      // Always go to dashboard â€” hardcoded, no param stripping issues
+      return NextResponse.redirect('${origin}/dashboard')
     }
   }
 
-  return NextResponse.redirect('https://www.creditiq.app/login')
+  return NextResponse.redirect('${origin}/login')
 }
