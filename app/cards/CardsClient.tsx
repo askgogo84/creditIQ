@@ -1,14 +1,8 @@
 ﻿'use client';
-
-import { useState, useRef } from 'react';
+import { useState } from 'react';
 import { CardTile, type TileCard } from '@/components/design/CardTile';
 import { type CardVariant } from '@/components/design/CreditCard3D';
-import { SEED_CARDS } from '@/lib/data/seed-cards';
-import type { CreditCard } from '@/lib/types';
 
-/* ============================================================
-   seed-cards -> TileCard adapter  (shared with homepage)
-   ============================================================ */
 const VARIANT_ROTATION: CardVariant[] = ['obsidian', 'navy', 'plum', 'gold', 'iris', 'mint'];
 const NETWORK_BY_BANK: Record<string, string> = {
   HDFC: 'VISA', AXIS: 'MASTERCARD', ICICI: 'AMEX',
@@ -18,178 +12,134 @@ const NETWORK_BY_BANK: Record<string, string> = {
 
 function tagline(tier?: string) {
   switch (tier) {
-    case 'super-premium': return 'Reserve metal';
-    case 'premium':       return 'Premium';
-    case 'mid':           return 'Mid-tier';
-    case 'entry':         return 'Entry';
-    case 'starter':       return 'Starter';
-    default:              return 'Standard';
+    case 'ultra-premium': return 'Ultra Premium';
+    case 'super-premium': return 'Super Premium';
+    case 'premium': return 'Premium';
+    case 'mid': return 'Mid Tier';
+    default: return 'Entry Level';
   }
 }
 
-function toTileCard(c: CreditCard, i: number): TileCard {
-  const bank = c.bank.toUpperCase();
+function toTileCard(c: any, idx: number): TileCard {
+  const bankKey = (c.bank || '').toUpperCase().split(' ')[0];
+  const highlights = Array.isArray(c.highlights) ? c.highlights : [];
+  const category = Array.isArray(c.category) ? c.category : [];
   return {
-    bank,
-    name: c.name.replace(/^HDFC\s+|^AXIS\s+|^ICICI\s+|^SBI\s+|^AMEX\s+/i, '').replace(/ Credit Card$/i, ''),
-    tagline: tagline(c.tier),
-    tier: c.tier ? c.tier.toUpperCase().replace(/-/g, ' ') : 'CARD',
-    network: NETWORK_BY_BANK[bank.split(' ')[0]] || 'VISA',
-    variant: VARIANT_ROTATION[i % VARIANT_ROTATION.length],
-    tags: (c.category || []).slice(0, 2).map(s => s.replace(/-/g, ' ')),
-    fee: c.annual_fee_inr,
-    iqScore: Math.round((c.expert_rating ?? 8) * 10),
+    name: c.name,
+    bank: c.bank,
+    tier: tagline(c.tier),
+    fee: c.annual_fee_inr ?? c.annual_fee ?? 0,
+    iqScore: c.iq_score ?? 60,
+    tags: category.slice(0, 2).map((t: string) => t.replace(/-/g, ' ').replace(/\b\w/g, (l: string) => l.toUpperCase())),
+    tagline: highlights[0] || c.best_for || '',
+    variant: VARIANT_ROTATION[idx % VARIANT_ROTATION.length],
+    network: (c.network || NETWORK_BY_BANK[bankKey] || 'VISA').toUpperCase() as any,
   };
-}
-
-/* ============================================================
-   Category filters -- label -> predicate over SEED_CARDS
-   ============================================================ */
-const CATEGORIES = [
-  'International Travel', 'Domestic Travel', 'Forex 0%', 'Lounge Access',
-  'Cashback', 'Online Shopping', 'Fuel', 'Dining',
-  'First Card', 'Lifetime Free', 'Business', 'Metal',
-];
-
-const FILTERS: Record<string, (c: CreditCard) => boolean> = {
-  'International Travel': c => c.category.includes('travel') && (c.forex_markup_percent ?? Infinity) <= 1.5,
-  'Domestic Travel':      c => c.category.includes('travel'),
-  'Forex 0%':             c => c.forex_markup_percent === 0,
-  'Lounge Access':        c => (c.lounges?.length ?? 0) > 0,
-  'Cashback':             c => c.category.includes('cashback'),
-  'Online Shopping':      c => c.category.includes('shopping'),
-  'Fuel':                 c => c.fuel_surcharge_waiver === true,
-  'Dining':               c => c.category.includes('dining'),
-  'First Card':           c => c.tier === 'entry' || (c.min_income_inr_monthly ?? Infinity) <= 25000,
-  'Lifetime Free':        c => c.annual_fee_inr === 0,
-  'Business':             c => c.tier === 'premium' || c.tier === 'super-premium',
-  'Metal':                c => c.name.includes('Metal') || c.name.includes('Titanium'),
 };
 
-export function CardsClient() {
-  const [activeCategory, setActiveCategory] = useState('all');
-  const gridRef = useRef<HTMLDivElement>(null);
+const CATEGORIES = [
+  { key: 'all', label: 'All cards' },
+  { key: 'travel', label: 'International Travel' },
+  { key: 'domestic', label: 'Domestic Travel' },
+  { key: 'forex', label: 'Forex 0%' },
+  { key: 'lounge', label: 'Lounge Access' },
+  { key: 'cashback', label: 'Cashback' },
+  { key: 'shopping', label: 'Online Shopping' },
+  { key: 'fuel', label: 'Fuel' },
+  { key: 'dining', label: 'Dining' },
+  { key: 'no-annual-fee', label: 'Lifetime Free' },
+  { key: 'business', label: 'Business' },
+  { key: 'metal', label: 'Metal' },
+];
 
-  const cards = SEED_CARDS.filter(c => c.active !== false);
-  const banks = [...new Set(cards.map(c => c.bank))].sort();
-
-  const filtered = activeCategory === 'all'
-    ? cards
-    : cards.filter(FILTERS[activeCategory] ?? (() => true));
-
-  const onChip = (value: string) => {
-    setActiveCategory(prev => (prev === value ? 'all' : value));
-    requestAnimationFrame(() => {
-      gridRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    });
-  };
-
-  const chipStyle = (active: boolean) => ({
-    fontSize: 14,
-    ...(active
-      ? { borderColor: 'var(--copper)', color: 'var(--copper)', background: 'rgba(212,163,115,0.08)' }
-      : {}),
-  });
-
-  return (
-    <>
-      {/* ============================================
-            CATEGORY PILLS
-            ============================================ */}
-      <section className="section" style={{ paddingTop: 'clamp(40px, 6vw, 64px)', paddingBottom: 0 }}>
-        <div className="shell">
-          <div className="label" style={{ marginBottom: 18 }}>BROWSE BY CATEGORY</div>
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10 }}>
-            <button
-              type="button"
-              onClick={() => onChip('all')}
-              className="chip"
-              style={chipStyle(activeCategory === 'all')}
-            >
-              All cards
-            </button>
-            {CATEGORIES.map((c) => (
-              <button
-                key={c}
-                type="button"
-                onClick={() => onChip(c)}
-                className="chip"
-                style={chipStyle(activeCategory === c)}
-              >
-                {c}
-              </button>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* ============================================
-            CARDS
-            ============================================ */}
-      <section className="section">
-        <div className="shell" ref={gridRef}>
-          {activeCategory === 'all' ? (
-            /* Grouped by bank */
-            banks.map((bank) => {
-              const bankCards = cards.filter(c => c.bank === bank);
-              return (
-                <div key={bank} style={{ marginBottom: 'clamp(48px, 7vw, 72px)' }}>
-                  <div style={{
-                    display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end',
-                    gap: 24, marginBottom: 'clamp(24px, 3vw, 32px)',
-                    paddingBottom: 16, borderBottom: '1px solid var(--line)',
-                  }}>
-                    <h2 style={{ fontSize: 'clamp(24px, 3vw, 34px)', letterSpacing: '-0.03em' }}>
-                      {bank} <span className="serif" style={{ color: 'var(--copper)' }}>Credit Cards</span>
-                    </h2>
-                    <span className="label" style={{ whiteSpace: 'nowrap' }}>{bankCards.length} cards</span>
-                  </div>
-
-                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 24 }} className="grid-1-mobile">
-                    {bankCards.map((c, i) => (
-                      <CardTile key={c.id} card={toTileCard(c, i)} href={`/card/${c.slug}`} />
-                    ))}
-                  </div>
-                </div>
-              );
-            })
-          ) : (
-            /* Filtered flat grid */
-            <>
-              <div style={{
-                display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end',
-                gap: 24, marginBottom: 'clamp(24px, 3vw, 32px)',
-                paddingBottom: 16, borderBottom: '1px solid var(--line)',
-              }}>
-                <h2 style={{ fontSize: 'clamp(24px, 3vw, 34px)', letterSpacing: '-0.03em' }}>
-                  Showing {filtered.length} <span className="serif" style={{ color: 'var(--copper)' }}>{activeCategory.toLowerCase()}</span> {filtered.length === 1 ? 'card' : 'cards'}
-                </h2>
-                <button
-                  type="button"
-                  onClick={() => onChip('all')}
-                  className="label"
-                  style={{ whiteSpace: 'nowrap', background: 'none', border: 'none', cursor: 'pointer', color: 'var(--copper)' }}
-                >
-                  CLEAR FILTER 
-                </button>
-              </div>
-
-              {filtered.length > 0 ? (
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 24 }} className="grid-1-mobile">
-                  {filtered.map((c, i) => (
-                    <CardTile key={c.id} card={toTileCard(c, i)} href={`/card/${c.slug}`} />
-                  ))}
-                </div>
-              ) : (
-                <p style={{ color: 'var(--ink-3)', fontSize: 16 }}>
-                  No cards match this category yet. Try another filter.
-                </p>
-              )}
-            </>
-          )}
-        </div>
-      </section>
-    </>
-  );
+function matchCategory(card: any, key: string): boolean {
+  if (key === 'all') return true;
+  const cat = Array.isArray(card.category) ? card.category : [];
+  const highlights = Array.isArray(card.highlights) ? card.highlights.join(' ').toLowerCase() : '';
+  if (key === 'travel') return cat.includes('travel') || cat.includes('airline') || cat.includes('hotel');
+  if (key === 'domestic') return cat.includes('travel') && !cat.includes('international');
+  if (key === 'forex') return (card.forex_markup_percent ?? 99) === 0;
+  if (key === 'lounge') return cat.includes('lounge') || highlights.includes('lounge');
+  if (key === 'no-annual-fee') return (card.annual_fee_inr ?? card.annual_fee ?? 999) === 0;
+  return cat.includes(key);
 }
 
+interface Props { initialCards: any[] }
+
+export function CardsClient({ initialCards }: Props) {
+  const [activeCategory, setActiveCategory] = useState('all');
+  const [search, setSearch] = useState('');
+
+  const filtered = initialCards.filter(c => {
+    const matchesCat = matchCategory(c, activeCategory);
+    const q = search.toLowerCase();
+    const matchesSearch = !q || c.name?.toLowerCase().includes(q) || c.bank?.toLowerCase().includes(q);
+    return matchesCat && matchesSearch;
+  });
+
+  // Group by bank
+  const byBank: Record<string, any[]> = {};
+  filtered.forEach(c => {
+    const b = c.bank || 'Other';
+    if (!byBank[b]) byBank[b] = [];
+    byBank[b].push(c);
+  });
+  const banks = Object.keys(byBank).sort();
+
+  return (
+    <div className="shell" style={{ paddingTop: 48, paddingBottom: 80 }}>
+      {/* Search */}
+      <input
+        type="text"
+        placeholder="Search cards or banks..."
+        value={search}
+        onChange={e => setSearch(e.target.value)}
+        style={{
+          width: '100%', maxWidth: 400, padding: '10px 16px', marginBottom: 24,
+          border: '1px solid var(--ink-3)', borderRadius: 8, fontSize: 15,
+          background: 'var(--surface)', color: 'var(--ink-1)',
+        }}
+      />
+
+      {/* Category filters */}
+      <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 40 }}>
+        {CATEGORIES.map(cat => (
+          <button
+            key={cat.key}
+            onClick={() => setActiveCategory(cat.key)}
+            style={{
+              padding: '6px 16px', borderRadius: 20, fontSize: 14, cursor: 'pointer',
+              border: activeCategory === cat.key ? '1.5px solid var(--copper)' : '1px solid var(--ink-3)',
+              background: activeCategory === cat.key ? 'var(--copper)' : 'transparent',
+              color: activeCategory === cat.key ? '#fff' : 'var(--ink-1)',
+              fontWeight: activeCategory === cat.key ? 600 : 400,
+            }}
+          >
+            {cat.label}
+          </button>
+        ))}
+      </div>
+
+      {/* Cards by bank */}
+      {banks.length === 0 ? (
+        <p style={{ color: 'var(--ink-2)', textAlign: 'center', padding: 40 }}>No cards found.</p>
+      ) : (
+        banks.map(bank => (
+          <div key={bank} style={{ marginBottom: 56 }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20 }}>
+              <h2 style={{ fontSize: 'clamp(20px, 2vw, 26px)', fontWeight: 700, color: 'var(--ink-1)' }}>
+                <span style={{ color: 'var(--copper)' }}>{bank}</span> Credit Cards
+              </h2>
+              <span style={{ fontSize: 13, color: 'var(--ink-2)' }}>{byBank[bank].length} CARDS</span>
+            </div>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 24 }}>
+              {byBank[bank].map((card, idx) => (
+                <CardTile key={card.slug} card={toTileCard(card, idx)} href={`/cards/${card.slug}`} />
+              ))}
+            </div>
+          </div>
+        ))
+      )}
+    </div>
+  );
+}
