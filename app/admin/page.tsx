@@ -60,7 +60,7 @@ export default function AdminPage() {
   const [devalEvents, setDevalEvents] = useState<DevalEvent[]>([]);
   const [pendingCards, setPendingCards] = useState<PendingCard[]>([]);
   const [igInsights, setIgInsights] = useState<IgInsight[]>([])
-    const [totalCards, setTotalCards] = useState<number>(93);
+    const [totalCards, setTotalCards] = useState<number>(0);
   const [loading, setLoading] = useState(false);
   const [igLoading, setIgLoading] = useState(false);
   const [triggerStatus, setTriggerStatus] = useState('');
@@ -97,6 +97,7 @@ export default function AdminPage() {
         setCronLogs(data.cronLogs || []);
         setDevalEvents(data.devalEvents || []);
         setPendingCards(data.pendingCards || []);
+        if (data.totalCards) setTotalCards(data.totalCards);
       }
     } catch {}
     setLoading(false);
@@ -265,7 +266,7 @@ export default function AdminPage() {
               ['overview', 'Overview', Activity],
               ['devaluations', `Devaluations${devalEvents.filter(d => d.status === 'detected').length > 0 ? ` (${devalEvents.filter(d => d.status === 'detected').length})` : ''}`, TrendingDown],
               ['pending', `Pending${pendingCards.length > 0 ? ` (${pendingCards.length})` : ''}`, Zap],
-              ['cards', `Cards (${SEED_CARDS.length})`, Database],
+              ['cards', `Cards (${totalCards || '...'})`, Database],
               ['logs', 'Logs', Clock],
               ['intelligence', `Intelligence${igInsights.length > 0 ? ` (${igInsights.length})` : ''}`, Brain],
               ['moat', 'Our Moat', Brain],
@@ -440,7 +441,7 @@ export default function AdminPage() {
 
               {/* Header */}
               <div style={{ background: 'linear-gradient(135deg,#1B3A5C,#0D2240)', borderRadius: 16, padding: 28, color: 'white' }}>
-                <div style={{ fontSize: 11, fontWeight: 700, color: '#C9972E', letterSpacing: '0.14em', marginBottom: 8 }}>INTELLIGENCE ENGINE \u00b7 WHY WE WIN</div>
+                <div style={{ fontSize: 11, fontWeight: 700, color: '#C9972E', letterSpacing: '0.14em', marginBottom: 8 }}>INTELLIGENCE ENGINE · WHY WE WIN</div>
                 <div style={{ fontSize: 24, fontWeight: 800, marginBottom: 8 }}>Community truth beats bank marketing.</div>
                 <div style={{ fontSize: 14, color: 'rgba(255,255,255,0.6)', lineHeight: 1.6 }}>
                   Every other card comparison site in India uses bank-provided data \u2014 biased by affiliate commissions.
@@ -451,7 +452,7 @@ export default function AdminPage() {
 
               {/* Pipeline */}
               <div style={{ background: 'white', borderRadius: 16, padding: 24, border: '1px solid rgba(20,41,80,0.08)' }}>
-                <div style={{ fontSize: 12, fontWeight: 700, color: '#1B3A5C', letterSpacing: '0.12em', marginBottom: 16 }}>THE PIPELINE \u00b7 RUNS EVERY NIGHT AT 2AM</div>
+                <div style={{ fontSize: 12, fontWeight: 700, color: '#1B3A5C', letterSpacing: '0.12em', marginBottom: 16 }}>THE PIPELINE · RUNS EVERY NIGHT AT 2AM</div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
                   {[
                     { icon: '📷', label: 'Instagram', sub: '10 handles\n1.33M+ followers', color: '#E1306C' },
@@ -465,7 +466,7 @@ export default function AdminPage() {
                     { icon: '⚡', label: 'CIRA AI', sub: 'Powers every\nanswer', color: '#1B3A5C' },
                   ].map((step, i) => (
                     step.arrow ? (
-                      <div key={i} style={{ fontSize: 20, color: '#94a3b8', fontWeight: 300 }}>\u2192</div>
+                      <div key={i} style={{ fontSize: 20, color: '#94a3b8', fontWeight: 300 }}>→</div>
                     ) : (
                       <div key={i} style={{ flex: 1, minWidth: 80, padding: '12px 8px', borderRadius: 10, background: `${step.color}10`, border: `1px solid ${step.color}30`, textAlign: 'center' }}>
                         <div style={{ fontSize: 20, marginBottom: 4 }}>{step.icon}</div>
@@ -495,7 +496,7 @@ export default function AdminPage() {
 
               {/* vs Competitors */}
               <div style={{ background: 'white', borderRadius: 16, padding: 24, border: '1px solid rgba(20,41,80,0.08)' }}>
-                <div style={{ fontSize: 12, fontWeight: 700, color: '#1B3A5C', letterSpacing: '0.12em', marginBottom: 16 }}>VS COMPETITORS \u00b7 WHY WE ARE DIFFERENT</div>
+                <div style={{ fontSize: 12, fontWeight: 700, color: '#1B3A5C', letterSpacing: '0.12em', marginBottom: 16 }}>VS COMPETITORS · WHY WE ARE DIFFERENT</div>
                 <div style={{ overflowX: 'auto' }}>
                   <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
                     <thead>
@@ -532,15 +533,15 @@ export default function AdminPage() {
 
               {/* Roadmap */}
               <div style={{ background: 'white', borderRadius: 16, padding: 24, border: '1px solid rgba(20,41,80,0.08)' }}>
-                <div style={{ fontSize: 12, fontWeight: 700, color: '#1B3A5C', letterSpacing: '0.12em', marginBottom: 16 }}>INTELLIGENCE ROADMAP \u00b7 SOURCES WE ARE ADDING</div>
+                <div style={{ fontSize: 12, fontWeight: 700, color: '#1B3A5C', letterSpacing: '0.12em', marginBottom: 16 }}>INTELLIGENCE ROADMAP · SOURCES WE ARE ADDING</div>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
                   {[
-                    { status: 'live', icon: '📷', source: 'Instagram Posts + Captions', detail: '10 handles \u00b7 1.33M+ followers \u00b7 text extraction', color: '#065f46' },
-                    { status: 'next', icon: '📡', source: 'Instagram Reels (Whisper AI)', detail: 'Audio transcription of video content \u00b7 10x more alpha', color: '#C9972E' },
-                    { status: 'next', icon: '📡', source: 'YouTube CC Channels', detail: '50+ Indian credit card creators \u00b7 1,000+ hours of content', color: '#C9972E' },
-                    { status: 'next', icon: '📡', source: 'Podcasts (RSS + Whisper)', detail: 'Expert analysis \u00b7 weekly card news \u00b7 auto-transcribed', color: '#C9972E' },
-                    { status: 'next', icon: '📡', source: 'Reddit r/IndiaInvestments', detail: 'Real user experiences \u00b7 unfiltered community feedback', color: '#C9972E' },
-                    { status: 'next', icon: '📡', source: 'Bank MITC PDFs', detail: 'Ground truth card data \u00b7 auto-scraped on change', color: '#C9972E' },
+                    { status: 'live', icon: '📷', source: 'Instagram Posts + Captions', detail: '10 handles · 1.33M+ followers · text extraction', color: '#065f46' },
+                    { status: 'next', icon: '📡', source: 'Instagram Reels (Whisper AI)', detail: 'Audio transcription of video content · 10x more alpha', color: '#C9972E' },
+                    { status: 'next', icon: '📡', source: 'YouTube CC Channels', detail: '50+ Indian credit card creators · 1,000+ hours of content', color: '#C9972E' },
+                    { status: 'next', icon: '📡', source: 'Podcasts (RSS + Whisper)', detail: 'Expert analysis · weekly card news · auto-transcribed', color: '#C9972E' },
+                    { status: 'next', icon: '📡', source: 'Reddit r/IndiaInvestments', detail: 'Real user experiences · unfiltered community feedback', color: '#C9972E' },
+                    { status: 'next', icon: '📡', source: 'Bank MITC PDFs', detail: 'Ground truth card data · auto-scraped on change', color: '#C9972E' },
                   ].map((item, i) => (
                     <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '12px 16px', borderRadius: 10, background: item.status === 'live' ? 'rgba(6,95,70,0.05)' : 'rgba(201,151,46,0.05)', border: `1px solid ${item.status === 'live' ? 'rgba(6,95,70,0.2)' : 'rgba(201,151,46,0.2)'}` }}>
                       <div style={{ fontSize: 24, flexShrink: 0 }}>{item.icon}</div>
