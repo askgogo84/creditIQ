@@ -1,0 +1,12 @@
+{
+  "expo": {
+    "extra": {
+      "eas": {
+        "projectId": "30f90a50-7e34-4e49-a261-387667da2ea4"
+      }
+    },
+    "android": {
+      "package": "com.gogo84.cardiq"
+    }
+  }
+}

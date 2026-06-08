@@ -1,4 +1,5 @@
 'use client';
+import { WhatCreatorsSay } from '@/components/WhatCreatorsSay';
 
 import { CreditCard3D } from '@/components/design/CreditCard3D';
 import { useCompare } from '@/lib/store';
