@@ -21,12 +21,17 @@ export default function GoogleOneTap() {
       })
 
       if (error) {
-        console.error('Sign in error:', error.message)
+        console.error('Sign in error:', error.message, error)
+        alert('Sign in failed: ' + error.message)
         return
       }
 
       if (data.session) {
-        window.location.href = '/dashboard'
+        console.log('Session set successfully, redirecting...')
+        // Small delay to ensure cookie is written before redirect
+        setTimeout(() => { window.location.href = '/' }, 100)
+      } else {
+        console.error('No session returned:', JSON.stringify(data))
       }
     } catch (err) {
       console.error('Google sign-in error:', err)
