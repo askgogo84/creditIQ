@@ -22,21 +22,21 @@ const STATUS_COLOR: Record<string, string> = {
   detected: '#0369a1', confirmed: 'var(--copper,#8C5F12)', published: '#2d7a56', dismissed: 'var(--ink-3,#5A6A8A)',
 };
 const INSIGHT_COLORS: Record<string, string> = {
-  transfer_hack: '#7c3aed', devaluation: '#b91c1c', card_comparison: '#0369a1',
-  sweet_spot: '#065f46', strategy: '#92400e', general: '#374151',
+  transfer_hack: '⇄', devaluation: '↓', card_comparison: '≈',
+  sweet_spot: '★', strategy: '◆', general: '●',
 };
 const INSIGHT_ICONS: Record<string, string> = {
-  transfer_hack: 'â‡„', devaluation: 'â†“', card_comparison: 'â‰ˆ',
-  sweet_spot: 'â˜…', strategy: 'â—†', general: 'â—',
-  card_review: 'âœ“', reward_tip: 'â–¶', lounge: 'â– ', forex: 'Â¥',
+  transfer_hack: '⇄', devaluation: '↓', card_comparison: '≈',
+  sweet_spot: '★', strategy: '◆', general: '●',
+  card_review: '✓', reward_tip: '▶', lounge: '■', forex: '¥',
 };
 const CIRA_USAGE: Record<string, string> = {
-  transfer_hack: 'Points Optimizer + Trip Planner',
-  devaluation: 'Card Roast + Devaluation Detector',
-  card_comparison: 'Smart Match + Best Cards',
-  sweet_spot: 'Trip Planner + Loyalty Tracker',
-  strategy: 'All CIRA features',
-  general: 'CIRA knowledge base',
+  transfer_hack: '⇄',
+  devaluation: '↓',
+  card_comparison: '≈',
+  sweet_spot: '★',
+  strategy: '◆',
+  general: '●',
 };
 
 function Stat({ label, value, sub, color }: { label: string; value: string | number; sub?: string; color?: string }) {
@@ -251,7 +251,7 @@ export default function AdminPage() {
             <div style={{ background: 'rgba(184,66,48,0.08)', border: '1px solid rgba(184,66,48,0.25)', borderRadius: 14, padding: '14px 20px', marginBottom: 24, display: 'flex', alignItems: 'center', gap: 12 }}>
               <AlertTriangle style={{ width: 18, height: 18, color: '#B84230', flexShrink: 0 }} />
               <p style={{ margin: 0, fontSize: 14, color: '#B84230', fontWeight: 600 }}>
-                {highDevals} high-impact devaluation{highDevals > 1 ? 's' : ''} detected â€” review and publish
+                {highDevals} high-impact devaluation{highDevals > 1 ? 's' : ''} detected "” review and publish
               </p>
               <button onClick={() => setActiveTab('devaluations')} style={{ marginLeft: 'auto', padding: '6px 14px', background: '#B84230', color: '#fff', border: 'none', borderRadius: 8, fontSize: 12, fontWeight: 700, cursor: 'pointer', flexShrink: 0 }}>
                 Review now
@@ -291,7 +291,7 @@ export default function AdminPage() {
                 <Stat label="Devaluations" value={devalEvents.filter(d => d.status === 'detected').length} sub="awaiting review" color={devalEvents.filter(d => d.status === 'detected').length > 0 ? '#B84230' : undefined} />
                 <Stat label="Pending Cards" value={pendingCards.length} sub="from discovery" color={pendingCards.length > 0 ? 'var(--copper,#8C5F12)' : undefined} />
                 <Stat label="IG Insights" value={igInsights.length} sub="in knowledge base" color="#7c3aed" />
-                <Stat label="Last Scrape" value={lastScrape ? new Date(lastScrape.ran_at).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' }) : 'â€”'} sub={lastScrape ? new Date(lastScrape.ran_at).toLocaleDateString('en-IN') : 'Never run'} />
+                <Stat label="Last Scrape" value={lastScrape ? new Date(lastScrape.ran_at).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' }) : '"”'} sub={lastScrape ? new Date(lastScrape.ran_at).toLocaleDateString('en-IN') : 'Never run'} />
               </div>
 
               <div style={{ background: 'var(--paper,#FAF5EB)', border: '1px solid var(--line,rgba(20,41,80,0.08))', borderRadius: 18, padding: 24 }}>
@@ -299,8 +299,8 @@ export default function AdminPage() {
                 <p style={{ fontSize: 13, color: 'var(--ink-3,#5A6A8A)', margin: '0 0 20px' }}>Run any pipeline job immediately.</p>
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(200px,1fr))', gap: 12, marginBottom: 16 }}>
                   {[
-                    { label: 'Ã°Å¸â€Â Scrape All Banks', job: 'scrape' as const, desc: 'Fetches all 12 bank pages + Claude AI parse' },
-                    { label: 'Ã°Å¸â€ â€¢ Discover New Cards', job: 'cards-sync' as const, desc: 'Scans Paisabazaar + Finology for new cards' },
+                    { label: 'Ã°Å¸" Scrape All Banks', job: 'scrape' as const, desc: 'Fetches all 12 bank pages + Claude AI parse' },
+                    { label: 'Ã°Å¸" "¢ Discover New Cards', job: 'cards-sync' as const, desc: 'Scans Paisabazaar + Finology for new cards' },
                     { label: 'âš ï¸ Detect Devaluations', job: 'detect-devaluations' as const, desc: 'Diffs yesterday vs today snapshots' },
                   ].map(({ label, job, desc }) => (
                     <button key={job} onClick={() => triggerJob(job)} style={{ padding: '14px 16px', background: 'var(--surface,#fff)', border: '1px solid var(--line,rgba(20,41,80,0.08))', borderRadius: 12, textAlign: 'left', cursor: 'pointer' }}>
@@ -340,7 +340,7 @@ export default function AdminPage() {
                 <div key={d.id} style={{ background: 'var(--paper,#FAF5EB)', border: `1px solid ${IMPACT_COLOR[d.impact] || 'var(--line)'}30`, borderRadius: 16, padding: 20 }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: 12, marginBottom: 12 }}>
                     <div>
-                      <div style={{ fontSize: 15, fontWeight: 700, color: 'var(--ink,#142950)', marginBottom: 4 }}>{d.card_name} Ã‚Â· {d.bank}</div>
+                      <div style={{ fontSize: 15, fontWeight: 700, color: 'var(--ink,#142950)', marginBottom: 4 }}>{d.card_name} Ã‚· {d.bank}</div>
                       <div style={{ fontSize: 13, color: 'var(--ink-2,#2A3F6B)', lineHeight: 1.6 }}>{d.description}</div>
                     </div>
                     <div style={{ display: 'flex', gap: 8, flexShrink: 0 }}>
@@ -372,7 +372,7 @@ export default function AdminPage() {
                 <div key={card.id} style={{ background: 'var(--paper,#FAF5EB)', border: '1px solid var(--line,rgba(20,41,80,0.08))', borderRadius: 16, padding: 20, display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 12 }}>
                   <div>
                     <div style={{ fontSize: 15, fontWeight: 700, color: 'var(--ink,#142950)', marginBottom: 4 }}>{card.name}</div>
-                    <div style={{ fontFamily: 'var(--font-mono,monospace)', fontSize: 11, color: 'var(--ink-3,#5A6A8A)' }}>{card.bank} Ã‚Â· {card.tier} Ã‚Â· Rs.{card.annual_fee_inr}/yr</div>
+                    <div style={{ fontFamily: 'var(--font-mono,monospace)', fontSize: 11, color: 'var(--ink-3,#5A6A8A)' }}>{card.bank} Ã‚· {card.tier} Ã‚· Rs.{card.annual_fee_inr}/yr</div>
                   </div>
                   <div style={{ display: 'flex', gap: 8 }}>
                     <button onClick={() => publishPendingCard(card.id)} style={{ padding: '8px 18px', background: '#2d7a56', color: '#fff', border: 'none', borderRadius: 8, fontSize: 13, fontWeight: 700, cursor: 'pointer' }}>Publish</button>
@@ -454,15 +454,15 @@ export default function AdminPage() {
                 <div style={{ fontSize: 12, fontWeight: 700, color: '#1B3A5C', letterSpacing: '0.12em', marginBottom: 16 }}>THE PIPELINE \u00b7 RUNS EVERY NIGHT AT 2AM</div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
                   {[
-                    { icon: '\U0001f4f1', label: 'Instagram', sub: '10 handles\n1.33M+ followers', color: '#E1306C' },
+                    { icon: '\📱', label: 'Instagram', sub: '10 handles\n1.33M+ followers', color: '#E1306C' },
                     { icon: '\u2192', label: '', sub: '', color: '#94a3b8', arrow: true },
-                    { icon: '\U0001f916', label: 'Apify Scraper', sub: 'Posts + captions\nreal-time', color: '#FF6B35' },
+                    { icon: '\🤖', label: 'Apify Scraper', sub: 'Posts + captions\nreal-time', color: '#FF6B35' },
                     { icon: '\u2192', label: '', sub: '', color: '#94a3b8', arrow: true },
-                    { icon: '\U0001f9e0', label: 'Claude Haiku', sub: 'Classifies intent\nextracts insight', color: '#C9972E' },
+                    { icon: '\🧠', label: 'Claude Haiku', sub: 'Classifies intent\nextracts insight', color: '#C9972E' },
                     { icon: '\u2192', label: '', sub: '', color: '#94a3b8', arrow: true },
-                    { icon: '\U0001f4ca', label: 'pgvector', sub: 'Semantic search\nembeddings', color: '#7C5CBF' },
+                    { icon: '\📊', label: 'pgvector', sub: 'Semantic search\nembeddings', color: '#7C5CBF' },
                     { icon: '\u2192', label: '', sub: '', color: '#94a3b8', arrow: true },
-                    { icon: '\U0001f4a1', label: 'CIRA AI', sub: 'Powers every\nanswer', color: '#1B3A5C' },
+                    { icon: '\💡', label: 'CIRA AI', sub: 'Powers every\nanswer', color: '#1B3A5C' },
                   ].map((step, i) => (
                     step.arrow ? (
                       <div key={i} style={{ fontSize: 20, color: '#94a3b8', fontWeight: 300 }}>\u2192</div>
@@ -535,12 +535,12 @@ export default function AdminPage() {
                 <div style={{ fontSize: 12, fontWeight: 700, color: '#1B3A5C', letterSpacing: '0.12em', marginBottom: 16 }}>INTELLIGENCE ROADMAP \u00b7 SOURCES WE ARE ADDING</div>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
                   {[
-                    { status: 'live', icon: '\U0001f4f1', source: 'Instagram Posts + Captions', detail: '10 handles \u00b7 1.33M+ followers \u00b7 text extraction', color: '#065f46' },
-                    { status: 'next', icon: '\U0001f3a5', source: 'Instagram Reels (Whisper AI)', detail: 'Audio transcription of video content \u00b7 10x more alpha', color: '#C9972E' },
+                    { status: 'live', icon: '\📱', source: 'Instagram Posts + Captions', detail: '10 handles \u00b7 1.33M+ followers \u00b7 text extraction', color: '#065f46' },
+                    { status: 'next', icon: '\🎥', source: 'Instagram Reels (Whisper AI)', detail: 'Audio transcription of video content \u00b7 10x more alpha', color: '#C9972E' },
                     { status: 'next', icon: '\U0001f4fa', source: 'YouTube CC Channels', detail: '50+ Indian credit card creators \u00b7 1,000+ hours of content', color: '#C9972E' },
-                    { status: 'next', icon: '\U0001f3a7', source: 'Podcasts (RSS + Whisper)', detail: 'Expert analysis \u00b7 weekly card news \u00b7 auto-transcribed', color: '#C9972E' },
+                    { status: 'next', icon: '\🎧', source: 'Podcasts (RSS + Whisper)', detail: 'Expert analysis \u00b7 weekly card news \u00b7 auto-transcribed', color: '#C9972E' },
                     { status: 'next', icon: '\U0001f4ac', source: 'Reddit r/IndiaInvestments', detail: 'Real user experiences \u00b7 unfiltered community feedback', color: '#C9972E' },
-                    { status: 'next', icon: '\U0001f4c4', source: 'Bank MITC PDFs', detail: 'Ground truth card data \u00b7 auto-scraped on change', color: '#C9972E' },
+                    { status: 'next', icon: '\📄', source: 'Bank MITC PDFs', detail: 'Ground truth card data \u00b7 auto-scraped on change', color: '#C9972E' },
                   ].map((item, i) => (
                     <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '12px 16px', borderRadius: 10, background: item.status === 'live' ? 'rgba(6,95,70,0.05)' : 'rgba(201,151,46,0.05)', border: `1px solid ${item.status === 'live' ? 'rgba(6,95,70,0.2)' : 'rgba(201,151,46,0.2)'}` }}>
                       <div style={{ fontSize: 24, flexShrink: 0 }}>{item.icon}</div>
@@ -581,13 +581,13 @@ export default function AdminPage() {
                 </div>
                 <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
                   <button onClick={triggerIgScrape} style={{ padding: '8px 14px', borderRadius: 8, fontSize: 12, fontWeight: 600, cursor: 'pointer', background: '#7c3aed', color: '#fff', border: 'none' }}>
-                    Ã¢â€“Â¶ Start Scrape
+                    Ã¢"“¶ Start Scrape
                   </button>
                   <button onClick={triggerIgFetch} style={{ padding: '8px 14px', borderRadius: 8, fontSize: 12, fontWeight: 600, cursor: 'pointer', background: 'var(--ink,#142950)', color: '#fff', border: 'none' }}>
-                    Ã¢Â¬â€¡ Fetch Results
+                    Ã¢¬"¡ Fetch Results
                   </button>
                   <button onClick={loadIgInsights} style={{ padding: '8px 14px', borderRadius: 8, fontSize: 12, fontWeight: 600, cursor: 'pointer', background: 'var(--paper,#FAF5EB)', color: 'var(--ink,#142950)', border: '1px solid var(--line,rgba(20,41,80,0.12))' }}>
-                    Ã¢â€ Â» Refresh
+                    Ã¢" » Refresh
                   </button>
                 </div>
               </div>
@@ -621,8 +621,8 @@ export default function AdminPage() {
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 10 }}>
                   {[
                     { icon: 'ðŸ”„', type: 'Transfer Hacks', flow: 'Points Optimizer â†’ Finnair route over direct Qatar (100K RP = 100K vs 50K Avios)', color: '#7c3aed' },
-                    { icon: 'ðŸ“‰', type: 'Devaluations', flow: 'Card Roast â†’ "SBI PhonePe Black gutted July 2026 â€” avoid this card"', color: '#b91c1c' },
-                    { icon: 'Ã°Å¸Å½Â¯', type: 'Sweet Spots', flow: 'Trip Planner â†’ "BLR-SIN Business 42,500 KrisFlyer â€” best value in Asia"', color: '#065f46' },
+                    { icon: 'ðŸ“‰', type: 'Devaluations', flow: 'Card Roast â†’ "SBI PhonePe Black gutted July 2026 "” avoid this card"', color: '#b91c1c' },
+                    { icon: 'Ã°Å¸Å½¯', type: 'Sweet Spots', flow: 'Trip Planner â†’ "BLR-SIN Business 42,500 KrisFlyer "” best value in Asia"', color: '#065f46' },
                     { icon: 'âš–ï¸', type: 'Comparisons', flow: 'Smart Match â†’ Diners Black outperforms Infinia for moderate spenders', color: '#0369a1' },
                   ].map((item, i) => (
                     <div key={i} style={{ padding: 12, borderRadius: 10, background: `${item.color}08`, border: `1px solid ${item.color}20` }}>
@@ -653,18 +653,18 @@ export default function AdminPage() {
                           {insight.insight_type?.replace('_', ' ')}
                         </span>
                         <span style={{ fontSize: 11, color: 'var(--ink-3,#5A6A8A)' }}>@{insight.creator_handle}</span>
-                        <span style={{ fontSize: 11, color: 'var(--ink-3,#5A6A8A)' }}>Ã¢ÂÂ¤Ã¯Â¸Â {insight.trust_score ?? 0}</span>
+                        <span style={{ fontSize: 11, color: 'var(--ink-3,#5A6A8A)' }}>Ã¢¤Ã¯¸ {insight.trust_score ?? 0}</span>
                         <span style={{ fontSize: 11, color: 'var(--ink-3,#5A6A8A)', marginLeft: 'auto' }}>{new Date(insight.scraped_at).toLocaleDateString('en-IN')}</span>
                       </div>
                       <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--ink,#142950)', marginBottom: 6 }}>{insight.title || insight.content?.slice(0, 120)}</div>
                       {insight.content && (
-                        <div style={{ fontSize: 12, color: 'var(--ink-3,#5A6A8A)', marginBottom: 8 }}>Ã°Å¸â€™Â¡ {insight.content?.slice(0,150)}</div>
+                        <div style={{ fontSize: 12, color: 'var(--ink-3,#5A6A8A)', marginBottom: 8 }}>Ã°Å¸'¡ {insight.content?.slice(0,150)}</div>
                       )}
                       <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
                         <span style={{ fontSize: 11, padding: '2px 8px', borderRadius: 6, background: 'rgba(20,41,80,0.06)', color: 'var(--ink-3,#5A6A8A)' }}>
                           â†’ {CIRA_USAGE[insight.insight_type]}
                         </span>
-                        <a href={insight.source_url} target="_blank" rel="noopener noreferrer" onClick={() => fetch('/api/ig-click', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ insight_id: insight.id, query_context: 'admin_view' }) })} style={{ fontSize: 11, color: '#0369a1' }}>View post Ã¢â€ â€”</a>
+                        <a href={insight.source_url} target="_blank" rel="noopener noreferrer" onClick={() => fetch('/api/ig-click', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ insight_id: insight.id, query_context: 'admin_view' }) })} style={{ fontSize: 11, color: '#0369a1' }}>View post Ã¢" "”</a>
                       </div>
                       {insight.card_mentions?.length > 0 && (
                         <div style={{ marginTop: 8, display: 'flex', gap: 6, flexWrap: 'wrap' }}>
