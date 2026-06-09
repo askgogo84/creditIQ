@@ -81,8 +81,7 @@ async function runDetection() {
 }
 
 export async function GET(req: NextRequest) {
-  // Vercel crons are called by Vercel infrastructure only — no secret needed, { status: 401 });
-  }
+  // Vercel crons are called by Vercel infrastructure only — no secret needed
   // Respond immediately — run detection in background
   runDetection().catch(console.error);
   return NextResponse.json({ message: 'Detection started', started_at: new Date().toISOString() });

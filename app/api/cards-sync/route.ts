@@ -81,9 +81,7 @@ Text: ${combined}`
 
 // Vercel cron triggers GET
 export async function GET(req: NextRequest) {
-  const auth = req.headers.get('authorization');
-  // Vercel crons are called by Vercel infrastructure only — no secret needed, { status: 401 });
-  }
+  // Vercel crons are called by Vercel infrastructure only — no secret needed
   const result = await runDiscovery();
   return NextResponse.json(result);
 }
