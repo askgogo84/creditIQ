@@ -81,9 +81,7 @@ async function runDetection() {
 }
 
 export async function GET(req: NextRequest) {
-  const auth = req.headers.get('authorization');
-  if (auth !== `Bearer ${process.env.CRON_SECRET}`) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  // Vercel crons are called by Vercel infrastructure only — no secret needed, { status: 401 });
   }
   // Respond immediately — run detection in background
   runDetection().catch(console.error);

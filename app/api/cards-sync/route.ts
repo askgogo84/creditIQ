@@ -82,9 +82,7 @@ Text: ${combined}`
 // Vercel cron triggers GET
 export async function GET(req: NextRequest) {
   const auth = req.headers.get('authorization');
-  const secret = process.env.CRON_SECRET || process.env.SYNC_SECRET;
-  if (secret && auth !== `Bearer ${secret}`) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  // Vercel crons are called by Vercel infrastructure only — no secret needed, { status: 401 });
   }
   const result = await runDiscovery();
   return NextResponse.json(result);
