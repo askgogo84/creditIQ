@@ -44,8 +44,7 @@ Return ONLY valid JSON:
 }
 
 export async function GET(req: NextRequest) {
-  const secret = req.headers.get('x-cron-secret')
-  if (secret !== process.env.CRON_SECRET) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    // Vercel crons are called by Vercel infrastructure only — no secret needed
 
   const sb = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!)
   const { data: sources } = await sb.from('reddit_sources').select('*').eq('active', true).limit(5)

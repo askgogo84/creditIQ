@@ -16,8 +16,7 @@ async function getEmbedding(text: string, openaiKey: string): Promise<number[] |
 }
 
 export async function GET(req: NextRequest) {
-  const secret = req.headers.get('x-cron-secret');
-  if (secret !== process.env.CRON_SECRET) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  // Vercel crons are called by Vercel infrastructure only — no secret needed
   const openaiKey = process.env.OPENAI_API_KEY;
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY;

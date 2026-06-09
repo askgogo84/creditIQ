@@ -78,8 +78,7 @@ async function extractInsights(post: any, anthropicKey: string): Promise<any | n
 }
 
 export async function GET(req: NextRequest) {
-  const secret = req.headers.get('x-cron-secret');
-  if (secret !== process.env.CRON_SECRET) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  // Vercel crons are called by Vercel infrastructure only — no secret needed
   const apifyToken = process.env.APIFY_TOKEN;
   const anthropicKey = process.env.ANTHROPIC_API_KEY;
   const openaiKey = process.env.OPENAI_API_KEY || '';
