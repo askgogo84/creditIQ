@@ -12,19 +12,20 @@ const SUGGESTIONS = [
 ];
 
 function renderMarkdown(text: string) {
-  // Split on **bold**, [link](url), and → [link](url)
   const parts = text.split(/(→\s*\[[^\]]+\]\([^)]+\)|\*\*[^*]+\*\*|\[[^\]]+\]\([^)]+\))/g);
   return parts.map((part, i) => {
     if (part.startsWith("**") && part.endsWith("**")) {
       return <strong key={i}>{part.slice(2, -2)}</strong>;
     }
-    // Match → [text](url) or [text](url)
-    const linkMatch = part.match(/^(→\s*)?\[([^\]]+)\]\(([^)]+)\)$/);
-    if (linkMatch) {
+    const lm = part.match(/^(→\s*)?\[([^\]]+)\]\(([^)]+)\)$/);
+    if (lm) {
       return (
-        <a key={i} href={linkMatch[3]}
-          style={{ color: "#D89B2A", fontWeight: 600, textDecoration: "none", borderBottom: "1px solid rgba(216,155,42,0.4)" }}>
-          {linkMatch[1] || ""}{linkMatch[2]} →
+        <a key={i} href={lm[3]} style={{
+          color: "#D89B2A", fontWeight: 600 as const,
+          textDecoration: "none" as const,
+          borderBottom: "1px solid rgba(216,155,42,0.5)",
+        }}>
+          {lm[2]} →
         </a>
       );
     }
