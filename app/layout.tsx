@@ -45,7 +45,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body style={{ fontFamily: "var(--font-geist-sans), system-ui, sans-serif" }}>
         {children}
         <CreditIQAssistant />
-      </body>
+        <AppDownloadBanner />
+</body>
     </html>
   );
 }

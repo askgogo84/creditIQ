@@ -21,6 +21,7 @@ const TARGET_HANDLES = [
   'milesbeyondborders',
   'pointsdecoded',
   'bandukwala',   // F1 suite redemptions, premium sweet spots
+  'pointsflywithvibhav',  // Europe/UK routes, transfer ratios, award costs
 ];
 
 const APIFY_BASE = 'https://api.apify.com/v2';

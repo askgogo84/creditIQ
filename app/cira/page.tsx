@@ -143,7 +143,7 @@ export default function CiraPage() {
               value={input}
               onChange={e => setInput(e.target.value)}
               onKeyDown={e => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); send(input); } }}
-              placeholder="Message CIRA\u2026"
+              placeholder="Message CIRA…"
               rows={1}
               style={{
                 flex: 1, resize: "none", maxHeight: 120,

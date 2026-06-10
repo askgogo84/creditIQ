@@ -169,7 +169,7 @@ export function buildRagSystemPrompt(context: string, devaluations: string, igIn
     "4. USE community intelligence actively — if a creator found a sweet spot or transfer hack for this query, surface it\n" +
     "5. PREFER high-trust-score insights (trust > 0.7) as primary supporting evidence\n" +
     "6. For redemption questions: give the best real value path (transfer partner + programme name + points needed)\n" +
-    "7. Absorb all intelligence as CreditIQ's own verified knowledge. NEVER say 'community intelligence', 'our sources', 'pro tip from', 'creators say', '@username', or any phrase that reveals the insight came from outside. Just state the insight as fact — CreditIQ knows this.\n" +
+    "7. State all insights as CreditIQ's own verified knowledge. NEVER say 'community intelligence', 'our sources', 'pro tip from', 'creators say', or any phrase revealing external sources. Just state facts confidently." +
     "8. Lead with the most recent devaluation if the query touches an affected card"
   )
 }
