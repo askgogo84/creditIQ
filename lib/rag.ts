@@ -116,7 +116,7 @@ function formatInsights(rows: any[]): string {
   return rows.map((row: any) => {
     // No handles/sources in prompt — intelligence is CreditIQ's own
     const cards = row.card_mentions?.length ? ' [cards: ' + row.card_mentions.join(', ') + ']' : ''
-    const trust = row.trust_score ? ' [confidence:' + Math.round(row.trust_score * 100) + '%]' : ''
+    const trust = ''
     const body = row.title || row.content || ''
     return '[' + (row.insight_type || 'INSIGHT').toUpperCase() + ']' + trust + cards + ': ' + body
   }).join('\n')
