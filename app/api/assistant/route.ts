@@ -5,15 +5,23 @@ export const runtime = 'nodejs';
 
 export async function POST(req: NextRequest) {
   try {
-    const { message, history } = await req.json();
+    const body = await req.json();
+    // Accept BOTH {message, history} (web) and {messages:[{role,content}]} (mobile)
+    let message = body.message;
+    let history = body.history || [];
+    if (!message && Array.isArray(body.messages) && body.messages.length) {
+      const msgs = body.messages;
+      message = msgs[msgs.length - 1]?.content;
+      history = msgs.slice(0, -1).map((m: any) => ({ role: m.role, content: m.content }));
+    }
     if (!message) return NextResponse.json({ error: 'Missing message' }, { status: 400 });
 
-    const { context, devaluations } = await retrieveRelevantCards(message, {
+    const { context, devaluations, igInsights } = await retrieveRelevantCards(message, {
       topK: 6,
       intent: 'general',
     });
 
-    const systemPrompt = buildRagSystemPrompt(context, devaluations) +
+    const systemPrompt = buildRagSystemPrompt(context, devaluations, igInsights) +
       `\n\nYou are the CreditIQ Assistant  --  India's most honest credit card advisor.
 You help users find the best credit card for any merchant, category, or spend pattern.
 You have zero bank bias  --  you are not paid by any bank.
@@ -48,7 +56,7 @@ Examples of good responses:
       },
       body: JSON.stringify({
         model: 'claude-sonnet-4-20250514',
-        max_tokens: 250,
+        max_tokens: 400,
         system: systemPrompt,
         messages,
       }),

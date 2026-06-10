@@ -130,7 +130,7 @@ export async function retrieveRelevantCards(
   const { topK = 8, spendCategories = [], maxFee, intent } = options
   const allCards = await getAllCards()
   const devaluationEvents = await getDevaluationEvents(30)
-  const igInsights = await getIgInsights(20)
+  const igInsights = await getIgInsights(12, query)
   const queryLower = query.toLowerCase()
   const scored = allCards.map(card => {
     let score = 0
@@ -170,6 +170,7 @@ export function buildRagSystemPrompt(context: string, devaluations: string, igIn
     "4. USE community intelligence actively — if a creator found a sweet spot or transfer hack for this query, surface it\n" +
     "5. PREFER high-trust-score insights (trust > 0.7) as primary supporting evidence\n" +
     "6. For redemption questions: give the best real value path (transfer partner + programme name + points needed)\n" +
-    "7. Respond with valid JSON only"
+    "7. When citing a community insight, name the creator (e.g. \"@pointsflywithvibhav flagged...\") so advice feels grounded\n" +
+    "8. Lead with the most recent devaluation if the query touches an affected card"
   )
 }
