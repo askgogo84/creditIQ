@@ -48,7 +48,7 @@ export async function GET(req: NextRequest) {
           resultsLimit: 20,
         }),
       });
-      if (!res.ok) { errors.push(`${handle}: HTTP ${res.status}`); continue; }
+      if (!res.ok) { const body = await res.text().catch(() => ''); errors.push(`${handle}: HTTP ${res.status} - ${body.slice(0, 200)}`); continue; }
       const data = await res.json();
       const runId = data.data?.id;
       if (runId) runIds[handle] = runId;
