@@ -17,7 +17,7 @@ const CITY_TO_IATA: Record<string, string> = {
   bangkok: 'BKK', singapore: 'SIN', dubai: 'DXB', london: 'LHR',
   paris: 'CDG', tokyo: 'NRT', 'new york': 'JFK', sydney: 'SYD',
   hongkong: 'HKG', 'hong kong': 'HKG', bali: 'DPS', phuket: 'HKT',
-  kualalumpur: 'KUL', 'kuala lumpur': 'KUL', doha: 'DOH', abu dhabi: 'AUH',
+  kualalumpur: 'KUL', 'kuala lumpur': 'KUL', doha: 'DOH', 'abu dhabi': 'AUH',
   amsterdam: 'AMS', frankfurt: 'FRA', toronto: 'YYZ', milan: 'MXP',
   rome: 'FCO', barcelona: 'BCN', zurich: 'ZRH', vienna: 'VIE',
 }
@@ -123,8 +123,7 @@ function formatAvailability(results: any[], origin: string, dest: string, cabin:
 
   lines.push(`
 *Data from Seats.aero · Updated in real time · Book directly on airline website*`)
-  return lines.join('
-')
+  return lines.join('\n')
 }
 
 export async function POST(req: NextRequest) {
@@ -168,10 +167,7 @@ export async function POST(req: NextRequest) {
         console.log(`Seats.aero search: ${fromIata}→${destination} ${program || 'any'} ${cabin}`)
         const results = await searchLiveAvailability(fromIata, destination, program, cabin, seatsKey)
         if (results.length > 0) {
-          liveAvailabilityContext = '
-
-LIVE AWARD AVAILABILITY (from Seats.aero right now):
-' +
+          liveAvailabilityContext = `\n\nLIVE AWARD AVAILABILITY (from Seats.aero right now):\n` +
             formatAvailability(results, fromIata, destination, cabin)
         }
       }
