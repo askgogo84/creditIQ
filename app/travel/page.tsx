@@ -1,6 +1,7 @@
 'use client';
 
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, Suspense } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { Header } from '@/components/Header';
 
 interface Message {
@@ -27,15 +28,26 @@ const SUGGESTIONS = [
   'Transfer HDFC points to KrisFlyer or Avios — which is better?',
 ];
 
-export default function TravelPage() {
+function TravelPageInner() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
+  const [autoSent, setAutoSent] = useState(false);
   const bottomRef = useRef<HTMLDivElement>(null);
+  const searchParams = useSearchParams();
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages, loading]);
+
+  // Auto-send ?q= param from CIRA handoff
+  useEffect(() => {
+    const q = searchParams.get('q');
+    if (q && !autoSent && !loading) {
+      setAutoSent(true);
+      send(decodeURIComponent(q));
+    }
+  }, [searchParams, autoSent]);
 
   const send = async (text?: string) => {
     const query = (text ?? input).trim();
@@ -216,5 +228,13 @@ export default function TravelPage() {
         }
       `}</style>
     </div>
+  );
+}
+
+export default function TravelPage() {
+  return (
+    <Suspense fallback={<div style={{ minHeight: '100vh', background: 'var(--bg,#F5EFE6)' }} />}>
+      <TravelPageInner />
+    </Suspense>
   );
 }
