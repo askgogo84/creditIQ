@@ -49,6 +49,8 @@ Examples of good responses:
       { role: 'user', content: message },
     ];
 
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 15000);
     const response = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
       headers: {
@@ -56,14 +58,16 @@ Examples of good responses:
         'x-api-key': process.env.ANTHROPIC_API_KEY!,
         'anthropic-version': '2023-06-01',
       },
+      signal: controller.signal,
       body: JSON.stringify({
-        model: 'claude-sonnet-4-20250514',
-        max_tokens: 400,
+        model: 'claude-haiku-4-5-20251001',
+        max_tokens: 300,
         system: systemPrompt,
         messages,
       }),
     });
 
+    clearTimeout(timeout);
     const data = await response.json();
     let text = data.content?.[0]?.text ?? 'Sorry, I could not get a response.';
 

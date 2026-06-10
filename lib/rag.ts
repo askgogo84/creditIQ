@@ -129,7 +129,7 @@ export async function retrieveRelevantCards(
   const { topK = 8, spendCategories = [], maxFee, intent } = options
   const allCards = await getAllCards()
   const devaluationEvents = await getDevaluationEvents(30)
-  const igInsights = await getIgInsights(12, query)
+  const igInsights = await getIgInsights(6, query)
   const queryLower = query.toLowerCase()
   const scored = allCards.map(card => {
     let score = 0
