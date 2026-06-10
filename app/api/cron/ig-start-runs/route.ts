@@ -20,6 +20,7 @@ const TARGET_HANDLES = [
   'cardexpert.in',
   'milesbeyondborders',
   'pointsdecoded',
+  'bandukwala',   // F1 suite redemptions, premium sweet spots
 ];
 
 const APIFY_BASE = 'https://api.apify.com/v2';
