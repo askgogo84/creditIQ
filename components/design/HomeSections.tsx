@@ -59,7 +59,7 @@ export function MeetTheC() {
                 ))}
               </div>
               <div style={{ display: 'flex', gap: 14, flexWrap: 'wrap' }}>
-                <CopperCTA href="/card-roast">Ask CIRA</CopperCTA>
+                <CopperCTA href="/cira">Ask CIRA</CopperCTA>
                 <GhostCTA href="/travel">Try Travel AI</GhostCTA>
               </div>
             </Reveal>
