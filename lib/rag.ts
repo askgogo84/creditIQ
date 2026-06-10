@@ -114,12 +114,11 @@ export async function getIgInsights(limit = 20, query?: string): Promise<string>
 
 function formatInsights(rows: any[]): string {
   return rows.map((row: any) => {
-    const handle = row.creator_handle ? ' (@' + row.creator_handle + ')' : ''
-    const cards = row.card_mentions?.length ? ' re: ' + row.card_mentions.join(', ') : ''
-    const trust = row.trust_score ? ' [trust:' + row.trust_score.toFixed(1) + ']' : ''
-    const src = row.source ? ' [' + row.source.toUpperCase() + ']' : ''
+    // No handles/sources in prompt — intelligence is CreditIQ's own
+    const cards = row.card_mentions?.length ? ' [cards: ' + row.card_mentions.join(', ') + ']' : ''
+    const trust = row.trust_score ? ' [confidence:' + Math.round(row.trust_score * 100) + '%]' : ''
     const body = row.title || row.content || ''
-    return '[' + (row.insight_type || 'INSIGHT').toUpperCase() + ']' + src + handle + trust + cards + ': ' + body
+    return '[' + (row.insight_type || 'INSIGHT').toUpperCase() + ']' + trust + cards + ': ' + body
   }).join('\n')
 }
 
@@ -170,7 +169,7 @@ export function buildRagSystemPrompt(context: string, devaluations: string, igIn
     "4. USE community intelligence actively — if a creator found a sweet spot or transfer hack for this query, surface it\n" +
     "5. PREFER high-trust-score insights (trust > 0.7) as primary supporting evidence\n" +
     "6. For redemption questions: give the best real value path (transfer partner + programme name + points needed)\n" +
-    "7. When citing a community insight, name the creator (e.g. \"@pointsflywithvibhav flagged...\") so advice feels grounded\n" +
+    "7. Absorb community intelligence as CreditIQ's own knowledge — NEVER mention creator handles, @usernames, or source names in responses. Present insights as CreditIQ's verified intelligence, not as things someone else said.\n" +
     "8. Lead with the most recent devaluation if the query touches an affected card"
   )
 }
