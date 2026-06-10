@@ -149,7 +149,7 @@ export async function GET(req: NextRequest) {
         }
 
         // 6. Save new unique insight
-        const subs = channel.subscriber_count || 0
+        const subs = channel.subscribers || 0
         const record = {
           source: 'youtube',
           source_url: url,

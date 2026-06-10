@@ -77,8 +77,10 @@ export async function GET(req: NextRequest) {
           discovered.push({
             channel_id: ch.id,
             channel_name: ch.snippet?.title,
+            handle: '@' + (ch.snippet?.customUrl || ch.id),
             active: true,
-            subscriber_count: subs,
+            subscribers: subs,
+            category: 'credit_card',
           })
         }
       }
