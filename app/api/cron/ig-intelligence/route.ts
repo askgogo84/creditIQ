@@ -56,7 +56,7 @@ async function extractInsights(post: any, anthropicKey: string): Promise<any | n
   const res = await fetch("https://api.anthropic.com/v1/messages", {
     method: "POST",
     headers: { "Content-Type": "application/json", "x-api-key": anthropicKey, "anthropic-version": "2023-06-01" },
-    body: JSON.stringify({ model: "claude-opus-4-5-20251101", max_tokens: 800, messages: [{ role: "user", content }] }),
+    body: JSON.stringify({ model: "claude-opus-4-5", max_tokens: 800, messages: [{ role: "user", content }] }),
   });
   if (!res.ok) return null;
   const data = await res.json();

@@ -4,6 +4,19 @@ import { createClient } from '@supabase/supabase-js'
 export const runtime = 'nodejs'
 export const maxDuration = 300
 
+const CC_KEYWORDS = [
+  'credit card','creditcard','reward point','amex','infinia','magnus','atlas','horizon','millennia',
+  'regalia','diners','smartbuy','edge miles','krisflyer','aeroplan','avios','transfer partner',
+  'lounge access','annual fee','milestone','cashback','forex markup','lifetime free','reward rate',
+  'air miles','membership reward','hdfc','axis','icici','sbi card','au bank','idfc','rbl','hsbc',
+  'visa','mastercard','rupay','devaluation','redeem','redemption',
+]
+function isCreditCardRelevant(title: string, body: string): boolean {
+  const text = (title + ' ' + body).toLowerCase()
+  return CC_KEYWORDS.some(kw => text.includes(kw))
+}
+
+
 async function getEmbedding(text: string): Promise<number[] | null> {
   try {
     const res = await fetch('https://api.openai.com/v1/embeddings', {
@@ -89,6 +102,9 @@ export async function GET(req: NextRequest) {
 
         // Use title + description if no transcript
         const textContent = video.snippet?.title + '. ' + (video.snippet?.description || '').slice(0, 1000)
+        // RELEVANCE GATE - skip non-CC videos
+        if (!isCreditCardRelevant(video.snippet?.title || '', video.snippet?.description || '')) continue
+
         const insight = await extractInsight(video.snippet?.title || '', textContent, channel.channel_name || channel.channel_id)
         if (!insight) continue
 
@@ -98,7 +114,7 @@ export async function GET(req: NextRequest) {
         const record = {
           source: 'youtube',
           source_url: `https://youtube.com/watch?v=${videoId}`,
-          creator_handle: channel.channel_id,
+          creator_handle: channel.channel_name || channel.channel_id,
           creator_name: channel.channel_name || channel.channel_id,
           creator_followers: channel.subscriber_count || 0,
           title: insight.title,

@@ -116,7 +116,7 @@ export default function AdminPage() {
         .select('*')
         .eq('active', true)
         .order('scraped_at', { ascending: false })
-        .limit(50);
+        .limit(500);
       setIgInsights(data || []);
     } catch {}
     setIgLoading(false);
