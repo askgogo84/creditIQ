@@ -3,6 +3,9 @@ import { runScrapers } from '@/lib/scrapers';
 import { parseScrapedCard } from '@/lib/scrapers/parser';
 import { createClient } from '@supabase/supabase-js';
 
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
 export const maxDuration = 300;
 
 export async function GET(req: NextRequest) {

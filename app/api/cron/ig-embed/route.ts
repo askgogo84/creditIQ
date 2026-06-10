@@ -2,6 +2,8 @@
 // One-time + ongoing: generate embeddings for insights missing them
 import { NextRequest, NextResponse } from 'next/server';
 export const runtime = 'nodejs';
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
 export const maxDuration = 120;
 
 async function getEmbedding(text: string, openaiKey: string): Promise<number[] | null> {

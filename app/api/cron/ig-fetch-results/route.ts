@@ -21,6 +21,8 @@ async function embedAndSave(sb: any, id: string, text: string): Promise<void> {
 }
 
 export const runtime = 'nodejs';
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
 export const maxDuration = 60;
 const APIFY_BASE = 'https://api.apify.com/v2';
 
