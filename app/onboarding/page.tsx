@@ -1,171 +1,236 @@
-'use client'
+'use client';
+export const dynamic = 'force-dynamic';
 
-import { useState } from 'react'
-import { useRouter } from 'next/navigation'
+import { useEffect, useState, type CSSProperties } from 'react';
+import { createBrowserClient } from '@supabase/ssr';
+import { useRouter } from 'next/navigation';
+import { Search, Check, ArrowRight, ArrowLeft, X, Plane, CreditCard } from 'lucide-react';
 
-const STEPS = [
-  {
-    id: 'spend',
-    title: 'What do you spend most on?',
-    subtitle: 'Pick all that apply — we\'ll find cards that maximise every rupee',
-    type: 'multi',
-    options: [
-      { id: 'shopping', label: '🛍️ Online Shopping', sub: 'Amazon, Flipkart, Myntra' },
-      { id: 'dining', label: '🍽️ Dining & Food Delivery', sub: 'Swiggy, Zomato, restaurants' },
-      { id: 'travel', label: '✈️ Travel & Hotels', sub: 'Flights, hotels, cabs' },
-      { id: 'fuel', label: '⛽ Fuel', sub: 'Petrol & diesel' },
-      { id: 'groceries', label: '🛒 Groceries', sub: 'BigBasket, supermarkets' },
-      { id: 'utility', label: '💡 Bills & Utilities', sub: 'Electricity, mobile recharges' },
-    ]
-  },
-  {
-    id: 'monthly',
-    title: 'Monthly credit card spend?',
-    subtitle: 'This helps us calculate your actual rewards earnings',
-    type: 'single',
-    options: [
-      { id: '10k', label: 'Under ₹10,000', sub: 'Light spender' },
-      { id: '25k', label: '₹10,000 – ₹25,000', sub: 'Moderate' },
-      { id: '50k', label: '₹25,000 – ₹50,000', sub: 'Regular' },
-      { id: '1L', label: '₹50,000 – ₹1,00,000', sub: 'Heavy spender' },
-      { id: '1L+', label: 'Over ₹1,00,000', sub: 'Premium segment' },
-    ]
-  },
-  {
-    id: 'goal',
-    title: 'What\'s your primary goal?',
-    subtitle: 'We\'ll optimise your recommendation around this',
-    type: 'single',
-    options: [
-      { id: 'cashback', label: '💰 Maximum cashback', sub: 'Money back on every spend' },
-      { id: 'travel', label: '🌏 Free flights & hotels', sub: 'Points & miles strategy' },
-      { id: 'lounge', label: '🛋️ Airport lounge access', sub: 'Travel comfort' },
-      { id: 'simple', label: '✅ Simple, no-fee card', sub: 'No annual fee ever' },
-    ]
-  }
-]
+const GOLD = '#C9972E';
 
-export default function OnboardingFlow() {
-  const router = useRouter()
-  const [step, setStep] = useState(0)
-  const [answers, setAnswers] = useState<Record<string, string | string[]>>({})
-  const [selected, setSelected] = useState<string[]>([])
+type CatalogCard = { id: string; name: string; bank: string; reward_currency: string | null };
+type WalletPick = { id: string; name: string; bank: string; currency: string; points: number };
 
-  const current = STEPS[step]
-  const isLast = step === STEPS.length - 1
+const AIRPORTS = [
+  { code: 'DEL', city: 'Delhi' }, { code: 'BOM', city: 'Mumbai' }, { code: 'BLR', city: 'Bangalore' },
+  { code: 'HYD', city: 'Hyderabad' }, { code: 'MAA', city: 'Chennai' }, { code: 'CCU', city: 'Kolkata' },
+  { code: 'PNQ', city: 'Pune' }, { code: 'GOI', city: 'Goa' },
+];
 
-  function toggle(id: string) {
-    if (current.type === 'single') {
-      setSelected([id])
-    } else {
-      setSelected(prev => prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id])
-    }
-  }
+export default function OnboardingPage() {
+  const router = useRouter();
+  const [sb] = useState(() =>
+    createBrowserClient(process.env.NEXT_PUBLIC_SUPABASE_URL || '', process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '')
+  );
+  const [user, setUser] = useState<any>(null);
+  const [step, setStep] = useState(0);
+  const [saving, setSaving] = useState(false);
 
-  function next() {
-    const val = current.type === 'single' ? selected[0] : selected
-    setAnswers(prev => ({ ...prev, [current.id]: val }))
-    setSelected([])
-    if (isLast) {
-      // Build CIRA query from answers
-      const a = { ...answers, [current.id]: val }
-      const query = `I spend mainly on ${(a.spend as string[])?.join(', ')}, about ${a.monthly} per month. My goal is ${a.goal}. What's the best credit card for me?`
-      router.push(`/smart-match?q=${encodeURIComponent(query)}`)
-    } else {
-      setStep(s => s + 1)
-    }
-  }
+  const [name, setName] = useState('');
+  const [dob, setDob] = useState('');
 
-  const progress = ((step + 1) / STEPS.length) * 100
+  const [q, setQ] = useState('');
+  const [results, setResults] = useState<CatalogCard[]>([]);
+  const [wallet, setWallet] = useState<WalletPick[]>([]);
+  const [pending, setPending] = useState<CatalogCard | null>(null);
+  const [pendingPts, setPendingPts] = useState('');
+
+  const [airport, setAirport] = useState('');
+
+  useEffect(() => {
+    sb.auth.getUser().then(async ({ data: { user } }) => {
+      if (!user) { router.replace('/login'); return; }
+      setUser(user);
+      setName(user.user_metadata?.full_name || '');
+      try {
+        const j = await (await fetch(`/api/onboarding?userId=${user.id}`)).json();
+        if (j?.onboarding_complete) router.replace('/dashboard');
+      } catch {}
+    });
+  }, []);
+
+  // card catalog search
+  useEffect(() => {
+    if (step !== 1 || q.trim().length < 2) { setResults([]); return; }
+    let off = false;
+    sb.from('cards').select('id,name,bank,reward_currency').eq('active', true)
+      .ilike('name', `%${q.trim()}%`).limit(8)
+      .then(({ data }) => { if (!off) setResults((data as CatalogCard[]) ?? []); });
+    return () => { off = true; };
+  }, [q, step]);
+
+  const confirmPending = () => {
+    if (!pending) return;
+    setWallet(w => [...w.filter(x => x.id !== pending.id), {
+      id: pending.id, name: pending.name, bank: pending.bank,
+      currency: pending.reward_currency || 'Points', points: parseInt(pendingPts) || 0,
+    }]);
+    setPending(null); setPendingPts(''); setQ(''); setResults([]);
+  };
+
+  const finish = async () => {
+    if (!user || saving) return;
+    setSaving(true);
+    try {
+      for (const c of wallet) {
+        await fetch('/api/manual-cards', {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ userId: user.id, bank: c.bank, cardName: c.name, cardLast4: '', pointsBalance: String(c.points), pointsCurrency: c.currency }),
+        });
+      }
+      await fetch('/api/onboarding', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId: user.id, displayName: name, dateOfBirth: dob || null, homeAirport: airport || null, complete: true }),
+      });
+      router.replace('/dashboard');
+    } catch { setSaving(false); }
+  };
+
+  const card: CSSProperties = { background: 'var(--surface, #fff)', border: '1px solid var(--line, rgba(20,41,80,0.1))', borderRadius: 16 };
+  const input: CSSProperties = { width: '100%', padding: '12px 14px', borderRadius: 12, fontSize: 15, border: '1px solid var(--line, rgba(20,41,80,0.15))', background: 'var(--surface-2, #f8f9fc)', color: 'var(--ink, #142950)', outline: 'none' };
+  const label: CSSProperties = { fontSize: 12, fontWeight: 600, color: 'var(--ink-3, #5A6A8A)', marginBottom: 6, display: 'block' };
+  const primaryBtn = (disabled = false): CSSProperties => ({ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, width: '100%', padding: '14px', borderRadius: 12, background: GOLD, color: '#fff', fontSize: 15, fontWeight: 700, border: 'none', cursor: disabled ? 'default' : 'pointer', opacity: disabled ? 0.5 : 1 });
+
+  const canNext = step === 0 ? name.trim().length > 0 : true;
 
   return (
-    <div style={{
-      minHeight: '100vh',
-      background: 'linear-gradient(135deg, #FAF5EB 0%, #F0E8D8 100%)',
-      display: 'flex', flexDirection: 'column', alignItems: 'center',
-      justifyContent: 'center', padding: '24px 16px'
-    }}>
-      <div style={{ width: '100%', maxWidth: 520 }}>
+    <main className="min-h-screen" style={{ background: 'var(--bg, #F5EFE6)', display: 'flex', flexDirection: 'column' }}>
+      <div style={{ maxWidth: 440, width: '100%', margin: '0 auto', padding: '24px 16px 40px', flex: 1, display: 'flex', flexDirection: 'column' }}>
 
-        {/* Progress */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 32 }}>
-          <div style={{ flex: 1, height: 4, background: 'rgba(20,41,80,0.1)', borderRadius: 2 }}>
-            <div style={{ width: `${progress}%`, height: '100%', background: '#C9972E', borderRadius: 2, transition: 'width 0.3s ease' }} />
+        {/* brand + progress */}
+        <div style={{ marginBottom: 24 }}>
+          <div style={{ fontSize: 18, fontWeight: 800, color: 'var(--ink, #142950)', letterSpacing: '-0.02em' }}>
+            CreditIQ
           </div>
-          <span style={{ fontSize: 12, color: '#5A6A8A', fontWeight: 600 }}>{step + 1}/{STEPS.length}</span>
+          <div style={{ display: 'flex', gap: 6, marginTop: 14 }}>
+            {[0, 1, 2].map(i => (
+              <div key={i} style={{ height: 4, flex: 1, borderRadius: 99, background: i <= step ? GOLD : 'var(--line, rgba(20,41,80,0.12))', transition: 'background .2s' }} />
+            ))}
+          </div>
         </div>
 
-        {/* Question */}
-        <h1 style={{ fontSize: 'clamp(22px, 4vw, 30px)', fontWeight: 800, color: '#142950', marginBottom: 8, lineHeight: 1.25 }}>
-          {current.title}
-        </h1>
-        <p style={{ fontSize: 15, color: '#5A6A8A', marginBottom: 28, lineHeight: 1.5 }}>
-          {current.subtitle}
-        </p>
-
-        {/* Options */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 32 }}>
-          {current.options.map(opt => {
-            const isSelected = selected.includes(opt.id)
-            return (
-              <button
-                key={opt.id}
-                onClick={() => toggle(opt.id)}
-                style={{
-                  display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                  padding: '16px 20px', borderRadius: 14,
-                  border: isSelected ? '2px solid #C9972E' : '2px solid rgba(20,41,80,0.1)',
-                  background: isSelected ? 'rgba(201,151,46,0.1)' : '#fff',
-                  cursor: 'pointer', textAlign: 'left', transition: 'all 0.15s ease',
-                  boxShadow: '0 2px 8px rgba(0,0,0,0.04)'
-                }}
-              >
-                <div>
-                  <div style={{ fontSize: 16, fontWeight: 700, color: '#142950', marginBottom: 2 }}>{opt.label}</div>
-                  <div style={{ fontSize: 13, color: '#5A6A8A' }}>{opt.sub}</div>
-                </div>
-                <div style={{
-                  width: 22, height: 22, borderRadius: current.type === 'single' ? 11 : 6,
-                  border: isSelected ? '2px solid #C9972E' : '2px solid rgba(20,41,80,0.2)',
-                  background: isSelected ? '#C9972E' : 'transparent',
-                  display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  flexShrink: 0
-                }}>
-                  {isSelected && <span style={{ color: '#fff', fontSize: 12, fontWeight: 900 }}>✓</span>}
-                </div>
-              </button>
-            )
-          })}
-        </div>
-
-        {/* CTA */}
-        <button
-          onClick={next}
-          disabled={selected.length === 0}
-          style={{
-            width: '100%', padding: '16px 24px', borderRadius: 16,
-            background: selected.length > 0 ? '#142950' : 'rgba(20,41,80,0.2)',
-            color: '#fff', fontSize: 16, fontWeight: 800,
-            border: 'none', cursor: selected.length > 0 ? 'pointer' : 'not-allowed',
-            transition: 'all 0.15s ease'
-          }}
-        >
-          {isLast ? '🔍 Find my perfect card' : 'Continue →'}
-        </button>
-
-        {step > 0 && (
-          <button
-            onClick={() => { setStep(s => s - 1); setSelected([]); }}
-            style={{ marginTop: 12, width: '100%', padding: '12px', background: 'transparent', border: 'none', color: '#5A6A8A', fontSize: 14, cursor: 'pointer' }}
-          >
-            ← Back
-          </button>
+        {/* STEP 0 — about you */}
+        {step === 0 && (
+          <div style={{ flex: 1 }}>
+            <h1 style={{ fontSize: 28, fontWeight: 800, color: 'var(--ink, #142950)', letterSpacing: '-0.03em', lineHeight: 1.15 }}>Tell us about yourself</h1>
+            <p style={{ fontSize: 14, color: 'var(--text-muted, #5A6A8A)', marginTop: 8, marginBottom: 24 }}>
+              Your points could be your next business-class seat. Using them shouldn’t take ten tabs and a spreadsheet.
+            </p>
+            <div style={{ marginBottom: 16 }}>
+              <label style={label}>What should we call you?</label>
+              <input style={input} value={name} onChange={e => setName(e.target.value)} placeholder="Your name" />
+            </div>
+            <div>
+              <label style={label}>Date of birth <span style={{ fontWeight: 400 }}>(for auto-importing points from statements)</span></label>
+              <input style={input} type="date" value={dob} onChange={e => setDob(e.target.value)} />
+            </div>
+          </div>
         )}
 
-        <p style={{ textAlign: 'center', fontSize: 12, color: '#5A6A8A', marginTop: 20 }}>
-          No sign-up required · No affiliate bias · Takes 60 seconds
-        </p>
+        {/* STEP 1 — wallet */}
+        {step === 1 && (
+          <div style={{ flex: 1 }}>
+            <h1 style={{ fontSize: 28, fontWeight: 800, color: 'var(--ink, #142950)', letterSpacing: '-0.03em', lineHeight: 1.15 }}>What’s in your wallet?</h1>
+            <p style={{ fontSize: 14, color: 'var(--text-muted, #5A6A8A)', marginTop: 8, marginBottom: 18 }}>
+              Add the cards you hold so we can suggest the best way to book any flight. You can add more later.
+            </p>
+
+            <div style={{ position: 'relative', marginBottom: 12 }}>
+              <Search style={{ position: 'absolute', left: 12, top: 13, width: 16, height: 16, color: 'var(--ink-3, #5A6A8A)' }} />
+              <input style={{ ...input, paddingLeft: 36 }} value={q} onChange={e => setQ(e.target.value)} placeholder="Search a card — e.g. HDFC, Infinia, Atlas" />
+            </div>
+
+            {results.length > 0 && (
+              <div style={{ ...card, padding: 6, marginBottom: 12 }}>
+                {results.map(r => (
+                  <button key={r.id} onClick={() => { setPending(r); setPendingPts(''); }}
+                    style={{ display: 'flex', alignItems: 'center', gap: 10, width: '100%', padding: '10px 10px', background: 'none', border: 'none', cursor: 'pointer', textAlign: 'left', borderRadius: 10 }}>
+                    <CreditCard style={{ width: 16, height: 16, color: GOLD, flexShrink: 0 }} />
+                    <span style={{ fontSize: 14, color: 'var(--ink, #142950)', fontWeight: 600 }}>{r.name}</span>
+                    <span style={{ fontSize: 12, color: 'var(--ink-3, #5A6A8A)', marginLeft: 'auto' }}>{r.bank}</span>
+                  </button>
+                ))}
+              </div>
+            )}
+
+            {/* points prompt for a tapped card */}
+            {pending && (
+              <div style={{ ...card, padding: 14, marginBottom: 12, borderColor: GOLD }}>
+                <div style={{ fontSize: 14, fontWeight: 700, color: 'var(--ink, #142950)', marginBottom: 8 }}>{pending.name}</div>
+                <label style={label}>Points balance ({pending.reward_currency || 'Points'}) — leave blank if unsure</label>
+                <div style={{ display: 'flex', gap: 8 }}>
+                  <input style={input} type="number" value={pendingPts} onChange={e => setPendingPts(e.target.value)} placeholder="e.g. 52000" autoFocus />
+                  <button onClick={confirmPending} style={{ ...primaryBtn(), width: 'auto', padding: '0 18px' }}><Check style={{ width: 18, height: 18 }} /></button>
+                </div>
+              </div>
+            )}
+
+            {/* added cards */}
+            {wallet.length > 0 && (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                {wallet.map(w => (
+                  <div key={w.id} style={{ ...card, display: 'flex', alignItems: 'center', gap: 10, padding: '12px 14px' }}>
+                    <div style={{ minWidth: 0, flex: 1 }}>
+                      <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--ink, #142950)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{w.name}</div>
+                      <div style={{ fontSize: 12, color: 'var(--ink-3, #5A6A8A)' }}>{w.points ? `${w.points.toLocaleString('en-IN')} ${w.currency}` : w.bank}</div>
+                    </div>
+                    <button onClick={() => setWallet(list => list.filter(x => x.id !== w.id))} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--ink-3, #5A6A8A)' }}>
+                      <X style={{ width: 16, height: 16 }} />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* STEP 2 — home airport */}
+        {step === 2 && (
+          <div style={{ flex: 1 }}>
+            <h1 style={{ fontSize: 28, fontWeight: 800, color: 'var(--ink, #142950)', letterSpacing: '-0.03em', lineHeight: 1.15 }}>Where’s your home airport?</h1>
+            <p style={{ fontSize: 14, color: 'var(--text-muted, #5A6A8A)', marginTop: 8, marginBottom: 18 }}>
+              We’ll surface award deals departing from here first.
+            </p>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+              {AIRPORTS.map(a => {
+                const on = airport === a.code;
+                return (
+                  <button key={a.code} onClick={() => setAirport(a.code)}
+                    style={{ ...card, padding: '16px 14px', textAlign: 'left', cursor: 'pointer', borderColor: on ? GOLD : 'var(--line, rgba(20,41,80,0.1))', borderWidth: on ? 2 : 1, background: on ? 'rgba(201,151,46,0.08)' : 'var(--surface, #fff)' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                      <Plane style={{ width: 14, height: 14, color: GOLD }} />
+                      <span style={{ fontSize: 18, fontWeight: 800, color: 'var(--ink, #142950)' }}>{a.code}</span>
+                    </div>
+                    <div style={{ fontSize: 13, color: 'var(--ink-3, #5A6A8A)', marginTop: 2 }}>{a.city}</div>
+                  </button>
+                );
+              })}
+            </div>
+            <div style={{ marginTop: 14 }}>
+              <label style={label}>Or type another airport code</label>
+              <input style={input} value={airport} onChange={e => setAirport(e.target.value.toUpperCase().slice(0, 4))} placeholder="IATA, e.g. COK" />
+            </div>
+          </div>
+        )}
+
+        {/* footer nav */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginTop: 24 }}>
+          {step > 0 && (
+            <button onClick={() => setStep(s => s - 1)} style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '14px 16px', borderRadius: 12, background: 'none', border: '1px solid var(--line, rgba(20,41,80,0.15))', color: 'var(--ink, #142950)', fontSize: 14, fontWeight: 600, cursor: 'pointer' }}>
+              <ArrowLeft style={{ width: 16, height: 16 }} />
+            </button>
+          )}
+          {step < 2 ? (
+            <button onClick={() => canNext && setStep(s => s + 1)} disabled={!canNext} style={primaryBtn(!canNext)}>
+              {step === 1 && wallet.length === 0 ? 'Skip for now' : 'Continue'} <ArrowRight style={{ width: 16, height: 16 }} />
+            </button>
+          ) : (
+            <button onClick={finish} disabled={saving} style={primaryBtn(saving)}>
+              {saving ? 'Setting up…' : 'Finish'} {!saving && <Check style={{ width: 16, height: 16 }} />}
+            </button>
+          )}
+        </div>
       </div>
-    </div>
-  )
+    </main>
+  );
 }
