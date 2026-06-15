@@ -1,10 +1,13 @@
 "use client";
 import { useState, useEffect } from "react";
 
+// Disabled: the bottom-pinned banner was covering content on mobile.
+// Flip to true to re-enable (revisit so it doesn't overlap app screens before doing so).
+const BANNER_ENABLED = false;
+
 export function AppDownloadBanner() {
   const [visible, setVisible] = useState(false);
   const [dismissed, setDismissed] = useState(false);
-
   useEffect(() => {
     // Only show on mobile and if not dismissed this session
     const isDismissed = sessionStorage.getItem("app-banner-dismissed");
@@ -13,14 +16,12 @@ export function AppDownloadBanner() {
       setTimeout(() => setVisible(true), 3000);
     }
   }, []);
-
   const dismiss = () => {
     sessionStorage.setItem("app-banner-dismissed", "1");
     setVisible(false);
   };
-
+  if (!BANNER_ENABLED) return null;
   if (!visible || dismissed) return null;
-
   return (
     <div style={{
       position: "fixed", bottom: 0, left: 0, right: 0, zIndex: 999,
@@ -37,7 +38,6 @@ export function AppDownloadBanner() {
         display: "flex", alignItems: "center", justifyContent: "center",
         fontSize: 20,
       }}>💳</div>
-
       {/* Text */}
       <div style={{ flex: 1, minWidth: 0 }}>
         <div style={{ fontSize: 13, fontWeight: 700, lineHeight: 1.2 }}>
@@ -47,7 +47,6 @@ export function AppDownloadBanner() {
           CIRA in your pocket. Cards, rewards, travel — all there.
         </div>
       </div>
-
       {/* CTA */}
       <a
         href="https://play.google.com/store/apps/details?id=com.gogo84.cardiq"
@@ -62,7 +61,6 @@ export function AppDownloadBanner() {
       >
         Download
       </a>
-
       {/* Dismiss */}
       <button onClick={dismiss} style={{
         background: "none", border: "none", color: "rgba(255,255,255,0.5)",

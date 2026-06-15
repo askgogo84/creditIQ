@@ -86,7 +86,19 @@ export default function DashboardPage() {
       const manualData = await manualRes.json();
       const stmtCards = (stmtData.cards || []).map((c: SavedCard) => ({ ...c, source: 'statement' as const }));
       const manualCards = (manualData.cards || []).map((c: SavedCard) => ({ ...c, source: 'manual' as const }));
-      setCards([...stmtCards, ...manualCards]);
+      const combined = [...stmtCards, ...manualCards];
+      setCards(combined);
+
+      // Onboarding guard: send brand-new users (no cards AND onboarding not complete) to
+      // /onboarding. Users who already finished onboarding are never redirected, even with
+      // zero cards, so there is no redirect loop.
+      if (combined.length === 0) {
+        try {
+          const obRes = await fetch(`/api/onboarding?userId=${userId}`);
+          const ob = await obRes.json();
+          if (!ob?.onboarding_complete) { router.replace('/onboarding'); return; }
+        } catch {}
+      }
     } catch {}
     setCardsLoading(false);
   };
@@ -236,11 +248,11 @@ export default function DashboardPage() {
         </div>
       )}
 
-      {/* ── PAGE CONTENT ── */}
+      {/* ===== PAGE CONTENT ===== */}
       <div style={{ paddingTop: 72, paddingBottom: 40 }}>
         <div style={{ maxWidth: 640, margin: '0 auto', padding: '0 16px' }}>
 
-          {/* ── TOP BAR ── */}
+          {/* ===== TOP BAR ===== */}
           <div style={{ paddingTop: 28, paddingBottom: 20 }}>
             <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12 }}>
               <div style={{ minWidth: 0 }}>
@@ -268,7 +280,7 @@ export default function DashboardPage() {
             </div>
           </div>
 
-          {/* ── EMPTY STATE ── */}
+          {/* ===== EMPTY STATE ===== */}
           {!cardsLoading && cards.length === 0 && (
             <div style={{ borderRadius: 20, border: '2px dashed var(--line-strong, rgba(20,41,80,0.2))', padding: '48px 24px', textAlign: 'center', marginBottom: 20 }}>
               <CreditCard style={{ width: 44, height: 44, margin: '0 auto 16px', color: 'var(--text-dim)' }} />
@@ -289,10 +301,10 @@ export default function DashboardPage() {
             </div>
           )}
 
-          {/* ── CARDS LOADED ── */}
+          {/* ===== CARDS LOADED ===== */}
           {cards.length > 0 && (
             <>
-              {/* ── POINTS HERO ── */}
+              {/* ===== POINTS HERO ===== */}
               <div style={{ borderRadius: 20, background: 'var(--surface, #fff)', border: '1px solid var(--line)', padding: '20px 20px 16px', marginBottom: 12 }}>
                 <div style={{ fontSize: 10, fontFamily: 'monospace', textTransform: 'uppercase', letterSpacing: '0.1em', color: 'rgba(201,151,46,0.9)', marginBottom: 8 }}>
                   Combined portfolio &bull; {cards.length} card{cards.length !== 1 ? 's' : ''}
@@ -322,7 +334,7 @@ export default function DashboardPage() {
                 </div>
               </div>
 
-              {/* ── STATS GRID — 2x2 on mobile, 4-col on desktop ── */}
+              {/* ===== STATS GRID - 2x2 on mobile, 4-col on desktop ===== */}
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 10, marginBottom: 16 }}>
                 {[
                   { label: 'Total Points', value: totalPoints.toLocaleString('en-IN'), color: '#C9972E', sub: `${cards.length} cards` },
@@ -344,7 +356,7 @@ export default function DashboardPage() {
                 ))}
               </div>
 
-              {/* ── YOUR CARDS LIST ── */}
+              {/* ===== YOUR CARDS LIST ===== */}
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
                 <div style={{ fontSize: 10, fontFamily: 'monospace', textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--text-dim)' }}>
                   Your cards &bull; {cards.length} saved
@@ -430,7 +442,7 @@ export default function DashboardPage() {
                 </button>
               </div>
 
-              {/* ── REDEMPTION IDEAS ── */}
+              {/* ===== REDEMPTION IDEAS ===== */}
               <div style={{ fontSize: 10, fontFamily: 'monospace', textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--text-dim)', marginBottom: 10 }}>
                 Top redemption ideas for {totalPoints.toLocaleString('en-IN')} points
               </div>
@@ -470,7 +482,7 @@ export default function DashboardPage() {
             </>
           )}
 
-          {/* ── IMPORT OPTIONS ── */}
+          {/* ===== IMPORT OPTIONS ===== */}
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginBottom: 16 }}>
             <Link href="/upload-statement"
               style={{ borderRadius: 14, border: '1px solid var(--line)', padding: '14px', display: 'flex', alignItems: 'center', gap: 10, textDecoration: 'none', background: 'var(--surface, #fff)' }}>
@@ -494,7 +506,7 @@ export default function DashboardPage() {
             </Link>
           </div>
 
-          {/* ── FULL ANALYSIS CTA ── */}
+          {/* ===== FULL ANALYSIS CTA ===== */}
           {cards.length > 0 && (
             <div style={{ borderRadius: 14, padding: '16px', border: '1px solid rgba(201,151,46,0.25)', background: 'rgba(201,151,46,0.06)', marginBottom: 8 }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
