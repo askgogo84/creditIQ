@@ -4,7 +4,7 @@ import { NextRequest, NextResponse } from 'next/server';
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
-export const maxDuration = 300; // was 60 — needs room for many handles
+export const maxDuration = 300; // was 60 - needs room for many handles
 const APIFY_BASE = 'https://api.apify.com/v2';
 
 async function getEmbedding(text: string, openaiKey: string): Promise<number[] | null> {
@@ -23,8 +23,13 @@ async function getEmbedding(text: string, openaiKey: string): Promise<number[] |
 async function extractInsights(post: any, anthropicKey: string): Promise<any | null> {
   if (!post.caption || post.caption.length < 50) return null;
   const prompt = [
-    'Indian credit card Instagram post by @' + (post.ownerUsername || 'unknown') + '.',
+    'You are screening an Instagram post for an Indian credit-card & points intelligence database.',
+    'Post by @' + (post.ownerUsername || 'unknown') + '.',
     'Caption: "' + (post.caption || '').slice(0, 800) + '"',
+    '',
+    'Decide whether this post contains ACTIONABLE value for Indian credit-card holders: specific cards, reward points/miles, transfer partners, award redemptions, sweet spots, devaluations, or eligibility/upgrade strategy.',
+    'Set "is_valuable": false if the post is NOT about that - e.g. lifestyle or travel content with no card/points angle, motivational or personal-brand posts, course/workshop promotion, generic personal finance (stocks, mutual funds, Nifty, Buffett, wealth mindset), or points/cards tied only to non-Indian-issued products.',
+    'Only set "is_valuable": true when there is a concrete, usable credit-card or points takeaway.',
     '',
     'Return ONLY valid JSON, no markdown:',
     '{"insight_type":"transfer_hack|devaluation|card_comparison|sweet_spot|strategy|general","insight_summary":"one clear sentence","is_valuable":true,"structured_data":{"cards_mentioned":[],"actionable_tip":""}}'
@@ -69,7 +74,7 @@ export async function GET(req: NextRequest) {
   const { createClient } = await import('@supabase/supabase-js');
   const sb = createClient(supabaseUrl, supabaseKey);
 
-  // Process ALL pending runs (was: limit 1, newest only — abandoned the rest forever)
+  // Process ALL pending runs (was: limit 1, newest only - abandoned the rest forever)
   const { data: pendingRuns } = await sb.from('ig_pending_runs')
     .select('*').eq('status', 'pending').order('started_at', { ascending: true }).limit(5);
   if (!pendingRuns || pendingRuns.length === 0)
@@ -142,7 +147,7 @@ export async function GET(req: NextRequest) {
           // legacy admin table (best-effort)
           await sb.from('ig_knowledge_base').upsert(insight, { onConflict: 'post_id' });
 
-          // main KB — insert; on conflict do nothing so genuine new rows always land
+          // main KB - insert; on conflict do nothing so genuine new rows always land
           const { error } = await sb.from('intelligence_kb').upsert(kbRecord, { onConflict: 'source_url', ignoreDuplicates: true });
           if (!error) {
             results.insights_saved++;
