@@ -91,6 +91,7 @@ export async function GET(req: NextRequest) {
   for (const pendingRun of pendingRuns) {
     const runIds: Record<string, string> = pendingRun.run_ids || {};
     let runHadDeadline = false;
+    let runHasUnfinished = false; // true if any handle still RUNNING/READY (not yet terminal)
 
     for (const [handle, runId] of Object.entries(runIds)) {
       if (Date.now() > deadline) { results.errors.push('deadline_reached'); runHadDeadline = true; break; }
@@ -100,7 +101,13 @@ export async function GET(req: NextRequest) {
         const status = await statusRes.json();
         const runStatus = status.data?.status || 'UNKNOWN';
         results.run_statuses[handle] = runStatus;
-        if (runStatus !== 'SUCCEEDED') { results.errors.push(handle + ': ' + runStatus); continue; }
+        if (runStatus !== 'SUCCEEDED') {
+          // RUNNING/READY are non-terminal: keep this pending run alive so a later call resumes them.
+          // FAILED/ABORTED/TIMED-OUT are terminal failures: nothing to wait for, let the run close.
+          if (runStatus === 'RUNNING' || runStatus === 'READY') runHasUnfinished = true;
+          results.errors.push(handle + ': ' + runStatus);
+          continue;
+        }
 
         // FIX: pull all 20 (was limit=5)
         const dataRes = await fetch(APIFY_BASE + '/actor-runs/' + runId + '/dataset/items?token=' + apifyToken + '&limit=20');
@@ -171,8 +178,13 @@ export async function GET(req: NextRequest) {
       } catch (e: any) { results.errors.push(handle + ': ' + e.message); }
     }
 
-    // Only mark processed if we actually finished this run (didn't bail on deadline)
-    if (!runHadDeadline) {
+    // Mark processed only when we didn't bail on the deadline AND every handle reached a
+    // terminal state. If some are still RUNNING/READY, leave it pending so the next call
+    // resumes them (instead of orphaning slow handles). Age cap: give up on a run after
+    // 60 min so a permanently-stuck handle can't cause infinite retry.
+    const runAgeMs = Date.now() - new Date(pendingRun.started_at).getTime();
+    const runIsStale = runAgeMs > 60 * 60 * 1000;
+    if (!runHadDeadline && (!runHasUnfinished || runIsStale)) {
       await sb.from('ig_pending_runs').update({ status: 'processed', processed_at: new Date().toISOString() }).eq('id', pendingRun.id);
     }
     if (Date.now() > deadline) break;
