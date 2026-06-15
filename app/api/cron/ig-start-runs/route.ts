@@ -1,14 +1,11 @@
 // app/api/cron/ig-start-runs/route.ts
 // Step 1: Start Apify runs for all handles, save run IDs to Supabase
 // Runs in < 5 seconds, no timeout
-
 import { NextRequest, NextResponse } from 'next/server';
-
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 export const maxDuration = 30;
-
 const TARGET_HANDLES = [
   'thatcreditcardguy',
   'everypaisamatters',
@@ -22,25 +19,20 @@ const TARGET_HANDLES = [
   'pointsdecoded',
   'bandukwala',   // F1 suite redemptions, premium sweet spots
   'pointsflywithvibhav',  // Europe/UK routes, transfer ratios, award costs
+  'sidxtravels',  // luxury travel / award redemptions (Amex MR, Qatar) - small acct ~10.7K, low-trust supplementary source
 ];
-
 const APIFY_BASE = 'https://api.apify.com/v2';
 const APIFY_ACTOR = 'apify~instagram-scraper';
-
 export async function GET(req: NextRequest) {
-  // Vercel crons are called by Vercel infrastructure only — no secret needed
-
+  // Vercel crons are called by Vercel infrastructure only - no secret needed
   const apifyToken = process.env.APIFY_TOKEN;
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
   if (!apifyToken || !supabaseUrl || !supabaseKey) return NextResponse.json({ error: 'Missing env vars' }, { status: 500 });
-
   const { createClient } = await import('@supabase/supabase-js');
   const sb = createClient(supabaseUrl, supabaseKey);
-
   const runIds: Record<string, string> = {};
   const errors: string[] = [];
-
   for (const handle of TARGET_HANDLES) {
     try {
       const res = await fetch(`${APIFY_BASE}/acts/${APIFY_ACTOR}/runs?token=${apifyToken}`, {
@@ -58,20 +50,17 @@ export async function GET(req: NextRequest) {
       if (runId) runIds[handle] = runId;
     } catch (e: any) { errors.push(`${handle}: ${e.message}`); }
   }
-
   // Save run IDs to Supabase for step 2 to pick up
   await sb.from('ig_pending_runs').insert({
     run_ids: runIds,
     started_at: new Date().toISOString(),
     status: 'pending',
   });
-
   await sb.from('cron_logs').insert({
     job_name: 'ig-start-runs',
     status: errors.length === 0 ? 'success' : 'partial',
     details: { runIds, errors },
     ran_at: new Date().toISOString(),
   });
-
   return NextResponse.json({ success: true, runs_started: Object.keys(runIds).length, runIds, errors });
 }
