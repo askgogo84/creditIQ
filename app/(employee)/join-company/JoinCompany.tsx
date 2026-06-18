@@ -7,16 +7,16 @@ const C = {
   green: '#34D399', text: '#F4F1EA', mut: '#8A92A0',
 };
 
-async function getAccessToken() {
+async function getAccessToken(): Promise<string | null> {
   try {
-    const { createClient } = await import('@/lib/supabase/client');
-    const supabase = createClient();
+    const { createClientComponentClient } = await import('@supabase/auth-helpers-nextjs');
+    const supabase = createClientComponentClient();
     const { data } = await supabase.auth.getSession();
     return data.session?.access_token ?? null;
   } catch { return null; }
 }
 
-const ERRORS = {
+const ERRORS: Record<string, string> = {
   missing_code: 'Enter the code your company gave you.',
   invalid_code: "That code didn't match any company. Double-check it with your admin.",
   code_expired: 'That code has expired. Ask your admin for a fresh one.',
@@ -25,9 +25,15 @@ const ERRORS = {
   join_failed: 'Something went wrong joining. Try again in a moment.',
 };
 
+type State =
+  | { kind: 'idle' }
+  | { kind: 'joining' }
+  | { kind: 'joined'; org: string }
+  | { kind: 'error'; msg: string };
+
 export default function JoinCompany() {
   const [code, setCode] = useState('');
-  const [state, setState] = useState({ kind: 'idle' });
+  const [state, setState] = useState<State>({ kind: 'idle' });
 
   async function join() {
     if (!code.trim()) { setState({ kind: 'error', msg: ERRORS.missing_code }); return; }
@@ -41,7 +47,7 @@ export default function JoinCompany() {
         body: JSON.stringify({ code: code.trim() }),
       });
       const data = await res.json();
-      if (!res.ok) { setState({ kind: 'error', msg: ERRORS[data.error] ?? 'Could not join. Try again.' }); return; }
+      if (!res.ok) { setState({ kind: 'error', msg: ERRORS[data.error as string] ?? 'Could not join. Try again.' }); return; }
       setState({ kind: 'joined', org: data.org_name ?? 'your company' });
     } catch { setState({ kind: 'error', msg: 'Network error. Check your connection and try again.' }); }
   }
