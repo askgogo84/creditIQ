@@ -1,28 +1,23 @@
-'use client';
+﻿'use client';
 export const dynamic = 'force-dynamic';
-
 import { useState, useEffect } from 'react';
 import { createBrowserClient } from '@supabase/ssr';
 import { useRouter } from 'next/navigation';
 import { Header } from '@/components/Header';
 import { DesignFooter } from '@/components/design/Footer';
-import { Plus, TrendingUp, ArrowRight, Zap, RefreshCw, FileText, MessageSquare, LogOut, CreditCard, Upload, Trash2, X, Check } from 'lucide-react';
+import { Plus, TrendingUp, ArrowRight, Zap, RefreshCw, FileText, MessageSquare, LogOut, CreditCard, Upload, Trash2, X, Check, Building2, ChevronDown } from 'lucide-react';
 import Link from 'next/link';
-
 const BANK_COLORS: Record<string, string> = {
   HDFC: '#004C8F', Axis: '#97144D', AmEx: '#006FCF', ICICI: '#F58220',
   SBI: '#2C4C9C', Kotak: '#EF3E23', IDFC: '#9B0C2C', Yes: '#0C2461',
   RBL: '#1D4ED8', IndusInd: '#312E81', SC: '#0473EA', AU: '#7C2D12',
 };
-
 const BANKS = ['HDFC', 'Axis', 'ICICI', 'SBI', 'AmEx', 'Kotak', 'IDFC', 'Yes', 'RBL', 'IndusInd', 'SC', 'AU', 'Other'];
-
 const REDEMPTION_IDEAS = [
   { title: 'Singapore Business Class', points: 120000, value: 'Rs.2.4L+', bank: 'HDFC -> KrisFlyer', tag: 'Best value', color: '#059669' },
   { title: 'Marriott Jaipur (2 nights)', points: 60000, value: 'Rs.18,000', bank: 'HDFC -> Marriott', tag: 'Hotel', color: '#0473ea' },
   { title: 'Domestic flight (any route)', points: 15000, value: 'Rs.4,500', bank: 'Axis EDGE Miles', tag: 'Flight', color: '#7c1d3a' },
 ];
-
 interface SavedCard {
   id: string;
   bank: string;
@@ -35,7 +30,6 @@ interface SavedCard {
   imported_at: string;
   source?: 'statement' | 'manual';
 }
-
 interface AddCardForm {
   bank: string;
   cardName: string;
@@ -43,7 +37,6 @@ interface AddCardForm {
   pointsBalance: string;
   pointsCurrency: string;
 }
-
 export default function DashboardPage() {
   const [user, setUser] = useState<any>(null);
   const [loading, setLoading] = useState(true);
@@ -59,8 +52,13 @@ export default function DashboardPage() {
   const [editingCardId, setEditingCardId] = useState<string | null>(null);
   const [editPoints, setEditPoints] = useState('');
   const [editSaving, setEditSaving] = useState(false);
+  const [wpLoading, setWpLoading] = useState(true);
+  const [wp, setWp] = useState<{ linked: boolean; org_name?: string; org_id?: string }>({ linked: false });
+  const [wpCode, setWpCode] = useState('');
+  const [wpOpen, setWpOpen] = useState(false);
+  const [wpBusy, setWpBusy] = useState(false);
+  const [wpError, setWpError] = useState('');
   const router = useRouter();
-
   useEffect(() => {
     if (typeof window === 'undefined') return;
     const sb = createBrowserClient(
@@ -72,9 +70,9 @@ export default function DashboardPage() {
       setUser(user);
       setLoading(false);
       loadCards(user.id);
+      loadWorkplace();
     });
   }, []);
-
   const loadCards = async (userId: string) => {
     setCardsLoading(true);
     try {
@@ -89,9 +87,6 @@ export default function DashboardPage() {
       const combined = [...stmtCards, ...manualCards];
       setCards(combined);
 
-      // Onboarding guard: send brand-new users (no cards AND onboarding not complete) to
-      // /onboarding. Users who already finished onboarding are never redirected, even with
-      // zero cards, so there is no redirect loop.
       if (combined.length === 0) {
         try {
           const obRes = await fetch(`/api/onboarding?userId=${userId}`);
@@ -101,6 +96,64 @@ export default function DashboardPage() {
       }
     } catch {}
     setCardsLoading(false);
+  };
+
+  const getToken = async (): Promise<string | null> => {
+    const sb = createBrowserClient(process.env.NEXT_PUBLIC_SUPABASE_URL || '', process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '');
+    const { data } = await sb.auth.getSession();
+    return data.session?.access_token ?? null;
+  };
+
+  const loadWorkplace = async () => {
+    try {
+      const token = await getToken();
+      if (!token) { setWpLoading(false); return; }
+      const res = await fetch('/api/employee/workplace', { headers: { Authorization: `Bearer ${token}` } });
+      const data = await res.json();
+      if (data && typeof data.linked === 'boolean') setWp(data);
+    } catch {}
+    setWpLoading(false);
+  };
+
+  const joinWorkplace = async () => {
+    if (!wpCode.trim()) { setWpError('Enter your company code.'); return; }
+    setWpBusy(true); setWpError('');
+    try {
+      const token = await getToken();
+      if (!token) { setWpError('Please sign in again.'); setWpBusy(false); return; }
+      const res = await fetch('/api/employee/join-org', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ code: wpCode.trim() }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        const msgs: Record<string, string> = {
+          missing_code: 'Enter your company code.',
+          invalid_code: 'That code did not match any company.',
+          code_expired: 'That code has expired. Ask your admin for a new one.',
+          email_domain_mismatch: 'This code is restricted to your company email.',
+        };
+        setWpError(msgs[data.error as string] || 'Could not link. Try again.');
+        setWpBusy(false);
+        return;
+      }
+      setWpCode('');
+      setWpOpen(false);
+      await loadWorkplace();
+    } catch { setWpError('Network error. Try again.'); }
+    setWpBusy(false);
+  };
+
+  const leaveWorkplace = async () => {
+    setWpBusy(true);
+    try {
+      const token = await getToken();
+      if (!token) { setWpBusy(false); return; }
+      await fetch('/api/employee/workplace', { method: 'DELETE', headers: { Authorization: `Bearer ${token}` } });
+      setWp({ linked: false });
+    } catch {}
+    setWpBusy(false);
   };
 
   const handleAddCard = async () => {
@@ -187,7 +240,6 @@ export default function DashboardPage() {
     <main className="min-h-screen" style={{ overflowX: 'hidden' }}>
       <Header />
 
-      {/* Add Card Modal */}
       {showAddModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(4px)' }}>
           <div className="w-full max-w-md rounded-2xl p-6" style={{ background: 'var(--surface, #fff)', border: '1px solid var(--line, rgba(20,41,80,0.1))' }}>
@@ -248,11 +300,9 @@ export default function DashboardPage() {
         </div>
       )}
 
-      {/* ===== PAGE CONTENT ===== */}
       <div style={{ paddingTop: 72, paddingBottom: 40 }}>
         <div style={{ maxWidth: 640, margin: '0 auto', padding: '0 16px' }}>
 
-          {/* ===== TOP BAR ===== */}
           <div style={{ paddingTop: 28, paddingBottom: 20 }}>
             <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12 }}>
               <div style={{ minWidth: 0 }}>
@@ -280,7 +330,6 @@ export default function DashboardPage() {
             </div>
           </div>
 
-          {/* ===== EMPTY STATE ===== */}
           {!cardsLoading && cards.length === 0 && (
             <div style={{ borderRadius: 20, border: '2px dashed var(--line-strong, rgba(20,41,80,0.2))', padding: '48px 24px', textAlign: 'center', marginBottom: 20 }}>
               <CreditCard style={{ width: 44, height: 44, margin: '0 auto 16px', color: 'var(--text-dim)' }} />
@@ -301,10 +350,8 @@ export default function DashboardPage() {
             </div>
           )}
 
-          {/* ===== CARDS LOADED ===== */}
           {cards.length > 0 && (
             <>
-              {/* ===== POINTS HERO ===== */}
               <div style={{ borderRadius: 20, background: 'var(--surface, #fff)', border: '1px solid var(--line)', padding: '20px 20px 16px', marginBottom: 12 }}>
                 <div style={{ fontSize: 10, fontFamily: 'monospace', textTransform: 'uppercase', letterSpacing: '0.1em', color: 'rgba(201,151,46,0.9)', marginBottom: 8 }}>
                   Combined portfolio &bull; {cards.length} card{cards.length !== 1 ? 's' : ''}
@@ -334,7 +381,6 @@ export default function DashboardPage() {
                 </div>
               </div>
 
-              {/* ===== STATS GRID - 2x2 on mobile, 4-col on desktop ===== */}
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 10, marginBottom: 16 }}>
                 {[
                   { label: 'Total Points', value: totalPoints.toLocaleString('en-IN'), color: '#C9972E', sub: `${cards.length} cards` },
@@ -356,7 +402,6 @@ export default function DashboardPage() {
                 ))}
               </div>
 
-              {/* ===== YOUR CARDS LIST ===== */}
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
                 <div style={{ fontSize: 10, fontFamily: 'monospace', textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--text-dim)' }}>
                   Your cards &bull; {cards.length} saved
@@ -442,7 +487,6 @@ export default function DashboardPage() {
                 </button>
               </div>
 
-              {/* ===== REDEMPTION IDEAS ===== */}
               <div style={{ fontSize: 10, fontFamily: 'monospace', textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--text-dim)', marginBottom: 10 }}>
                 Top redemption ideas for {totalPoints.toLocaleString('en-IN')} points
               </div>
@@ -482,7 +526,6 @@ export default function DashboardPage() {
             </>
           )}
 
-          {/* ===== IMPORT OPTIONS ===== */}
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginBottom: 16 }}>
             <Link href="/upload-statement"
               style={{ borderRadius: 14, border: '1px solid var(--line)', padding: '14px', display: 'flex', alignItems: 'center', gap: 10, textDecoration: 'none', background: 'var(--surface, #fff)' }}>
@@ -506,7 +549,52 @@ export default function DashboardPage() {
             </Link>
           </div>
 
-          {/* ===== FULL ANALYSIS CTA ===== */}
+          {!wpLoading && (
+            wp.linked ? (
+              <div style={{ borderRadius: 14, border: '1px solid rgba(201,151,46,0.25)', background: 'rgba(201,151,46,0.06)', padding: '14px 16px', marginBottom: 16, display: 'flex', alignItems: 'center', gap: 12 }}>
+                <div style={{ width: 36, height: 36, borderRadius: 10, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, background: 'rgba(201,151,46,0.12)' }}>
+                  <Building2 style={{ width: 16, height: 16, color: 'var(--accent)' }} />
+                </div>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text)' }}>{wp.org_name}</div>
+                  <div style={{ fontSize: 11, color: 'var(--text-dim)', marginTop: 2 }}>Linked &bull; company-sponsored. Your personal cards stay private.</div>
+                </div>
+                <button onClick={leaveWorkplace} disabled={wpBusy}
+                  style={{ fontSize: 12, color: 'var(--text-dim)', background: 'none', border: 'none', cursor: 'pointer', flexShrink: 0 }}>
+                  {wpBusy ? '...' : 'Leave'}
+                </button>
+              </div>
+            ) : (
+              <div style={{ borderRadius: 14, border: '1px solid var(--line)', background: 'var(--surface, #fff)', marginBottom: 16, overflow: 'hidden' }}>
+                <button onClick={() => setWpOpen(o => !o)}
+                  style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 12, padding: '14px 16px', background: 'none', border: 'none', cursor: 'pointer', textAlign: 'left' }}>
+                  <div style={{ width: 36, height: 36, borderRadius: 10, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, background: 'rgba(201,151,46,0.1)' }}>
+                    <Building2 style={{ width: 16, height: 16, color: 'var(--accent)' }} />
+                  </div>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--text)' }}>Have a company code?</div>
+                    <div style={{ fontSize: 11, color: 'var(--text-dim)', marginTop: 2 }}>Link your workplace to unlock sponsored features.</div>
+                  </div>
+                  <ChevronDown style={{ width: 16, height: 16, color: 'var(--text-dim)', flexShrink: 0, transform: wpOpen ? 'rotate(180deg)' : 'none', transition: 'transform .2s' }} />
+                </button>
+                {wpOpen && (
+                  <div style={{ padding: '0 16px 16px', display: 'flex', flexDirection: 'column', gap: 10 }}>
+                    <input value={wpCode}
+                      onChange={e => { setWpCode(e.target.value.toUpperCase()); if (wpError) setWpError(''); }}
+                      onKeyDown={e => { if (e.key === 'Enter') joinWorkplace(); }}
+                      placeholder="CIQ-XXXXXX" spellCheck={false}
+                      style={{ width: '100%', padding: '11px 14px', borderRadius: 10, fontSize: 15, letterSpacing: '0.04em', fontFamily: 'monospace', border: wpError ? '1px solid #ef4444' : '1px solid var(--line)', background: 'var(--surface-2, #f8f9fc)', color: 'var(--ink)', outline: 'none', boxSizing: 'border-box' }} />
+                    {wpError && <div style={{ fontSize: 12, color: '#ef4444' }}>{wpError}</div>}
+                    <button onClick={joinWorkplace} disabled={wpBusy}
+                      style={{ width: '100%', padding: '11px', borderRadius: 10, background: '#C9972E', color: '#fff', fontSize: 14, fontWeight: 600, border: 'none', cursor: 'pointer', opacity: wpBusy ? 0.7 : 1 }}>
+                      {wpBusy ? 'Linking...' : 'Link company'}
+                    </button>
+                  </div>
+                )}
+              </div>
+            )
+          )}
+
           {cards.length > 0 && (
             <div style={{ borderRadius: 14, padding: '16px', border: '1px solid rgba(201,151,46,0.25)', background: 'rgba(201,151,46,0.06)', marginBottom: 8 }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
