@@ -1,12 +1,6 @@
 ﻿import { NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 
-const CONSUMER_URL = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-const CONSUMER_ANON = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
-const CONSUMER_SERVICE = process.env.CONSUMER_SERVICE_ROLE_KEY!;
-const BUSINESS_URL = process.env.BUSINESS_SUPABASE_URL!;
-const BUSINESS_SERVICE = process.env.BUSINESS_SERVICE_ROLE_KEY!;
-
 export const runtime = 'nodejs';
 
 export async function POST(req: Request) {
@@ -14,8 +8,12 @@ export async function POST(req: Request) {
   const m = auth.match(/^Bearer\s+(.+)$/i);
   if (!m) return NextResponse.json({ error: 'unauthorized' }, { status: 401 });
 
-  const anon = createClient(CONSUMER_URL, CONSUMER_ANON, { auth: { persistSession: false } });
-  const { data: userData, error: userErr } = await anon.auth.getUser(m[1].trim());
+  const consumerAnon = createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    { auth: { persistSession: false } }
+  );
+  const { data: userData, error: userErr } = await consumerAnon.auth.getUser(m[1].trim());
   if (userErr || !userData.user) return NextResponse.json({ error: 'unauthorized' }, { status: 401 });
   const user = userData.user;
 
@@ -23,7 +21,11 @@ export async function POST(req: Request) {
   try { ({ code } = await req.json()); } catch {}
   if (!code) return NextResponse.json({ error: 'missing_code' }, { status: 400 });
 
-  const biz = createClient(BUSINESS_URL, BUSINESS_SERVICE, { auth: { persistSession: false } });
+  const biz = createClient(
+    process.env.BUSINESS_SUPABASE_URL!,
+    process.env.BUSINESS_SERVICE_ROLE_KEY!,
+    { auth: { persistSession: false } }
+  );
 
   const { data: org } = await biz
     .from('orgs')
@@ -48,8 +50,12 @@ export async function POST(req: Request) {
   );
   if (jErr) return NextResponse.json({ error: 'join_failed' }, { status: 500 });
 
-  const cons = createClient(CONSUMER_URL, CONSUMER_SERVICE, { auth: { persistSession: false } });
-  await cons.from('personal_entitlements').upsert(
+  const consumerService = createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!,
+    { auth: { persistSession: false } }
+  );
+  await consumerService.from('personal_entitlements').upsert(
     { user_id: user.id, feature: 'corporate_sponsored', status: 'active' },
     { onConflict: 'user_id,feature' }
   );
