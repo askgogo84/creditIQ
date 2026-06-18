@@ -1,5 +1,6 @@
 ﻿'use client';
 import { useState } from 'react';
+import { createClient } from '@supabase/supabase-js';
 
 const C = {
   base: '#0A0D12', surface: '#12161D', surface2: '#1A1F28',
@@ -7,11 +8,16 @@ const C = {
   green: '#34D399', text: '#F4F1EA', mut: '#8A92A0',
 };
 
+function getBrowserSupabase() {
+  return createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+  );
+}
+
 async function getAccessToken(): Promise<string | null> {
   try {
-    const { createClientComponentClient } = await import('@supabase/auth-helpers-nextjs');
-    const supabase = createClientComponentClient();
-    const { data } = await supabase.auth.getSession();
+    const { data } = await getBrowserSupabase().auth.getSession();
     return data.session?.access_token ?? null;
   } catch { return null; }
 }
