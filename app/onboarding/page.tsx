@@ -39,7 +39,7 @@ export default function OnboardingPage() {
       setUser(user);
       setName(user.user_metadata?.full_name || '');
       try {
-        const j = await (await fetch(`/api/onboarding?userId=${user.id}`)).json();
+        const j = await (await authedFetch('/api/onboarding')).json();
         if (j?.onboarding_complete) router.replace('/dashboard');
       } catch {}
     });
@@ -74,9 +74,9 @@ export default function OnboardingPage() {
           body: JSON.stringify({ bank: c.bank, cardName: c.name, cardLast4: '', pointsBalance: String(c.points), pointsCurrency: c.currency }),
         });
       }
-      await fetch('/api/onboarding', {
-        method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ userId: user.id, displayName: name, dateOfBirth: dob || null, homeAirport: airport || null, complete: true }),
+      await authedFetch('/api/onboarding', {
+        method: 'POST',
+        body: JSON.stringify({ displayName: name, dateOfBirth: dob || null, homeAirport: airport || null, complete: true }),
       });
       router.replace('/dashboard');
     } catch { setSaving(false); }

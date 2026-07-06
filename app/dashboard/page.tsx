@@ -91,7 +91,7 @@ export default function DashboardPage() {
 
       if (combined.length === 0) {
         try {
-          const obRes = await fetch(`/api/onboarding?userId=${userId}`);
+          const obRes = await authedFetch('/api/onboarding');
           const ob = await obRes.json();
           if (!ob?.onboarding_complete) { router.replace('/onboarding'); return; }
         } catch {}
