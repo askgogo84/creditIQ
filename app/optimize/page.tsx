@@ -75,8 +75,36 @@ function OptimizeContent() {
   };
 
   return (
-    <main className="min-h-screen" style={{ overflowX: 'hidden' }}>
-      <Header />
+    <main data-ciq data-theme="dark" className="min-h-screen" style={{ overflowX: 'hidden', background: 'var(--ciq-bg)', color: 'var(--ciq-ink)' }}>
+      <style>{`
+        /* GLOBAL palette overrides — reach elements even outside the data-ciq wrapper */
+        .bg-ink-900\/40, .bg-ink-900 { background: #111110 !important; }
+        .bg-ink-800 { background: #171613 !important; }
+        .text-ink-100, .text-ink-200 { color: #F3EFE6 !important; }
+        .text-ink-300 { color: #A6A199 !important; }
+        .text-ink-400, .text-ink-500 { color: #635F58 !important; }
+        .text-copper-300, .text-copper-400 { color: #E4C97E !important; }
+        .border-white\/10 { border-color: rgba(243,239,230,0.15) !important; }
+        /* redemption cards & right panel backgrounds that render outside wrapper */
+        main section > div, main section [class*="rounded"] { }
+        [data-ciq] {
+          --accent: var(--ciq-gold-2);
+          --copper-400: var(--ciq-gold-2);
+          --text: var(--ciq-ink);
+          --text-muted: var(--ciq-ink-2);
+          --text-dim: var(--ciq-ink-3);
+          --bg: var(--ciq-bg);
+          --bg-input: var(--ciq-panel-2);
+          --bg-card: var(--ciq-panel);
+          --bg-surface: var(--ciq-panel-2);
+          --bg-elevated: var(--ciq-panel);
+          --surface: var(--ciq-panel);
+          --surface-2: var(--ciq-panel-2);
+          --border: var(--ciq-line-2);
+          --line: var(--ciq-line);
+          --emerald: var(--ciq-verified);
+        }
+      `}</style>
 
       {/* Hero */}
       <section className="pt-20 pb-6 px-4 grain relative" style={{ overflow: 'hidden' }}>
@@ -358,10 +386,10 @@ function OptimizeContent() {
                   <div className="text-xs font-mono uppercase tracking-widest mb-1" style={{ color: '#C9972E' }}>
                     Next step
                   </div>
-                  <div className="font-semibold text-base" style={{ color: 'var(--text, #0f172a)' }}>
+                  <div className="font-semibold text-base" style={{ color: 'var(--ciq-ink, #F3EFE6)' }}>
                     Plan a trip with your {points.toLocaleString('en-IN')} points
                   </div>
-                  <div className="text-sm mt-0.5" style={{ color: 'var(--text-muted, #64748b)' }}>
+                  <div className="text-sm mt-0.5" style={{ color: 'var(--ciq-ink-2, #A6A199)' }}>
                     Best value: {formatINR(bestValue)} via travel redemption
                   </div>
                 </div>
@@ -412,10 +440,10 @@ function OptimizeContent() {
                   <div className="text-xs font-mono uppercase tracking-widest mb-1" style={{ color: '#C9972E' }}>
                     Next step
                   </div>
-                  <div className="font-semibold text-base" style={{ color: 'var(--text, #0f172a)' }}>
+                  <div className="font-semibold text-base" style={{ color: 'var(--ciq-ink, #F3EFE6)' }}>
                     Plan a trip with your {points.toLocaleString('en-IN')} points
                   </div>
-                  <div className="text-sm mt-0.5" style={{ color: 'var(--text-muted, #64748b)' }}>
+                  <div className="text-sm mt-0.5" style={{ color: 'var(--ciq-ink-2, #A6A199)' }}>
                     Best value: {formatINR(bestValue)} via travel redemption
                   </div>
                 </div>
@@ -457,7 +485,6 @@ function OptimizeContent() {
               </div>
             </div>
           )}
-      <DesignFooter />
       
     </main>
   );
