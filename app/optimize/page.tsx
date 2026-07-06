@@ -3,8 +3,6 @@
 import Link from 'next/link';
 import { useState, useMemo, useEffect, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
-import { Header } from '@/components/Header';
-import { DesignFooter } from '@/components/design/Footer';
 import { CreditCard3D } from '@/components/design/CreditCard3D';
 import { SEED_CARDS } from '@/lib/data/seed-cards';
 import { optimizeRedemption } from '@/lib/redemption';
@@ -78,15 +76,13 @@ function OptimizeContent() {
     <main data-ciq data-theme="dark" className="min-h-screen" style={{ overflowX: 'hidden', background: 'var(--ciq-bg)', color: 'var(--ciq-ink)' }}>
       <style>{`
         /* GLOBAL palette overrides — reach elements even outside the data-ciq wrapper */
-        .bg-ink-900\/40, .bg-ink-900 { background: #111110 !important; }
+        .bg-ink-900\/40, .bg-ink-900 { background: #1A1815 !important; }
         .bg-ink-800 { background: #171613 !important; }
         .text-ink-100, .text-ink-200 { color: #F3EFE6 !important; }
         .text-ink-300 { color: #A6A199 !important; }
         .text-ink-400, .text-ink-500 { color: #635F58 !important; }
         .text-copper-300, .text-copper-400 { color: #E4C97E !important; }
         .border-white\/10 { border-color: rgba(243,239,230,0.15) !important; }
-        /* redemption cards & right panel backgrounds that render outside wrapper */
-        main section > div, main section [class*="rounded"] { }
         [data-ciq] {
           --accent: var(--ciq-gold-2);
           --copper-400: var(--ciq-gold-2);
@@ -347,7 +343,7 @@ function OptimizeContent() {
                             <Icon className="w-3.5 h-3.5" />
                           </div>
                           <div className="flex-1 min-w-0">
-                            <div className="text-sm font-medium text-ink-100 truncate">
+                            <div className="text-sm font-semibold text-ink-100 truncate">
                               {r.option.partner || r.option.type}
                             </div>
                             <div className="text-[11px] text-ink-400 truncate">
