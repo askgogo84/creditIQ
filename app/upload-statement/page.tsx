@@ -1,7 +1,8 @@
-'use client';
+﻿'use client';
 
 import { useState, useRef, useEffect } from 'react';
 import { createBrowserClient } from '@supabase/ssr';
+import { authedFetch } from '@/lib/authed-fetch';
 import { Header } from '@/components/Header';
 import { DesignFooter } from '@/components/design/Footer';
 import { Upload, FileText, CheckCircle, AlertCircle, Zap, ArrowRight, Lock, X, ExternalLink, LogIn } from 'lucide-react';
@@ -45,7 +46,7 @@ export default function UploadStatementPage() {
     sb.auth.getUser().then(({ data: { user } }) => {
       if (user) {
         setUserId(user.id);
-        fetch(`/api/user-cards?userId=${user.id}`)
+        authedFetch('/api/user-cards')
           .then(r => r.json())
           .then(d => setSavedCount(d.cards?.length || 0));
       }

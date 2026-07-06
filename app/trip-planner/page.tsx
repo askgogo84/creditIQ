@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { useState, useEffect, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
@@ -11,6 +11,7 @@ import { TripComparison } from '@/components/TripComparison';
 import { SavePromptBanner } from '@/components/design/SavePromptBanner';
 import FlightSearch, { detectIataFromText, buildKayakUrl, buildMMTUrl, INDIRECT_ROUTES } from '@/components/design/FlightSearch';
 import { createBrowserClient } from '@supabase/ssr';
+import { authedFetch } from '@/lib/authed-fetch';
 
 interface TripResult {
   destination: string;
@@ -87,8 +88,8 @@ function TripPlannerPageInner() {
         const { data: { user } } = await supabase.auth.getUser();
         if (!user) return;
         const [stmtRes, manualRes] = await Promise.all([
-          fetch('/api/user-cards?userId=' + user.id),
-          fetch('/api/manual-cards?userId=' + user.id),
+          authedFetch('/api/user-cards'),
+          authedFetch('/api/manual-cards'),
         ]);
         let total = 0;
         if (stmtRes.ok) {

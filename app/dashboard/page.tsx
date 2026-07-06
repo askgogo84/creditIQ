@@ -2,6 +2,7 @@
 export const dynamic = 'force-dynamic';
 import { useState, useEffect } from 'react';
 import { createBrowserClient } from '@supabase/ssr';
+import { authedFetch } from '@/lib/authed-fetch';
 import { useRouter } from 'next/navigation';
 import { Header } from '@/components/Header';
 import { DesignFooter } from '@/components/design/Footer';
@@ -77,8 +78,8 @@ export default function DashboardPage() {
     setCardsLoading(true);
     try {
       const [stmtRes, manualRes] = await Promise.all([
-        fetch(`/api/user-cards?userId=${userId}`),
-        fetch(`/api/manual-cards?userId=${userId}`)
+        authedFetch('/api/user-cards'),
+        authedFetch('/api/manual-cards')
       ]);
       const stmtData = await stmtRes.json();
       const manualData = await manualRes.json();
@@ -160,11 +161,9 @@ export default function DashboardPage() {
     if (!user || !addForm.cardName || !addForm.pointsBalance) return;
     setAddLoading(true);
     try {
-      const res = await fetch('/api/manual-cards', {
+      const res = await authedFetch('/api/manual-cards', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          userId: user.id,
           bank: addForm.bank,
           cardName: addForm.cardName,
           cardLast4: addForm.cardLast4,
@@ -188,10 +187,9 @@ export default function DashboardPage() {
   const handleDeleteCard = async (cardId: string, source: string) => {
     if (!user) return;
     if (source === 'manual') {
-      await fetch('/api/manual-cards', {
+      await authedFetch('/api/manual-cards', {
         method: 'DELETE',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ userId: user.id, cardId })
+        body: JSON.stringify({ cardId })
       });
     }
     await loadCards(user.id);
@@ -551,6 +549,7 @@ export default function DashboardPage() {
 
           {!wpLoading && (
             wp.linked ? (
+              <>
               <div style={{ borderRadius: 14, border: '1px solid rgba(201,151,46,0.25)', background: 'rgba(201,151,46,0.06)', padding: '14px 16px', marginBottom: 16, display: 'flex', alignItems: 'center', gap: 12 }}>
                 <div style={{ width: 36, height: 36, borderRadius: 10, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, background: 'rgba(201,151,46,0.12)' }}>
                   <Building2 style={{ width: 16, height: 16, color: 'var(--accent)' }} />
@@ -564,6 +563,29 @@ export default function DashboardPage() {
                   {wpBusy ? '...' : 'Leave'}
                 </button>
               </div>
+              <Link href="/my-company-cards"
+                style={{ borderRadius: 14, border: '1px solid var(--line)', padding: '14px', display: 'flex', alignItems: 'center', gap: 10, textDecoration: 'none', background: 'var(--surface, #fff)', marginBottom: 10 }}>
+                <div style={{ width: 36, height: 36, borderRadius: 10, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, background: 'rgba(201,151,46,0.1)' }}>
+                  <CreditCard style={{ width: 16, height: 16, color: 'var(--accent)' }} />
+                </div>
+                <div style={{ minWidth: 0, flex: 1 }}>
+                  <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--text)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>My company cards</div>
+                  <div style={{ fontSize: 11, color: 'var(--text-dim)' }}>View your org's corporate cards</div>
+                </div>
+                <ArrowRight style={{ width: 14, height: 14, color: 'var(--text-dim)', flexShrink: 0 }} />
+              </Link>
+              <Link href="/add-corporate-card"
+                style={{ borderRadius: 14, border: '1px solid var(--line)', padding: '14px', display: 'flex', alignItems: 'center', gap: 10, textDecoration: 'none', background: 'var(--surface, #fff)', marginBottom: 16 }}>
+                <div style={{ width: 36, height: 36, borderRadius: 10, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, background: 'rgba(201,151,46,0.1)' }}>
+                  <Plus style={{ width: 16, height: 16, color: 'var(--accent)' }} />
+                </div>
+                <div style={{ minWidth: 0, flex: 1 }}>
+                  <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--text)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>Add corporate card</div>
+                  <div style={{ fontSize: 11, color: 'var(--text-dim)' }}>Submit a company card for approval</div>
+                </div>
+                <ArrowRight style={{ width: 14, height: 14, color: 'var(--text-dim)', flexShrink: 0 }} />
+              </Link>
+              </>
             ) : (
               <div style={{ borderRadius: 14, border: '1px solid var(--line)', background: 'var(--surface, #fff)', marginBottom: 16, overflow: 'hidden' }}>
                 <button onClick={() => setWpOpen(o => !o)}

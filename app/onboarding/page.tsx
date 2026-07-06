@@ -1,8 +1,9 @@
-'use client';
+﻿'use client';
 export const dynamic = 'force-dynamic';
 
 import { useEffect, useState, type CSSProperties } from 'react';
 import { createBrowserClient } from '@supabase/ssr';
+import { authedFetch } from '@/lib/authed-fetch';
 import { useRouter } from 'next/navigation';
 import { Search, Check, ArrowRight, ArrowLeft, X, Plane, CreditCard } from 'lucide-react';
 
@@ -73,9 +74,9 @@ export default function OnboardingPage() {
     setSaving(true);
     try {
       for (const c of wallet) {
-        await fetch('/api/manual-cards', {
-          method: 'POST', headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ userId: user.id, bank: c.bank, cardName: c.name, cardLast4: '', pointsBalance: String(c.points), pointsCurrency: c.currency }),
+        await authedFetch('/api/manual-cards', {
+          method: 'POST',
+          body: JSON.stringify({ bank: c.bank, cardName: c.name, cardLast4: '', pointsBalance: String(c.points), pointsCurrency: c.currency }),
         });
       }
       await fetch('/api/onboarding', {

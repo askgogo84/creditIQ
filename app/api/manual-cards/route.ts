@@ -1,21 +1,33 @@
+﻿// app/api/manual-cards/route.ts
+// CRUD for the LOGGED-IN user's manually-added cards.
+// user_id is ALWAYS derived from the bearer token — never trusted from the request body.
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
-
 export const runtime = 'nodejs';
 
-function getClient() {
-  const sUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const sKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
-  if (!sUrl || !sKey) throw new Error('Missing Supabase env vars');
-  return createClient(sUrl, sKey);
+const URL_ENV = () => process.env.NEXT_PUBLIC_SUPABASE_URL!;
+const ANON = () => process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
+const SVC = () => process.env.SUPABASE_SERVICE_ROLE_KEY!;
+
+// verify the caller and return their user id, or null
+async function callerId(req: NextRequest): Promise<string | null> {
+  const auth = req.headers.get('authorization') ?? '';
+  const m = auth.match(/^Bearer\s+(.+)$/i);
+  if (!m) return null;
+  const anon = createClient(URL_ENV(), ANON(), { auth: { persistSession: false } });
+  const { data, error } = await anon.auth.getUser(m[1].trim());
+  if (error || !data.user) return null;
+  return data.user.id;
+}
+function svcClient() {
+  return createClient(URL_ENV(), SVC(), { auth: { persistSession: false } });
 }
 
 export async function GET(req: NextRequest) {
-  const userId = new URL(req.url).searchParams.get('userId');
-  if (!userId) return NextResponse.json({ cards: [] });
+  const userId = await callerId(req);
+  if (!userId) return NextResponse.json({ error: 'unauthorized', cards: [] }, { status: 401 });
   try {
-    const sb = getClient();
-    const { data } = await sb
+    const { data } = await svcClient()
       .from('manual_cards')
       .select('*')
       .eq('user_id', userId)
@@ -28,17 +40,18 @@ export async function GET(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
+  const userId = await callerId(req);
+  if (!userId) return NextResponse.json({ error: 'unauthorized' }, { status: 401 });
   try {
     const body = await req.json();
-    const { userId, bank, cardName, cardLast4, pointsBalance, pointsCurrency } = body;
-    if (!userId || !bank || !cardName) {
+    const { bank, cardName, cardLast4, pointsBalance, pointsCurrency } = body;
+    if (!bank || !cardName) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
     }
-    const sb = getClient();
-    const { data, error } = await sb
+    const { data, error } = await svcClient()
       .from('manual_cards')
       .insert({
-        user_id: userId,
+        user_id: userId, // from token, never from body
         bank,
         card_name: cardName,
         card_last4: cardLast4 || null,
@@ -59,17 +72,16 @@ export async function POST(req: NextRequest) {
 }
 
 export async function DELETE(req: NextRequest) {
+  const userId = await callerId(req);
+  if (!userId) return NextResponse.json({ error: 'unauthorized' }, { status: 401 });
   try {
-    const { userId, cardId } = await req.json();
-    if (!userId || !cardId) {
-      return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
-    }
-    const sb = getClient();
-    const { error } = await sb
+    const { cardId } = await req.json();
+    if (!cardId) return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
+    const { error } = await svcClient()
       .from('manual_cards')
       .delete()
       .eq('id', cardId)
-      .eq('user_id', userId);
+      .eq('user_id', userId); // can only delete own rows
     if (error) return NextResponse.json({ error: error.message }, { status: 500 });
     return NextResponse.json({ success: true });
   } catch (err: any) {

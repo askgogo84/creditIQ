@@ -1,7 +1,8 @@
-'use client';
+﻿'use client';
 
 import { useState, useEffect } from 'react';
 import { createBrowserClient } from '@supabase/ssr';
+import { authedFetch } from '@/lib/authed-fetch';
 import { Header } from '@/components/Header';
 import { DesignFooter } from '@/components/design/Footer';
 import { MessageSquare, CheckCircle, Zap, AlertCircle, ArrowRight, Copy, LogIn, Plus } from 'lucide-react';
@@ -39,7 +40,7 @@ export default function SmsImportPage() {
     sb.auth.getUser().then(({ data: { user } }) => {
       if (user) {
         setUserId(user.id);
-        fetch(`/api/user-cards?userId=${user.id}`)
+        authedFetch('/api/user-cards')
           .then(r => r.json())
           .then(d => setSavedCount(d.cards?.length || 0));
       }
