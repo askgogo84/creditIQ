@@ -5,7 +5,7 @@ import { usePathname } from 'next/navigation';
 
 const TABS = [
   { label: 'Wallet',   href: '/dashboard',    icon: (a: boolean) => <path d="m3 10 9-7 9 7v9a2 2 0 0 1-2 2h-4v-6H9v6H5a2 2 0 0 1-2-2v-9Z" stroke={a ? 'var(--ciq-gold-2)' : 'currentColor'} strokeWidth="1.7" strokeLinejoin="round" /> },
-  { label: 'Cards',    href: '/cards',        icon: (a: boolean) => <><rect x="2" y="5" width="20" height="14" rx="2.5" stroke={a ? 'var(--ciq-gold-2)' : 'currentColor'} strokeWidth="1.7" /><path d="M2 10h20" stroke={a ? 'var(--ciq-gold-2)' : 'currentColor'} strokeWidth="1.7" /></> },
+  { label: 'Cards',    href: '/my-cards',        icon: (a: boolean) => <><rect x="2" y="5" width="20" height="14" rx="2.5" stroke={a ? 'var(--ciq-gold-2)' : 'currentColor'} strokeWidth="1.7" /><path d="M2 10h20" stroke={a ? 'var(--ciq-gold-2)' : 'currentColor'} strokeWidth="1.7" /></> },
   { label: 'Travel',   href: '/trip-planner', icon: (a: boolean) => <path d="m3 11 19-9-9 19-2-8-8-2Z" stroke={a ? 'var(--ciq-gold-2)' : 'currentColor'} strokeWidth="1.7" strokeLinejoin="round" /> },
   { label: 'Optimize', href: '/optimize',     icon: (a: boolean) => <path d="M18.5 2.5a2.12 2.12 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5Z" stroke={a ? 'var(--ciq-gold-2)' : 'currentColor'} strokeWidth="1.7" strokeLinejoin="round" /> },
   { label: 'You',      href: '/profile',      icon: (a: boolean) => <><circle cx="12" cy="8" r="4" stroke={a ? 'var(--ciq-gold-2)' : 'currentColor'} strokeWidth="1.7" /><path d="M4 21a8 8 0 0 1 16 0" stroke={a ? 'var(--ciq-gold-2)' : 'currentColor'} strokeWidth="1.7" strokeLinecap="round" /></> },
