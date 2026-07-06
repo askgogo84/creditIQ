@@ -40,7 +40,7 @@ export default function OnboardingPage() {
       setName(user.user_metadata?.full_name || '');
       try {
         const j = await (await fetch(`/api/onboarding?userId=${user.id}`)).json();
-        // PEEK: if (j?.onboarding_complete) router.replace('/dashboard');
+        if (j?.onboarding_complete) router.replace('/dashboard');
       } catch {}
     });
   }, []);
@@ -269,4 +269,5 @@ export default function OnboardingPage() {
     </CiqTheme>
   );
 }
+
 
