@@ -3,6 +3,15 @@ import type { CreditCard, RedemptionOption, RedemptionRecommendation } from './t
 /**
  * Default redemption options by reward currency + bank
  * Used when a card has no explicit redemption_options defined
+ *
+ * VALUATION HONESTY RULES (Jul 2026 audit — this is the brand, do not violate):
+ * 1. KrisFlyer: VERIFIED lazy Rs.1.00/mile, ceiling Rs.1.60/mile. Transfer entries
+ *    must apply the card's transfer RATIO to these numbers (5:4 => x0.8).
+ *    Never quote above Rs.1.60/mile equivalent.
+ * 2. Marriott/Hilton/Avios transfer values are CONSERVATIVE ESTIMATES, not verified.
+ *    Do not raise them or add "best value" superlatives without a verified source.
+ * 3. Portal/voucher/cashback/catalog rates are deterministic published rates —
+ *    these define the FLOOR a user can always achieve (see getFloorValuation).
  */
 function getDefaultRedemptions(card: CreditCard): RedemptionOption[] {
   const currency = card.reward_currency;
@@ -24,11 +33,12 @@ function getDefaultRedemptions(card: CreditCard): RedemptionOption[] {
   }
 
   // EDGE Miles  --  Axis
+  // NOTE: 5:4 transfers mean 1 EDGE mile = 0.8 partner miles. Values below are ratio-adjusted.
   if (currency === 'edge') {
     return [
       { type: 'flight', partner: 'Axis Travel Edge Portal', value_per_point_inr: 1.0, best_for: 'Domestic and international flights' },
-      { type: 'transfer', partner: 'Marriott Bonvoy (5:4)', value_per_point_inr: 1.5, best_for: 'Luxury hotel stays' },
-      { type: 'transfer', partner: 'Singapore KrisFlyer (5:4)', value_per_point_inr: 2.0, best_for: 'Business class sweet spots' },
+      { type: 'transfer', partner: 'Singapore KrisFlyer (5:4)', value_per_point_inr: 1.28, best_for: 'Business class sweet spots  --  up to Rs.1.28/mile after 5:4 ratio (KrisFlyer verified ceiling Rs.1.60)' },
+      { type: 'transfer', partner: 'Marriott Bonvoy (5:4)', value_per_point_inr: 0.96, best_for: 'Luxury hotel stays  --  value varies by property (estimate)' },
       { type: 'transfer', partner: 'Air India Flying Returns (1:1)', value_per_point_inr: 0.8, best_for: 'Air India flights' },
       { type: 'cashback', value_per_point_inr: 0.20, best_for: 'Worst option  --  avoid' },
     ];
@@ -39,8 +49,8 @@ function getDefaultRedemptions(card: CreditCard): RedemptionOption[] {
     if (bank === 'Axis') {
       return [
         { type: 'flight', partner: 'Air India (post-Vistara merger)', value_per_point_inr: 0.80, best_for: 'Domestic flights' },
-        { type: 'transfer', partner: 'Singapore KrisFlyer (1:1)', value_per_point_inr: 2.0, best_for: 'Business class  --  best value' },
-        { type: 'transfer', partner: 'Marriott Bonvoy (1:1)', value_per_point_inr: 1.4, best_for: 'Marriott hotels' },
+        { type: 'transfer', partner: 'Singapore KrisFlyer (1:1)', value_per_point_inr: 1.60, best_for: 'Business class sweet spots  --  Rs.1.60/mile verified ceiling' },
+        { type: 'transfer', partner: 'Marriott Bonvoy (1:1)', value_per_point_inr: 1.20, best_for: 'Marriott hotels  --  value varies by property (estimate)' },
         { type: 'cashback', value_per_point_inr: 0.25, best_for: 'Worst option' },
       ];
     }
@@ -60,9 +70,9 @@ function getDefaultRedemptions(card: CreditCard): RedemptionOption[] {
   // Membership Rewards (Amex)
   if (currency === 'membership-rewards') {
     return [
-      { type: 'transfer', partner: 'Marriott Bonvoy (1:1)', value_per_point_inr: 1.4, best_for: 'Luxury hotels  --  Cat 1-4 sweet spots' },
-      { type: 'transfer', partner: 'Hilton Honors (1:2)', value_per_point_inr: 1.0, best_for: 'Hilton properties' },
-      { type: 'transfer', partner: 'British Airways Avios (1:1)', value_per_point_inr: 1.2, best_for: 'Short-haul flights' },
+      { type: 'transfer', partner: 'Marriott Bonvoy (1:1)', value_per_point_inr: 1.2, best_for: 'Luxury hotels  --  Cat 1-4 sweet spots (estimate)' },
+      { type: 'transfer', partner: 'British Airways Avios (1:1)', value_per_point_inr: 1.2, best_for: 'Short-haul flights (estimate)' },
+      { type: 'transfer', partner: 'Hilton Honors (1:2)', value_per_point_inr: 0.60, best_for: 'Hilton properties (estimate, ratio-adjusted)' },
       { type: 'voucher', partner: 'Taj IHCL Hotels', value_per_point_inr: 0.50, best_for: 'Taj hotel stays' },
       { type: 'flight', partner: 'Amex Travel Portal', value_per_point_inr: 0.50, best_for: 'Book directly on Amex' },
       { type: 'cashback', value_per_point_inr: 0.25, best_for: 'Statement credit  --  worst option' },
@@ -81,8 +91,8 @@ function getDefaultRedemptions(card: CreditCard): RedemptionOption[] {
   // HDFC Reward Points
   if (currency === 'reward-points' && bank === 'HDFC') {
     return [
-      { type: 'transfer', partner: 'Singapore KrisFlyer (1:1)', value_per_point_inr: 1.80, best_for: 'Best value  --  Business Class MEL/SYD/LHR' },
-      { type: 'transfer', partner: 'Marriott Bonvoy (1:1)', value_per_point_inr: 1.30, best_for: 'Luxury hotels  --  Cat 4-5 properties' },
+      { type: 'transfer', partner: 'Singapore KrisFlyer (1:1)', value_per_point_inr: 1.60, best_for: 'Business Class sweet spots (MEL/SYD/LHR)  --  Rs.1.60/mile verified ceiling' },
+      { type: 'transfer', partner: 'Marriott Bonvoy (1:1)', value_per_point_inr: 1.20, best_for: 'Luxury hotels  --  Cat 4-5 properties (estimate)' },
       { type: 'flight', partner: 'HDFC SmartBuy Flights', value_per_point_inr: 1.00, best_for: 'Domestic flights  --  simple redemption' },
       { type: 'hotel', partner: 'HDFC SmartBuy Hotels', value_per_point_inr: 1.00, best_for: 'Hotel bookings' },
       { type: 'voucher', partner: 'Brand vouchers', value_per_point_inr: 0.50, best_for: 'Amazon, Flipkart, Myntra' },
@@ -105,7 +115,7 @@ function getDefaultRedemptions(card: CreditCard): RedemptionOption[] {
   if (currency === 'reward-points' && bank === 'Axis') {
     return [
       { type: 'flight', partner: 'Axis Travel Edge', value_per_point_inr: 1.00, best_for: 'Flights via Travel Edge portal' },
-      { type: 'transfer', partner: 'Marriott Bonvoy', value_per_point_inr: 1.20, best_for: 'Hotel transfers' },
+      { type: 'transfer', partner: 'Marriott Bonvoy', value_per_point_inr: 1.20, best_for: 'Hotel transfers (estimate)' },
       { type: 'voucher', partner: 'Brand vouchers', value_per_point_inr: 0.50 },
       { type: 'cashback', value_per_point_inr: 0.25, best_for: 'Avoid' },
     ];
@@ -201,6 +211,41 @@ export function getRedemptionOptions(card: CreditCard): RedemptionOption[] {
 }
 
 /**
+ * FLOOR VALUATION  --  powers the "worth at least Rs.X" hook (Pro Phase 2).
+ *
+ * The floor is the best DETERMINISTIC redemption: portal / voucher / cashback /
+ * hotel / product rates are fixed published rates any user can redeem at today
+ * with zero skill. Transfers are excluded  --  they only ever raise the ceiling.
+ * This makes "worth at least Rs.X" a provable claim, never a guess.
+ */
+const FLOOR_TYPES = ['cashback', 'voucher', 'flight', 'hotel', 'product'] as const;
+
+export interface FloorValuation {
+  rate_per_point_inr: number;   // best deterministic rate
+  total_inr: number;            // points x rate, rounded
+  via: string;                  // partner/type label for "redeemable today via ..."
+}
+
+export function getFloorValuation(card: CreditCard, points: number): FloorValuation {
+  const options = getRedemptionOptions(card);
+  let best: RedemptionOption | null = null;
+  for (const opt of options) {
+    if (!(FLOOR_TYPES as readonly string[]).includes(opt.type)) continue;
+    if (opt.min_points && points < opt.min_points) continue;
+    if (!best || opt.value_per_point_inr > best.value_per_point_inr) best = opt;
+  }
+  if (!best) {
+    // No deterministic option (should not happen with current tables) --  ultra-conservative fallback
+    return { rate_per_point_inr: 0.20, total_inr: Math.round(points * 0.20), via: 'statement credit' };
+  }
+  return {
+    rate_per_point_inr: best.value_per_point_inr,
+    total_inr: Math.round(points * best.value_per_point_inr),
+    via: best.partner || best.type,
+  };
+}
+
+/**
  * Given a card and a points balance, return all redemption options
  * ranked by INR value, with AI-friendly context.
  */
@@ -264,7 +309,7 @@ export function buildRedemptionPrompt(card: CreditCard, points: number, top: Red
   // Card-specific context
   const cardContext: Record<string, string> = {
     'reward-points-HDFC': 'HDFC Reward Points are among the most versatile in India. KrisFlyer transfers unlock Business Class sweet spots to destinations like Singapore, Sydney, London. Marriott Cat 4 hotels in India (JW Marriott Pune, Marriott Jaipur) go for 25,000-35,000 points/night.',
-    'edge-Axis': 'EDGE Miles on Axis Magnus are arguably the best rewards currency in India for travelers. The KrisFlyer 5:4 transfer unlocks Singapore Business Class at ~75,000 miles for Mumbai-Singapore. Marriott Bonvoy transfers give access to Indian luxury hotels.',
+    'edge-Axis': 'EDGE Miles on Axis Magnus are among the strongest rewards currencies in India for travelers. The KrisFlyer 5:4 transfer unlocks Singapore Business Class at ~75,000 miles for Mumbai-Singapore. Marriott Bonvoy transfers give access to Indian luxury hotels.',
     'membership-rewards-AmEx': 'Amex MR points shine in transfers. Marriott Bonvoy gives access to Cat 1-4 hotels across India. British Airways Avios are great for short-haul  --  Mumbai-Delhi can be just 7,500 Avios. Never redeem for catalog items.',
     'neucoins-HDFC': 'NeuCoins are 1:1 with INR within Tata ecosystem  --  BigBasket, Croma, 1mg, Westside, Air Asia. This is genuinely good value since there is no haircut. Best strategy: use for BigBasket grocery orders or Croma electronics.',
     'cashback-ICICI': 'Amazon Pay ICICI cashback is auto-credited to Amazon Pay balance  --  fungible for UPI payments, bills, shopping. No redemption needed. Full 1:1 value guaranteed.',
@@ -290,6 +335,7 @@ Card-specific context: ${specificContext}
 Write a specific, actionable strategy in 3-4 short paragraphs. Rules:
 - NO bullet points or headers  --  flowing paragraphs only
 - Name specific airlines, hotels, routes, or products with actual rupee values
+- Use ONLY the per-point values from the ranked list above  --  never quote a higher per-point value than listed
 - Tell them exactly what to do with THIS card's specific points
 - Call out the worst option explicitly and why it destroys value
 - If transfers are available, give a concrete sweet-spot example (e.g., "75,000 KrisFlyer miles = Business Class Mumbai to Sydney")
