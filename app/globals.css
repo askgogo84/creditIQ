@@ -1,4 +1,4 @@
-@tailwind base;
+﻿@tailwind base;
 @tailwind components;
 @tailwind utilities;
 
@@ -1404,4 +1404,72 @@ html.dark [style*="background: 'var(--bg-surface"] {
 
   /* But DON'T add side padding — heroes need full width */
   /* Individual inner .shell divs handle their own px */
+}
+
+
+/* ============================================================
+   CreditIQ Design System — "Amex-Platinum grade"
+   Gold-on-true-black · light+dark · locked Jul 6 2026
+   Append to globals.css (or import). Namespaced under [data-ciq]
+   so it won't clash with existing legacy styles during migration.
+   ============================================================ */
+
+@import url('https://fonts.googleapis.com/css2?family=Clash+Display:wght@500;600;700&family=Instrument+Serif:ital@0;1&family=Space+Grotesk:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap');
+
+/* ---- DARK (default) ---- */
+[data-ciq][data-theme="dark"], [data-ciq]:not([data-theme]) {
+  --ciq-bg:        #080807;   /* true near-black, warm */
+  --ciq-panel:     #111110;
+  --ciq-panel-2:   #171613;
+  --ciq-ink:       #F3EFE6;   /* warm bone */
+  --ciq-ink-2:     #A6A199;
+  --ciq-ink-3:     #635F58;
+  --ciq-line:      rgba(243,239,230,0.08);
+  --ciq-line-2:    rgba(243,239,230,0.15);
+  --ciq-gold:      #C9A24B;   /* champagne gold — the jewelry */
+  --ciq-gold-2:    #E4C97E;   /* lifted gold for text/glints */
+  --ciq-gold-soft: rgba(201,162,75,0.12);
+  --ciq-gold-line: rgba(201,162,75,0.32);
+  --ciq-verified:  #4FBF87;   /* reserved: the moat */
+  --ciq-estimated: #8A857B;   /* estimates = neutral grey (honest, understated) */
+  --ciq-glow:      rgba(201,162,75,0.28);
+  --ciq-card-metal: linear-gradient(155deg,#1b1a16,#0d0d0b);
+}
+
+/* ---- LIGHT ---- */
+[data-ciq][data-theme="light"] {
+  --ciq-bg:        #F4F1E9;   /* warm ivory */
+  --ciq-panel:     #FDFBF5;
+  --ciq-panel-2:   #FFFFFF;
+  --ciq-ink:       #1A1710;
+  --ciq-ink-2:     #5A554B;
+  --ciq-ink-3:     #9A9488;
+  --ciq-line:      rgba(26,23,16,0.09);
+  --ciq-line-2:    rgba(26,23,16,0.15);
+  --ciq-gold:      #9A7420;   /* deeper gold for contrast on light */
+  --ciq-gold-2:    #B08828;
+  --ciq-gold-soft: rgba(154,116,32,0.10);
+  --ciq-gold-line: rgba(154,116,32,0.30);
+  --ciq-verified:  #12925F;
+  --ciq-estimated: #8A857B;
+  --ciq-glow:      rgba(154,116,32,0.18);
+  --ciq-card-metal: linear-gradient(155deg,#fffdf7,#f6f1e5);
+}
+
+/* ---- font utility classes ---- */
+[data-ciq] .ciq-display { font-family:'Clash Display',sans-serif; }
+[data-ciq] .ciq-serif   { font-family:'Instrument Serif',Georgia,serif; }
+[data-ciq] .ciq-mono    { font-family:'Space Mono',monospace; }
+[data-ciq]              { font-family:'Space Grotesk',system-ui,sans-serif; }
+
+/* ---- shared motion ---- */
+@keyframes ciq-rise { to { opacity:1; transform:none; } }
+@keyframes ciq-bob  { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-6px)} }
+@keyframes ciq-pulse{ 0%,100%{opacity:1} 50%{opacity:.4} }
+[data-ciq] .ciq-rise { opacity:0; transform:translateY(16px); animation:ciq-rise .7s cubic-bezier(.22,1,.36,1) forwards; }
+[data-ciq] .ciq-rise.d1{animation-delay:.05s} .ciq-rise.d2{animation-delay:.12s}
+[data-ciq] .ciq-rise.d3{animation-delay:.2s}  .ciq-rise.d4{animation-delay:.28s} .ciq-rise.d5{animation-delay:.36s}
+@media (prefers-reduced-motion: reduce) {
+  [data-ciq] * { animation:none!important; transition:none!important; }
+  [data-ciq] .ciq-rise { opacity:1; transform:none; }
 }

@@ -8,6 +8,7 @@ import { Header } from '@/components/Header';
 import { DesignFooter } from '@/components/design/Footer';
 import { Plus, TrendingUp, ArrowRight, Zap, RefreshCw, FileText, MessageSquare, LogOut, CreditCard, Upload, Trash2, X, Check, Building2, ChevronDown } from 'lucide-react';
 import Link from 'next/link';
+import { WalletView } from '@/components/ciq/WalletView';
 const BANK_COLORS: Record<string, string> = {
   HDFC: '#004C8F', Axis: '#97144D', AmEx: '#006FCF', ICICI: '#F58220',
   SBI: '#2C4C9C', Kotak: '#EF3E23', IDFC: '#9B0C2C', Yes: '#0C2461',
@@ -234,409 +235,54 @@ export default function DashboardPage() {
     </main>
   );
 
-  return (
-    <main className="min-h-screen" style={{ overflowX: 'hidden' }}>
-      <Header />
+    return (
+    <>
+      <WalletView
+        displayName={(user?.user_metadata?.name || user?.user_metadata?.full_name || (user?.email ? user.email.split('@')[0] : 'there'))}
+        email={user?.email}
+        cards={cards as any}
+        totalPoints={totalPoints}
+        bestValue={bestValue}
+        primaryBank={primaryBank}
+        onAddCard={() => setShowAddModal(true)}
+        onSignOut={signOut}
+        onRefresh={() => { setRefreshing(true); loadCards(user.id).then(() => setRefreshing(false)); }}
+        refreshing={refreshing}
+      />
 
       {showAddModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(4px)' }}>
-          <div className="w-full max-w-md rounded-2xl p-6" style={{ background: 'var(--surface, #fff)', border: '1px solid var(--line, rgba(20,41,80,0.1))' }}>
+        <div data-ciq data-theme="dark" className="fixed inset-0 z-50 flex items-center justify-center p-4"
+             style={{ background: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(6px)' }}>
+          <div className="w-full max-w-md rounded-2xl p-6"
+               style={{ background: 'var(--ciq-panel)', border: '1px solid var(--ciq-gold-line)', color: 'var(--ciq-ink)' }}>
             <div className="flex items-center justify-between mb-5">
-              <h3 className="font-semibold text-lg" style={{ color: 'var(--ink, #142950)' }}>Add card manually</h3>
-              <button onClick={() => setShowAddModal(false)} style={{ color: 'var(--ink-3)' }}>
-                <X className="w-5 h-5" />
-              </button>
+              <h3 className="ciq-display font-semibold text-lg">Add card manually</h3>
+              <button onClick={() => setShowAddModal(false)} style={{ color: 'var(--ciq-ink-3)', fontSize: 22, lineHeight: 1 }}>×</button>
             </div>
-            <div className="space-y-4">
-              <div>
-                <label className="text-xs font-medium mb-1.5 block" style={{ color: 'var(--ink-3)' }}>Bank</label>
-                <select value={addForm.bank} onChange={e => setAddForm(f => ({ ...f, bank: e.target.value }))}
-                  className="w-full px-3 py-2.5 rounded-xl text-sm" style={{ border: '1px solid var(--line)', background: 'var(--surface-2, #f8f9fc)', color: 'var(--ink)' }}>
-                  {BANKS.map(b => <option key={b} value={b}>{b}</option>)}
-                </select>
-              </div>
-              <div>
-                <label className="text-xs font-medium mb-1.5 block" style={{ color: 'var(--ink-3)' }}>Card name</label>
-                <input type="text" placeholder="e.g. HDFC Regalia Gold" value={addForm.cardName}
-                  onChange={e => setAddForm(f => ({ ...f, cardName: e.target.value }))}
-                  className="w-full px-3 py-2.5 rounded-xl text-sm" style={{ border: '1px solid var(--line)', background: 'var(--surface-2, #f8f9fc)', color: 'var(--ink)', outline: 'none' }} />
-              </div>
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="text-xs font-medium mb-1.5 block" style={{ color: 'var(--ink-3)' }}>Last 4 digits (optional)</label>
-                  <input type="text" placeholder="1234" maxLength={4} value={addForm.cardLast4}
-                    onChange={e => setAddForm(f => ({ ...f, cardLast4: e.target.value.replace(/\D/g, '') }))}
-                    className="w-full px-3 py-2.5 rounded-xl text-sm" style={{ border: '1px solid var(--line)', background: 'var(--surface-2, #f8f9fc)', color: 'var(--ink)', outline: 'none' }} />
-                </div>
-                <div>
-                  <label className="text-xs font-medium mb-1.5 block" style={{ color: 'var(--ink-3)' }}>Points currency</label>
-                  <select value={addForm.pointsCurrency} onChange={e => setAddForm(f => ({ ...f, pointsCurrency: e.target.value }))}
-                    className="w-full px-3 py-2.5 rounded-xl text-sm" style={{ border: '1px solid var(--line)', background: 'var(--surface-2, #f8f9fc)', color: 'var(--ink)' }}>
-                    <option>Points</option>
-                    <option>Miles</option>
-                    <option>Rewards</option>
-                    <option>Cashback</option>
-                    <option>EDGE Miles</option>
-                    <option>InterMiles</option>
-                    <option>KrisFlyer</option>
-                  </select>
-                </div>
-              </div>
-              <div>
-                <label className="text-xs font-medium mb-1.5 block" style={{ color: 'var(--ink-3)' }}>Points balance</label>
-                <input type="number" placeholder="e.g. 52164" value={addForm.pointsBalance}
-                  onChange={e => setAddForm(f => ({ ...f, pointsBalance: e.target.value }))}
-                  className="w-full px-3 py-2.5 rounded-xl text-sm" style={{ border: '1px solid var(--line)', background: 'var(--surface-2, #f8f9fc)', color: 'var(--ink)', outline: 'none' }} />
-              </div>
-              <button onClick={handleAddCard} disabled={addLoading || !addForm.cardName || !addForm.pointsBalance}
-                className="w-full py-3 rounded-xl font-semibold text-sm flex items-center justify-center gap-2"
-                style={{ background: addSuccess ? '#059669' : '#C9972E', color: '#fff', opacity: addLoading ? 0.7 : 1 }}>
-                {addSuccess ? <><Check className="w-4 h-4" /> Card added!</> : addLoading ? 'Adding...' : 'Add card'}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+              <input placeholder="Bank (e.g. HDFC)" value={addForm.bank}
+                onChange={e => setAddForm({ ...addForm, bank: e.target.value })}
+                style={{ padding: '12px 14px', borderRadius: 12, background: 'var(--ciq-panel-2)', border: '1px solid var(--ciq-line-2)', color: 'var(--ciq-ink)' }} />
+              <input placeholder="Card name (e.g. Regalia Gold)" value={addForm.cardName}
+                onChange={e => setAddForm({ ...addForm, cardName: e.target.value })}
+                style={{ padding: '12px 14px', borderRadius: 12, background: 'var(--ciq-panel-2)', border: '1px solid var(--ciq-line-2)', color: 'var(--ciq-ink)' }} />
+              <input placeholder="Last 4 digits (optional)" value={addForm.cardLast4}
+                onChange={e => setAddForm({ ...addForm, cardLast4: e.target.value })}
+                style={{ padding: '12px 14px', borderRadius: 12, background: 'var(--ciq-panel-2)', border: '1px solid var(--ciq-line-2)', color: 'var(--ciq-ink)' }} />
+              <input placeholder="Points balance" type="number" value={addForm.pointsBalance}
+                onChange={e => setAddForm({ ...addForm, pointsBalance: e.target.value })}
+                style={{ padding: '12px 14px', borderRadius: 12, background: 'var(--ciq-panel-2)', border: '1px solid var(--ciq-line-2)', color: 'var(--ciq-ink)' }} />
+              <input placeholder="Currency (e.g. Points, EDGE Miles)" value={addForm.pointsCurrency}
+                onChange={e => setAddForm({ ...addForm, pointsCurrency: e.target.value })}
+                style={{ padding: '12px 14px', borderRadius: 12, background: 'var(--ciq-panel-2)', border: '1px solid var(--ciq-line-2)', color: 'var(--ciq-ink)' }} />
+              <button onClick={handleAddCard} disabled={addLoading}
+                style={{ padding: 13, borderRadius: 12, background: 'linear-gradient(135deg,var(--ciq-gold-2),var(--ciq-gold))', color: '#1a1710', fontWeight: 700, border: 'none', cursor: 'pointer', marginTop: 4 }}>
+                {addLoading ? 'Adding…' : 'Add card'}
               </button>
             </div>
           </div>
         </div>
       )}
-
-      <div style={{ paddingTop: 72, paddingBottom: 40 }}>
-        <div style={{ maxWidth: 640, margin: '0 auto', padding: '0 16px' }}>
-
-          <div style={{ paddingTop: 28, paddingBottom: 20 }}>
-            <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12 }}>
-              <div style={{ minWidth: 0 }}>
-                <h1 style={{ fontSize: 'clamp(28px, 7vw, 48px)', fontWeight: 800, letterSpacing: '-0.03em', color: 'var(--ink, #142950)', lineHeight: 1.1, margin: 0 }}>
-                  Hi, {firstName}.
-                </h1>
-                <p style={{ fontSize: 13, marginTop: 4, color: 'var(--text-muted)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: 200 }}>
-                  {user?.email}
-                </p>
-              </div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
-                <button onClick={() => setShowAddModal(true)}
-                  style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '8px 14px', borderRadius: 10, background: 'var(--ink, #142950)', color: '#fff', fontSize: 13, fontWeight: 600, border: 'none', cursor: 'pointer', whiteSpace: 'nowrap' }}>
-                  <Plus style={{ width: 14, height: 14 }} /> Add card
-                </button>
-                <button onClick={async () => { setRefreshing(true); await loadCards(user.id); setRefreshing(false); }}
-                  style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: 36, height: 36, borderRadius: 10, background: 'var(--surface, #f5f0e8)', border: '1px solid var(--line)', cursor: 'pointer' }}>
-                  <RefreshCw style={{ width: 14, height: 14, color: 'var(--ink)', animation: refreshing ? 'spin 1s linear infinite' : 'none' }} />
-                </button>
-                <button onClick={signOut}
-                  style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: 36, height: 36, borderRadius: 10, background: 'var(--surface, #f5f0e8)', border: '1px solid var(--line)', cursor: 'pointer' }}>
-                  <LogOut style={{ width: 14, height: 14, color: 'var(--ink)' }} />
-                </button>
-              </div>
-            </div>
-          </div>
-
-          {!cardsLoading && cards.length === 0 && (
-            <div style={{ borderRadius: 20, border: '2px dashed var(--line-strong, rgba(20,41,80,0.2))', padding: '48px 24px', textAlign: 'center', marginBottom: 20 }}>
-              <CreditCard style={{ width: 44, height: 44, margin: '0 auto 16px', color: 'var(--text-dim)' }} />
-              <h2 style={{ fontSize: 22, fontWeight: 700, color: 'var(--text)', marginBottom: 8 }}>No cards yet</h2>
-              <p style={{ fontSize: 13, color: 'var(--text-muted)', marginBottom: 24, maxWidth: 280, margin: '0 auto 24px' }}>
-                Add your cards to see your combined points and plan trips.
-              </p>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-                <button onClick={() => setShowAddModal(true)}
-                  style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, padding: '12px 20px', borderRadius: 12, background: '#C9972E', color: '#fff', fontSize: 14, fontWeight: 600, border: 'none', cursor: 'pointer' }}>
-                  <Plus style={{ width: 16, height: 16 }} /> Add card manually
-                </button>
-                <Link href="/upload-statement"
-                  style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, padding: '12px 20px', borderRadius: 12, background: 'var(--surface)', color: 'var(--ink)', fontSize: 14, fontWeight: 600, border: '1px solid var(--line)', textDecoration: 'none' }}>
-                  <Upload style={{ width: 16, height: 16 }} /> Upload statement
-                </Link>
-              </div>
-            </div>
-          )}
-
-          {cards.length > 0 && (
-            <>
-              <div style={{ borderRadius: 20, background: 'var(--surface, #fff)', border: '1px solid var(--line)', padding: '20px 20px 16px', marginBottom: 12 }}>
-                <div style={{ fontSize: 10, fontFamily: 'monospace', textTransform: 'uppercase', letterSpacing: '0.1em', color: 'rgba(201,151,46,0.9)', marginBottom: 8 }}>
-                  Combined portfolio &bull; {cards.length} card{cards.length !== 1 ? 's' : ''}
-                </div>
-                <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap' }}>
-                  <div>
-                    <div style={{ fontSize: 'clamp(32px, 8vw, 48px)', fontWeight: 800, color: '#C9972E', lineHeight: 1, letterSpacing: '-0.02em' }}>
-                      {totalPoints.toLocaleString('en-IN')}
-                    </div>
-                    <div style={{ fontSize: 12, color: 'var(--ink-3, #5A6A8A)', marginTop: 4 }}>total points across all cards</div>
-                  </div>
-                  <div style={{ textAlign: 'right' }}>
-                    <div style={{ fontSize: 11, color: 'var(--ink-3)', marginBottom: 2 }}>Best travel value</div>
-                    <div style={{ fontSize: 22, fontWeight: 700, color: '#22c55e' }}>Rs.{(bestValue / 1000).toFixed(0)}K+</div>
-                    <div style={{ fontSize: 11, color: 'var(--ink-3)', marginTop: 2 }}>vs Rs.{(conservativeValue / 1000).toFixed(0)}K statement credit</div>
-                  </div>
-                </div>
-                <div style={{ display: 'flex', gap: 8, marginTop: 16, flexWrap: 'wrap' }}>
-                  <Link href={`/optimize?points=${totalPoints}&bank=${primaryBank}`}
-                    style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '9px 16px', borderRadius: 10, background: '#C9972E', color: '#0a0a0a', fontSize: 12, fontWeight: 700, textDecoration: 'none', whiteSpace: 'nowrap' }}>
-                    <Zap style={{ width: 12, height: 12 }} /> Optimize all points
-                  </Link>
-                  <Link href={`/trip-planner?points=${totalPoints}&bank=${primaryBank}`}
-                    style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '9px 16px', borderRadius: 10, background: 'var(--bg-2, #EFE7D8)', color: 'var(--ink, #142950)', border: '1px solid rgba(20,41,80,0.2)', fontSize: 12, fontWeight: 600, textDecoration: 'none', whiteSpace: 'nowrap' }}>
-                    Plan a trip
-                  </Link>
-                </div>
-              </div>
-
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 10, marginBottom: 16 }}>
-                {[
-                  { label: 'Total Points', value: totalPoints.toLocaleString('en-IN'), color: '#C9972E', sub: `${cards.length} cards` },
-                  { label: 'Best Value', value: `Rs.${(bestValue / 1000).toFixed(0)}K+`, color: '#22c55e', sub: 'via travel' },
-                  { label: 'Stmt Credit', value: `Rs.${(conservativeValue / 1000).toFixed(0)}K`, color: 'var(--ink)', sub: 'worst option' },
-                  { label: 'Value Gap', value: `Rs.${((bestValue - conservativeValue) / 1000).toFixed(0)}K`, color: '#ef4444', sub: "don't leave this" },
-                ].map((s, i) => (
-                  <div key={i} style={{ padding: '14px 16px', borderRadius: 14, background: 'var(--surface, #fff)', border: '1px solid var(--line, rgba(20,41,80,0.08))' }}>
-                    <div style={{ fontSize: 9, fontFamily: 'monospace', textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--text-dim)', marginBottom: 6, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                      {s.label}
-                    </div>
-                    <div style={{ fontSize: 'clamp(16px, 4.5vw, 22px)', fontWeight: 800, color: s.color, letterSpacing: '-0.02em', lineHeight: 1 }}>
-                      {s.value}
-                    </div>
-                    <div style={{ fontSize: 10, color: 'var(--text-dim)', marginTop: 4, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                      {s.sub}
-                    </div>
-                  </div>
-                ))}
-              </div>
-
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
-                <div style={{ fontSize: 10, fontFamily: 'monospace', textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--text-dim)' }}>
-                  Your cards &bull; {cards.length} saved
-                </div>
-                <button onClick={() => setShowAddModal(true)}
-                  style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 12, color: 'var(--accent)', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 600 }}>
-                  <Plus style={{ width: 12, height: 12 }} /> Add card
-                </button>
-              </div>
-
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 20 }}>
-                {cards.map((card) => (
-                  <div key={card.id} style={{ borderRadius: 14, border: '1px solid var(--line)', overflow: 'hidden', background: 'var(--surface, #fff)' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '14px 16px' }}>
-                      <div style={{ width: 40, height: 40, borderRadius: 10, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontSize: 12, fontWeight: 700, background: BANK_COLORS[card.bank] || '#333' }}>
-                        {(card.bank || '??').slice(0, 2)}
-                      </div>
-                      <div style={{ flex: 1, minWidth: 0 }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                          <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                            {card.card_name || `${card.bank} Card`}
-                          </div>
-                          {card.source === 'manual' && (
-                            <span style={{ fontSize: 9, padding: '2px 6px', borderRadius: 4, fontFamily: 'monospace', textTransform: 'uppercase', background: 'rgba(201,151,46,0.1)', color: '#C9972E', flexShrink: 0 }}>
-                              manual
-                            </span>
-                          )}
-                        </div>
-                        <div style={{ fontSize: 11, color: 'var(--text-dim)', marginTop: 2 }}>
-                          {card.card_last4 ? `....${card.card_last4}` : card.bank}
-                          {card.statement_date ? ` \u00b7 ${new Date(card.statement_date).toLocaleDateString('en-IN', { month: 'short', year: 'numeric' })}` : ''}
-                        </div>
-                      </div>
-                      <div style={{ textAlign: 'right', flexShrink: 0, marginLeft: 8 }}>
-                        <div style={{ fontSize: 'clamp(16px, 4vw, 20px)', fontWeight: 800, color: 'var(--accent)', letterSpacing: '-0.02em' }}>
-                          {(card.points_balance || 0).toLocaleString('en-IN')}
-                        </div>
-                        <div style={{ fontSize: 10, color: 'var(--text-dim)' }}>{card.points_currency || 'Points'}</div>
-                      </div>
-                    </div>
-                    <div style={{ padding: '10px 16px', borderTop: '1px solid var(--line)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
-                      <div style={{ fontSize: 11, color: 'var(--text-dim)' }}>
-                        {new Date(card.imported_at).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })}
-                      </div>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                        {editingCardId === card.id ? (
-                          <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                            <input type="number" value={editPoints} onChange={e => setEditPoints(e.target.value)}
-                              placeholder="new points" autoFocus
-                              style={{ width: 96, padding: '4px 8px', borderRadius: 8, fontSize: 12, border: '1px solid var(--accent)', background: 'var(--bg-elevated)', color: 'var(--text)', outline: 'none' }} />
-                            <button onClick={() => handleUpdatePoints(card)} disabled={editSaving || !editPoints || parseInt(editPoints) <= 0} style={{ color: '#059669', background: 'none', border: 'none', cursor: 'pointer', opacity: editSaving ? 0.5 : 1 }}>
-                              <Check style={{ width: 16, height: 16 }} />
-                            </button>
-                            <button onClick={() => { setEditingCardId(null); setEditPoints(''); }} style={{ color: 'var(--text-dim)', background: 'none', border: 'none', cursor: 'pointer' }}>
-                              <X style={{ width: 16, height: 16 }} />
-                            </button>
-                          </div>
-                        ) : (
-                          <button onClick={() => { setEditingCardId(card.id); setEditPoints(String(card.points_balance || '')); }}
-                            style={{ fontSize: 12, color: 'var(--text-dim)', background: 'none', border: 'none', cursor: 'pointer' }}>
-                            Update
-                          </button>
-                        )}
-                        {card.source === 'manual' && (
-                          <button onClick={() => handleDeleteCard(card.id, card.source || 'manual')}
-                            style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 12, color: '#ef4444', background: 'none', border: 'none', cursor: 'pointer' }}>
-                            <Trash2 style={{ width: 12, height: 12 }} /> Remove
-                          </button>
-                        )}
-                        <Link href={`/optimize?bank=${card.bank}&points=${card.points_balance}`}
-                          style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 12, color: 'var(--accent)', fontWeight: 600, textDecoration: 'none' }}>
-                          Optimize <ArrowRight style={{ width: 12, height: 12 }} />
-                        </Link>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-
-                <button onClick={() => setShowAddModal(true)}
-                  style={{ width: '100%', borderRadius: 14, border: '2px dashed var(--line)', padding: '14px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, background: 'none', cursor: 'pointer', color: 'var(--text-dim)', fontSize: 13 }}>
-                  <Plus style={{ width: 16, height: 16 }} />
-                  Add another card
-                </button>
-              </div>
-
-              <div style={{ fontSize: 10, fontFamily: 'monospace', textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--text-dim)', marginBottom: 10 }}>
-                Top redemption ideas for {totalPoints.toLocaleString('en-IN')} points
-              </div>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 20 }}>
-                {REDEMPTION_IDEAS.map((r, i) => {
-                  const canAfford = totalPoints >= r.points;
-                  return (
-                    <div key={i} style={{ borderRadius: 14, border: `1px solid ${canAfford ? 'rgba(34,197,94,0.3)' : 'var(--line)'}`, padding: '14px 16px', background: 'var(--surface, #fff)' }}>
-                      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 8, marginBottom: 8 }}>
-                        <div style={{ minWidth: 0 }}>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
-                            <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text)' }}>{r.title}</div>
-                            {canAfford && (
-                              <span style={{ fontSize: 9, padding: '2px 6px', borderRadius: 4, fontFamily: 'monospace', textTransform: 'uppercase', background: 'rgba(34,197,94,0.1)', color: '#059669', whiteSpace: 'nowrap' }}>
-                                can afford
-                              </span>
-                            )}
-                          </div>
-                          <div style={{ fontSize: 11, color: 'var(--text-dim)', marginTop: 2 }}>{r.bank}</div>
-                        </div>
-                        <div style={{ fontSize: 10, fontFamily: 'monospace', textTransform: 'uppercase', padding: '4px 8px', borderRadius: 6, background: `${r.color}20`, color: r.color, flexShrink: 0 }}>
-                          {r.tag}
-                        </div>
-                      </div>
-                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
-                        <div style={{ fontSize: 11, fontFamily: 'monospace', color: 'var(--text-dim)' }}>{r.points.toLocaleString('en-IN')} pts needed</div>
-                        <div style={{ fontSize: 15, fontWeight: 700, color: '#22c55e' }}>{r.value}</div>
-                      </div>
-                      <Link href={`/trip-planner?points=${totalPoints}&bank=${primaryBank}`}
-                        style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, padding: '10px', borderRadius: 10, fontSize: 12, fontWeight: 600, textDecoration: 'none', background: 'rgba(201,151,46,0.1)', color: 'var(--accent)', border: '1px solid rgba(201,151,46,0.2)' }}>
-                        Plan this trip <ArrowRight style={{ width: 12, height: 12 }} />
-                      </Link>
-                    </div>
-                  );
-                })}
-              </div>
-            </>
-          )}
-
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginBottom: 16 }}>
-            <Link href="/upload-statement"
-              style={{ borderRadius: 14, border: '1px solid var(--line)', padding: '14px', display: 'flex', alignItems: 'center', gap: 10, textDecoration: 'none', background: 'var(--surface, #fff)' }}>
-              <div style={{ width: 36, height: 36, borderRadius: 10, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, background: 'rgba(201,151,46,0.1)' }}>
-                <FileText style={{ width: 16, height: 16, color: 'var(--accent)' }} />
-              </div>
-              <div style={{ minWidth: 0 }}>
-                <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--text)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>Upload statement</div>
-                <div style={{ fontSize: 11, color: 'var(--text-dim)' }}>PDF &rarr; points</div>
-              </div>
-            </Link>
-            <Link href="/sms-import"
-              style={{ borderRadius: 14, border: '1px solid var(--line)', padding: '14px', display: 'flex', alignItems: 'center', gap: 10, textDecoration: 'none', background: 'var(--surface, #fff)' }}>
-              <div style={{ width: 36, height: 36, borderRadius: 10, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, background: 'rgba(201,151,46,0.1)' }}>
-                <MessageSquare style={{ width: 16, height: 16, color: 'var(--accent)' }} />
-              </div>
-              <div style={{ minWidth: 0 }}>
-                <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--text)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>Paste bank SMS</div>
-                <div style={{ fontSize: 11, color: 'var(--text-dim)' }}>SMS &rarr; points</div>
-              </div>
-            </Link>
-          </div>
-
-          {!wpLoading && (
-            wp.linked ? (
-              <>
-              <div style={{ borderRadius: 14, border: '1px solid rgba(201,151,46,0.25)', background: 'rgba(201,151,46,0.06)', padding: '14px 16px', marginBottom: 16, display: 'flex', alignItems: 'center', gap: 12 }}>
-                <div style={{ width: 36, height: 36, borderRadius: 10, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, background: 'rgba(201,151,46,0.12)' }}>
-                  <Building2 style={{ width: 16, height: 16, color: 'var(--accent)' }} />
-                </div>
-                <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text)' }}>{wp.org_name}</div>
-                  <div style={{ fontSize: 11, color: 'var(--text-dim)', marginTop: 2 }}>Linked &bull; company-sponsored. Your personal cards stay private.</div>
-                </div>
-                <button onClick={leaveWorkplace} disabled={wpBusy}
-                  style={{ fontSize: 12, color: 'var(--text-dim)', background: 'none', border: 'none', cursor: 'pointer', flexShrink: 0 }}>
-                  {wpBusy ? '...' : 'Leave'}
-                </button>
-              </div>
-              <Link href="/my-company-cards"
-                style={{ borderRadius: 14, border: '1px solid var(--line)', padding: '14px', display: 'flex', alignItems: 'center', gap: 10, textDecoration: 'none', background: 'var(--surface, #fff)', marginBottom: 10 }}>
-                <div style={{ width: 36, height: 36, borderRadius: 10, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, background: 'rgba(201,151,46,0.1)' }}>
-                  <CreditCard style={{ width: 16, height: 16, color: 'var(--accent)' }} />
-                </div>
-                <div style={{ minWidth: 0, flex: 1 }}>
-                  <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--text)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>My company cards</div>
-                  <div style={{ fontSize: 11, color: 'var(--text-dim)' }}>View your org's corporate cards</div>
-                </div>
-                <ArrowRight style={{ width: 14, height: 14, color: 'var(--text-dim)', flexShrink: 0 }} />
-              </Link>
-              <Link href="/add-corporate-card"
-                style={{ borderRadius: 14, border: '1px solid var(--line)', padding: '14px', display: 'flex', alignItems: 'center', gap: 10, textDecoration: 'none', background: 'var(--surface, #fff)', marginBottom: 16 }}>
-                <div style={{ width: 36, height: 36, borderRadius: 10, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, background: 'rgba(201,151,46,0.1)' }}>
-                  <Plus style={{ width: 16, height: 16, color: 'var(--accent)' }} />
-                </div>
-                <div style={{ minWidth: 0, flex: 1 }}>
-                  <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--text)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>Add corporate card</div>
-                  <div style={{ fontSize: 11, color: 'var(--text-dim)' }}>Submit a company card for approval</div>
-                </div>
-                <ArrowRight style={{ width: 14, height: 14, color: 'var(--text-dim)', flexShrink: 0 }} />
-              </Link>
-              </>
-            ) : (
-              <div style={{ borderRadius: 14, border: '1px solid var(--line)', background: 'var(--surface, #fff)', marginBottom: 16, overflow: 'hidden' }}>
-                <button onClick={() => setWpOpen(o => !o)}
-                  style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 12, padding: '14px 16px', background: 'none', border: 'none', cursor: 'pointer', textAlign: 'left' }}>
-                  <div style={{ width: 36, height: 36, borderRadius: 10, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, background: 'rgba(201,151,46,0.1)' }}>
-                    <Building2 style={{ width: 16, height: 16, color: 'var(--accent)' }} />
-                  </div>
-                  <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--text)' }}>Have a company code?</div>
-                    <div style={{ fontSize: 11, color: 'var(--text-dim)', marginTop: 2 }}>Link your workplace to unlock sponsored features.</div>
-                  </div>
-                  <ChevronDown style={{ width: 16, height: 16, color: 'var(--text-dim)', flexShrink: 0, transform: wpOpen ? 'rotate(180deg)' : 'none', transition: 'transform .2s' }} />
-                </button>
-                {wpOpen && (
-                  <div style={{ padding: '0 16px 16px', display: 'flex', flexDirection: 'column', gap: 10 }}>
-                    <input value={wpCode}
-                      onChange={e => { setWpCode(e.target.value.toUpperCase()); if (wpError) setWpError(''); }}
-                      onKeyDown={e => { if (e.key === 'Enter') joinWorkplace(); }}
-                      placeholder="CIQ-XXXXXX" spellCheck={false}
-                      style={{ width: '100%', padding: '11px 14px', borderRadius: 10, fontSize: 15, letterSpacing: '0.04em', fontFamily: 'monospace', border: wpError ? '1px solid #ef4444' : '1px solid var(--line)', background: 'var(--surface-2, #f8f9fc)', color: 'var(--ink)', outline: 'none', boxSizing: 'border-box' }} />
-                    {wpError && <div style={{ fontSize: 12, color: '#ef4444' }}>{wpError}</div>}
-                    <button onClick={joinWorkplace} disabled={wpBusy}
-                      style={{ width: '100%', padding: '11px', borderRadius: 10, background: '#C9972E', color: '#fff', fontSize: 14, fontWeight: 600, border: 'none', cursor: 'pointer', opacity: wpBusy ? 0.7 : 1 }}>
-                      {wpBusy ? 'Linking...' : 'Link company'}
-                    </button>
-                  </div>
-                )}
-              </div>
-            )
-          )}
-
-          {cards.length > 0 && (
-            <div style={{ borderRadius: 14, padding: '16px', border: '1px solid rgba(201,151,46,0.25)', background: 'rgba(201,151,46,0.06)', marginBottom: 8 }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
-                <TrendingUp style={{ width: 16, height: 16, color: 'var(--accent)' }} />
-                <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--text)' }}>Full analysis &mdash; {totalPoints.toLocaleString('en-IN')} combined points</span>
-              </div>
-              <p style={{ fontSize: 12, color: 'var(--text-muted)', marginBottom: 12 }}>
-                Best redemption path, transfer partners, expiry risk, category-wise card usage.
-              </p>
-              <Link href={`/optimize?points=${totalPoints}&bank=${primaryBank}`}
-                style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 13, fontWeight: 600, color: 'var(--accent)', textDecoration: 'none' }}>
-                Run full optimization <ArrowRight style={{ width: 14, height: 14 }} />
-              </Link>
-            </div>
-          )}
-
-        </div>
-      </div>
-
-      <DesignFooter />
-    </main>
+    </>
   );
 }
