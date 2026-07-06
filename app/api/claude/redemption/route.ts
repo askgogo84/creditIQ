@@ -53,7 +53,7 @@ Write as a sharp, opinionated advisor who knows Indian credit card rewards deepl
         'anthropic-version': '2023-06-01',
       },
       body: JSON.stringify({
-        model: 'claude-sonnet-4-20250514',
+        model: 'claude-sonnet-4-6',
         max_tokens: 600,
         system: 'You are CreditIQ\'s points strategy advisor. You give sharp, card-specific, actionable advice. You NEVER contradict the ranked redemption data provided. Your top recommendation must always match the #1 ranked option in the data.',
         messages: [{ role: 'user', content: prompt }],

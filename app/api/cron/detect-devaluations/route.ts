@@ -40,7 +40,7 @@ async function detectChanges(card: string, bank: string, oldSnap: string, newSna
     method: 'POST',
     headers: { 'Content-Type': 'application/json', 'x-api-key': process.env.ANTHROPIC_API_KEY!, 'anthropic-version': '2023-06-01' },
     body: JSON.stringify({
-      model: 'claude-sonnet-4-20250514', max_tokens: 1000,
+      model: 'claude-sonnet-4-6', max_tokens: 1000,
       messages: [{ role: 'user', content: `Compare these two snapshots of ${card} (${bank}) credit card page. Find meaningful benefit changes (fees, reward rates, caps, lounges, partners). Ignore layout/wording changes.\n\nYESTERDAY:\n${oldSnap.slice(0, 2500)}\n\nTODAY:\n${newSnap.slice(0, 2500)}\n\nRespond ONLY with JSON: {"changed":true/false,"events":[{"category":"reward-rate|lounge|cap-added|fee-hike|exclusion|redemption","description":"plain English","impact":"high|medium|low"}]}` }],
     }),
   });

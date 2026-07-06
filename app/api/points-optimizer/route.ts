@@ -22,7 +22,7 @@ export async function POST(req: NextRequest) {
         'anthropic-version': '2023-06-01',
       },
       body: JSON.stringify({
-        model: 'claude-sonnet-4-20250514',
+        model: 'claude-sonnet-4-6',
         max_tokens: 2000,
         system: `You are CreditIQ's points redemption expert specialising in Indian credit cards. 
 You know the exact transfer partners, ratios, and redemption rules for all major Indian cards.
