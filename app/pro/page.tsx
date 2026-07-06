@@ -1,28 +1,30 @@
 'use client';
-
 import { useEffect, useState } from 'react';
 import { createBrowserClient } from '@supabase/ssr';
 import { useRouter } from 'next/navigation';
 import { CiqTheme } from '@/components/ciq/ThemeProvider';
 import { TabBar } from '@/components/ciq/TabBar';
+import { authedFetch } from '@/lib/authed-fetch';
 
 // ---- Pricing (single source of truth) ----
-// Amounts shown to the user in rupees; the API converts to paise.
+// Amounts shown in rupees; actual charge amounts live in Razorpay Plans (server allowlist).
+// Savings vs paying monthly: 6mo = 16% (1194->999), 12mo = 37% (2388->1499).
 const PLANS = {
-  monthly: { label: 'Monthly', rupees: 199, per: '/month', note: '' },
-  annual: { label: 'Annual', rupees: 1999, per: '/year', note: 'Save 16%' },
+  monthly: { label: 'Monthly', rupees: 199, per: '/month', note: '', effective: '' },
+  sixmonth: { label: '6 months', rupees: 999, per: '/6 months', note: 'Save 16%', effective: '₹166/month effective' },
+  twelvemonth: { label: '12 months', rupees: 1499, per: '/year', note: 'Save 37%', effective: '₹125/month effective' },
 } as const;
 type PlanKey = keyof typeof PLANS;
 
 const FEATURES: { label: string; free: boolean; pro: boolean }[] = [
   { label: 'Card catalog & search', free: true, pro: true },
-  { label: 'Points optimizer', free: true, pro: true },
-  { label: 'CIRA travel assistant', free: true, pro: true },
+  { label: 'Points floor valuation (what they\u2019re worth)', free: true, pro: true },
+  { label: 'Redemption paths — partner, ratio, steps', free: false, pro: true },
+  { label: 'Full smart optimization ranking', free: false, pro: true },
+  { label: 'CIRA travel assistant — unlimited', free: false, pro: true },
   { label: 'Verified-from-statement analysis', free: false, pro: true },
-  { label: 'Unlimited card connections', free: false, pro: true },
   { label: 'Devaluation early warnings', free: false, pro: true },
   { label: 'Priority redemption alerts', free: false, pro: true },
-  { label: 'Concierge redemption support', free: false, pro: true },
 ];
 
 declare global {
@@ -34,7 +36,7 @@ declare global {
 export default function ProPage() {
   const router = useRouter();
   const [user, setUser] = useState<any>(null);
-  const [plan, setPlan] = useState<PlanKey>('annual');
+  const [plan, setPlan] = useState<PlanKey>('twelvemonth');
   const [busy, setBusy] = useState(false);
   const [msg, setMsg] = useState<string | null>(null);
 
@@ -64,18 +66,23 @@ export default function ProPage() {
     setMsg(null);
     setBusy(true);
     try {
-      const orderRes = await fetch('/api/razorpay/create-order', {
+      // Server allowlists the plan and stamps user_id into subscription notes.
+      const subRes = await authedFetch('/api/razorpay/create-subscription', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ plan }),
       });
-      const order = await orderRes.json();
-      if (!orderRes.ok || !order.id) {
-        setMsg(order.error || 'Could not start checkout. Try again.');
+      const sub = await subRes.json();
+
+      if (sub.already) {
+        setMsg('You\u2019re already Pro — nothing to pay. Manage your plan from Profile.');
         setBusy(false);
         return;
       }
-
+      if (!subRes.ok || !sub.subscription_id) {
+        setMsg(sub.error || 'Could not start checkout. Try again.');
+        setBusy(false);
+        return;
+      }
       if (!window.Razorpay) {
         setMsg('Checkout still loading. Try again in a moment.');
         setBusy(false);
@@ -84,28 +91,25 @@ export default function ProPage() {
 
       const rzp = new window.Razorpay({
         key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID || '',
-        order_id: order.id,
-        amount: order.amount,
-        currency: order.currency,
+        subscription_id: sub.subscription_id,
         name: 'CreditIQ Pro',
-        description: PLANS[plan].label + ' plan',
+        description: `${PLANS[plan].label} plan — auto-renews`,
         prefill: {
           email: user?.email || '',
           name: user?.user_metadata?.full_name || user?.user_metadata?.name || '',
         },
         theme: { color: '#C9A24B' },
         handler: async (resp: any) => {
-          const verifyRes = await fetch('/api/razorpay/verify', {
+          const verifyRes = await authedFetch('/api/razorpay/verify-subscription', {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
-              razorpay_order_id: resp.razorpay_order_id,
               razorpay_payment_id: resp.razorpay_payment_id,
+              razorpay_subscription_id: resp.razorpay_subscription_id,
               razorpay_signature: resp.razorpay_signature,
             }),
           });
           const v = await verifyRes.json();
-          if (verifyRes.ok && v.verified) {
+          if (verifyRes.ok && v.ok) {
             setMsg('Payment verified. Welcome to Pro.');
           } else {
             setMsg('Payment could not be verified. If you were charged, contact support.');
@@ -156,7 +160,7 @@ export default function ProPage() {
           </p>
         </div>
 
-        {/* Plan toggle */}
+        {/* Plan toggle — 3 tiers, 12-month pre-selected */}
         <div style={{ padding: '22px 20px 0' }}>
           <div style={{
             display: 'flex', gap: 6, padding: 5, background: 'var(--ciq-panel)',
@@ -169,18 +173,18 @@ export default function ProPage() {
                   key={k}
                   onClick={() => setPlan(k)}
                   style={{
-                    flex: 1, minHeight: 44, borderRadius: 10, cursor: 'pointer', border: 'none',
+                    flex: 1, minHeight: 52, borderRadius: 10, cursor: 'pointer', border: 'none',
                     background: on ? 'var(--ciq-gold)' : 'transparent',
                     color: on ? '#080807' : 'var(--ciq-ink-2)',
-                    fontSize: 14, fontWeight: on ? 600 : 500,
-                    display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
-                    transition: 'all 0.15s ease',
+                    fontSize: 13, fontWeight: on ? 600 : 500,
+                    display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 3,
+                    transition: 'all 0.15s ease', padding: '6px 2px',
                   }}
                 >
-                  {PLANS[k].label}
+                  <span>{PLANS[k].label}</span>
                   {PLANS[k].note ? (
                     <span style={{
-                      fontSize: 10, fontFamily: 'var(--font-mono)', letterSpacing: '0.06em',
+                      fontSize: 9, fontFamily: 'var(--font-mono)', letterSpacing: '0.06em',
                       padding: '2px 6px', borderRadius: 6,
                       background: on ? 'rgba(8,8,7,0.18)' : 'var(--ciq-gold-soft)',
                       color: on ? '#080807' : 'var(--ciq-gold-2)',
@@ -199,6 +203,11 @@ export default function ProPage() {
               ₹{active.rupees.toLocaleString('en-IN')}
             </span>
             <span style={{ fontSize: 15, color: 'var(--ciq-ink-3)', marginLeft: 4 }}>{active.per}</span>
+            {active.effective ? (
+              <div style={{ fontSize: 12, fontFamily: 'var(--font-mono)', letterSpacing: '0.04em', color: 'var(--ciq-ink-3)', marginTop: 6 }}>
+                {active.effective}
+              </div>
+            ) : null}
           </div>
         </div>
 
@@ -223,7 +232,7 @@ export default function ProPage() {
                 <span style={{ textAlign: 'center', color: f.free ? 'var(--ciq-ink-2)' : 'var(--ciq-ink-3)' }}>
                   {f.free ? '✓' : '—'}
                 </span>
-                <span style={{ textAlign: 'center', color: f.pro ? 'var(--ciq-verified)' : 'var(--ciq-ink-3)', fontWeight: 600 }}>
+                <span style={{ textAlign: 'center', color: f.pro ? 'var(--ciq-gold-2)' : 'var(--ciq-ink-3)', fontWeight: 600 }}>
                   {f.pro ? '✓' : '—'}
                 </span>
               </div>
@@ -256,8 +265,10 @@ export default function ProPage() {
           >
             {busy ? 'Opening checkout…' : `Upgrade to Pro — ₹${active.rupees.toLocaleString('en-IN')}${active.per}`}
           </button>
-          <p style={{ textAlign: 'center', fontSize: 11, color: 'var(--ciq-ink-3)', marginTop: 12, fontFamily: 'var(--font-mono)', letterSpacing: '0.04em' }}>
-            Secured by Razorpay · One-time payment
+          <p style={{ textAlign: 'center', fontSize: 11, color: 'var(--ciq-ink-3)', marginTop: 12, fontFamily: 'var(--font-mono)', letterSpacing: '0.04em', lineHeight: 1.6 }}>
+            Secured by Razorpay · Auto-renews via UPI AutoPay or card mandate
+            <br />
+            Cancel anytime — you keep Pro until your period ends
           </p>
         </div>
       </div>
