@@ -43,3 +43,13 @@ node_modules/
 
 app/compare/[comparison]/
 app/compare/[slug1]-vs-[slug2]/
+
+# session backups and one-off scripts
+*.bak-*
+*.bak-contrast-*
+*.bak-v2-*
+reskin_*.py
+fix_*.py
+swap_*.py
+apply-*.ps1
+fix-*.ps1
