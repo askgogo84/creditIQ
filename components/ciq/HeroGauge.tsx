@@ -2,20 +2,26 @@
 'use client';
 import { useEffect, useRef, useState } from 'react';
 
+// Count-up that RE-RUNS whenever the target changes (fixes ₹0 when data loads after mount)
 function useCountUp(target: number, ms = 1400) {
   const [val, setVal] = useState(0);
-  const started = useRef(false);
+  const fromRef = useRef(0);
   useEffect(() => {
-    if (started.current) return; started.current = true;
+    const from = fromRef.current;
+    const to = target;
+    if (from === to) { setVal(to); return; }
     let t0: number | null = null;
+    let raf = 0;
     const step = (ts: number) => {
       if (t0 === null) t0 = ts;
       const p = Math.min((ts - t0) / ms, 1);
       const e = 1 - Math.pow(1 - p, 3);
-      setVal(Math.floor(e * target));
-      if (p < 1) requestAnimationFrame(step);
+      setVal(Math.round(from + (to - from) * e));
+      if (p < 1) raf = requestAnimationFrame(step);
+      else fromRef.current = to;
     };
-    requestAnimationFrame(step);
+    raf = requestAnimationFrame(step);
+    return () => cancelAnimationFrame(raf);
   }, [target, ms]);
   return val;
 }
@@ -28,7 +34,13 @@ export function HeroGauge({
 }) {
   const counted = useCountUp(total);
   const [fill, setFill] = useState(false);
-  useEffect(() => { const id = requestAnimationFrame(() => setFill(true)); return () => cancelAnimationFrame(id); }, []);
+
+  // re-trigger the gauge fill whenever the split changes (data arrives after mount)
+  useEffect(() => {
+    setFill(false);
+    const id = requestAnimationFrame(() => requestAnimationFrame(() => setFill(true)));
+    return () => cancelAnimationFrame(id);
+  }, [verified, estimated]);
 
   const denom = verified + estimated || 1;
   const vPct = (verified / denom) * 100;
@@ -40,7 +52,6 @@ export function HeroGauge({
       background: 'var(--ciq-card-metal)', border: '1px solid var(--ciq-gold-line)',
       position: 'relative', overflow: 'hidden', boxShadow: '0 22px 54px -28px #000',
     }}>
-      {/* gold glint top line */}
       <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 1,
         background: 'linear-gradient(90deg,transparent,var(--ciq-gold-2),transparent)', opacity: .6 }} />
       <div style={{ position: 'absolute', inset: 0,
@@ -55,7 +66,6 @@ export function HeroGauge({
           {counted.toLocaleString('en-IN')}
         </div>
 
-        {/* THE SIGNATURE — verified/estimated gauge */}
         <div style={{ marginTop: 20 }}>
           <div style={{ height: 12, borderRadius: 99, background: 'rgba(0,0,0,.35)', border: '1px solid var(--ciq-line)', overflow: 'hidden', display: 'flex' }}>
             <div style={{ width: fill ? `${vPct}%` : 0, background: 'var(--ciq-verified)',
