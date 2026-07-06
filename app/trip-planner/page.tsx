@@ -184,8 +184,24 @@ function TripPlannerPageInner() {
   };
 
   return (
-    <div style={{ minHeight: '100vh', background: 'var(--bg, #f8f9fc)' }}>
-      <Header />
+    <div data-ciq data-theme="dark" style={{ minHeight: '100vh', background: 'var(--ciq-bg)', color: 'var(--ciq-ink)' }}>
+      <style>{`
+        [data-ciq] {
+          --accent: var(--ciq-gold-2);
+          --text: var(--ciq-ink);
+          --text-muted: var(--ciq-ink-2);
+          --text-dim: var(--ciq-ink-3);
+          --bg: var(--ciq-bg);
+          --bg-card: var(--ciq-panel);
+          --bg-surface: var(--ciq-panel-2);
+          --bg-elevated: var(--ciq-panel);
+          --surface: var(--ciq-panel);
+          --surface-2: var(--ciq-panel-2);
+          --border: var(--ciq-line-2);
+          --line: var(--ciq-line);
+          --emerald: var(--ciq-verified);
+        }
+      `}</style>
       <main style={{ maxWidth: 860, margin: '0 auto', padding: '32px 20px 100px' }}>
 
         {/* Hero */}
@@ -484,7 +500,6 @@ function TripPlannerPageInner() {
         userPoints={parseInt((points || '0').replace(/,/g, '')) || 0}
         cardBank={cardBank}
       />
-      <DesignFooter />
     </div>
   );
 }
