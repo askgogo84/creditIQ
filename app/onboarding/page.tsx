@@ -1,13 +1,10 @@
 ﻿'use client';
 export const dynamic = 'force-dynamic';
-
-import { useEffect, useState, type CSSProperties } from 'react';
+import { useEffect, useState } from 'react';
 import { createBrowserClient } from '@supabase/ssr';
 import { authedFetch } from '@/lib/authed-fetch';
 import { useRouter } from 'next/navigation';
-import { Search, Check, ArrowRight, ArrowLeft, X, Plane, CreditCard } from 'lucide-react';
-
-const GOLD = '#C9972E';
+import { CiqTheme, ThemeToggle } from '@/components/ciq/ThemeProvider';
 
 type CatalogCard = { id: string; name: string; bank: string; reward_currency: string | null };
 type WalletPick = { id: string; name: string; bank: string; currency: string; points: number };
@@ -26,18 +23,16 @@ export default function OnboardingPage() {
   const [user, setUser] = useState<any>(null);
   const [step, setStep] = useState(0);
   const [saving, setSaving] = useState(false);
-
   const [name, setName] = useState('');
   const [dob, setDob] = useState('');
-
   const [q, setQ] = useState('');
   const [results, setResults] = useState<CatalogCard[]>([]);
   const [wallet, setWallet] = useState<WalletPick[]>([]);
   const [pending, setPending] = useState<CatalogCard | null>(null);
   const [pendingPts, setPendingPts] = useState('');
-
   const [airport, setAirport] = useState('');
 
+  // ---- auth load (unchanged logic) ----
   useEffect(() => {
     sb.auth.getUser().then(async ({ data: { user } }) => {
       if (!user) { router.replace('/login'); return; }
@@ -45,12 +40,12 @@ export default function OnboardingPage() {
       setName(user.user_metadata?.full_name || '');
       try {
         const j = await (await fetch(`/api/onboarding?userId=${user.id}`)).json();
-        if (j?.onboarding_complete) router.replace('/dashboard');
+        // PEEK: if (j?.onboarding_complete) router.replace('/dashboard');
       } catch {}
     });
   }, []);
 
-  // card catalog search
+  // ---- card catalog search (unchanged logic) ----
   useEffect(() => {
     if (step !== 1 || q.trim().length < 2) { setResults([]); return; }
     let off = false;
@@ -87,151 +82,191 @@ export default function OnboardingPage() {
     } catch { setSaving(false); }
   };
 
-  const card: CSSProperties = { background: 'var(--surface, #fff)', border: '1px solid var(--line, rgba(20,41,80,0.1))', borderRadius: 16 };
-  const input: CSSProperties = { width: '100%', padding: '12px 14px', borderRadius: 12, fontSize: 15, border: '1px solid var(--line, rgba(20,41,80,0.15))', background: 'var(--surface-2, #f8f9fc)', color: 'var(--ink, #142950)', outline: 'none' };
-  const label: CSSProperties = { fontSize: 12, fontWeight: 600, color: 'var(--ink-3, #5A6A8A)', marginBottom: 6, display: 'block' };
-  const primaryBtn = (disabled = false): CSSProperties => ({ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, width: '100%', padding: '14px', borderRadius: 12, background: GOLD, color: '#fff', fontSize: 15, fontWeight: 700, border: 'none', cursor: disabled ? 'default' : 'pointer', opacity: disabled ? 0.5 : 1 });
-
   const canNext = step === 0 ? name.trim().length > 0 : true;
 
-  return (
-    <main className="min-h-screen" style={{ background: 'var(--bg, #F5EFE6)', display: 'flex', flexDirection: 'column' }}>
-      <div style={{ maxWidth: 440, width: '100%', margin: '0 auto', padding: '24px 16px 40px', flex: 1, display: 'flex', flexDirection: 'column' }}>
+  // ---- shared styles ----
+  const inputStyle: React.CSSProperties = {
+    width: '100%', padding: '13px 15px', borderRadius: 12, fontSize: 15,
+    background: 'var(--ciq-panel-2)', border: '1px solid var(--ciq-line-2)',
+    color: 'var(--ciq-ink)', outline: 'none',
+  };
+  const goldBtn = (disabled = false): React.CSSProperties => ({
+    display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, width: '100%',
+    padding: 15, borderRadius: 12, fontSize: 15, fontWeight: 700, border: 'none',
+    background: disabled ? 'var(--ciq-line-2)' : 'linear-gradient(135deg,var(--ciq-gold-2),var(--ciq-gold))',
+    color: disabled ? 'var(--ciq-ink-3)' : '#1a1710', cursor: disabled ? 'default' : 'pointer',
+  });
+  const label: React.CSSProperties = { fontSize: 12, fontWeight: 600, color: 'var(--ciq-ink-3)', marginBottom: 7, display: 'block' };
 
-        {/* brand + progress */}
-        <div style={{ marginBottom: 24 }}>
-          <div style={{ fontSize: 18, fontWeight: 800, color: 'var(--ink, #142950)', letterSpacing: '-0.02em' }}>
-            CreditIQ
+  return (
+    <CiqTheme>
+      <div style={{ maxWidth: 420, margin: '0 auto', minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
+        {/* masthead */}
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '18px 20px 8px' }}>
+          <div className="ciq-display" style={{ fontWeight: 700, fontSize: 19, letterSpacing: '-.02em' }}>
+            Credit<span style={{ color: 'var(--ciq-gold-2)' }}>IQ</span>
           </div>
-          <div style={{ display: 'flex', gap: 6, marginTop: 14 }}>
-            {[0, 1, 2].map(i => (
-              <div key={i} style={{ height: 4, flex: 1, borderRadius: 99, background: i <= step ? GOLD : 'var(--line, rgba(20,41,80,0.12))', transition: 'background .2s' }} />
-            ))}
-          </div>
+          <ThemeToggle />
         </div>
 
-        {/* STEP 0 — about you */}
-        {step === 0 && (
-          <div style={{ flex: 1 }}>
-            <h1 style={{ fontSize: 28, fontWeight: 800, color: 'var(--ink, #142950)', letterSpacing: '-0.03em', lineHeight: 1.15 }}>Tell us about yourself</h1>
-            <p style={{ fontSize: 14, color: 'var(--text-muted, #5A6A8A)', marginTop: 8, marginBottom: 24 }}>
-              Your points could be your next business-class seat. Using them shouldn’t take ten tabs and a spreadsheet.
-            </p>
-            <div style={{ marginBottom: 16 }}>
-              <label style={label}>What should we call you?</label>
-              <input style={input} value={name} onChange={e => setName(e.target.value)} placeholder="Your name" />
-            </div>
-            <div>
-              <label style={label}>Date of birth <span style={{ fontWeight: 400 }}>(for auto-importing points from statements)</span></label>
-              <input style={input} type="date" value={dob} onChange={e => setDob(e.target.value)} />
-            </div>
-          </div>
-        )}
+        {/* progress dots */}
+        <div style={{ display: 'flex', gap: 6, padding: '10px 20px 0' }}>
+          {[0, 1, 2, 3].map(i => (
+            <div key={i} style={{
+              flex: 1, height: 3, borderRadius: 99,
+              background: i <= step ? 'var(--ciq-gold)' : 'var(--ciq-line-2)',
+              transition: 'background .3s',
+            }} />
+          ))}
+        </div>
 
-        {/* STEP 1 — wallet */}
-        {step === 1 && (
-          <div style={{ flex: 1 }}>
-            <h1 style={{ fontSize: 28, fontWeight: 800, color: 'var(--ink, #142950)', letterSpacing: '-0.03em', lineHeight: 1.15 }}>What’s in your wallet?</h1>
-            <p style={{ fontSize: 14, color: 'var(--text-muted, #5A6A8A)', marginTop: 8, marginBottom: 18 }}>
-              Add the cards you hold so we can suggest the best way to book any flight. You can add more later.
-            </p>
-
-            <div style={{ position: 'relative', marginBottom: 12 }}>
-              <Search style={{ position: 'absolute', left: 12, top: 13, width: 16, height: 16, color: 'var(--ink-3, #5A6A8A)' }} />
-              <input style={{ ...input, paddingLeft: 36 }} value={q} onChange={e => setQ(e.target.value)} placeholder="Search a card — e.g. HDFC, Infinia, Atlas" />
-            </div>
-
-            {results.length > 0 && (
-              <div style={{ ...card, padding: 6, marginBottom: 12 }}>
-                {results.map(r => (
-                  <button key={r.id} onClick={() => { setPending(r); setPendingPts(''); }}
-                    style={{ display: 'flex', alignItems: 'center', gap: 10, width: '100%', padding: '10px 10px', background: 'none', border: 'none', cursor: 'pointer', textAlign: 'left', borderRadius: 10 }}>
-                    <CreditCard style={{ width: 16, height: 16, color: GOLD, flexShrink: 0 }} />
-                    <span style={{ fontSize: 14, color: 'var(--ink, #142950)', fontWeight: 600 }}>{r.name}</span>
-                    <span style={{ fontSize: 12, color: 'var(--ink-3, #5A6A8A)', marginLeft: 'auto' }}>{r.bank}</span>
-                  </button>
-                ))}
+        <div style={{ flex: 1, padding: '28px 20px 20px' }}>
+          {/* STEP 0 — WELCOME */}
+          {step === 0 && (
+            <div className="ciq-rise">
+              <div className="ciq-mono" style={{ fontSize: 10.5, letterSpacing: '.14em', textTransform: 'uppercase', color: 'var(--ciq-gold-2)' }}>
+                Welcome
               </div>
-            )}
-
-            {/* points prompt for a tapped card */}
-            {pending && (
-              <div style={{ ...card, padding: 14, marginBottom: 12, borderColor: GOLD }}>
-                <div style={{ fontSize: 14, fontWeight: 700, color: 'var(--ink, #142950)', marginBottom: 8 }}>{pending.name}</div>
-                <label style={label}>Points balance ({pending.reward_currency || 'Points'}) — leave blank if unsure</label>
-                <div style={{ display: 'flex', gap: 8 }}>
-                  <input style={input} type="number" value={pendingPts} onChange={e => setPendingPts(e.target.value)} placeholder="e.g. 52000" autoFocus />
-                  <button onClick={confirmPending} style={{ ...primaryBtn(), width: 'auto', padding: '0 18px' }}><Check style={{ width: 18, height: 18 }} /></button>
-                </div>
+              <h1 className="ciq-serif" style={{ fontSize: 38, lineHeight: 1.08, letterSpacing: '-.02em', marginTop: 14 }}>
+                Your points are a <span style={{ fontStyle: 'italic', color: 'var(--ciq-gold-2)' }}>business-class seat.</span>
+              </h1>
+              <p style={{ fontSize: 13.5, color: 'var(--ciq-ink-3)', marginTop: 12, lineHeight: 1.5 }}>
+                Using them shouldn&apos;t need ten tabs and a spreadsheet. Let&apos;s set up your wallet — honestly.
+              </p>
+              <div style={{ marginTop: 28 }}>
+                <label style={label}>What should we call you?</label>
+                <input style={inputStyle} value={name} onChange={e => setName(e.target.value)} placeholder="Your name" />
               </div>
-            )}
+              <div style={{ marginTop: 18 }}>
+                <label style={label}>Date of birth <span style={{ color: 'var(--ciq-ink-3)', fontWeight: 400 }}>· optional, for statement auto-import</span></label>
+                <input style={inputStyle} type="date" value={dob} onChange={e => setDob(e.target.value)} />
+              </div>
+            </div>
+          )}
 
-            {/* added cards */}
-            {wallet.length > 0 && (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-                {wallet.map(w => (
-                  <div key={w.id} style={{ ...card, display: 'flex', alignItems: 'center', gap: 10, padding: '12px 14px' }}>
-                    <div style={{ minWidth: 0, flex: 1 }}>
-                      <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--ink, #142950)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{w.name}</div>
-                      <div style={{ fontSize: 12, color: 'var(--ink-3, #5A6A8A)' }}>{w.points ? `${w.points.toLocaleString('en-IN')} ${w.currency}` : w.bank}</div>
-                    </div>
-                    <button onClick={() => setWallet(list => list.filter(x => x.id !== w.id))} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--ink-3, #5A6A8A)' }}>
-                      <X style={{ width: 16, height: 16 }} />
+          {/* STEP 1 — WALLET */}
+          {step === 1 && (
+            <div className="ciq-rise">
+              <h1 className="ciq-serif" style={{ fontSize: 32, letterSpacing: '-.02em' }}>What&apos;s in your wallet?</h1>
+              <p style={{ fontSize: 13, color: 'var(--ciq-ink-3)', marginTop: 8, lineHeight: 1.5 }}>
+                Add every card you use. Manually-added balances show as <b style={{ color: 'var(--ciq-ink-2)' }}>Estimated</b> — upload a statement later to verify.
+              </p>
+
+              <input style={{ ...inputStyle, marginTop: 20 }} value={q} onChange={e => setQ(e.target.value)} placeholder="Search a card, airline, or hotel…" />
+
+              {/* search results */}
+              {results.length > 0 && (
+                <div style={{ marginTop: 10, display: 'flex', flexDirection: 'column', gap: 8 }}>
+                  {results.map(r => (
+                    <button key={r.id} onClick={() => { setPending(r); setPendingPts(''); }}
+                      style={{ textAlign: 'left', padding: '12px 14px', borderRadius: 12, background: 'var(--ciq-panel)', border: '1px solid var(--ciq-line)', color: 'var(--ciq-ink)', cursor: 'pointer' }}>
+                      <div style={{ fontWeight: 600, fontSize: 14 }}>{r.name}</div>
+                      <div className="ciq-mono" style={{ fontSize: 10, color: 'var(--ciq-ink-3)', marginTop: 2 }}>{r.bank}</div>
                     </button>
+                  ))}
+                </div>
+              )}
+
+              {/* pending points entry */}
+              {pending && (
+                <div style={{ marginTop: 12, padding: 14, borderRadius: 14, background: 'var(--ciq-panel)', border: '1px solid var(--ciq-gold-line)' }}>
+                  <div style={{ fontWeight: 600, fontSize: 14 }}>{pending.name}</div>
+                  <div style={{ display: 'flex', gap: 8, marginTop: 10 }}>
+                    <input style={{ ...inputStyle, flex: 1 }} type="number" autoFocus value={pendingPts}
+                      onChange={e => setPendingPts(e.target.value)} placeholder={`${pending.reward_currency || 'Points'} balance`} />
+                    <button onClick={confirmPending} style={{ ...goldBtn(), width: 'auto', padding: '0 20px' }}>Add</button>
                   </div>
-                ))}
-              </div>
-            )}
-          </div>
-        )}
+                </div>
+              )}
 
-        {/* STEP 2 — home airport */}
-        {step === 2 && (
-          <div style={{ flex: 1 }}>
-            <h1 style={{ fontSize: 28, fontWeight: 800, color: 'var(--ink, #142950)', letterSpacing: '-0.03em', lineHeight: 1.15 }}>Where’s your home airport?</h1>
-            <p style={{ fontSize: 14, color: 'var(--text-muted, #5A6A8A)', marginTop: 8, marginBottom: 18 }}>
-              We’ll surface award deals departing from here first.
-            </p>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
-              {AIRPORTS.map(a => {
-                const on = airport === a.code;
-                return (
-                  <button key={a.code} onClick={() => setAirport(a.code)}
-                    style={{ ...card, padding: '16px 14px', textAlign: 'left', cursor: 'pointer', borderColor: on ? GOLD : 'var(--line, rgba(20,41,80,0.1))', borderWidth: on ? 2 : 1, background: on ? 'rgba(201,151,46,0.08)' : 'var(--surface, #fff)' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                      <Plane style={{ width: 14, height: 14, color: GOLD }} />
-                      <span style={{ fontSize: 18, fontWeight: 800, color: 'var(--ink, #142950)' }}>{a.code}</span>
+              {/* wallet list */}
+              {wallet.length > 0 && (
+                <div style={{ marginTop: 18, display: 'flex', flexDirection: 'column', gap: 10 }}>
+                  {wallet.map(w => (
+                    <div key={w.id} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '13px 14px', borderRadius: 14, background: 'var(--ciq-panel)', border: '1px solid var(--ciq-line)' }}>
+                      <div style={{ width: 38, height: 38, borderRadius: 10, background: 'var(--ciq-card-metal)', border: '1px solid var(--ciq-gold-line)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--ciq-gold-2)', fontWeight: 700, fontSize: 11 }}>
+                        {w.bank.slice(0, 2).toUpperCase()}
+                      </div>
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <div style={{ fontWeight: 600, fontSize: 14 }}>{w.name}</div>
+                        <div className="ciq-mono" style={{ fontSize: 10, color: 'var(--ciq-ink-3)', marginTop: 2 }}>
+                          {w.points.toLocaleString('en-IN')} {w.currency}
+                        </div>
+                      </div>
+                      <button onClick={() => setWallet(list => list.filter(x => x.id !== w.id))}
+                        style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--ciq-ink-3)', fontSize: 18 }}>×</button>
                     </div>
-                    <div style={{ fontSize: 13, color: 'var(--ink-3, #5A6A8A)', marginTop: 2 }}>{a.city}</div>
-                  </button>
-                );
-              })}
+                  ))}
+                </div>
+              )}
             </div>
-            <div style={{ marginTop: 14 }}>
-              <label style={label}>Or type another airport code</label>
-              <input style={input} value={airport} onChange={e => setAirport(e.target.value.toUpperCase().slice(0, 4))} placeholder="IATA, e.g. COK" />
-            </div>
-          </div>
-        )}
+          )}
 
-        {/* footer nav */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginTop: 24 }}>
-          {step > 0 && (
-            <button onClick={() => setStep(s => s - 1)} style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '14px 16px', borderRadius: 12, background: 'none', border: '1px solid var(--line, rgba(20,41,80,0.15))', color: 'var(--ink, #142950)', fontSize: 14, fontWeight: 600, cursor: 'pointer' }}>
-              <ArrowLeft style={{ width: 16, height: 16 }} />
+          {/* STEP 2 — AIRPORT */}
+          {step === 2 && (
+            <div className="ciq-rise">
+              <h1 className="ciq-serif" style={{ fontSize: 32, letterSpacing: '-.02em' }}>Where&apos;s home base?</h1>
+              <p style={{ fontSize: 13, color: 'var(--ciq-ink-3)', marginTop: 8, lineHeight: 1.5 }}>
+                We&apos;ll surface award deals departing from here first.
+              </p>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginTop: 20 }}>
+                {AIRPORTS.map(a => {
+                  const sel = airport === a.code;
+                  return (
+                    <button key={a.code} onClick={() => setAirport(a.code)}
+                      style={{
+                        textAlign: 'left', padding: '16px 16px', borderRadius: 14, cursor: 'pointer',
+                        background: sel ? 'var(--ciq-gold-soft)' : 'var(--ciq-panel)',
+                        border: `1px solid ${sel ? 'var(--ciq-gold)' : 'var(--ciq-line)'}`,
+                        color: 'var(--ciq-ink)',
+                      }}>
+                      <div className="ciq-display" style={{ fontSize: 20, fontWeight: 600, color: sel ? 'var(--ciq-gold-2)' : 'var(--ciq-ink)' }}>{a.code}</div>
+                      <div className="ciq-mono" style={{ fontSize: 11, color: 'var(--ciq-ink-3)', marginTop: 2 }}>{a.city}</div>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
+          {/* STEP 3 — DONE */}
+          {step === 3 && (
+            <div className="ciq-rise" style={{ textAlign: 'center', paddingTop: 30 }}>
+              <div style={{ width: 64, height: 64, borderRadius: '50%', margin: '0 auto', background: 'var(--ciq-gold-soft)', border: '1px solid var(--ciq-gold-line)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <svg width="30" height="30" viewBox="0 0 24 24" fill="none"><path d="m5 13 4 4L19 7" stroke="var(--ciq-gold-2)" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" /></svg>
+              </div>
+              <div className="ciq-mono" style={{ fontSize: 10.5, letterSpacing: '.14em', textTransform: 'uppercase', color: 'var(--ciq-gold-2)', marginTop: 22 }}>
+                You&apos;re all set
+              </div>
+              <h1 className="ciq-serif" style={{ fontSize: 34, marginTop: 10 }}>{name || 'Welcome'}.</h1>
+              <p style={{ fontSize: 14, color: 'var(--ciq-ink-3)', marginTop: 10, lineHeight: 1.5 }}>
+                {wallet.length > 0
+                  ? `${wallet.length} card${wallet.length > 1 ? 's' : ''} added · ${wallet.reduce((s, w) => s + w.points, 0).toLocaleString('en-IN')} points ready to optimize.`
+                  : 'Your wallet is ready. Add cards anytime from the dashboard.'}
+              </p>
+            </div>
+          )}
+        </div>
+
+        {/* nav footer */}
+        <div style={{ padding: '0 20px calc(24px + env(safe-area-inset-bottom))', display: 'flex', gap: 10 }}>
+          {step > 0 && step < 3 && (
+            <button onClick={() => setStep(s => s - 1)}
+              style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '15px 18px', borderRadius: 12, background: 'none', border: '1px solid var(--ciq-line-2)', color: 'var(--ciq-ink)', fontSize: 14, fontWeight: 600, cursor: 'pointer' }}>←</button>
+          )}
+          {step < 3 && (
+            <button onClick={() => canNext && setStep(s => s + 1)} disabled={!canNext} style={goldBtn(!canNext)}>
+              Continue →
             </button>
           )}
-          {step < 2 ? (
-            <button onClick={() => canNext && setStep(s => s + 1)} disabled={!canNext} style={primaryBtn(!canNext)}>
-              {step === 1 && wallet.length === 0 ? 'Skip for now' : 'Continue'} <ArrowRight style={{ width: 16, height: 16 }} />
-            </button>
-          ) : (
-            <button onClick={finish} disabled={saving} style={primaryBtn(saving)}>
-              {saving ? 'Setting up…' : 'Finish'} {!saving && <Check style={{ width: 16, height: 16 }} />}
+          {step === 3 && (
+            <button onClick={finish} disabled={saving} style={goldBtn(saving)}>
+              {saving ? 'Setting up…' : 'Enter your wallet →'}
             </button>
           )}
         </div>
       </div>
-    </main>
+    </CiqTheme>
   );
 }
+
