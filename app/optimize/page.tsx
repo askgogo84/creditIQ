@@ -1,5 +1,6 @@
 'use client';
 
+import { authedFetch } from '@/lib/authed-fetch';
 import Link from 'next/link';
 import { useState, useMemo, useEffect, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
@@ -58,7 +59,7 @@ function OptimizeContent() {
     setAiLoading(true);
     setAiAdvice('');
     try {
-      const res = await fetch('/api/claude/redemption', {
+      const res = await authedFetch('/api/claude/redemption', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ cardId: card.id, points, recommendations: recommendations.slice(0, 5) }),

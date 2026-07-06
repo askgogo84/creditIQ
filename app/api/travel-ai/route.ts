@@ -1,3 +1,4 @@
+import { requireAuth } from '@/lib/api-auth';
 import { NextRequest, NextResponse } from 'next/server'
 import { retrieveRelevantCards, buildRagSystemPrompt } from '@/lib/rag'
 
@@ -127,6 +128,8 @@ function formatAvailability(results: any[], origin: string, dest: string, cabin:
 }
 
 export async function POST(req: NextRequest) {
+  const gate = await requireAuth(req);
+  if (!gate.ok) return gate.res;
   try {
     const body = await req.json()
     let message: string

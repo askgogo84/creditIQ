@@ -1,5 +1,6 @@
 'use client';
 
+import { authedFetch } from '@/lib/authed-fetch';
 import { useState, useRef, useEffect, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 interface Message {
@@ -55,7 +56,7 @@ function TravelPageInner() {
     setMessages(updated);
     setLoading(true);
     try {
-      const res = await fetch('/api/travel-ai', {
+      const res = await authedFetch('/api/travel-ai', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ messages: updated }),

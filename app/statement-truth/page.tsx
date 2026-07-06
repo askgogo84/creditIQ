@@ -1,5 +1,6 @@
 'use client';
 
+import { authedFetch } from '@/lib/authed-fetch';
 import { useState, useRef } from 'react';
 import { Header } from '@/components/Header';
 import { DesignFooter } from '@/components/design/Footer';
@@ -44,7 +45,7 @@ export default function StatementTruthPage() {
       const reader = new FileReader();
       reader.onload = async () => {
         const base64 = (reader.result as string).split(',')[1];
-        const res = await fetch('/api/statement-truth', {
+        const res = await authedFetch('/api/statement-truth', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ base64Pdf: base64, cardName }),

@@ -1,5 +1,6 @@
 'use client';
 
+import { authedFetch } from '@/lib/authed-fetch';
 import { useState } from 'react';
 import { Header } from '@/components/Header';
 
@@ -139,7 +140,7 @@ Respond ONLY with valid JSON (no markdown, no code fences):
   "warnings": ["Optional: any expiry risk, devaluation notice, or tip"]
 }`;
 
-      const response = await fetch('/api/points-optimizer', {
+      const response = await authedFetch('/api/points-optimizer', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ prompt, card: selectedCard, points: pointsNum, goal }),

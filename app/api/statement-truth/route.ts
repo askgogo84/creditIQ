@@ -1,3 +1,4 @@
+import { requirePro } from '@/lib/api-auth';
 import { NextRequest, NextResponse } from 'next/server';
 import Anthropic from '@anthropic-ai/sdk';
 
@@ -75,6 +76,8 @@ IMPORTANT RULES:
 4. Payments/credits: type = credit, amount positive.`;
 
 export async function POST(request: NextRequest) {
+  const gate = await requirePro(request);
+  if (!gate.ok) return gate.res;
   try {
     const formData = await request.formData();
     const file = formData.get('statement') as File;

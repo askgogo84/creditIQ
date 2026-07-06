@@ -1,3 +1,4 @@
+import { requirePro } from '@/lib/api-auth';
 import { NextRequest, NextResponse } from 'next/server'
 import { retrieveRelevantCards, buildRagSystemPrompt, cardToText } from '@/lib/rag'
 import { getAllCards } from '@/lib/supabase'
@@ -5,6 +6,8 @@ import { getAllCards } from '@/lib/supabase'
 export const runtime = 'nodejs'
 
 export async function POST(req: NextRequest) {
+  const gate = await requirePro(req);
+  if (!gate.ok) return gate.res;
   try {
     const { cardId, points, preference } = await req.json()
     if (!cardId) return NextResponse.json({ error: 'Missing cardId' }, { status: 400 })

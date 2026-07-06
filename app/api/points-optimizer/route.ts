@@ -1,8 +1,11 @@
+import { requirePro } from '@/lib/api-auth';
 import { NextRequest, NextResponse } from 'next/server';
 
 export const runtime = 'nodejs';
 
 export async function POST(req: NextRequest) {
+  const gate = await requirePro(req);
+  if (!gate.ok) return gate.res;
   try {
     const { prompt, card, points, goal } = await req.json();
 
