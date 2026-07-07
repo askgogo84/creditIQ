@@ -1,5 +1,7 @@
-﻿// components/ciq/WalletView.tsx
+// components/ciq/WalletView.tsx
 'use client';
+import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import { CiqTheme, ThemeToggle } from './ThemeProvider';
 import { HeroGauge } from './HeroGauge';
 import { CardRow } from './CardRow';
@@ -11,6 +13,35 @@ type Card = {
   card_last4?: string; points_balance: number; points_currency?: string;
   source: 'statement' | 'manual';
 };
+
+// Desktop-only slim nav (>=768px). Mirrors TabBar destinations so all
+// do-not-break routes stay reachable when the tab bar is hidden on desktop.
+const NAV = [
+  { label: 'Wallet',   href: '/dashboard' },
+  { label: 'Cards',    href: '/my-cards' },
+  { label: 'Travel',   href: '/trip-planner' },
+  { label: 'Optimize', href: '/optimize' },
+  { label: 'You',      href: '/profile' },
+];
+
+function DesktopNav({ onSignOut }: { onSignOut: () => void }) {
+  const path = usePathname();
+  return (
+    <div className="hidden md:flex" style={{ alignItems: 'center', gap: 4 }}>
+      {NAV.map(n => {
+        const active = path === n.href || (n.href !== '/dashboard' && path.startsWith(n.href));
+        return (
+          <Link key={n.href} href={n.href} style={{
+            fontSize: 12.5, fontWeight: 600, textDecoration: 'none', padding: '7px 12px', borderRadius: 10,
+            color: active ? 'var(--ciq-ink)' : 'var(--ciq-ink-3)',
+            background: active ? 'var(--ciq-line)' : 'transparent',
+            border: active ? '1px solid var(--ciq-line-2)' : '1px solid transparent',
+          }}>{n.label}</Link>
+        );
+      })}
+    </div>
+  );
+}
 
 export function WalletView({
   displayName, email, cards, totalPoints, bestValue, primaryBank,
@@ -30,13 +61,14 @@ export function WalletView({
 
   return (
     <CiqTheme>
-      <div style={{ maxWidth: 420, margin: '0 auto', paddingBottom: 104, position: 'relative' }}>
+      <div className="max-w-[420px] md:max-w-[1100px] mx-auto pb-[104px] md:pb-16" style={{ position: 'relative' }}>
         {/* masthead */}
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '18px 20px 8px' }}>
           <div className="ciq-display" style={{ fontWeight: 700, fontSize: 20, letterSpacing: '-.02em' }}>
             Credit<span style={{ color: 'var(--ciq-gold-2)' }}>IQ</span>
           </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
+            <DesktopNav onSignOut={onSignOut} />
             <ThemeToggle />
             <button onClick={onSignOut} className="ciq-mono" style={{
               fontSize: 10.5, color: 'var(--ciq-ink-2)', background: 'var(--ciq-line)',
@@ -45,79 +77,93 @@ export function WalletView({
           </div>
         </div>
 
-        {/* greeting */}
-        <div style={{ padding: '10px 20px 0' }}>
-          <div className="ciq-rise" style={{
-            display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: 10, letterSpacing: '.06em',
-            textTransform: 'uppercase', color: 'var(--ciq-ink-2)', background: 'var(--ciq-line)',
-            border: '1px solid var(--ciq-line-2)', padding: '5px 10px', borderRadius: 999, fontFamily: "'Space Mono',monospace",
-          }}>
-            <span style={{ width: 6, height: 6, borderRadius: '50%', background: 'var(--ciq-verified)', animation: 'ciq-pulse 2s infinite' }} />
-            Live · verified wallet
-          </div>
-          <h1 className="ciq-display ciq-rise d1" style={{ fontWeight: 600, fontSize: 30, letterSpacing: '-.02em', marginTop: 12, lineHeight: 1.02 }}>
-            Hi, {displayName || 'there'}.
-          </h1>
-          {email && <div style={{ fontSize: 12.5, color: 'var(--ciq-ink-3)', marginTop: 4 }}>{email}</div>}
-        </div>
+        {/* responsive body: single column on mobile, two columns >=768px */}
+        <div className="md:grid md:grid-cols-[minmax(0,5fr)_minmax(0,6fr)] md:gap-6 md:items-start md:px-2 md:pt-4">
 
-        {/* HERO GAUGE — the signature */}
-        <HeroGauge total={totalValue} verified={verified} estimated={estimated}
-          bestValue={bestValue} points={totalPoints} cardCount={cards.length} />
-
-        {/* honesty credo */}
-        <div className="ciq-rise d2" style={{
-          margin: '14px 20px 0', display: 'flex', gap: 10, alignItems: 'flex-start', padding: '13px 15px',
-          borderRadius: 16, background: 'color-mix(in srgb,var(--ciq-verified) 7%,transparent)',
-          border: '1px solid color-mix(in srgb,var(--ciq-verified) 18%,transparent)',
-        }}>
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" style={{ marginTop: 1, flex: '0 0 auto' }}>
-            <path d="M12 2 4 5v6c0 5 3.4 8.6 8 10 4.6-1.4 8-5 8-10V5l-8-3Z" stroke="var(--ciq-verified)" strokeWidth="1.7" />
-            <path d="m9 12 2 2 4-4" stroke="var(--ciq-verified)" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" />
-          </svg>
-          <p style={{ fontSize: 12.5, lineHeight: 1.5, color: 'var(--ciq-ink-2)' }}>
-            <b style={{ color: 'var(--ciq-verified)' }}>We don&apos;t guess your money.</b> Verified values come from your real statements. Estimates are flagged — never inflated.
-          </p>
-        </div>
-
-        {/* best move */}
-        {totalPoints > 0 && (
-          <>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '26px 20px 12px' }}>
-              <h2 className="ciq-display" style={{ fontSize: 18, fontWeight: 600, letterSpacing: '-.01em' }}>Your best move</h2>
+          {/* LEFT column: identity — greeting + gauge + credo */}
+          <div>
+            <div style={{ padding: '10px 20px 0' }}>
+              <div className="ciq-rise" style={{
+                display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: 10, letterSpacing: '.06em',
+                textTransform: 'uppercase', color: 'var(--ciq-ink-2)', background: 'var(--ciq-line)',
+                border: '1px solid var(--ciq-line-2)', padding: '5px 10px', borderRadius: 999, fontFamily: "'Space Mono',monospace",
+              }}>
+                <span style={{ width: 6, height: 6, borderRadius: '50%', background: 'var(--ciq-verified)', animation: 'ciq-pulse 2s infinite' }} />
+                Live · verified wallet
+              </div>
+              <h1 className="ciq-display ciq-rise d1" style={{ fontWeight: 600, fontSize: 30, letterSpacing: '-.02em', marginTop: 12, lineHeight: 1.02 }}>
+                Hi, {displayName || 'there'}.
+              </h1>
+              {email && <div style={{ fontSize: 12.5, color: 'var(--ciq-ink-3)', marginTop: 4 }}>{email}</div>}
             </div>
-            <BestMove
-              flag="Best value"
-              title={`Redeem your ${totalPoints.toLocaleString('en-IN')} points for travel`}
-              detail="Travel redemption unlocks far more than statement credit. Plan a trip to see live award options."
-              unlockedValue={`₹${bestValue.toLocaleString('en-IN')}`}
-              vsLabel={`vs ₹${Math.round(totalPoints * 0.25).toLocaleString('en-IN')} cashback`}
-              href={`/trip-planner?points=${totalPoints}&bank=${primaryBank}`}
-            />
-          </>
-        )}
 
-        {/* cards */}
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '26px 20px 12px' }}>
-          <h2 className="ciq-display" style={{ fontSize: 18, fontWeight: 600, letterSpacing: '-.01em' }}>Your cards</h2>
-          <button onClick={onRefresh} className="ciq-mono" style={{ fontSize: 11, color: 'var(--ciq-ink-3)', background: 'none', border: 'none', cursor: 'pointer' }}>
-            {refreshing ? 'refreshing…' : 'refresh'}
-          </button>
-        </div>
-        <div className="ciq-rise d4" style={{ padding: '0 20px', display: 'flex', flexDirection: 'column', gap: 12 }}>
-          {cards.map(c => (
-            <CardRow key={c.id} bank={c.bank} cardName={c.card_name || c.cardName || c.bank}
-              last4={c.card_last4} points={c.points_balance} currency={c.points_currency}
-              source={c.source} />
-          ))}
-          <button onClick={onAddCard} style={{
-            border: '1.5px dashed var(--ciq-gold-line)', borderRadius: 18, padding: 15, display: 'flex',
-            alignItems: 'center', justifyContent: 'center', gap: 8, color: 'var(--ciq-gold-2)',
-            fontWeight: 600, fontSize: 13.5, background: 'transparent', cursor: 'pointer',
-          }}>＋ Add a card</button>
+            {/* HERO GAUGE — the signature */}
+            <HeroGauge total={totalValue} verified={verified} estimated={estimated}
+              bestValue={bestValue} points={totalPoints} cardCount={cards.length} />
+
+            {/* honesty credo */}
+            <div className="ciq-rise d2" style={{
+              margin: '14px 20px 0', display: 'flex', gap: 10, alignItems: 'flex-start', padding: '13px 15px',
+              borderRadius: 16, background: 'color-mix(in srgb,var(--ciq-verified) 7%,transparent)',
+              border: '1px solid color-mix(in srgb,var(--ciq-verified) 18%,transparent)',
+            }}>
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" style={{ marginTop: 1, flex: '0 0 auto' }}>
+                <path d="M12 2 4 5v6c0 5 3.4 8.6 8 10 4.6-1.4 8-5 8-10V5l-8-3Z" stroke="var(--ciq-verified)" strokeWidth="1.7" />
+                <path d="m9 12 2 2 4-4" stroke="var(--ciq-verified)" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+              <p style={{ fontSize: 12.5, lineHeight: 1.5, color: 'var(--ciq-ink-2)' }}>
+                <b style={{ color: 'var(--ciq-verified)' }}>We don&apos;t guess your money.</b> Verified values come from your real statements. Estimates are flagged — never inflated.
+              </p>
+            </div>
+          </div>
+
+          {/* RIGHT column: action — best move + cards */}
+          <div>
+            {/* best move */}
+            {totalPoints > 0 && (
+              <>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '26px 20px 12px' }}>
+                  <h2 className="ciq-display" style={{ fontSize: 18, fontWeight: 600, letterSpacing: '-.01em' }}>Your best move</h2>
+                </div>
+                <BestMove
+                  flag="Best value"
+                  title={`Redeem your ${totalPoints.toLocaleString('en-IN')} points for travel`}
+                  detail="Travel redemption unlocks far more than statement credit. Plan a trip to see live award options."
+                  unlockedValue={`₹${bestValue.toLocaleString('en-IN')}`}
+                  vsLabel={`vs ₹${Math.round(totalPoints * 0.25).toLocaleString('en-IN')} cashback`}
+                  href={`/trip-planner?points=${totalPoints}&bank=${primaryBank}`}
+                />
+              </>
+            )}
+
+            {/* cards */}
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '26px 20px 12px' }}>
+              <h2 className="ciq-display" style={{ fontSize: 18, fontWeight: 600, letterSpacing: '-.01em' }}>Your cards</h2>
+              <button onClick={onRefresh} className="ciq-mono" style={{ fontSize: 11, color: 'var(--ciq-ink-3)', background: 'none', border: 'none', cursor: 'pointer' }}>
+                {refreshing ? 'refreshing…' : 'refresh'}
+              </button>
+            </div>
+            <div className="ciq-rise d4" style={{ padding: '0 20px', display: 'flex', flexDirection: 'column', gap: 12 }}>
+              {cards.map(c => (
+                <CardRow key={c.id} bank={c.bank} cardName={c.card_name || c.cardName || c.bank}
+                  last4={c.card_last4} points={c.points_balance} currency={c.points_currency}
+                  source={c.source} />
+              ))}
+              <button onClick={onAddCard} style={{
+                border: '1.5px dashed var(--ciq-gold-line)', borderRadius: 18, padding: 15, display: 'flex',
+                alignItems: 'center', justifyContent: 'center', gap: 8, color: 'var(--ciq-gold-2)',
+                fontWeight: 600, fontSize: 13.5, background: 'transparent', cursor: 'pointer',
+              }}>＋ Add a card</button>
+            </div>
+          </div>
+
         </div>
       </div>
-      <TabBar />
+
+      {/* bottom tab bar: mobile only — desktop uses the top nav */}
+      <div className="md:hidden">
+        <TabBar />
+      </div>
     </CiqTheme>
   );
 }
