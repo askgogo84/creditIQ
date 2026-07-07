@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import { useState, useRef, useEffect } from 'react';
 import { createBrowserClient } from '@supabase/ssr';
@@ -7,6 +7,20 @@ import { Header } from '@/components/Header';
 import { DesignFooter } from '@/components/design/Footer';
 import { Upload, FileText, CheckCircle, AlertCircle, Zap, ArrowRight, Lock, X, ExternalLink, LogIn } from 'lucide-react';
 import Link from 'next/link';
+
+// Gold-on-black token remap — matches /dashboard exactly.
+// Scoped via inline style on <main> (no <style> JSX block => no hydration risk).
+const CIQ_DARK = {
+  '--bg': '#0A0A08',
+  '--bg-elevated': '#15130E',
+  '--border': '#2A2620',
+  '--accent': '#C9A24B',
+  '--emerald': '#4FBF87',
+  '--text': '#EDEAE3',
+  '--text-muted': '#A8A296',
+  '--text-dim': '#6E685C',
+  background: '#0A0A08',
+} as React.CSSProperties;
 
 const BANKS = [
   { id: 'HDFC',  name: 'HDFC Bank',        color: '#004C8F', pwdHint: 'First 4 letters of name + DOB DDMM -> e.g. GOVE0305' },
@@ -120,7 +134,7 @@ export default function UploadStatementPage() {
   };
 
   return (
-    <main className="min-h-screen" style={{ overflowX: 'hidden' }}>
+    <main className="min-h-screen" style={{ overflowX: 'hidden', ...CIQ_DARK }}>
       <Header />
       <section className="pt-28 pb-20 px-4 sm:px-6">
         <div className="max-w-2xl mx-auto">
@@ -168,7 +182,7 @@ export default function UploadStatementPage() {
                   {BANKS.map(bank => (
                     <button key={bank.id} onClick={() => setSelectedBank(bank)}
                       className="flex items-center gap-2.5 p-3 rounded-xl border text-left transition-all"
-                      style={{ borderColor: selectedBank?.id === bank.id ? bank.color : 'var(--border)', background: selectedBank?.id === bank.id ? `${bank.color}15` : 'var(--bg-elevated)' }}>
+                      style={{ borderColor: selectedBank?.id === bank.id ? bank.color : 'var(--border)', background: selectedBank?.id === bank.id ? `${bank.color}26` : 'var(--bg-elevated)' }}>
                       <div className="w-8 h-8 rounded flex items-center justify-center text-white text-[10px] font-bold shrink-0" style={{ background: bank.color }}>
                         {bank.id.slice(0, 2)}
                       </div>
@@ -212,14 +226,14 @@ export default function UploadStatementPage() {
               </div>
 
               {error && (
-                <div className="rounded-xl p-3 text-sm flex items-center gap-2" style={{ background: 'color-mix(in srgb, #ef4444 10%, transparent)', color: '#ef4444', border: '1px solid color-mix(in srgb, #ef4444 25%, transparent)' }}>
+                <div className="rounded-xl p-3 text-sm flex items-center gap-2" style={{ background: 'color-mix(in srgb, #ef4444 10%, transparent)', color: '#ef8a80', border: '1px solid color-mix(in srgb, #ef4444 30%, transparent)' }}>
                   <AlertCircle className="w-4 h-4 shrink-0" /> {error}
                 </div>
               )}
 
               <button onClick={handleParse} disabled={!file || loading}
                 className="btn-primary w-full text-base flex items-center justify-center gap-2"
-                style={{ opacity: !file || loading ? 0.6 : 1 }}>
+                style={{ opacity: !file || loading ? 0.6 : 1, background: 'var(--accent)', color: '#0A0A08' }}>
                 <Zap className="w-5 h-5" />
                 {loading ? 'Reading your statement...' : 'Extract my points'}
               </button>
@@ -259,17 +273,18 @@ export default function UploadStatementPage() {
                     'Download the unlocked PDF and upload it here',
                   ].map((s, i) => (
                     <div key={i} className="flex items-start gap-3 text-sm" style={{ color: 'var(--text-muted)' }}>
-                      <div className="w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold shrink-0 mt-0.5" style={{ background: 'var(--accent)', color: 'white' }}>{i + 1}</div>
+                      <div className="w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold shrink-0 mt-0.5" style={{ background: 'var(--accent)', color: '#0A0A08' }}>{i + 1}</div>
                       {s}
                     </div>
                   ))}
                 </div>
                 <a href="https://www.ilovepdf.com/unlock_pdf" target="_blank" rel="noopener noreferrer"
-                  className="btn-primary w-full flex items-center justify-center gap-2 text-sm">
+                  className="btn-primary w-full flex items-center justify-center gap-2 text-sm"
+                  style={{ background: 'var(--accent)', color: '#0A0A08' }}>
                   Open ilovepdf.com/unlock_pdf <ExternalLink className="w-4 h-4" />
                 </a>
               </div>
-              <button onClick={() => { setNeedsPassword(false); setFile(null); }} className="btn-ghost w-full text-sm">
+              <button onClick={() => { setNeedsPassword(false); setFile(null); }} className="btn-ghost w-full text-sm" style={{ color: 'var(--text-muted)' }}>
                 &larr; Upload a different file
               </button>
             </div>
@@ -322,7 +337,7 @@ export default function UploadStatementPage() {
                         onClick={handleSaveManualPoints}
                         disabled={!manualPoints || parseInt(manualPoints) <= 0}
                         className="btn-primary text-sm px-4"
-                        style={{ opacity: !manualPoints || parseInt(manualPoints) <= 0 ? 0.5 : 1 }}
+                        style={{ opacity: !manualPoints || parseInt(manualPoints) <= 0 ? 0.5 : 1, background: 'var(--accent)', color: '#0A0A08' }}
                       >
                         Save
                       </button>
@@ -332,14 +347,15 @@ export default function UploadStatementPage() {
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                <button onClick={resetForAnother} className="btn-ghost text-sm flex items-center justify-center gap-1.5">
+                <button onClick={resetForAnother} className="btn-ghost text-sm flex items-center justify-center gap-1.5" style={{ color: 'var(--text-muted)' }}>
                   <Upload className="w-4 h-4" /> Add another card
                 </button>
-                <Link href="/dashboard" className="btn-ghost text-sm flex items-center justify-center gap-1.5">
+                <Link href="/dashboard" className="btn-ghost text-sm flex items-center justify-center gap-1.5" style={{ color: 'var(--text-muted)' }}>
                   View dashboard <ArrowRight className="w-4 h-4" />
                 </Link>
                 <Link href={`/optimize?bank=${result.bank}&points=${result.points_balance}`}
-                  className="btn-primary text-sm flex items-center justify-center gap-1.5">
+                  className="btn-primary text-sm flex items-center justify-center gap-1.5"
+                  style={{ background: 'var(--accent)', color: '#0A0A08' }}>
                   <Zap className="w-4 h-4" /> Optimize points
                 </Link>
               </div>
@@ -347,7 +363,7 @@ export default function UploadStatementPage() {
               {!userId && (
                 <div className="rounded-xl p-4 border text-center" style={{ borderColor: 'color-mix(in srgb, var(--accent) 25%, transparent)', background: 'color-mix(in srgb, var(--accent) 6%, transparent)' }}>
                   <p className="text-sm mb-2" style={{ color: 'var(--text)' }}>Sign in to save these points to your dashboard</p>
-                  <Link href="/login" className="btn-primary text-sm inline-flex items-center gap-1.5">
+                  <Link href="/login" className="btn-primary text-sm inline-flex items-center gap-1.5" style={{ background: 'var(--accent)', color: '#0A0A08' }}>
                     <LogIn className="w-4 h-4" /> Sign in with Google
                   </Link>
                 </div>
