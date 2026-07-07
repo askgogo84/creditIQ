@@ -1,8 +1,9 @@
 'use client';
 
-import { authedFetch } from '@/lib/authed-fetch';
 import { useState, useRef, useEffect, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
+import { Header } from '@/components/Header';
+
 interface Message {
   role: 'user' | 'assistant';
   content: string;
@@ -56,7 +57,7 @@ function TravelPageInner() {
     setMessages(updated);
     setLoading(true);
     try {
-      const res = await authedFetch('/api/travel-ai', {
+      const res = await fetch('/api/travel-ai', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ messages: updated }),
@@ -78,8 +79,9 @@ function TravelPageInner() {
   const empty = messages.length === 0;
 
   return (
-    <div data-ciq data-theme="dark" style={{ minHeight: '100vh', backgroundColor: 'var(--ciq-bg)', display: 'flex', flexDirection: 'column' }}>
-      <style>{`[data-ciq]{--bg:var(--ciq-bg);--surface:var(--ciq-panel);--ink:var(--ciq-ink);--ink-2:var(--ciq-ink-2);--ink-3:var(--ciq-ink-3);--line:var(--ciq-line-2);--copper:var(--ciq-gold);--copper-3:var(--ciq-gold-2);--font-serif:var(--font-display);}`}</style>
+    <div style={{ minHeight: '100vh', backgroundColor: 'var(--bg,#F5EFE6)', display: 'flex', flexDirection: 'column' }}>
+      <Header />
+
       {/* Aurora background */}
       <div className="aurora" style={{ position: 'fixed', top: -80, right: -120, width: 600, height: 500, background: 'radial-gradient(circle,rgba(212,163,115,0.18),transparent 60%)', pointerEvents: 'none', zIndex: 0 }} />
 
@@ -91,7 +93,7 @@ function TravelPageInner() {
           <div style={{ textAlign: 'center', marginBottom: 32, paddingTop: 24 }}>
             <div style={{ display: 'inline-flex', alignItems: 'center', gap: 10, padding: '7px 18px', borderRadius: 999, background: 'rgba(212,163,115,0.12)', border: '1px solid rgba(212,163,115,0.28)', marginBottom: 24 }}>
               <span style={{ fontFamily: 'var(--font-mono,monospace)', fontSize: 10, letterSpacing: '0.18em', color: 'var(--copper,#8C5F12)', textTransform: 'uppercase', fontWeight: 700 }}>
-                Travel AI • Powered by Claude
+                Travel AI &bull; Powered by Claude
               </span>
             </div>
             <h1 style={{ fontSize: 'clamp(28px,5vw,52px)', fontWeight: 800, color: 'var(--ink,#142950)', margin: '0 0 14px', lineHeight: 1.1, letterSpacing: '-0.03em' }}>
@@ -212,7 +214,7 @@ function TravelPageInner() {
           </button>
         </div>
         <p style={{ textAlign: 'center', fontFamily: 'var(--font-mono,monospace)', fontSize: 10, color: 'var(--ink-3,#5A6A8A)', margin: '6px 0 0', letterSpacing: '0.05em' }}>
-          AI advice only  •  Verify prices before booking
+          AI advice only &nbsp;&bull;&nbsp; Verify prices before booking
         </p>
       </div>
 
@@ -231,7 +233,7 @@ function TravelPageInner() {
 
 export default function TravelPage() {
   return (
-    <Suspense fallback={<div style={{ minHeight: '100vh', background: 'var(--ciq-bg)' }} />}>
+    <Suspense fallback={<div style={{ minHeight: '100vh', background: 'var(--bg,#F5EFE6)' }} />}>
       <TravelPageInner />
     </Suspense>
   );

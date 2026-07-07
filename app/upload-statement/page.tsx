@@ -120,23 +120,8 @@ export default function UploadStatementPage() {
   };
 
   return (
-    <main data-ciq data-theme="dark" className="min-h-screen" style={{ overflowX: 'hidden', background: 'var(--ciq-bg)', color: 'var(--ciq-ink)' }}>
-      <style>{`
-        [data-ciq] {
-          --accent: var(--ciq-gold-2);
-          --text: var(--ciq-ink);
-          --text-muted: var(--ciq-ink-2);
-          --text-dim: var(--ciq-ink-3);
-          --surface: var(--ciq-panel);
-          --surface-2: var(--ciq-panel-2);
-          --line: var(--ciq-line);
-          --border: var(--ciq-line-2);
-          --bg-elevated: var(--ciq-panel);
-          --bg-2: var(--ciq-panel);
-          --bg-3: var(--ciq-panel-2);
-          --emerald: var(--ciq-verified);
-        }
-      `}</style>
+    <main className="min-h-screen" style={{ overflowX: 'hidden' }}>
+      <Header />
       <section className="pt-28 pb-20 px-4 sm:px-6">
         <div className="max-w-2xl mx-auto">
 
@@ -371,6 +356,7 @@ export default function UploadStatementPage() {
           )}
         </div>
       </section>
+      <DesignFooter />
     </main>
   );
 }
