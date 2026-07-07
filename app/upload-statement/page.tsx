@@ -3,24 +3,34 @@
 import { useState, useRef, useEffect } from 'react';
 import { createBrowserClient } from '@supabase/ssr';
 import { authedFetch } from '@/lib/authed-fetch';
-import { Header } from '@/components/Header';
-import { DesignFooter } from '@/components/design/Footer';
-import { Upload, FileText, CheckCircle, AlertCircle, Zap, ArrowRight, Lock, X, ExternalLink, LogIn } from 'lucide-react';
+import { CiqTheme } from '@/components/ciq/ThemeProvider';
+import { TabBar } from '@/components/ciq/TabBar';
+import { Upload, FileText, CheckCircle, AlertCircle, Zap, ArrowRight, Lock, X, ExternalLink, LogIn, ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
 
-// Gold-on-black token remap — matches /dashboard exactly.
-// Scoped via inline style on <main> (no <style> JSX block => no hydration risk).
-const CIQ_DARK = {
-  '--bg': '#0A0A08',
-  '--bg-elevated': '#15130E',
-  '--border': '#2A2620',
-  '--accent': '#C9A24B',
-  '--emerald': '#4FBF87',
-  '--text': '#EDEAE3',
-  '--text-muted': '#A8A296',
-  '--text-dim': '#6E685C',
-  background: '#0A0A08',
-} as React.CSSProperties;
+// App-shell page: matches /dashboard (CiqTheme + TabBar). No marketing Header/Footer,
+// no .btn-primary/.btn-ghost classes (globals.css double-definition fights inline styles).
+// All parse/save logic identical to previous version.
+
+const GOLD_BTN: React.CSSProperties = {
+  background: 'linear-gradient(180deg, #E4C169, #C9A24B)',
+  color: '#141105',
+  fontWeight: 600,
+  border: 'none',
+  borderRadius: 14,
+  padding: '13px 18px',
+  cursor: 'pointer',
+};
+
+const GHOST_BTN: React.CSSProperties = {
+  background: 'var(--ciq-line)',
+  color: 'var(--ciq-ink-2)',
+  fontWeight: 500,
+  border: '1px solid var(--ciq-line-2)',
+  borderRadius: 14,
+  padding: '12px 16px',
+  cursor: 'pointer',
+};
 
 const BANKS = [
   { id: 'HDFC',  name: 'HDFC Bank',        color: '#004C8F', pwdHint: 'First 4 letters of name + DOB DDMM -> e.g. GOVE0305' },
@@ -134,210 +144,274 @@ export default function UploadStatementPage() {
   };
 
   return (
-    <main className="min-h-screen" style={{ overflowX: 'hidden', ...CIQ_DARK }}>
-      <Header />
-      <section className="pt-28 pb-20 px-4 sm:px-6">
-        <div className="max-w-2xl mx-auto">
+    <CiqTheme>
+      <div style={{ maxWidth: 420, margin: '0 auto', paddingBottom: 104, position: 'relative' }}>
 
-          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border mb-6" style={{ background: 'color-mix(in srgb, var(--accent) 10%, transparent)', borderColor: 'color-mix(in srgb, var(--accent) 25%, transparent)' }}>
-            <Zap className="w-3.5 h-3.5" style={{ color: 'var(--accent)' }} />
-            <span className="text-[11px] font-mono uppercase tracking-widest" style={{ color: 'var(--accent)' }}>AI reads your points in 3 seconds</span>
+        {/* masthead */}
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '18px 20px 8px' }}>
+          <Link href="/dashboard" style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: 12.5, color: 'var(--ciq-ink-2)', textDecoration: 'none' }}>
+            <ArrowLeft size={15} /> Wallet
+          </Link>
+          <div className="ciq-display" style={{ fontWeight: 700, fontSize: 18, letterSpacing: '-.02em' }}>
+            Credit<span style={{ color: 'var(--ciq-gold-2)' }}>IQ</span>
+          </div>
+        </div>
+
+        <div style={{ padding: '10px 20px 0' }}>
+          <div style={{
+            display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: 10, letterSpacing: '.06em',
+            textTransform: 'uppercase', color: 'var(--ciq-gold-2)',
+            background: 'color-mix(in srgb, var(--ciq-gold-2) 9%, transparent)',
+            border: '1px solid var(--ciq-gold-line)', padding: '5px 10px', borderRadius: 999,
+            fontFamily: "'Space Mono',monospace",
+          }}>
+            <Zap size={11} /> AI reads your points in 3 seconds
           </div>
 
-          <h1 className="font-display text-4xl sm:text-5xl mb-3 leading-tight" style={{ color: 'var(--text)' }}>
-            Upload your <em className="not-italic" style={{ color: 'var(--accent)' }}>statement</em>
+          <h1 className="ciq-display" style={{ fontWeight: 600, fontSize: 28, letterSpacing: '-.02em', marginTop: 12, lineHeight: 1.05 }}>
+            Upload your <span style={{ color: 'var(--ciq-gold-2)' }}>statement</span>
           </h1>
-          <p className="text-lg mb-4" style={{ color: 'var(--text-muted)' }}>
+          <p style={{ fontSize: 13.5, lineHeight: 1.55, color: 'var(--ciq-ink-2)', marginTop: 8 }}>
             Download your monthly PDF from your bank app. Upload here. Points saved to your account -- never upload again.
           </p>
+        </div>
+
+        <div style={{ padding: '16px 20px 0', display: 'flex', flexDirection: 'column', gap: 16 }}>
 
           {!userId && (
-            <div className="rounded-xl p-4 mb-6 flex items-start gap-3" style={{ background: 'color-mix(in srgb, var(--accent) 8%, transparent)', border: '1px solid color-mix(in srgb, var(--accent) 25%, transparent)' }}>
-              <LogIn className="w-4 h-4 shrink-0 mt-0.5" style={{ color: 'var(--accent)' }} />
+            <div style={{
+              borderRadius: 16, padding: '13px 15px', display: 'flex', gap: 10, alignItems: 'flex-start',
+              background: 'color-mix(in srgb, var(--ciq-gold-2) 7%, transparent)',
+              border: '1px solid var(--ciq-gold-line)',
+            }}>
+              <LogIn size={15} style={{ color: 'var(--ciq-gold-2)', marginTop: 1, flex: '0 0 auto' }} />
               <div>
-                <p className="text-sm font-medium mb-1" style={{ color: 'var(--text)' }}>Sign in to save your points</p>
-                <p className="text-xs mb-2" style={{ color: 'var(--text-muted)' }}>You can upload without signing in but points won&apos;t be saved to your dashboard.</p>
-                <Link href="/login" className="text-xs font-medium" style={{ color: 'var(--accent)' }}>Sign in with Google &rarr;</Link>
+                <p style={{ fontSize: 13, fontWeight: 600 }}>Sign in to save your points</p>
+                <p style={{ fontSize: 12, color: 'var(--ciq-ink-2)', marginTop: 2 }}>You can upload without signing in but points won&apos;t be saved to your dashboard.</p>
+                <Link href="/login" style={{ fontSize: 12, fontWeight: 600, color: 'var(--ciq-gold-2)', textDecoration: 'none' }}>Sign in with Google &rarr;</Link>
               </div>
             </div>
           )}
 
           {userId && savedCount > 0 && !result && (
-            <div className="rounded-xl p-3 mb-5 flex items-center justify-between" style={{ background: 'color-mix(in srgb, var(--emerald) 8%, transparent)', border: '1px solid color-mix(in srgb, var(--emerald) 20%, transparent)' }}>
-              <div className="flex items-center gap-2">
-                <CheckCircle className="w-4 h-4" style={{ color: 'var(--emerald)' }} />
-                <span className="text-sm" style={{ color: 'var(--text)' }}>{savedCount} card{savedCount !== 1 ? 's' : ''} already saved to your dashboard</span>
+            <div style={{
+              borderRadius: 16, padding: '11px 15px', display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+              background: 'color-mix(in srgb, var(--ciq-verified) 7%, transparent)',
+              border: '1px solid color-mix(in srgb, var(--ciq-verified) 18%, transparent)',
+            }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <CheckCircle size={15} style={{ color: 'var(--ciq-verified)' }} />
+                <span style={{ fontSize: 12.5 }}>{savedCount} card{savedCount !== 1 ? 's' : ''} already saved</span>
               </div>
-              <Link href="/dashboard" className="text-xs" style={{ color: 'var(--accent)' }}>View dashboard &rarr;</Link>
+              <Link href="/dashboard" style={{ fontSize: 12, color: 'var(--ciq-gold-2)', textDecoration: 'none' }}>View wallet &rarr;</Link>
             </div>
           )}
 
           {!result && !needsPassword && (
-            <div className="space-y-5">
+            <>
               <div>
-                <label className="text-xs font-mono uppercase tracking-widest mb-3 block" style={{ color: 'var(--text-dim)' }}>
+                <div className="ciq-mono" style={{ fontSize: 10.5, letterSpacing: '.08em', textTransform: 'uppercase', color: 'var(--ciq-ink-3)', marginBottom: 10 }}>
                   1. Select your bank
-                </label>
-                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                </div>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
                   {BANKS.map(bank => (
                     <button key={bank.id} onClick={() => setSelectedBank(bank)}
-                      className="flex items-center gap-2.5 p-3 rounded-xl border text-left transition-all"
-                      style={{ borderColor: selectedBank?.id === bank.id ? bank.color : 'var(--border)', background: selectedBank?.id === bank.id ? `${bank.color}26` : 'var(--bg-elevated)' }}>
-                      <div className="w-8 h-8 rounded flex items-center justify-center text-white text-[10px] font-bold shrink-0" style={{ background: bank.color }}>
-                        {bank.id.slice(0, 2)}
-                      </div>
-                      <span className="text-xs font-medium truncate" style={{ color: 'var(--text)' }}>{bank.name}</span>
+                      style={{
+                        display: 'flex', alignItems: 'center', gap: 9, padding: 11, textAlign: 'left',
+                        borderRadius: 14, cursor: 'pointer',
+                        border: `1px solid ${selectedBank?.id === bank.id ? bank.color : 'var(--ciq-line-2)'}`,
+                        background: selectedBank?.id === bank.id ? `${bank.color}26` : 'var(--ciq-line)',
+                        color: 'inherit',
+                      }}>
+                      <span style={{
+                        width: 30, height: 30, borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        background: bank.color, color: '#fff', fontSize: 10, fontWeight: 700, flex: '0 0 auto',
+                      }}>{bank.id.slice(0, 2)}</span>
+                      <span style={{ fontSize: 12, fontWeight: 500, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{bank.name}</span>
                     </button>
                   ))}
                 </div>
               </div>
 
               <div>
-                <label className="text-xs font-mono uppercase tracking-widest mb-3 block" style={{ color: 'var(--text-dim)' }}>
+                <div className="ciq-mono" style={{ fontSize: 10.5, letterSpacing: '.08em', textTransform: 'uppercase', color: 'var(--ciq-ink-3)', marginBottom: 10 }}>
                   2. Upload PDF statement (unlocked)
-                </label>
+                </div>
                 <div onDragOver={e => { e.preventDefault(); setDragging(true); }}
                   onDragLeave={() => setDragging(false)}
                   onDrop={handleDrop}
                   onClick={() => fileRef.current?.click()}
-                  className="rounded-2xl border-2 border-dashed p-8 text-center cursor-pointer transition-all"
-                  style={{ borderColor: dragging ? 'var(--accent)' : file ? 'var(--emerald)' : 'var(--border)', background: 'var(--bg-elevated)' }}>
-                  <input ref={fileRef} type="file" accept=".pdf,application/pdf" className="hidden"
+                  style={{
+                    borderRadius: 18, padding: 28, textAlign: 'center', cursor: 'pointer',
+                    border: `1.5px dashed ${dragging ? 'var(--ciq-gold-2)' : file ? 'var(--ciq-verified)' : 'var(--ciq-line-2)'}`,
+                    background: 'var(--ciq-line)',
+                  }}>
+                  <input ref={fileRef} type="file" accept=".pdf,application/pdf" style={{ display: 'none' }}
                     onChange={e => e.target.files?.[0] && handleFile(e.target.files[0])} />
                   {file ? (
-                    <div className="flex items-center justify-center gap-3">
-                      <FileText className="w-5 h-5" style={{ color: 'var(--emerald)' }} />
-                      <div className="text-left">
-                        <div className="font-medium text-sm truncate max-w-xs" style={{ color: 'var(--text)' }}>{file.name}</div>
-                        <div className="text-xs" style={{ color: 'var(--text-dim)' }}>{(file.size / 1024).toFixed(0)} KB</div>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10 }}>
+                      <FileText size={18} style={{ color: 'var(--ciq-verified)', flex: '0 0 auto' }} />
+                      <div style={{ textAlign: 'left', minWidth: 0 }}>
+                        <div style={{ fontSize: 13, fontWeight: 600, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: 220 }}>{file.name}</div>
+                        <div style={{ fontSize: 11, color: 'var(--ciq-ink-3)' }}>{(file.size / 1024).toFixed(0)} KB</div>
                       </div>
-                      <button onClick={e => { e.stopPropagation(); setFile(null); }}>
-                        <X className="w-4 h-4" style={{ color: 'var(--text-dim)' }} />
+                      <button onClick={e => { e.stopPropagation(); setFile(null); }} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 4 }}>
+                        <X size={15} style={{ color: 'var(--ciq-ink-3)' }} />
                       </button>
                     </div>
                   ) : (
                     <div>
-                      <Upload className="w-6 h-6 mx-auto mb-3" style={{ color: 'var(--text-dim)' }} />
-                      <p className="text-sm font-medium mb-1" style={{ color: 'var(--text)' }}>Drop PDF here or tap to browse</p>
-                      <p className="text-xs" style={{ color: 'var(--text-dim)' }}>Must be unlocked (password removed) . Max 10MB</p>
+                      <Upload size={20} style={{ color: 'var(--ciq-ink-3)', margin: '0 auto 10px' }} />
+                      <p style={{ fontSize: 13, fontWeight: 600 }}>Drop PDF here or tap to browse</p>
+                      <p style={{ fontSize: 11.5, color: 'var(--ciq-ink-3)', marginTop: 3 }}>Must be unlocked (password removed) . Max 10MB</p>
                     </div>
                   )}
                 </div>
               </div>
 
               {error && (
-                <div className="rounded-xl p-3 text-sm flex items-center gap-2" style={{ background: 'color-mix(in srgb, #ef4444 10%, transparent)', color: '#ef8a80', border: '1px solid color-mix(in srgb, #ef4444 30%, transparent)' }}>
-                  <AlertCircle className="w-4 h-4 shrink-0" /> {error}
+                <div style={{
+                  borderRadius: 14, padding: '11px 14px', fontSize: 12.5, display: 'flex', alignItems: 'center', gap: 8,
+                  background: 'color-mix(in srgb, #ef4444 10%, transparent)',
+                  border: '1px solid color-mix(in srgb, #ef4444 30%, transparent)', color: '#ef8a80',
+                }}>
+                  <AlertCircle size={15} style={{ flex: '0 0 auto' }} /> {error}
                 </div>
               )}
 
               <button onClick={handleParse} disabled={!file || loading}
-                className="btn-primary w-full text-base flex items-center justify-center gap-2"
-                style={{ opacity: !file || loading ? 0.6 : 1, background: 'var(--accent)', color: '#0A0A08' }}>
-                <Zap className="w-5 h-5" />
+                style={{ ...GOLD_BTN, width: '100%', fontSize: 14.5, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, opacity: !file || loading ? 0.55 : 1 }}>
+                <Zap size={17} />
                 {loading ? 'Reading your statement...' : 'Extract my points'}
               </button>
 
-              <div className="rounded-xl p-4 border flex items-start gap-3" style={{ borderColor: 'var(--border)', background: 'var(--bg-elevated)' }}>
-                <Lock className="w-4 h-4 shrink-0 mt-0.5" style={{ color: 'var(--emerald)' }} />
-                <p className="text-xs leading-relaxed" style={{ color: 'var(--text-muted)' }}>
-                  <strong style={{ color: 'var(--text)' }}>Your data is private.</strong> PDF is processed and immediately discarded. Only points balance is saved to your account.
+              <div style={{
+                borderRadius: 16, padding: '13px 15px', display: 'flex', gap: 10, alignItems: 'flex-start',
+                background: 'var(--ciq-line)', border: '1px solid var(--ciq-line-2)',
+              }}>
+                <Lock size={15} style={{ color: 'var(--ciq-verified)', marginTop: 1, flex: '0 0 auto' }} />
+                <p style={{ fontSize: 12, lineHeight: 1.5, color: 'var(--ciq-ink-2)' }}>
+                  <b style={{ color: 'var(--ciq-verified)' }}>Your data is private.</b> PDF is processed and immediately discarded. Only points balance is saved to your account.
                 </p>
               </div>
-            </div>
+            </>
           )}
 
           {needsPassword && !result && (
-            <div className="space-y-4">
-              <div className="rounded-2xl border p-6" style={{ borderColor: 'color-mix(in srgb, var(--accent) 30%, transparent)', background: 'color-mix(in srgb, var(--accent) 6%, transparent)' }}>
-                <div className="flex items-start gap-3 mb-5">
-                  <div className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0" style={{ background: 'color-mix(in srgb, var(--accent) 15%, transparent)' }}>
-                    <Lock className="w-5 h-5" style={{ color: 'var(--accent)' }} />
+            <>
+              <div style={{
+                borderRadius: 18, padding: 20,
+                background: 'color-mix(in srgb, var(--ciq-gold-2) 6%, transparent)',
+                border: '1px solid var(--ciq-gold-line)',
+              }}>
+                <div style={{ display: 'flex', gap: 12, alignItems: 'flex-start', marginBottom: 16 }}>
+                  <div style={{
+                    width: 38, height: 38, borderRadius: 12, display: 'flex', alignItems: 'center', justifyContent: 'center', flex: '0 0 auto',
+                    background: 'color-mix(in srgb, var(--ciq-gold-2) 14%, transparent)',
+                  }}>
+                    <Lock size={17} style={{ color: 'var(--ciq-gold-2)' }} />
                   </div>
                   <div>
-                    <h3 className="font-display text-xl mb-1" style={{ color: 'var(--text)' }}>PDF is password protected</h3>
-                    <p className="text-sm" style={{ color: 'var(--text-muted)' }}>Remove the password first using ilovepdf -- takes 30 seconds.</p>
+                    <h3 className="ciq-display" style={{ fontSize: 17, fontWeight: 600 }}>PDF is password protected</h3>
+                    <p style={{ fontSize: 12.5, color: 'var(--ciq-ink-2)', marginTop: 2 }}>Remove the password first using ilovepdf -- takes 30 seconds.</p>
                   </div>
                 </div>
-                <div className="rounded-xl p-4 mb-4" style={{ background: 'var(--bg-elevated)', border: '1px solid var(--border)' }}>
-                  <div className="text-xs font-mono uppercase tracking-widest mb-2" style={{ color: 'var(--text-dim)' }}>
+                <div style={{ borderRadius: 14, padding: 14, marginBottom: 14, background: 'var(--ciq-line)', border: '1px solid var(--ciq-line-2)' }}>
+                  <div className="ciq-mono" style={{ fontSize: 10, letterSpacing: '.08em', textTransform: 'uppercase', color: 'var(--ciq-ink-3)', marginBottom: 4 }}>
                     {selectedBank?.name || 'Your bank'} password format
                   </div>
-                  <p className="text-sm font-medium" style={{ color: 'var(--text)' }}>{pwdHint || selectedBank?.pwdHint}</p>
+                  <p style={{ fontSize: 13, fontWeight: 600 }}>{pwdHint || selectedBank?.pwdHint}</p>
                 </div>
-                <div className="space-y-3 mb-5">
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 16 }}>
                   {[
                     'Open your statement PDF and note the password (format above)',
                     'Go to ilovepdf.com/unlock_pdf -- free, no account needed',
                     'Upload your PDF, enter the password, click Unlock PDF',
                     'Download the unlocked PDF and upload it here',
                   ].map((s, i) => (
-                    <div key={i} className="flex items-start gap-3 text-sm" style={{ color: 'var(--text-muted)' }}>
-                      <div className="w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold shrink-0 mt-0.5" style={{ background: 'var(--accent)', color: '#0A0A08' }}>{i + 1}</div>
+                    <div key={i} style={{ display: 'flex', gap: 10, alignItems: 'flex-start', fontSize: 12.5, color: 'var(--ciq-ink-2)' }}>
+                      <span style={{
+                        width: 22, height: 22, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        fontSize: 11, fontWeight: 700, flex: '0 0 auto', marginTop: 1,
+                        background: 'var(--ciq-gold-2)', color: '#141105',
+                      }}>{i + 1}</span>
                       {s}
                     </div>
                   ))}
                 </div>
                 <a href="https://www.ilovepdf.com/unlock_pdf" target="_blank" rel="noopener noreferrer"
-                  className="btn-primary w-full flex items-center justify-center gap-2 text-sm"
-                  style={{ background: 'var(--accent)', color: '#0A0A08' }}>
-                  Open ilovepdf.com/unlock_pdf <ExternalLink className="w-4 h-4" />
+                  style={{ ...GOLD_BTN, width: '100%', fontSize: 13, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, textDecoration: 'none', boxSizing: 'border-box' }}>
+                  Open ilovepdf.com/unlock_pdf <ExternalLink size={15} />
                 </a>
               </div>
-              <button onClick={() => { setNeedsPassword(false); setFile(null); }} className="btn-ghost w-full text-sm" style={{ color: 'var(--text-muted)' }}>
+              <button onClick={() => { setNeedsPassword(false); setFile(null); }} style={{ ...GHOST_BTN, width: '100%', fontSize: 13 }}>
                 &larr; Upload a different file
               </button>
-            </div>
+            </>
           )}
 
           {result && (
-            <div className="space-y-4">
-              <div className="rounded-2xl p-6 border" style={{ borderColor: 'color-mix(in srgb, var(--emerald) 30%, transparent)', background: 'color-mix(in srgb, var(--emerald) 6%, transparent)' }}>
-                <div className="flex items-center gap-3 mb-5">
-                  <CheckCircle className="w-6 h-6" style={{ color: 'var(--emerald)' }} />
-                  <div>
-                    <div className="font-medium" style={{ color: 'var(--text)' }}>
+            <>
+              <div style={{
+                borderRadius: 18, padding: 20,
+                background: 'color-mix(in srgb, var(--ciq-verified) 6%, transparent)',
+                border: '1px solid color-mix(in srgb, var(--ciq-verified) 22%, transparent)',
+              }}>
+                <div style={{ display: 'flex', gap: 12, alignItems: 'center', marginBottom: 16 }}>
+                  <CheckCircle size={22} style={{ color: 'var(--ciq-verified)', flex: '0 0 auto' }} />
+                  <div style={{ minWidth: 0 }}>
+                    <div style={{ fontSize: 14, fontWeight: 600 }}>
                       {result.customer_name ? `${result.customer_name}'s ` : ''}{result.bank || selectedBank?.name}
-                      {userId && <span className="text-xs ml-2 px-2 py-0.5 rounded-full" style={{ background: 'color-mix(in srgb, var(--emerald) 15%, transparent)', color: 'var(--emerald)' }}>Saved (ok)</span>}
+                      {userId && (
+                        <span style={{
+                          fontSize: 10.5, marginLeft: 8, padding: '2px 8px', borderRadius: 999,
+                          background: 'color-mix(in srgb, var(--ciq-verified) 14%, transparent)', color: 'var(--ciq-verified)',
+                        }}>Saved</span>
+                      )}
                     </div>
-                    <div className="text-xs" style={{ color: 'var(--text-dim)' }}>
+                    <div style={{ fontSize: 11.5, color: 'var(--ciq-ink-3)', marginTop: 2 }}>
                       {result.card_name}{result.card_last4 ? ` . ${result.card_last4}` : ''} . {result.confidence} confidence
                     </div>
                   </div>
                 </div>
 
                 {result.points_balance != null ? (
-                  <div className="p-4 rounded-xl" style={{ background: 'var(--bg-elevated)', border: '1px solid var(--border)' }}>
-                    <div className="text-[10px] font-mono uppercase tracking-widest mb-1" style={{ color: 'var(--text-dim)' }}>
+                  <div style={{ borderRadius: 14, padding: 14, background: 'var(--ciq-line)', border: '1px solid var(--ciq-line-2)' }}>
+                    <div className="ciq-mono" style={{ fontSize: 10, letterSpacing: '.08em', textTransform: 'uppercase', color: 'var(--ciq-ink-3)', marginBottom: 4 }}>
                       {result.points_currency || 'Reward Points'} balance
                     </div>
-                    <div className="font-display text-4xl tabular" style={{ color: 'var(--accent)' }}>
+                    <div className="ciq-display" style={{ fontSize: 34, fontWeight: 600, color: 'var(--ciq-gold-2)', fontVariantNumeric: 'tabular-nums' }}>
                       {result.points_balance.toLocaleString('en-IN')}
                     </div>
-                    {result.points_expiry && <div className="text-xs mt-1" style={{ color: 'var(--text-dim)' }}>Expires: {result.points_expiry}</div>}
+                    {result.points_expiry && <div style={{ fontSize: 11.5, color: 'var(--ciq-ink-3)', marginTop: 3 }}>Expires: {result.points_expiry}</div>}
                   </div>
                 ) : (
-                  <div className="p-4 rounded-xl" style={{ background: 'color-mix(in srgb, var(--accent) 6%, transparent)', border: '1px solid color-mix(in srgb, var(--accent) 25%, transparent)' }}>
-                    <div className="text-[10px] font-mono uppercase tracking-widest mb-2" style={{ color: 'var(--text-dim)' }}>
+                  <div style={{
+                    borderRadius: 14, padding: 14,
+                    background: 'color-mix(in srgb, var(--ciq-gold-2) 6%, transparent)',
+                    border: '1px solid var(--ciq-gold-line)',
+                  }}>
+                    <div className="ciq-mono" style={{ fontSize: 10, letterSpacing: '.08em', textTransform: 'uppercase', color: 'var(--ciq-ink-3)', marginBottom: 6 }}>
                       Points not found &mdash; enter manually
                     </div>
-                    <p className="text-xs mb-3" style={{ color: 'var(--text-muted)' }}>
+                    <p style={{ fontSize: 12, color: 'var(--ciq-ink-2)', marginBottom: 10 }}>
                       Check your bank app or net banking for your current {result.points_currency || 'reward points'} balance.
                     </p>
-                    <div className="flex gap-2">
+                    <div style={{ display: 'flex', gap: 8 }}>
                       <input
                         type="number"
                         placeholder="e.g. 12500"
                         value={manualPoints}
                         onChange={e => setManualPoints(e.target.value)}
-                        className="flex-1 px-3 py-2 rounded-xl text-sm border"
-                        style={{ background: 'var(--bg-elevated)', borderColor: 'var(--border)', color: 'var(--text)' }}
+                        style={{
+                          flex: 1, padding: '10px 12px', borderRadius: 12, fontSize: 13,
+                          background: 'var(--ciq-line)', border: '1px solid var(--ciq-line-2)', color: 'inherit', outline: 'none',
+                        }}
                       />
                       <button
                         onClick={handleSaveManualPoints}
                         disabled={!manualPoints || parseInt(manualPoints) <= 0}
-                        className="btn-primary text-sm px-4"
-                        style={{ opacity: !manualPoints || parseInt(manualPoints) <= 0 ? 0.5 : 1, background: 'var(--accent)', color: '#0A0A08' }}
+                        style={{ ...GOLD_BTN, fontSize: 13, padding: '10px 16px', opacity: !manualPoints || parseInt(manualPoints) <= 0 ? 0.5 : 1 }}
                       >
                         Save
                       </button>
@@ -346,33 +420,36 @@ export default function UploadStatementPage() {
                 )}
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                <button onClick={resetForAnother} className="btn-ghost text-sm flex items-center justify-center gap-1.5" style={{ color: 'var(--text-muted)' }}>
-                  <Upload className="w-4 h-4" /> Add another card
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: 10 }}>
+                <button onClick={resetForAnother} style={{ ...GHOST_BTN, fontSize: 13, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}>
+                  <Upload size={15} /> Add another card
                 </button>
-                <Link href="/dashboard" className="btn-ghost text-sm flex items-center justify-center gap-1.5" style={{ color: 'var(--text-muted)' }}>
-                  View dashboard <ArrowRight className="w-4 h-4" />
+                <Link href="/dashboard" style={{ ...GHOST_BTN, fontSize: 13, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, textDecoration: 'none', boxSizing: 'border-box' }}>
+                  View wallet <ArrowRight size={15} />
                 </Link>
                 <Link href={`/optimize?bank=${result.bank}&points=${result.points_balance}`}
-                  className="btn-primary text-sm flex items-center justify-center gap-1.5"
-                  style={{ background: 'var(--accent)', color: '#0A0A08' }}>
-                  <Zap className="w-4 h-4" /> Optimize points
+                  style={{ ...GOLD_BTN, fontSize: 13, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, textDecoration: 'none', boxSizing: 'border-box' }}>
+                  <Zap size={15} /> Optimize points
                 </Link>
               </div>
 
               {!userId && (
-                <div className="rounded-xl p-4 border text-center" style={{ borderColor: 'color-mix(in srgb, var(--accent) 25%, transparent)', background: 'color-mix(in srgb, var(--accent) 6%, transparent)' }}>
-                  <p className="text-sm mb-2" style={{ color: 'var(--text)' }}>Sign in to save these points to your dashboard</p>
-                  <Link href="/login" className="btn-primary text-sm inline-flex items-center gap-1.5" style={{ background: 'var(--accent)', color: '#0A0A08' }}>
-                    <LogIn className="w-4 h-4" /> Sign in with Google
+                <div style={{
+                  borderRadius: 16, padding: 15, textAlign: 'center',
+                  background: 'color-mix(in srgb, var(--ciq-gold-2) 6%, transparent)',
+                  border: '1px solid var(--ciq-gold-line)',
+                }}>
+                  <p style={{ fontSize: 13, marginBottom: 10 }}>Sign in to save these points to your dashboard</p>
+                  <Link href="/login" style={{ ...GOLD_BTN, fontSize: 13, display: 'inline-flex', alignItems: 'center', gap: 6, textDecoration: 'none', boxSizing: 'border-box' }}>
+                    <LogIn size={15} /> Sign in with Google
                   </Link>
                 </div>
               )}
-            </div>
+            </>
           )}
         </div>
-      </section>
-      <DesignFooter />
-    </main>
+      </div>
+      <TabBar />
+    </CiqTheme>
   );
 }
