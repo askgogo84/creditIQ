@@ -8,6 +8,7 @@ export async function GET(req: NextRequest) {
   const dateTo = searchParams.get('date_to') || ''
   const kiwiKey = process.env.KIWI_TEQUILA_API_KEY || ''
   const tpToken = process.env.TRAVELPAYOUTS_TOKEN || ''
+  const tpMarker = process.env.TRAVELPAYOUTS_MARKER || ''
 
   // Try Kiwi first
   if (kiwiKey) {
@@ -70,7 +71,7 @@ export async function GET(req: NextRequest) {
           arrival: f.return_at || new Date().toISOString(),
           duration: f.duration || 2,
           stops: f.transfers || 0,
-          bookingLink: `https://www.aviasales.com/search/${from}${dateFrom?.replace(/-/g,'')}${to}1`,
+          bookingLink: `https://www.aviasales.com/search/${from}${dateFrom?.replace(/-/g,'')}${to}1${tpMarker ? `?marker=${tpMarker}` : ''}`,
         }))
         return NextResponse.json({ flights, source: 'travelpayouts' })
       }
