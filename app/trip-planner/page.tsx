@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import { useState, useEffect, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
@@ -8,10 +8,8 @@ import { DesignFooter } from '@/components/design/Footer';
 import { getApplyUrl } from '@/lib/affiliate';
 import { BookingModal } from '@/components/BookingModal';
 import { TripComparison } from '@/components/TripComparison';
-import { SavePromptBanner } from '@/components/design/SavePromptBanner';
 import FlightSearch, { detectIataFromText, buildKayakUrl, buildMMTUrl, INDIRECT_ROUTES } from '@/components/design/FlightSearch';
 import { createBrowserClient } from '@supabase/ssr';
-import { authedFetch } from '@/lib/authed-fetch';
 
 interface TripResult {
   destination: string;
@@ -88,8 +86,8 @@ function TripPlannerPageInner() {
         const { data: { user } } = await supabase.auth.getUser();
         if (!user) return;
         const [stmtRes, manualRes] = await Promise.all([
-          authedFetch('/api/user-cards'),
-          authedFetch('/api/manual-cards'),
+          fetch('/api/user-cards?userId=' + user.id),
+          fetch('/api/manual-cards?userId=' + user.id),
         ]);
         let total = 0;
         if (stmtRes.ok) {
@@ -422,8 +420,7 @@ function TripPlannerPageInner() {
 
               {result.proTip && <div style={{ marginTop: 12, fontSize: 13, color: 'rgba(255,255,255,0.45)', lineHeight: 1.6, fontStyle: 'italic' as const }}>' {result.proTip}</div>}
             </div>
-            <SavePromptBanner feature='trip' />
-              {/* Live Flight Search */}
+            {/* Live Flight Search */}
             <div style={{ marginTop: 32, marginBottom: 32 }}>
               <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: '0.15em', textTransform: 'uppercase', color: 'var(--copper,#8C5F12)', marginBottom: 16 }}>SEARCH FLIGHTS</div>
               <FlightSearch defaultFrom={originIata || 'BLR'} defaultTo={detectedDestIata || (result?.destination ? result.destination.substring(0,3).toUpperCase() : '')} pointsBalance={parseInt((points || '0').replace(/,/g, '')) || 0} bank={cardBank || 'HDFC'} />
