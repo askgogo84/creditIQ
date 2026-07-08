@@ -73,6 +73,41 @@ const QUICK_TRIPS = [
 
 const BANKS = ['HDFC', 'Axis', 'SBI', 'ICICI', 'IDFC', 'Amex', 'Kotak', 'AU', 'None'];
 
+// --- Inspire-me destination cards ---
+const IMG = (id: string) => `https://images.unsplash.com/${id}?auto=format&fit=crop&w=800&q=70`;
+
+interface Dest {
+  city: string; flag: string; region: 'india' | 'international';
+  miles: number; flightTime: string; image: string; nights: number;
+}
+
+const DESTS: Dest[] = [
+  // International
+  { city: 'Singapore',    flag: '\u{1F1F8}\u{1F1EC}', region: 'international', miles: 14000, flightTime: '4h 35m', nights: 4, image: IMG('photo-1525625293386-3f8f99389edd') },
+  { city: 'Dubai',        flag: '\u{1F1E6}\u{1F1EA}', region: 'international', miles: 24000, flightTime: '4h 00m', nights: 3, image: IMG('photo-1512453979798-5ea266f8880c') },
+  { city: 'Bangkok',      flag: '\u{1F1F9}\u{1F1ED}', region: 'international', miles: 18000, flightTime: '4h 20m', nights: 5, image: IMG('photo-1508009603885-50cf7c579365') },
+  { city: 'Tokyo',        flag: '\u{1F1EF}\u{1F1F5}', region: 'international', miles: 35000, flightTime: '9h 30m', nights: 6, image: IMG('photo-1540959733332-eab4deabeeaf') },
+  { city: 'London',       flag: '\u{1F1EC}\u{1F1E7}', region: 'international', miles: 28000, flightTime: '10h 45m', nights: 5, image: IMG('photo-1513635269975-59663e0ac1ad') },
+  { city: 'Paris',        flag: '\u{1F1EB}\u{1F1F7}', region: 'international', miles: 33000, flightTime: '10h 30m', nights: 5, image: IMG('photo-1502602898657-3e91760cbb34') },
+  { city: 'Hong Kong',    flag: '\u{1F1ED}\u{1F1F0}', region: 'international', miles: 13000, flightTime: '6h 00m', nights: 4, image: IMG('photo-1536599018102-9f803c140fc1') },
+  { city: 'Kuala Lumpur', flag: '\u{1F1F2}\u{1F1FE}', region: 'international', miles: 22000, flightTime: '4h 30m', nights: 4, image: IMG('photo-1596422846543-75c6fc197f07') },
+  { city: 'Colombo',      flag: '\u{1F1F1}\u{1F1F0}', region: 'international', miles: 12000, flightTime: '1h 30m', nights: 3, image: IMG('photo-1566296314736-6eaac1ca0cb9') },
+  { city: 'Denpasar',     flag: '\u{1F1EE}\u{1F1E9}', region: 'international', miles: 35000, flightTime: '6h 45m', nights: 5, image: IMG('photo-1537996194471-e657df975ab4') },
+  { city: 'Seoul',        flag: '\u{1F1F0}\u{1F1F7}', region: 'international', miles: 20000, flightTime: '8h 40m', nights: 5, image: IMG('photo-1538485399081-7191377e8241') },
+  { city: 'Istanbul',     flag: '\u{1F1F9}\u{1F1F7}', region: 'international', miles: 31000, flightTime: '8h 15m', nights: 4, image: IMG('photo-1524231757912-21f4fe3a7200') },
+  { city: 'Rome',         flag: '\u{1F1EE}\u{1F1F9}', region: 'international', miles: 33000, flightTime: '9h 45m', nights: 5, image: IMG('photo-1552832230-c0197dd311b5') },
+  { city: 'Abu Dhabi',    flag: '\u{1F1E6}\u{1F1EA}', region: 'international', miles: 26000, flightTime: '4h 05m', nights: 3, image: IMG('photo-1512632578888-169bbbc64f33') },
+  // India
+  { city: 'Delhi',      flag: '\u{1F1EE}\u{1F1F3}', region: 'india', miles: 16000, flightTime: '2h 45m', nights: 3, image: IMG('photo-1587474260584-136574528ed5') },
+  { city: 'Mumbai',     flag: '\u{1F1EE}\u{1F1F3}', region: 'india', miles: 15000, flightTime: '1h 40m', nights: 3, image: IMG('photo-1566552881560-0be862a7c445') },
+  { city: 'Goa',        flag: '\u{1F1EE}\u{1F1F3}', region: 'india', miles: 12000, flightTime: '1h 15m', nights: 3, image: IMG('photo-1512343879784-a960bf40e7f2') },
+  { city: 'Jaipur',     flag: '\u{1F1EE}\u{1F1F3}', region: 'india', miles: 15000, flightTime: '2h 20m', nights: 3, image: IMG('photo-1477587458883-47145ed94245') },
+  { city: 'Kolkata',    flag: '\u{1F1EE}\u{1F1F3}', region: 'india', miles: 16000, flightTime: '2h 30m', nights: 3, image: IMG('photo-1558431382-27e303142255') },
+  { city: 'Kochi',      flag: '\u{1F1EE}\u{1F1F3}', region: 'india', miles: 11000, flightTime: '1h 20m', nights: 3, image: IMG('photo-1602216056096-3b40cc0c9944') },
+  { city: 'Udaipur',    flag: '\u{1F1EE}\u{1F1F3}', region: 'india', miles: 15000, flightTime: '2h 15m', nights: 3, image: IMG('photo-1590050752117-238cb0fb12b1') },
+  { city: 'Srinagar',   flag: '\u{1F1EE}\u{1F1F3}', region: 'india', miles: 18000, flightTime: '3h 20m', nights: 4, image: IMG('photo-1566837945700-30057527ade9') },
+];
+
 function TripPlannerPageInner() {
   const [query, setQuery] = useState('');
   const [points, setPoints] = useState('');
@@ -153,6 +188,7 @@ function TripPlannerPageInner() {
   const [modalFlight, setModalFlight] = useState<TripResult['flights'][0] | null>(null);
   const [modalHotel, setModalHotel] = useState<TripResult['hotels'][0] | null>(null);
   const [detectedDestIata, setDetectedDestIata] = useState<string>('');
+  const [inspireRegion, setInspireRegion] = useState<'india' | 'international'>('international');
 
   const plan = async (overrideQuery?: string) => {
     const tripQuery = overrideQuery ?? query;
@@ -375,6 +411,74 @@ function TripPlannerPageInner() {
                 </button>
               ))}
             </div>
+          </div>
+        )}
+
+        {/* Inspire-me destination cards (empty state only) */}
+        {!result && !loading && (
+          <div style={{ marginTop: 44 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 18, flexWrap: 'wrap' }}>
+              <div style={{ fontSize: 16, fontWeight: 800, color: 'var(--text, #0f172a)', letterSpacing: -0.3 }}>
+                {'\u2726'} Or get inspired
+              </div>
+              <div style={{ display: 'flex', gap: 8, marginLeft: 'auto' }}>
+                <div onClick={() => setInspireRegion('international')} style={{
+                  padding: '6px 14px', borderRadius: 100, fontSize: 12, fontWeight: 700, cursor: 'pointer',
+                  border: inspireRegion === 'international' ? 'none' : '1px solid var(--border, #e2e8f0)',
+                  background: inspireRegion === 'international' ? 'var(--ink, #142950)' : 'var(--bg-card, #fff)',
+                  color: inspireRegion === 'international' ? '#fff' : 'var(--text, #0f172a)',
+                }}>{'\u{1F30F}'} International</div>
+                <div onClick={() => setInspireRegion('india')} style={{
+                  padding: '6px 14px', borderRadius: 100, fontSize: 12, fontWeight: 700, cursor: 'pointer',
+                  border: inspireRegion === 'india' ? 'none' : '1px solid var(--border, #e2e8f0)',
+                  background: inspireRegion === 'india' ? 'var(--ink, #142950)' : 'var(--bg-card, #fff)',
+                  color: inspireRegion === 'india' ? '#fff' : 'var(--text, #0f172a)',
+                }}>{'\u{1F1EE}\u{1F1F3}'} India</div>
+              </div>
+            </div>
+
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: 14 }}>
+              {DESTS.filter(d => d.region === inspireRegion).map((d) => (
+                <div
+                  key={d.city}
+                  onClick={() => {
+                    const q = `Trip to ${d.city} for ${d.nights} nights`;
+                    setQuery(q);
+                    plan(q);
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                  }}
+                  style={{
+                    position: 'relative', borderRadius: 16, overflow: 'hidden',
+                    aspectRatio: '4 / 3', boxShadow: '0 4px 16px rgba(15,23,42,0.10)',
+                    cursor: 'pointer', background: '#1e293b',
+                  }}
+                >
+                  <img src={d.image} alt={d.city} loading="lazy"
+                    style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }} />
+                  <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, rgba(0,0,0,0.72) 0%, rgba(0,0,0,0.12) 45%, rgba(0,0,0,0.05) 100%)' }} />
+                  <div style={{ position: 'absolute', top: 10, right: 10, background: 'rgba(0,0,0,0.55)', backdropFilter: 'blur(4px)', color: '#fff', fontSize: 11, fontWeight: 700, padding: '4px 10px', borderRadius: 100 }}>
+                    {d.flightTime}
+                  </div>
+                  <div style={{ position: 'absolute', left: 14, bottom: 46, fontSize: 10, fontWeight: 600, color: 'rgba(255,255,255,0.75)' }}>
+                    From Bangalore (BLR)
+                  </div>
+                  <div style={{ position: 'absolute', left: 14, right: 14, bottom: 12, display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
+                      <span style={{ fontSize: 16 }}>{d.flag}</span>
+                      <span style={{ fontSize: 18, fontWeight: 800, color: '#fff', letterSpacing: -0.3 }}>{d.city}</span>
+                    </div>
+                    <div style={{ textAlign: 'right' }}>
+                      <div style={{ fontSize: 9, color: 'rgba(255,255,255,0.7)', fontWeight: 600 }}>from</div>
+                      <div style={{ fontSize: 17, fontWeight: 900, color: '#E8B84B', lineHeight: 1 }}>{Math.round(d.miles / 1000)}K</div>
+                      <div style={{ fontSize: 9, color: 'rgba(255,255,255,0.7)', fontWeight: 600 }}>points</div>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+            <p style={{ fontSize: 12, color: 'var(--text-muted, #94a3b8)', marginTop: 16, textAlign: 'center' }}>
+              Tap any destination to instantly plan your trip with points.
+            </p>
           </div>
         )}
 
