@@ -3,6 +3,7 @@
 import { useState, useRef, useEffect, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { Header } from '@/components/Header';
+import { authedFetch } from '@/lib/authed-fetch';
 
 interface Message {
   role: 'user' | 'assistant';
@@ -16,16 +17,16 @@ function parseMarkdown(text: string): string {
     .replace(/^# (.+)$/gm, '<h1 style="font-size:18px;font-weight:800;color:var(--ink,#142950);margin:0 0 12px">$1</h1>')
     .replace(/\*\*(.+?)\*\*/g, '<strong style="font-weight:700;color:var(--ink,#142950)">$1</strong>')
     .replace(/\*(.+?)\*/g, '<em style="font-style:italic">$1</em>')
-    .replace(/^- (.+)$/gm, '<div style="display:flex;gap:8px;margin:5px 0;align-items:flex-start"><span style="color:var(--copper-3,#D89B2A);font-weight:900;font-size:14px;line-height:1.5;flex-shrink:0">→</span><span style="line-height:1.65;color:var(--ink-2,#2A3F6B)">$1</span></div>')
+    .replace(/^- (.+)$/gm, '<div style="display:flex;gap:8px;margin:5px 0;align-items:flex-start"><span style="color:var(--copper-3,#D89B2A);font-weight:900;font-size:14px;line-height:1.5;flex-shrink:0">&rarr;</span><span style="line-height:1.65;color:var(--ink-2,#2A3F6B)">$1</span></div>')
     .replace(/\n{2,}/g, '<div style="height:8px"></div>')
     .replace(/\n/g, ' ');
 }
 
 const SUGGESTIONS = [
   'Best way to use 52,000 HDFC points for Singapore?',
-  'Axis Magnus lounge access — how many visits per year?',
+  'Axis Magnus lounge access \u2014 how many visits per year?',
   'Which card gives best forex rates for international travel?',
-  'Transfer HDFC points to KrisFlyer or Avios — which is better?',
+  'Transfer HDFC points to KrisFlyer or Avios \u2014 which is better?',
 ];
 
 function TravelPageInner() {
@@ -57,9 +58,8 @@ function TravelPageInner() {
     setMessages(updated);
     setLoading(true);
     try {
-      const res = await fetch('/api/travel-ai', {
+      const res = await authedFetch('/api/travel-ai', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ messages: updated }),
       });
       if (!res.ok) throw new Error('api error');
@@ -88,7 +88,7 @@ function TravelPageInner() {
       {/* Main content */}
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column', maxWidth: 720, width: '100%', margin: '0 auto', padding: '0 clamp(16px,4vw,24px)', paddingTop: 'clamp(80px,12vw,100px)', paddingBottom: 120, position: 'relative', zIndex: 1 }}>
 
-        {/* Hero — only when empty */}
+        {/* Hero - only when empty */}
         {empty && (
           <div style={{ textAlign: 'center', marginBottom: 32, paddingTop: 24 }}>
             <div style={{ display: 'inline-flex', alignItems: 'center', gap: 10, padding: '7px 18px', borderRadius: 999, background: 'rgba(212,163,115,0.12)', border: '1px solid rgba(212,163,115,0.28)', marginBottom: 24 }}>
@@ -136,7 +136,7 @@ function TravelPageInner() {
                 fontSize: 14, fontWeight: 800, color: '#fff',
                 fontFamily: 'var(--font-mono,monospace)',
               }}>
-                {msg.role === 'user' ? 'G' : '✈'}
+                {msg.role === 'user' ? 'G' : '\u2708'}
               </div>
 
               {/* Bubble */}
@@ -163,7 +163,7 @@ function TravelPageInner() {
           {loading && (
             <div style={{ display: 'flex', gap: 10, alignItems: 'flex-start', marginBottom: 16 }}>
               <div style={{ width: 36, height: 36, borderRadius: 10, backgroundColor: 'var(--ink,#142950)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                <span style={{ color: 'var(--copper-3,#D89B2A)', fontSize: 14 }}>✈</span>
+                <span style={{ color: 'var(--copper-3,#D89B2A)', fontSize: 14 }}>&#9992;</span>
               </div>
               <div style={{ background: 'var(--surface,#fff)', border: '1px solid var(--line,rgba(20,41,80,0.08))', borderRadius: '4px 16px 16px 16px', padding: '14px 18px', display: 'flex', gap: 6, alignItems: 'center' }}>
                 {[0, 1, 2].map(j => (
@@ -210,7 +210,7 @@ function TravelPageInner() {
               transition: 'background 0.2s', flexShrink: 0,
             }}
           >
-            ↑
+            &uarr;
           </button>
         </div>
         <p style={{ textAlign: 'center', fontFamily: 'var(--font-mono,monospace)', fontSize: 10, color: 'var(--ink-3,#5A6A8A)', margin: '6px 0 0', letterSpacing: '0.05em' }}>
