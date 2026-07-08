@@ -8,8 +8,11 @@ import { DesignFooter } from '@/components/design/Footer';
 import { getApplyUrl } from '@/lib/affiliate';
 import { BookingModal } from '@/components/BookingModal';
 import { TripComparison } from '@/components/TripComparison';
+import { SavePromptBanner } from '@/components/design/SavePromptBanner';
 import FlightSearch, { detectIataFromText, buildKayakUrl, buildMMTUrl, INDIRECT_ROUTES } from '@/components/design/FlightSearch';
+import { ProGate } from '@/components/design/ProGate';
 import { createBrowserClient } from '@supabase/ssr';
+import { authedFetch } from '@/lib/authed-fetch';
 
 interface TripResult {
   destination: string;
@@ -60,12 +63,12 @@ interface TripResult {
 }
 
 const QUICK_TRIPS = [
-  { label: 'London 5 nights', icon: '', query: 'Business trip to London for 5 nights next month' },
-  { label: 'Dubai weekend', icon: '', query: 'Weekend trip to Dubai 3 nights this month' },
-  { label: 'Singapore 4 nights', icon: '', query: 'Holiday in Singapore for 4 nights next month' },
-  { label: 'Bangkok 5 nights', icon: '', query: 'Leisure trip Bangkok 5 nights' },
-  { label: 'Goa long weekend', icon: '', query: 'Domestic trip Goa 3 nights long weekend' },
-  { label: 'New York 7 nights', icon: '', query: 'Business trip New York 7 nights premium travel' },
+  { label: 'London 5 nights', emoji: '\u{1F1EC}\u{1F1E7}', query: 'Business trip to London for 5 nights next month' },
+  { label: 'Dubai weekend', emoji: '\u{1F1E6}\u{1F1EA}', query: 'Weekend trip to Dubai 3 nights this month' },
+  { label: 'Singapore 4 nights', emoji: '\u{1F1F8}\u{1F1EC}', query: 'Holiday in Singapore for 4 nights next month' },
+  { label: 'Bangkok 5 nights', emoji: '\u{1F1F9}\u{1F1ED}', query: 'Leisure trip Bangkok 5 nights' },
+  { label: 'Goa long weekend', emoji: '\u{1F3D6}\u{FE0F}', query: 'Domestic trip Goa 3 nights long weekend' },
+  { label: 'New York 7 nights', emoji: '\u{1F1FA}\u{1F1F8}', query: 'Business trip New York 7 nights premium travel' },
 ];
 
 const BANKS = ['HDFC', 'Axis', 'SBI', 'ICICI', 'IDFC', 'Amex', 'Kotak', 'AU', 'None'];
@@ -86,8 +89,8 @@ function TripPlannerPageInner() {
         const { data: { user } } = await supabase.auth.getUser();
         if (!user) return;
         const [stmtRes, manualRes] = await Promise.all([
-          fetch('/api/user-cards?userId=' + user.id),
-          fetch('/api/manual-cards?userId=' + user.id),
+          authedFetch('/api/user-cards'),
+          authedFetch('/api/manual-cards'),
         ]);
         let total = 0;
         if (stmtRes.ok) {
@@ -171,7 +174,6 @@ function TripPlannerPageInner() {
       const data = await res.json();
       if (data.error) throw new Error(data.error);
       setResult(data);
-      // Auto-detect destination IATA from query for FlightSearch
       const detectedIata = detectIataFromText(tripQuery);
       if (detectedIata) setDetectedDestIata(detectedIata);
     } catch {
@@ -181,31 +183,34 @@ function TripPlannerPageInner() {
     }
   };
 
+  const LABEL: React.CSSProperties = {
+    fontSize: 11, fontWeight: 700, color: 'var(--text-muted, #64748b)',
+    textTransform: 'uppercase', letterSpacing: 1, display: 'block', marginBottom: 8,
+  };
+
   return (
     <div style={{ minHeight: '100vh', background: 'var(--bg, #f8f9fc)' }}>
       <Header />
-      <main style={{ maxWidth: 860, margin: '0 auto', padding: '32px 20px 100px' }}>
+      <main style={{ maxWidth: 880, margin: '0 auto', padding: '32px 20px 100px' }}>
 
         {/* Hero */}
         <div style={{ marginBottom: 28, textAlign: 'center' }}>
           <div style={{ display: 'inline-flex', alignItems: 'center', gap: 8, background: 'rgba(201,151,46,0.12)', border: '1px solid rgba(201,151,46,0.3)', borderRadius: 100, padding: '5px 16px', marginBottom: 16 }}>
             <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#C9972E', display: 'inline-block' }} />
-            <span style={{ fontSize: 11, fontWeight: 700, color: '#C9972E', letterSpacing: 1.5, textTransform: 'uppercase' as const }}>AI Trip Planner</span>
+            <span style={{ fontSize: 11, fontWeight: 700, color: '#C9972E', letterSpacing: 1.5, textTransform: 'uppercase' }}>AI Trip Planner</span>
           </div>
           <h1 style={{ fontSize: 'clamp(28px, 5vw, 48px)', fontWeight: 900, color: 'var(--text, #0f172a)', margin: '0 0 10px', letterSpacing: -1, lineHeight: 1.1 }}>
             Where are you going?
           </h1>
-          <p style={{ fontSize: 15, color: 'var(--text-muted, #64748b)', margin: 0, lineHeight: 1.6, maxWidth: 480, marginInline: 'auto' }}>
-            Tell us your trip. We'll find the best way to pay using your credit card points "" flights, hotels, everything.
+          <p style={{ fontSize: 15, color: 'var(--text-muted, #64748b)', margin: 0, lineHeight: 1.6, maxWidth: 500, marginInline: 'auto' }}>
+            Tell us your trip. We&rsquo;ll find the smartest way to pay with your credit&#8209;card points &mdash; flights, hotels, everything.
           </p>
         </div>
 
         {/* Input card */}
-        <div style={{ background: 'var(--bg-card, #fff)', border: '1px solid var(--border, #e2e8f0)', borderRadius: 20, padding: 24, marginBottom: 20, boxShadow: '0 2px 12px rgba(0,0,0,0.06)' }}>
+        <div style={{ background: 'var(--bg-card, #fff)', border: '1px solid var(--border, #e2e8f0)', borderRadius: 20, padding: 24, marginBottom: 20, boxShadow: '0 4px 24px rgba(15,23,42,0.06)' }}>
           <div style={{ marginBottom: 16 }}>
-            <label style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-muted, #64748b)', textTransform: 'uppercase' as const, letterSpacing: 1, display: 'block', marginBottom: 8 }}>
-              Describe your trip
-            </label>
+            <label style={LABEL}>Describe your trip</label>
             <textarea
               value={query}
               onChange={e => setQuery(e.target.value)}
@@ -217,9 +222,9 @@ function TripPlannerPageInner() {
                 border: '1.5px solid var(--border, #e2e8f0)',
                 borderRadius: 12, fontSize: 14,
                 color: 'var(--text, #0f172a)',
-                outline: 'none', resize: 'none' as const,
+                outline: 'none', resize: 'none',
                 fontFamily: 'inherit', lineHeight: 1.5,
-                boxSizing: 'border-box' as const,
+                boxSizing: 'border-box',
                 position: 'relative', zIndex: 1,
               }}
             />
@@ -227,10 +232,10 @@ function TripPlannerPageInner() {
 
           <div className="trip-form-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 16 }}>
             <div>
-              <label style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-muted, #64748b)', textTransform: 'uppercase' as const, letterSpacing: 1, display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
+              <label style={{ ...LABEL, display: 'flex', alignItems: 'center', gap: 8 }}>
                 Your points balance
                 {pointsLoaded && (
-                  <span style={{ fontSize: 9, fontWeight: 700, color: '#16a34a', background: 'rgba(34,197,94,0.1)', border: '1px solid rgba(34,197,94,0.3)', padding: '2px 8px', borderRadius: 100, textTransform: 'uppercase' as const, letterSpacing: 1 }}>
+                  <span style={{ fontSize: 9, fontWeight: 700, color: '#16a34a', background: 'rgba(34,197,94,0.1)', border: '1px solid rgba(34,197,94,0.3)', padding: '2px 8px', borderRadius: 100, textTransform: 'uppercase', letterSpacing: 1 }}>
                     Auto-loaded
                   </span>
                 )}
@@ -239,22 +244,20 @@ function TripPlannerPageInner() {
                 type="text"
                 value={points}
                 onChange={e => setPoints(e.target.value)}
-                placeholder={pointsLoaded ? "" : "e.g. 52,164"}
+                placeholder={pointsLoaded ? '' : 'e.g. 52,164'}
                 style={{
                   width: '100%', height: 44, padding: '0 14px',
                   background: 'var(--bg-surface, #f8fafc)',
                   border: '1.5px solid var(--border, #e2e8f0)',
                   borderRadius: 10, fontSize: 14,
                   color: 'var(--text, #0f172a)', outline: 'none',
-                  boxSizing: 'border-box' as const,
-                  WebkitAppearance: 'none' as const,
+                  boxSizing: 'border-box',
+                  WebkitAppearance: 'none',
                 }}
               />
             </div>
             <div>
-              <label style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-muted, #64748b)', textTransform: 'uppercase' as const, letterSpacing: 1, display: 'block', marginBottom: 8 }}>
-                Your primary card bank
-              </label>
+              <label style={LABEL}>Your primary card bank</label>
               <select
                 value={cardBank}
                 onChange={e => setCardBank(e.target.value)}
@@ -264,7 +267,7 @@ function TripPlannerPageInner() {
                   border: '1.5px solid var(--border, #e2e8f0)',
                   borderRadius: 10, fontSize: 14,
                   color: 'var(--text, #0f172a)', outline: 'none',
-                  cursor: 'pointer', boxSizing: 'border-box' as const,
+                  cursor: 'pointer', boxSizing: 'border-box',
                 }}
               >
                 {BANKS.map(b => <option key={b} value={b}>{b}</option>)}
@@ -272,10 +275,10 @@ function TripPlannerPageInner() {
             </div>
           </div>
 
-          {/* Origin city - smart or user input */}
+          {/* Origin city */}
           {showOriginPrompt && (
             <div style={{ marginBottom: 16, padding: '12px 14px', background: 'rgba(201,151,46,0.08)', border: '1px solid rgba(201,151,46,0.2)', borderRadius: 12 }}>
-              <div style={{ fontSize: 11, fontWeight: 700, color: '#C9972E', marginBottom: 8, textTransform: 'uppercase' as const, letterSpacing: 1 }}>
+              <div style={{ fontSize: 11, fontWeight: 700, color: '#C9972E', marginBottom: 8, textTransform: 'uppercase', letterSpacing: 1 }}>
                 Where do you usually fly from?
               </div>
               <div style={{ display: 'flex', gap: 8 }}>
@@ -320,7 +323,7 @@ function TripPlannerPageInner() {
                 </button>
               </div>
               <div style={{ fontSize: 11, color: 'rgba(201,151,46,0.7)', marginTop: 6 }}>
-                We'll remember this for all your trip plans
+                We&rsquo;ll remember this for all your trip plans
               </div>
             </div>
           )}
@@ -347,25 +350,28 @@ function TripPlannerPageInner() {
               border: 'none', borderRadius: 14,
               fontSize: 15, fontWeight: 800,
               cursor: loading || !query.trim() ? 'not-allowed' : 'pointer',
+              transition: 'transform 0.12s, box-shadow 0.2s',
+              boxShadow: loading || !query.trim() ? 'none' : '0 6px 20px rgba(201,151,46,0.28)',
             }}
           >
-            {loading ? ' Planning your trip...' : ' Plan my trip with points ->'}
+            {loading ? 'Planning your trip\u2026' : 'Plan my trip with points \u2192'}
           </button>
         </div>
 
         {/* Quick chips */}
         {!result && !loading && (
           <div style={{ textAlign: 'center' }}>
-            <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-muted, #94a3b8)', textTransform: 'uppercase' as const, letterSpacing: 1, marginBottom: 12 }}>Quick ideas</div>
-            <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' as const, justifyContent: 'center' }}>
+            <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-muted, #94a3b8)', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 12 }}>Quick ideas</div>
+            <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', justifyContent: 'center' }}>
               {QUICK_TRIPS.map((trip, i) => (
                 <button key={i} onClick={() => { setQuery(trip.query); plan(trip.query); }} style={{
-                  display: 'flex', alignItems: 'center', gap: 6, padding: '8px 16px',
+                  display: 'flex', alignItems: 'center', gap: 7, padding: '8px 16px',
                   background: 'var(--bg-card, #fff)', border: '1px solid var(--border, #e2e8f0)',
                   borderRadius: 100, fontSize: 13, fontWeight: 600,
                   color: 'var(--text, #0f172a)', cursor: 'pointer',
+                  boxShadow: '0 1px 3px rgba(15,23,42,0.05)',
                 }}>
-                  <span>{trip.icon}</span><span>{trip.label}</span>
+                  <span style={{ fontSize: 15 }}>{trip.emoji}</span><span>{trip.label}</span>
                 </button>
               ))}
             </div>
@@ -374,8 +380,8 @@ function TripPlannerPageInner() {
 
         {loading && (
           <div style={{ textAlign: 'center', padding: '48px 0' }}>
-            <div style={{ fontSize: 48, marginBottom: 16 }}></div>
-            <div style={{ fontSize: 16, fontWeight: 700, color: 'var(--text, #0f172a)', marginBottom: 8 }}>Finding the best options...</div>
+            <div style={{ fontSize: 44, marginBottom: 16 }}>&#9992;&#65039;</div>
+            <div style={{ fontSize: 16, fontWeight: 700, color: 'var(--text, #0f172a)', marginBottom: 8 }}>Finding the best options&hellip;</div>
             <div style={{ fontSize: 13, color: 'var(--text-muted, #64748b)' }}>Checking flights, hotels, transfer partners and pricing</div>
           </div>
         )}
@@ -386,85 +392,91 @@ function TripPlannerPageInner() {
 
         {result && (
           <div style={{ marginTop: 8 }}>
-            {/* Summary */}
+            {/* Summary (FREE) */}
             <div style={{ background: 'linear-gradient(135deg, #1B3A5C, #0d2240)', borderRadius: 20, padding: '28px', marginBottom: 20, border: '1px solid rgba(201,151,46,0.2)' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap' as const, gap: 16, marginBottom: 16 }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: 16, marginBottom: 16 }}>
                 <div>
-                  <div style={{ fontSize: 11, fontWeight: 700, color: '#C9972E', textTransform: 'uppercase' as const, letterSpacing: 1.5, marginBottom: 6 }}>
-                     {result.destination} . {result.duration} . {result.tripType}
+                  <div style={{ fontSize: 11, fontWeight: 700, color: '#C9972E', textTransform: 'uppercase', letterSpacing: 1.5, marginBottom: 6 }}>
+                    {result.destination} &middot; {result.duration} &middot; {result.tripType}
                   </div>
-                  <div style={{ fontSize: 20, fontWeight: 800, color: '#fff', marginBottom: 4 }}>{result.summary}</div>
+                  <div style={{ fontSize: 20, fontWeight: 800, color: '#fff', marginBottom: 4, lineHeight: 1.4 }}>{result.summary}</div>
                   <div style={{ fontSize: 13, color: 'rgba(255,255,255,0.4)' }}>{result.dates}</div>
                 </div>
-                <div style={{ textAlign: 'right' as const }}>
+                <div style={{ textAlign: 'right' }}>
                   <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.4)', marginBottom: 4 }}>You save vs cash</div>
-                  <div style={{ fontSize: 32, fontWeight: 900, color: '#22c55e' }}>Rs.{result.totalSaving.toLocaleString('en-IN')}</div>
+                  <div style={{ fontSize: 32, fontWeight: 900, color: '#22c55e' }}>&#8377;{result.totalSaving.toLocaleString('en-IN')}</div>
                 </div>
               </div>
 
-              <div style={{ background: result.canAfford ? 'rgba(34,197,94,0.15)' : 'rgba(239,68,68,0.15)', border: `1px solid ${result.canAfford ? 'rgba(34,197,94,0.3)' : 'rgba(239,68,68,0.3)'}`, borderRadius: 12, padding: '12px 16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap' as const, gap: 8 }}>
+              <div style={{ background: result.canAfford ? 'rgba(34,197,94,0.15)' : 'rgba(239,68,68,0.15)', border: `1px solid ${result.canAfford ? 'rgba(34,197,94,0.3)' : 'rgba(239,68,68,0.3)'}`, borderRadius: 12, padding: '12px 16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 8 }}>
                 <div>
                   <div style={{ fontSize: 13, fontWeight: 700, color: result.canAfford ? '#22c55e' : '#ef4444' }}>
-                    {result.canAfford ? '" Your points cover this trip' : `  Need ${result.pointsGap.toLocaleString('en-IN')} more points`}
+                    {result.canAfford ? '\u2713 Your points cover this trip' : `Need ${result.pointsGap.toLocaleString('en-IN')} more points`}
                   </div>
                   <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.4)', marginTop: 2 }}>
-                    Need {result.totalPointsNeeded.toLocaleString('en-IN')} pts . You have {(parseInt(points.replace(/,/g, '')) || 0).toLocaleString('en-IN')} pts
+                    Need {result.totalPointsNeeded.toLocaleString('en-IN')} pts &middot; You have {(parseInt(points.replace(/,/g, '')) || 0).toLocaleString('en-IN')} pts
                   </div>
                 </div>
                 {!result.canAfford && (
                   <Link href={`/cards/${result.bestCardId}`} style={{ padding: '8px 16px', background: '#C9972E', color: '#0a0a0a', borderRadius: 10, fontSize: 12, fontWeight: 700, textDecoration: 'none' }}>
-                    Get {result.bestCard} '
+                    Get {result.bestCard} &rarr;
                   </Link>
                 )}
               </div>
 
-              {result.proTip && <div style={{ marginTop: 12, fontSize: 13, color: 'rgba(255,255,255,0.45)', lineHeight: 1.6, fontStyle: 'italic' as const }}>' {result.proTip}</div>}
-            </div>
-            {/* Live Flight Search */}
-            <div style={{ marginTop: 32, marginBottom: 32 }}>
-              <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: '0.15em', textTransform: 'uppercase', color: 'var(--copper,#8C5F12)', marginBottom: 16 }}>SEARCH FLIGHTS</div>
-              <FlightSearch defaultFrom={originIata || 'BLR'} defaultTo={detectedDestIata || (result?.destination ? result.destination.substring(0,3).toUpperCase() : '')} pointsBalance={parseInt((points || '0').replace(/,/g, '')) || 0} bank={cardBank || 'HDFC'} />
+              {result.proTip && <div style={{ marginTop: 12, fontSize: 13, color: 'rgba(255,255,255,0.45)', lineHeight: 1.6, fontStyle: 'italic' }}>&ldquo;{result.proTip}&rdquo;</div>}
             </div>
 
+            <SavePromptBanner feature='trip' />
 
-
-            {/* Live price comparison across platforms */}
-            <TripComparison
-              destination={result.destination}
-              origin={originCity}
-              nights={parseInt(result.duration?.replace(/\D/g,'')) || 3}
-              cabin={result.flights?.[0]?.class?.toLowerCase() || 'economy'}
-              userPoints={parseInt((points || '0').replace(/,/g, '')) || 0}
-              cardBank={cardBank}
-            />
-
-            {/* Flights */}
-            {/* Points redemption - compact version */}
-            {result.flights?.[0] && (
-              <div style={{ background: 'rgba(201,151,46,0.06)', border: '1px solid rgba(201,151,46,0.15)', borderRadius: 16, padding: '16px 20px', marginBottom: 16 }}>
-                <div style={{ fontSize: 10, fontWeight: 700, color: '#C9972E', letterSpacing: 1.5, textTransform: 'uppercase' as const, marginBottom: 10 }}>
-                  Redeem your points
-                </div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap' as const, gap: 12 }}>
-                  <div>
-                    <div style={{ fontSize: 14, fontWeight: 700, color: 'var(--text, #0f172a)', marginBottom: 2 }}>
-                      {result.flights[0].airline} via {result.flights[0].transferPartner}
-                    </div>
-                    <div style={{ fontSize: 12, color: 'var(--text-muted, #64748b)' }}>
-                      {result.flights[0].pointsNeeded.toLocaleString('en-IN')} pts needed . Best card: {result.flights[0].cardNeeded}
-                    </div>
-                  </div>
-                  <button
-                    onClick={() => { setModalFlight(result.flights[0]); setModalHotel(result.hotels[0] || null); setModalOpen(true); }}
-                    style={{ padding: '10px 20px', background: 'linear-gradient(135deg, #C9972E, #E8B84B)', color: '#0a0a0a', border: 'none', borderRadius: 10, fontSize: 13, fontWeight: 800, cursor: 'pointer', whiteSpace: 'nowrap' as const }}
-                  >
-                    How to redeem points
-                  </button>
-                </div>
+            {/* Live flight results (PRO-gated) */}
+            <ProGate
+              title="Unlock live flight results & booking"
+              subtitle="See real-time award seats, live fares across every platform, and one-tap booking with your points."
+            >
+              {/* Live Flight Search */}
+              <div style={{ marginTop: 32, marginBottom: 32 }}>
+                <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: '0.15em', textTransform: 'uppercase', color: 'var(--copper,#8C5F12)', marginBottom: 16 }}>Search flights</div>
+                <FlightSearch defaultFrom={originIata || 'BLR'} defaultTo={detectedDestIata || (result?.destination ? result.destination.substring(0, 3).toUpperCase() : '')} pointsBalance={parseInt((points || '0').replace(/,/g, '')) || 0} bank={cardBank || 'HDFC'} />
               </div>
-            )}
 
-            <div style={{ textAlign: 'center' }}>
+              {/* Live price comparison across platforms */}
+              <TripComparison
+                destination={result.destination}
+                origin={originCity}
+                nights={parseInt(result.duration?.replace(/\D/g, '')) || 3}
+                cabin={result.flights?.[0]?.class?.toLowerCase() || 'economy'}
+                userPoints={parseInt((points || '0').replace(/,/g, '')) || 0}
+                cardBank={cardBank}
+              />
+
+              {/* Points redemption CTA */}
+              {result.flights?.[0] && (
+                <div style={{ background: 'rgba(201,151,46,0.06)', border: '1px solid rgba(201,151,46,0.15)', borderRadius: 16, padding: '16px 20px', marginTop: 16, marginBottom: 16 }}>
+                  <div style={{ fontSize: 10, fontWeight: 700, color: '#C9972E', letterSpacing: 1.5, textTransform: 'uppercase', marginBottom: 10 }}>
+                    Redeem your points
+                  </div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 12 }}>
+                    <div>
+                      <div style={{ fontSize: 14, fontWeight: 700, color: 'var(--text, #0f172a)', marginBottom: 2 }}>
+                        {result.flights[0].airline} via {result.flights[0].transferPartner}
+                      </div>
+                      <div style={{ fontSize: 12, color: 'var(--text-muted, #64748b)' }}>
+                        {result.flights[0].pointsNeeded.toLocaleString('en-IN')} pts needed &middot; Best card: {result.flights[0].cardNeeded}
+                      </div>
+                    </div>
+                    <button
+                      onClick={() => { setModalFlight(result.flights[0]); setModalHotel(result.hotels[0] || null); setModalOpen(true); }}
+                      style={{ padding: '10px 20px', background: 'linear-gradient(135deg, #C9972E, #E8B84B)', color: '#0a0a0a', border: 'none', borderRadius: 10, fontSize: 13, fontWeight: 800, cursor: 'pointer', whiteSpace: 'nowrap' }}
+                    >
+                      How to redeem points
+                    </button>
+                  </div>
+                </div>
+              )}
+            </ProGate>
+
+            <div style={{ textAlign: 'center', marginTop: 24 }}>
               <button onClick={() => { setResult(null); setQuery(''); }} style={{ padding: '12px 28px', background: 'var(--bg-card, #fff)', border: '1px solid var(--border, #e2e8f0)', borderRadius: 12, fontSize: 14, fontWeight: 600, color: 'var(--text, #0f172a)', cursor: 'pointer' }}>
                 Plan another trip
               </button>
@@ -493,5 +505,3 @@ export default function TripPlannerPage() {
     </Suspense>
   );
 }
-
-
