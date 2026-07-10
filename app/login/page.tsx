@@ -20,11 +20,22 @@ export default function LoginPage() {
     return raw && raw.startsWith('/') && !raw.startsWith('//') ? raw : '/dashboard'
   }
 
+  // Bounce already-signed-in users to their destination; otherwise show the
+  // sign-in UI. `checking` gates the WHOLE page (return null below), so it must
+  // always resolve — getSession() can reject or hang (e.g. Supabase Web Locks
+  // contention) and has no built-in timeout. If we only cleared `checking` in
+  // the success branch, a stalled promise would leave the page blank forever.
+  // So we also clear on error and on a short timeout: worst case the user sees
+  // the sign-in form, never a blank screen.
   useEffect(() => {
+    let settled = false
     supabase.auth.getSession().then(({ data: { session } }) => {
+      settled = true
       if (session) router.replace(nextPath())
       else setChecking(false)
-    })
+    }).catch(() => { settled = true; setChecking(false) })
+    const t = setTimeout(() => { if (!settled) setChecking(false) }, 2000)
+    return () => clearTimeout(t)
   }, [])
 
   const handleGoogleLogin = async () => {
