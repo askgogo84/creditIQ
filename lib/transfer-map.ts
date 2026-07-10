@@ -42,6 +42,13 @@ export interface TransferRoute {
   cardBank?: string;            // optional bank disambiguator (e.g. 'HDFC', 'Axis', 'AmEx')
   ratio: [number, number];      // [cardPoints, airlineMiles]
   verified: boolean;            // ALWAYS false here — honest estimate
+  // Optional allowlist of specific SEED_CARDS.name values this route applies to.
+  // Used when a (currency, bank) pair is NOT uniform across a bank's cards — e.g.
+  // only HDFC Infinia + Diners Black transfer ~1:1 to KrisFlyer, while Regalia
+  // Gold was devalued and differs. When set, a card must be on this list for the
+  // route to apply; non-listed cards get NO route (honest: show nothing, not a
+  // wrong ratio). Matched case/spacing-insensitively.
+  cardNameAllowlist?: string[];
 }
 
 /**
@@ -56,7 +63,15 @@ export const TRANSFER_MAP: Record<string, TransferRoute[]> = {
   singapore: [
     { cardCurrency: 'edge',          cardBank: 'Axis', ratio: [5, 4], verified: false }, // Axis EDGE (Magnus/Reserve) 5:4
     { cardCurrency: 'miles',         cardBank: 'Axis', ratio: [1, 1], verified: false }, // Axis EDGE Miles (Atlas etc.) 1:1
-    { cardCurrency: 'reward-points', cardBank: 'HDFC', ratio: [1, 1], verified: false }, // HDFC (Infinia/Diners) 1:1
+    // HDFC reward-points -> KrisFlyer 1:1, but ONLY Infinia + Diners Black.
+    // Regalia Gold (devalued) and Diners Privilege do NOT get this ratio.
+    {
+      cardCurrency: 'reward-points',
+      cardBank: 'HDFC',
+      ratio: [1, 1],
+      verified: false,
+      cardNameAllowlist: ['HDFC Infinia Metal Edition', 'HDFC Diners Club Black'],
+    },
   ],
 
   // Air India — unconfirmed slug, estimate only.
@@ -89,19 +104,26 @@ export interface CardPointsEstimate {
  *
  * Returns null when there is no matching route — we do NOT guess a ratio
  * (honesty rule). If `bank` is supplied it must agree with the route's
- * cardBank; a mismatch yields null rather than a fabricated estimate.
+ * cardBank; a mismatch yields null rather than a fabricated estimate. If a
+ * route carries a cardNameAllowlist, `cardName` must be on it (else null) —
+ * this is how per-card exceptions like HDFC Regalia Gold are excluded.
  */
 export function cardPointsFor(
   source: string,
   currency: RewardCurrency,
   bank: string | undefined,
   mileageCost: number,
+  cardName?: string,
 ): CardPointsEstimate | null {
   if (!mileageCost || mileageCost <= 0) return null;
 
   const route = partnersForSource(source).find((r) => {
     if (r.cardCurrency !== currency) return false;
     if (r.cardBank && bank && normalize(r.cardBank) !== normalize(bank)) return false;
+    if (r.cardNameAllowlist) {
+      const n = normalize(cardName || '');
+      if (!n || !r.cardNameAllowlist.some((allowed) => normalize(allowed) === n)) return false;
+    }
     return true;
   });
   if (!route) return null;

@@ -193,7 +193,7 @@ function buildRedemption(
     // Does this currency transfer into this award source?
     const partners = partnersForSource(award.source);
     const est = partners.length
-      ? cardPointsFor(award.source, resolved.currency, resolved.bank, award.mileageCost)
+      ? cardPointsFor(award.source, resolved.currency, resolved.bank, award.mileageCost, resolved.matchedCardName)
       : null;
 
     if (!est) {
