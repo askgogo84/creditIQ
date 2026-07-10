@@ -76,6 +76,12 @@ export function Header() {
     router.push('/')
   }
 
+  // Carry the page the user is on into the login link so they return here after
+  // signing in (e.g. /flights -> /login?next=/flights -> back to /flights).
+  const loginHref = pathname && pathname !== '/' && pathname !== '/login'
+    ? `/login?next=${encodeURIComponent(pathname)}`
+    : '/login'
+
   const isActive = (href: string) => {
     if (href === '/') return pathname === '/'
     if (href === '/smart-match') return AI_PATHS.some(p => pathname.startsWith(p))
@@ -292,7 +298,7 @@ export function Header() {
             {user ? (
               <button onClick={signOut} className="ciq-theme-desktop" style={{ padding: '8px 16px', fontSize: 13, fontWeight: 600, color: '#fff', background: '#C9972E', border: 'none', borderRadius: 100, cursor: 'pointer' }}>Sign Out</button>
             ) : (
-              <Link href="/login" className="ciq-theme-desktop" style={{ padding: '8px 16px', fontSize: 13, fontWeight: 600, color: '#fff', background: '#C9972E', textDecoration: 'none', borderRadius: 100 }}>Sign In</Link>
+              <Link href={loginHref} className="ciq-theme-desktop" style={{ padding: '8px 16px', fontSize: 13, fontWeight: 600, color: '#fff', background: '#C9972E', textDecoration: 'none', borderRadius: 100 }}>Sign In</Link>
             )}
 
             <Link href="/smart-match" className="ciq-cta">
@@ -331,7 +337,7 @@ export function Header() {
             <div style={{ marginTop: 16, paddingTop: 16, borderTop: '1px solid rgba(20,41,80,0.08)' }}>
               {user
                 ? <button onClick={signOut} style={{ width: '100%', padding: '13px', background: '#C9972E', color: '#fff', border: 'none', borderRadius: 12, fontSize: 15, fontWeight: 700, cursor: 'pointer' }}>Sign Out</button>
-                : <Link href="/login" style={{ display: 'block', textAlign: 'center', padding: '13px', background: '#142950', color: '#fff', borderRadius: 12, fontSize: 15, fontWeight: 700, textDecoration: 'none' }}>Sign In</Link>
+                : <Link href={loginHref} style={{ display: 'block', textAlign: 'center', padding: '13px', background: '#142950', color: '#fff', borderRadius: 12, fontSize: 15, fontWeight: 700, textDecoration: 'none' }}>Sign In</Link>
               }
             </div>
           </div>

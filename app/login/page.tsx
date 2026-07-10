@@ -13,19 +13,29 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false)
   const [checking, setChecking] = useState(true)
 
+  // Where to land after login. Read ?next=/flights (etc) at runtime and only
+  // ever honor same-origin relative paths, so this can't become an open redirect.
+  const nextPath = () => {
+    const raw = new URLSearchParams(window.location.search).get('next')
+    return raw && raw.startsWith('/') && !raw.startsWith('//') ? raw : '/dashboard'
+  }
+
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
-      if (session) router.replace('/dashboard')
+      if (session) router.replace(nextPath())
       else setChecking(false)
     })
   }, [])
 
   const handleGoogleLogin = async () => {
     setLoading(true)
+    // Build redirectTo from window.location.origin at runtime: localhost stays
+    // on localhost, prod stays on prod. Carry `next` so we return to the page
+    // the user signed in from (e.g. /flights), not the homepage.
     await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: {
-        redirectTo: `${window.location.origin}/auth/callback?next=/dashboard`,
+        redirectTo: `${window.location.origin}/auth/callback?next=${encodeURIComponent(nextPath())}`,
       },
     })
   }
