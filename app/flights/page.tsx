@@ -477,7 +477,7 @@ function FlightCard({ flight, open, onToggle }: { flight: FusedFlight; open: boo
           )}
 
           {flight.redemption.map((r, i) => (
-            <RedemptionRow key={i} r={r} source={award!.source} program={award!.program} isBest={sameOption(r, best)} />
+            <RedemptionRow key={i} r={r} source={award!.source} program={award!.program} flightRef={flightNo} isBest={sameOption(r, best)} />
           ))}
         </div>
       )}
@@ -498,7 +498,8 @@ function TimeCol({ time, sub, align }: { time: string; sub: string; align?: 'rig
 
 // ── one card's redemption estimate (grey/gold styling only) ─────────────────
 
-function RedemptionRow({ r, source, program, isBest }: { r: RedemptionOption; source: string; program: string; isBest?: boolean }) {
+function RedemptionRow({ r, source, program, flightRef, isBest }: { r: RedemptionOption; source: string; program: string; flightRef?: string; isBest?: boolean }) {
+  const [showHow, setShowHow] = useState(false);
   const rowBase: React.CSSProperties = {
     background: '#fff',
     border: isBest ? `1.5px solid ${GOLD}` : `1px solid ${ESTIMATE_BORDER}`,
@@ -548,16 +549,12 @@ function RedemptionRow({ r, source, program, isBest }: { r: RedemptionOption; so
             {r.ratio ? ` · transfer ${r.ratio[0]}:${r.ratio[1]}` : ''}
           </div>
         </div>
-        {site && (
-          <a
-            href={site}
-            target="_blank"
-            rel="noopener noreferrer"
-            style={{ fontSize: 12, fontWeight: 700, color: '#7a5a12', textDecoration: 'none', border: `1.5px solid ${GOLD}`, borderRadius: 8, padding: '6px 12px', whiteSpace: 'nowrap' }}
-          >
-            How to book {'↗'}
-          </a>
-        )}
+        <button
+          onClick={() => setShowHow((v) => !v)}
+          style={{ fontSize: 12, fontWeight: 700, color: '#7a5a12', background: showHow ? ESTIMATE_BG : '#fff', border: `1.5px solid ${GOLD}`, borderRadius: 8, padding: '6px 12px', whiteSpace: 'nowrap', cursor: 'pointer' }}
+        >
+          {showHow ? 'Hide steps ↑' : 'How to book with points'}
+        </button>
       </div>
 
       {/* numbers row */}
@@ -577,6 +574,66 @@ function RedemptionRow({ r, source, program, isBest }: { r: RedemptionOption; so
       <div style={{ marginTop: 6, fontSize: 11, color: GREY_SOFT, lineHeight: 1.5 }}>
         Estimate only. Transfer your {r.bank} points to {r.transferPartner}, then book the award seat.
         Confirm the {r.ratio ? `${r.ratio[0]}:${r.ratio[1]} ` : ''}ratio on transfer {'—'} it is not yet verified.
+      </div>
+
+      {/* How-to-book steps panel — award seats can't be booked via a single link;
+          they need a points transfer THEN an airline award booking. No bank
+          transfer-page URL is shown (we have no verified one). */}
+      {showHow && (
+        <div style={{ marginTop: 12, padding: 14, borderRadius: 10, background: ESTIMATE_BG, border: `1px solid ${GOLD}` }}>
+          <div style={{ fontSize: 11, fontWeight: 800, color: '#7a5a12', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 10 }}>
+            How to book with points
+          </div>
+
+          <HowStep n={1} title={`Transfer ${inr(r.cardPointsNeeded || 0)} ${r.bank} points → ${r.transferPartner}`}>
+            {r.ratio ? `Ratio ${r.ratio[0]}:${r.ratio[1]} (estimated). ` : ''}
+            Do this from your {r.bank} rewards portal / app {'—'} we don&rsquo;t link it directly to avoid
+            sending you to the wrong page.
+          </HowStep>
+
+          <HowStep n={2} title="Transfers are one-way and take time">
+            Points move <strong>one-way</strong> into {r.transferPartner} and can&rsquo;t be moved back.
+            Allow <strong>~1{'–'}7 days</strong> <span style={{ color: GREY_SOFT }}>(estimate)</span> before the
+            miles land {'—'} book only after they arrive.
+          </HowStep>
+
+          <HowStep n={3} title={`Book ${flightRef ? flightRef + ' ' : ''}on ${program}${site ? '' : ' award site'}`} last>
+            Sign in to {program} and redeem the award seat with your transferred miles (plus est. taxes).
+            {site && (
+              <>
+                {' '}
+                <a
+                  href={site}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  style={{ color: '#7a5a12', fontWeight: 700, textDecoration: 'underline' }}
+                >
+                  Open {program} award site {'↗'}
+                </a>
+              </>
+            )}
+          </HowStep>
+
+          <div style={{ marginTop: 10, fontSize: 11, fontWeight: 700, color: GREY, lineHeight: 1.5 }}>
+            {'⚠'} Ratio estimated {'—'} confirm on your {r.bank} portal before transferring. Transfers are
+            irreversible.
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// One numbered step in the "how to book with points" panel (grey/gold only).
+function HowStep({ n, title, children, last }: { n: number; title: string; children: React.ReactNode; last?: boolean }) {
+  return (
+    <div style={{ display: 'flex', gap: 10, marginBottom: last ? 0 : 10 }}>
+      <div style={{ flexShrink: 0, width: 22, height: 22, borderRadius: 100, background: GOLD, color: '#0a0a0a', fontSize: 12, fontWeight: 800, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        {n}
+      </div>
+      <div style={{ flex: 1 }}>
+        <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--text, #0f172a)' }}>{title}</div>
+        <div style={{ fontSize: 12, color: GREY, marginTop: 2, lineHeight: 1.5 }}>{children}</div>
       </div>
     </div>
   );

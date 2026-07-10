@@ -151,6 +151,27 @@ function normalize(s: string): string {
   return (s || '').toLowerCase().replace(/[^a-z0-9]+/g, '');
 }
 
+// Generic/issuer words that carry no product identity — dropped before
+// token-overlap matching so only the DISTINCTIVE brand token (e.g. "infinia",
+// "regalia", "magnus", "atlas") drives a match. Bank tokens are here too: the
+// `bank` field already carries the issuer, so its name-token is noise here.
+const GENERIC_NAME_TOKENS = new Set([
+  'credit', 'card', 'cards', 'the', 'edition', 'metal', 'club', 'bank',
+  'plus', 'for', 'and', 'signature', 'co', 'branded',
+  // issuer/bank tokens
+  'hdfc', 'axis', 'sbi', 'icici', 'amex', 'american', 'express', 'idfc',
+  'kotak', 'rbl', 'yes', 'standard', 'chartered', 'sc', 'au', 'indusind',
+  'hsbc', 'citi',
+]);
+
+/** Distinctive lowercase tokens in a card name (>=3 chars, non-generic). */
+function significantTokens(name: string): string[] {
+  return (name || '')
+    .toLowerCase()
+    .split(/[^a-z0-9]+/)
+    .filter((t) => t.length >= 3 && !GENERIC_NAME_TOKENS.has(t));
+}
+
 export interface ResolvedCard {
   matchedCardName: string;      // the SEED_CARDS.name we matched
   bank: string;
@@ -180,6 +201,24 @@ export function resolveCardCurrency(
       const bankHit = !bank || normalize(c.bank) === normalize(bank);
       return nameHit && bankHit;
     });
+  }
+
+  // 3) token-overlap fallback — catches user names that carry extra generic
+  // words on BOTH sides (e.g. "Infinia Credit Card" vs "HDFC Infinia Metal
+  // Edition"), where containment can't see the shared brand token. Guarded by
+  // bank agreement AND uniqueness: if the tokens match more than one seed card
+  // it is ambiguous, so we return null rather than guess (honesty rule).
+  if (!match) {
+    const targetTokens = significantTokens(cardName);
+    if (targetTokens.length) {
+      const candidates = SEED_CARDS.filter((c) => {
+        const bankHit = !bank || normalize(c.bank) === normalize(bank);
+        if (!bankHit) return false;
+        const seedTokens = new Set(significantTokens(c.name));
+        return targetTokens.some((t) => seedTokens.has(t));
+      });
+      if (candidates.length === 1) match = candidates[0];
+    }
   }
 
   if (!match) return null; // currency unknown — do NOT guess
