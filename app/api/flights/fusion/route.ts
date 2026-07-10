@@ -21,7 +21,12 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 import { requireAuth } from '@/lib/api-auth';
-import { searchAwardAvailability, type SeatsAeroResult } from '@/lib/seats-aero';
+import {
+  searchAwardAvailability,
+  getAvailabilityTrips,
+  type SeatsAeroResult,
+  type SeatsAeroTrip,
+} from '@/lib/seats-aero';
 import {
   resolveCardCurrency,
   partnersForSource,
@@ -136,7 +141,12 @@ function norm(s: string): string {
 // flight carries an airline code. Returns the lowest-mileage match, or null.
 function matchAward(flight: CashFlight, awards: SeatsAeroResult[]): SeatsAeroResult | null {
   const fDay = dayOf(flight.departure);
-  const fAir = norm(flight.airline);
+  // Only gate on airline when the cash source gave a real 2-char IATA carrier
+  // code (e.g. "SQ", "6E"). Aggregators return "Various"/"Multiple" for
+  // multi-carrier fares — gating on those would wrongly drop a valid
+  // date-matched award, so we skip the airline check in that case.
+  const fAirRaw = norm(flight.airline);
+  const fAir = /^[A-Z0-9]{2}$/.test(fAirRaw) ? fAirRaw : '';
   const candidates = awards.filter((a) => {
     if (fDay && dayOf(a.date) && dayOf(a.date) !== fDay) return false;
     if (fAir && a.airlines) {
@@ -237,6 +247,76 @@ function pickBest(options: RedemptionOption[]): RedemptionOption | null {
   );
 }
 
+// Award-only cards have NO cash price, so value-per-point is undefined. Fall back
+// to fewest card points: prefer an affordable+transferable route, else the
+// cheapest transferable one (UI still flags it, honestly, as "short by N").
+function pickBestAwardOnly(options: RedemptionOption[]): RedemptionOption | null {
+  const transferable = options.filter((o) => o.status === 'ok' && o.cardPointsNeeded != null);
+  if (!transferable.length) return null;
+  const affordable = transferable.filter((o) => o.canAfford);
+  const pool = affordable.length ? affordable : transferable;
+  return pool.reduce((best, o) => (o.cardPointsNeeded! < best.cardPointsNeeded! ? o : best));
+}
+
+// ── award view (rich detail attached to a flight card) ───────────────────────
+
+// How many awards we enrich with a per-flight trips call. Each is a separate
+// credit-costing seats.aero request, so we cap and log the remainder.
+const ENRICH_CAP = 6;
+
+// Stable identity for an award across cash-match dedupe + trip-detail lookup.
+function awardKey(a: SeatsAeroResult): string {
+  return a.id || `${a.source}|${a.date}|${a.mileageCost}`;
+}
+
+interface AwardView {
+  program: string;
+  mileageCost: number;
+  seats: number;
+  source: string;
+  airlineCode: string;
+  isDirect: boolean;
+  date: string;
+  cabin: Cabin;
+  trip: {
+    flightNumbers: string;
+    carriers: string;
+    aircraft: string;
+    departsAt: string;
+    arrivesAt: string;
+    durationMinutes: number;
+    stops: number;
+    totalTaxes: number;
+    taxesCurrency: string;
+  } | null;
+}
+
+function buildAwardView(a: SeatsAeroResult, trip: SeatsAeroTrip | null, cabin: Cabin): AwardView {
+  return {
+    program: programLabel(a.source),
+    mileageCost: a.mileageCost,
+    seats: a.remainingSeats,
+    source: a.source,
+    airlineCode: a.airlines,
+    isDirect: a.isDirect,
+    date: a.date,
+    cabin,
+    trip: trip
+      ? {
+          flightNumbers: trip.flightNumbers,
+          carriers: trip.carriers,
+          aircraft: trip.aircraft,
+          departsAt: trip.departsAt,
+          arrivesAt: trip.arrivesAt,
+          durationMinutes: trip.durationMinutes,
+          stops: trip.stops,
+          totalTaxes: trip.totalTaxes,
+          taxesCurrency: trip.taxesCurrency,
+        }
+      : null,
+  };
+}
+
 // ── handler ──────────────────────────────────────────────────────────────────
 
 export async function POST(req: NextRequest) {
@@ -266,29 +346,90 @@ export async function POST(req: NextRequest) {
       fetchUserCards(gate.userId),
     ]);
 
-    const results = cashFlights.map((flight) => {
+    // Enrich the lowest-mileage awards with per-flight trip details (flight #,
+    // times, duration, exact stops). Each is a separate credit-costing seats.aero
+    // call, so we cap at ENRICH_CAP and log anything left summary-only.
+    const sortedAwards = [...awards].sort((a, b) => a.mileageCost - b.mileageCost);
+    const toEnrich = sortedAwards.slice(0, ENRICH_CAP);
+    const tripPairs = await Promise.all(
+      toEnrich.map(
+        async (a) => [awardKey(a), await getAvailabilityTrips(a.id, cabin)] as const,
+      ),
+    );
+    const tripByKey = new Map<string, SeatsAeroTrip | null>(tripPairs);
+    if (awards.length > ENRICH_CAP) {
+      console.warn(
+        `fusion: enriched ${ENRICH_CAP}/${awards.length} awards with trip details; ` +
+          `${awards.length - ENRICH_CAP} shown summary-only`,
+      );
+    }
+
+    // Cash-matched flights: each cash fare with its matched award (if any).
+    const matchedKeys = new Set<string>();
+    const cashResults = cashFlights.map((flight) => {
       const awardMatch = matchAward(flight, awards);
 
       if (!awardMatch) {
         // No award for this flight -> cash-only, still shown.
-        return { ...flight, award: null, redemption: [] as RedemptionOption[], bestOption: null };
+        return {
+          ...flight,
+          cashUnavailable: false,
+          award: null as AwardView | null,
+          redemption: [] as RedemptionOption[],
+          bestOption: null as RedemptionOption | null,
+        };
       }
 
-      const award = {
-        program: programLabel(awardMatch.source),
-        mileageCost: awardMatch.mileageCost,
-        seats: awardMatch.remainingSeats,
-        source: awardMatch.source,
-      };
+      const key = awardKey(awardMatch);
+      matchedKeys.add(key);
+      const award = buildAwardView(awardMatch, tripByKey.get(key) ?? null, cabin);
       const redemption = buildRedemption(cards, awardMatch, flight.price);
       const bestOption = pickBest(redemption);
 
-      return { ...flight, award, redemption, bestOption };
+      return { ...flight, cashUnavailable: false, award, redemption, bestOption };
     });
+
+    // AWARD-FIRST: awards with no cash match become points-only cards. When the
+    // cash search returned nothing, EVERY award surfaces here instead of being
+    // hidden behind "No flights found" — the awards are our core value.
+    const awardOnly = awards
+      .filter((a) => !matchedKeys.has(awardKey(a)))
+      .map((a) => {
+        const key = awardKey(a);
+        const trip = tripByKey.get(key) ?? null;
+        const award = buildAwardView(a, trip, cabin);
+        const redemption = buildRedemption(cards, a, 0); // no cash price -> value/point stays null
+        const bestOption = pickBestAwardOnly(redemption);
+
+        return {
+          id: `award-${key}`,
+          price: 0,
+          airline: a.airlines || trip?.carriers || '',
+          from,
+          to,
+          departure: trip?.departsAt || a.date,
+          arrival: trip?.arrivesAt || '',
+          duration: trip ? Math.round(trip.durationMinutes / 60) : 0,
+          stops: trip ? trip.stops : a.isDirect ? 0 : -1, // -1 = stop count unknown
+          bookingLink: '',
+          cashUnavailable: true,
+          award,
+          redemption,
+          bestOption,
+        };
+      });
+
+    const results = [...cashResults, ...awardOnly];
 
     return NextResponse.json({
       route: { from, to, date_from: dateFrom, date_to: dateTo, cabin },
-      counts: { cashFlights: cashFlights.length, awards: awards.length, cards: cards.length },
+      counts: {
+        cashFlights: cashFlights.length,
+        awards: awards.length,
+        awardsEnriched: Math.min(ENRICH_CAP, awards.length),
+        awardOnlyCards: awardOnly.length,
+        cards: cards.length,
+      },
       verifiedPolicy: 'all-estimates', // every redemption is verified:false
       flights: results,
     });

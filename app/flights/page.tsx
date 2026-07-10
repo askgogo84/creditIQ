@@ -39,6 +39,30 @@ interface RedemptionOption {
   rating?: { valuePerPointInr: number | null; label: string };
 }
 
+interface TripDetail {
+  flightNumbers: string;
+  carriers: string;
+  aircraft: string;
+  departsAt: string;
+  arrivesAt: string;
+  durationMinutes: number;
+  stops: number;
+  totalTaxes: number;
+  taxesCurrency: string;
+}
+
+interface AwardInfo {
+  program: string;
+  mileageCost: number;
+  seats: number;
+  source: string;
+  airlineCode?: string;
+  isDirect?: boolean;
+  date?: string;
+  cabin?: Cabin;
+  trip?: TripDetail | null;
+}
+
 interface FusedFlight {
   id: string;
   price: number;
@@ -50,7 +74,8 @@ interface FusedFlight {
   duration: number;
   stops: number;
   bookingLink: string;
-  award: { program: string; mileageCost: number; seats: number; source: string } | null;
+  cashUnavailable?: boolean;
+  award: AwardInfo | null;
   redemption: RedemptionOption[];
   bestOption: RedemptionOption | null;
 }
@@ -72,12 +97,38 @@ const PROGRAM_SITE: Record<string, string> = {
 };
 
 const inr = (n: number) => n.toLocaleString('en-IN');
-const fmtTime = (iso: string) => {
+// seats.aero (and Kiwi) stamp DepartsAt/ArrivesAt with a trailing "Z" but the
+// value is the airport-LOCAL wall-clock, not true UTC. Format in UTC so we show
+// the clock time as given (e.g. "23:05") instead of shifting it by the offset.
+const fmtTimeOnly = (iso: string) => {
   if (!iso) return '';
   const d = new Date(iso);
   if (isNaN(d.getTime())) return '';
-  return d.toLocaleString('en-IN', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' });
+  return d.toLocaleString('en-IN', { hour: '2-digit', minute: '2-digit', timeZone: 'UTC' });
 };
+const fmtDateOnly = (iso: string) => {
+  if (!iso) return '';
+  const d = new Date(iso);
+  if (isNaN(d.getTime())) return '';
+  return d.toLocaleString('en-IN', { day: '2-digit', month: 'short', timeZone: 'UTC' });
+};
+const fmtDuration = (mins: number) => {
+  if (!mins || mins <= 0) return '';
+  const h = Math.floor(mins / 60);
+  const m = mins % 60;
+  return `${h}h${m ? ` ${m}m` : ''}`;
+};
+const stopLabel = (stops: number, isDirect?: boolean) => {
+  if (stops === 0) return 'Non-stop';
+  if (stops > 0) return `${stops} stop${stops > 1 ? 's' : ''}`;
+  if (isDirect === true) return 'Non-stop';
+  if (isDirect === false) return 'Has stops';
+  return '';
+};
+const titleCase = (s: string) => (s ? s.charAt(0).toUpperCase() + s.slice(1) : '');
+// Two redemption options refer to the same card+route (used to flag the best one).
+const sameOption = (a: RedemptionOption | null, b: RedemptionOption | null) =>
+  !!a && !!b && a.cardName === b.cardName && a.bank === b.bank && a.cardPointsNeeded === b.cardPointsNeeded;
 
 export default function FlightsFusionPage() {
   const [from, setFrom] = useState('BLR');
@@ -256,75 +307,136 @@ export default function FlightsFusionPage() {
 
 function FlightCard({ flight, open, onToggle }: { flight: FusedFlight; open: boolean; onToggle: () => void }) {
   const best = flight.bestOption;
-  const hasAward = !!flight.award;
+  const award = flight.award;
+  const hasAward = !!award;
+  const pointsOnly = !!flight.cashUnavailable;
+  const trip = award?.trip ?? null;
+
+  // Rich flight detail: trips endpoint first, cached/summary fallbacks.
+  const carrier = trip?.carriers || award?.airlineCode || flight.airline || 'Flight';
+  const flightNo = trip?.flightNumbers || '';
+  const dep = trip?.departsAt || flight.departure || award?.date || '';
+  const arr = trip?.arrivesAt || flight.arrival || '';
+  const durMins = trip?.durationMinutes || (flight.duration > 0 ? flight.duration * 60 : 0);
+  const stops = trip ? trip.stops : flight.stops;
+  const cabinLabel = award?.cabin ? titleCase(award.cabin) : '';
+  // seats.aero reports taxes in minor units of taxesCurrency.
+  const taxes =
+    trip && trip.totalTaxes > 0
+      ? `${trip.taxesCurrency || ''} ${inr(Math.round(trip.totalTaxes / 100))}`.trim()
+      : '';
 
   return (
     <div style={{ background: 'var(--bg-card, #fff)', border: '1px solid var(--border, #e2e8f0)', borderRadius: 16, marginBottom: 14, overflow: 'hidden', boxShadow: '0 1px 3px rgba(15,23,42,0.05)' }}>
-      {/* summary row */}
+      {/* summary row: carrier + flight number  |  cash price or points */}
       <div style={{ padding: 16 }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 12, flexWrap: 'wrap' }}>
           <div>
             <div style={{ fontSize: 15, fontWeight: 800, color: 'var(--text, #0f172a)' }}>
-              {flight.airline || 'Flight'} {'·'} {flight.from} {'→'} {flight.to}
+              {carrier}
+              {flightNo ? <span style={{ color: GREY, fontWeight: 700 }}> {'·'} {flightNo}</span> : null}
             </div>
             <div style={{ fontSize: 12, color: GREY, marginTop: 3 }}>
-              {fmtTime(flight.departure)}{flight.stops > 0 ? ` · ${flight.stops} stop${flight.stops > 1 ? 's' : ''}` : ' · non-stop'}
-              {flight.duration ? ` · ${flight.duration}h` : ''}
+              {flight.from} {'→'} {flight.to}{cabinLabel ? ` · ${cabinLabel}` : ''}
             </div>
           </div>
           <div style={{ textAlign: 'right' }}>
-            <div style={{ fontSize: 10, color: GREY_SOFT, fontWeight: 600, textTransform: 'uppercase', letterSpacing: 1 }}>Cash</div>
-            <div style={{ fontSize: 22, fontWeight: 900, color: 'var(--text, #0f172a)', lineHeight: 1.1 }}>{'₹'}{inr(flight.price)}</div>
+            {pointsOnly ? (
+              <>
+                <div style={{ fontSize: 10, color: GREY_SOFT, fontWeight: 600, textTransform: 'uppercase', letterSpacing: 1 }}>Points</div>
+                <div style={{ fontSize: 20, fontWeight: 900, color: GOLD, lineHeight: 1.1 }}>
+                  {inr(award!.mileageCost)}<span style={{ fontSize: 12, color: GREY, fontWeight: 700 }}> miles</span>
+                </div>
+                <div style={{ fontSize: 10, color: GREY_SOFT, marginTop: 2 }}>Cash price unavailable</div>
+              </>
+            ) : (
+              <>
+                <div style={{ fontSize: 10, color: GREY_SOFT, fontWeight: 600, textTransform: 'uppercase', letterSpacing: 1 }}>Cash</div>
+                <div style={{ fontSize: 22, fontWeight: 900, color: 'var(--text, #0f172a)', lineHeight: 1.1 }}>{'₹'}{inr(flight.price)}</div>
+              </>
+            )}
           </div>
         </div>
 
-        {/* two booking paths */}
-        <div style={{ display: 'grid', gridTemplateColumns: hasAward ? '1fr 1fr' : '1fr', gap: 10, marginTop: 14 }}>
-          <a
-            href={flight.bookingLink || '#'}
-            target="_blank"
-            rel="noopener noreferrer"
-            style={{
-              display: 'block', textAlign: 'center', padding: '11px 12px', borderRadius: 10,
-              background: 'var(--ink, #142950)', color: '#fff', textDecoration: 'none',
-              fontSize: 13, fontWeight: 700,
-            }}
-          >
-            Book via Cash {'₹'}{inr(flight.price)} {'↗'}
-          </a>
-
-          {hasAward && best && best.status === 'ok' && (
-            <button
-              onClick={onToggle}
-              style={{
-                padding: '11px 12px', borderRadius: 10, cursor: 'pointer',
-                background: '#fff', border: `1.5px solid ${GOLD}`, color: '#7a5a12',
-                fontSize: 13, fontWeight: 700,
-              }}
-            >
-              Book via Points: {inr(best.cardPointsNeeded || 0)} pts + est. taxes
-            </button>
-          )}
-
-          {hasAward && !best && (
-            <button
-              onClick={onToggle}
-              style={{
-                padding: '11px 12px', borderRadius: 10, cursor: 'pointer',
-                background: ESTIMATE_BG, border: `1.5px solid ${ESTIMATE_BORDER}`, color: GREY,
-                fontSize: 13, fontWeight: 700,
-              }}
-            >
-              Award seat exists {'—'} see card options
-            </button>
-          )}
+        {/* rich flight-detail strip: dep → arr, duration, stops */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap', marginTop: 12, padding: '10px 14px', background: 'var(--bg-surface, #f8fafc)', border: `1px solid ${ESTIMATE_BORDER}`, borderRadius: 10 }}>
+          <TimeCol time={fmtTimeOnly(dep)} sub={`${flight.from}${fmtDateOnly(dep) ? ` · ${fmtDateOnly(dep)}` : ''}`} />
+          <div style={{ flex: 1, minWidth: 90, textAlign: 'center' }}>
+            <div style={{ fontSize: 11, color: GREY_SOFT }}>{fmtDuration(durMins) || '—'}</div>
+            <div style={{ height: 1, background: ESTIMATE_BORDER, margin: '6px 0' }} />
+            <div style={{ fontSize: 11, fontWeight: 600, color: stops === 0 ? '#0f172a' : GREY }}>{stopLabel(stops, award?.isDirect) || '—'}</div>
+          </div>
+          <TimeCol time={fmtTimeOnly(arr)} sub={`${flight.to}${fmtDateOnly(arr) ? ` · ${fmtDateOnly(arr)}` : ''}`} align="right" />
         </div>
+
+        {/* booking paths */}
+        {pointsOnly ? (
+          <div style={{ marginTop: 14 }}>
+            <button
+              onClick={onToggle}
+              style={{
+                width: '100%', padding: '12px', borderRadius: 12, cursor: 'pointer',
+                background: 'linear-gradient(135deg, #C9972E, #E8B84B)', border: 'none',
+                color: '#0a0a0a', fontSize: 13, fontWeight: 800,
+              }}
+            >
+              {best && best.status === 'ok'
+                ? `Book via Points: ${inr(best.cardPointsNeeded || 0)} pts + est. taxes`
+                : `Book via Points: ${inr(award!.mileageCost)} miles + est. taxes`}
+            </button>
+            <div style={{ marginTop: 6, fontSize: 11, color: GREY_SOFT, textAlign: 'center' }}>
+              Cash price unavailable for this date {'—'} points booking only.
+            </div>
+          </div>
+        ) : (
+          <div style={{ display: 'grid', gridTemplateColumns: hasAward ? '1fr 1fr' : '1fr', gap: 10, marginTop: 14 }}>
+            <a
+              href={flight.bookingLink || '#'}
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{
+                display: 'block', textAlign: 'center', padding: '11px 12px', borderRadius: 10,
+                background: 'var(--ink, #142950)', color: '#fff', textDecoration: 'none',
+                fontSize: 13, fontWeight: 700,
+              }}
+            >
+              Book via Cash {'₹'}{inr(flight.price)} {'↗'}
+            </a>
+
+            {hasAward && best && best.status === 'ok' && (
+              <button
+                onClick={onToggle}
+                style={{
+                  padding: '11px 12px', borderRadius: 10, cursor: 'pointer',
+                  background: '#fff', border: `1.5px solid ${GOLD}`, color: '#7a5a12',
+                  fontSize: 13, fontWeight: 700,
+                }}
+              >
+                Book via Points: {inr(best.cardPointsNeeded || 0)} pts + est. taxes
+              </button>
+            )}
+
+            {hasAward && !best && (
+              <button
+                onClick={onToggle}
+                style={{
+                  padding: '11px 12px', borderRadius: 10, cursor: 'pointer',
+                  background: ESTIMATE_BG, border: `1.5px solid ${ESTIMATE_BORDER}`, color: GREY,
+                  fontSize: 13, fontWeight: 700,
+                }}
+              >
+                Award seat exists {'—'} see card options
+              </button>
+            )}
+          </div>
+        )}
 
         {/* award / points sub-line */}
         {hasAward ? (
           <div style={{ marginTop: 10, fontSize: 12, color: GREY }}>
-            {'⚑'} {flight.award!.program} {'·'} {inr(flight.award!.mileageCost)} miles
-            {flight.award!.seats ? ` · ${flight.award!.seats} seat${flight.award!.seats > 1 ? 's' : ''} left` : ''}
+            {'⚑'} {award!.program} {'·'} {inr(award!.mileageCost)} miles
+            {award!.seats ? ` · ${award!.seats} seat${award!.seats > 1 ? 's' : ''} left` : ''}
+            {taxes ? ` · + est. taxes ~${taxes}` : ''}
             {best && best.status === 'ok' ? (
               <>
                 {' · '}via <strong>{best.cardName}</strong>
@@ -353,7 +465,7 @@ function FlightCard({ flight, open, onToggle }: { flight: FusedFlight; open: boo
         <div style={{ borderTop: '1px solid var(--border, #e2e8f0)', background: 'var(--bg-surface, #f8fafc)', padding: 16 }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12, flexWrap: 'wrap', gap: 8 }}>
             <div style={{ fontSize: 11, fontWeight: 700, color: GREY, textTransform: 'uppercase', letterSpacing: 1 }}>
-              Your cards {'→'} {flight.award!.program}
+              Your cards {'→'} {award!.program}
             </div>
             <span style={{ fontSize: 10, fontWeight: 700, color: GREY, background: ESTIMATE_BG, border: `1px solid ${ESTIMATE_BORDER}`, borderRadius: 100, padding: '3px 10px', textTransform: 'uppercase', letterSpacing: 1 }}>
               Estimated {'·'} not verified
@@ -365,7 +477,7 @@ function FlightCard({ flight, open, onToggle }: { flight: FusedFlight; open: boo
           )}
 
           {flight.redemption.map((r, i) => (
-            <RedemptionRow key={i} r={r} source={flight.award!.source} program={flight.award!.program} />
+            <RedemptionRow key={i} r={r} source={award!.source} program={award!.program} isBest={sameOption(r, best)} />
           ))}
         </div>
       )}
@@ -373,13 +485,30 @@ function FlightCard({ flight, open, onToggle }: { flight: FusedFlight; open: boo
   );
 }
 
+// ── dep/arr time column for the flight-detail strip ─────────────────────────
+
+function TimeCol({ time, sub, align }: { time: string; sub: string; align?: 'right' }) {
+  return (
+    <div style={{ textAlign: align === 'right' ? 'right' : 'left', minWidth: 56 }}>
+      <div style={{ fontSize: 16, fontWeight: 800, color: 'var(--text, #0f172a)', lineHeight: 1.1 }}>{time || '—'}</div>
+      <div style={{ fontSize: 11, color: GREY, marginTop: 2 }}>{sub}</div>
+    </div>
+  );
+}
+
 // ── one card's redemption estimate (grey/gold styling only) ─────────────────
 
-function RedemptionRow({ r, source, program }: { r: RedemptionOption; source: string; program: string }) {
+function RedemptionRow({ r, source, program, isBest }: { r: RedemptionOption; source: string; program: string; isBest?: boolean }) {
   const rowBase: React.CSSProperties = {
-    background: '#fff', border: `1px solid ${ESTIMATE_BORDER}`, borderRadius: 12,
-    padding: '12px 14px', marginBottom: 8,
+    background: '#fff',
+    border: isBest ? `1.5px solid ${GOLD}` : `1px solid ${ESTIMATE_BORDER}`,
+    borderRadius: 12, padding: '12px 14px', marginBottom: 8,
   };
+  const bestBadge = isBest ? (
+    <span style={{ fontSize: 9, fontWeight: 800, color: '#0a0a0a', background: 'linear-gradient(135deg, #C9972E, #E8B84B)', borderRadius: 100, padding: '2px 8px', textTransform: 'uppercase', letterSpacing: 1, whiteSpace: 'nowrap' }}>
+      {'★'} Best
+    </span>
+  ) : null;
 
   if (r.status === 'currency-unknown') {
     return (
@@ -410,7 +539,10 @@ function RedemptionRow({ r, source, program }: { r: RedemptionOption; source: st
     <div style={rowBase}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 12, flexWrap: 'wrap' }}>
         <div>
-          <div style={{ fontSize: 14, fontWeight: 800, color: 'var(--text, #0f172a)' }}>{r.cardName}</div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+            <div style={{ fontSize: 14, fontWeight: 800, color: 'var(--text, #0f172a)' }}>{r.cardName}</div>
+            {bestBadge}
+          </div>
           <div style={{ fontSize: 12, color: GREY, marginTop: 3 }}>
             {r.bank} {'·'} {r.transferPartner}
             {r.ratio ? ` · transfer ${r.ratio[0]}:${r.ratio[1]}` : ''}
