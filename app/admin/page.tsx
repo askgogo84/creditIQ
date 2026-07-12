@@ -607,7 +607,7 @@ export default function AdminPage() {
                 <div style={{ textAlign: 'center', padding: 40, color: 'var(--ink-3,#5A6A8A)' }}>Loading insights...</div>
               ) : igInsights.length === 0 ? (
                 <div style={{ textAlign: 'center', padding: 40, background: 'var(--paper,#FAF5EB)', borderRadius: 18, border: '1px solid var(--line,rgba(20,41,80,0.08))' }}>
-                  <div style={{ fontSize: 32, marginBottom: 12 }}>ðŸ§ </div>
+                  <div style={{ fontSize: 32, marginBottom: 12 }}>🧠</div>
                   <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--ink,#142950)', marginBottom: 8 }}>No insights yet</div>
                   <div style={{ fontSize: 12, color: 'var(--ink-3,#5A6A8A)' }}>Click "Start Scrape" then wait 10 mins and click "Fetch Results"</div>
                 </div>

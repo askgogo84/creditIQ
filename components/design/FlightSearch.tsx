@@ -80,13 +80,13 @@ function formatDateForOTA(isoDate: string, format: 'mmt' | 'emt' | 'standard'): 
 }
 
 function getBookingUrl(option: BookingOption, result: FlightResult, tripType: string): string {
-  // Each OTA needs slightly different date format â€” handled inside getUrl
+  // Each OTA needs slightly different date format — handled inside getUrl
   // We pass ISO date and let each builder format it
   return option.getUrl(result.from, result.to, result.date, result.return_date, tripType);
 }
 
 // Popular Indian airport codes
-// City name â†’ IATA for natural language detection
+// City name → IATA for natural language detection
 export const CITY_TO_IATA: Record<string, string> = {
   'bangalore': 'BLR', 'bengaluru': 'BLR', 'delhi': 'DEL', 'new delhi': 'DEL',
   'mumbai': 'BOM', 'bombay': 'BOM', 'chennai': 'MAA', 'madras': 'MAA',
@@ -271,7 +271,7 @@ export default function FlightSearch({
               : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
           }`}
         >
-          â‡„ Round Trip
+          ⇄ Round Trip
         </button>
         <button
           onClick={() => setTripType('one-way')}
@@ -281,7 +281,7 @@ export default function FlightSearch({
               : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
           }`}
         >
-          â†’ One Way
+          → One Way
         </button>
       </div>
 
@@ -298,7 +298,7 @@ export default function FlightSearch({
             >
               {AIRPORTS.map((a) => (
                 <option key={a.code} value={a.code}>
-                  {a.code} â€” {a.name}
+                  {a.code} — {a.name}
                 </option>
               ))}
             </select>
@@ -322,7 +322,7 @@ export default function FlightSearch({
               <option value="">Select destination</option>
               {AIRPORTS.filter((a) => a.code !== from).map((a) => (
                 <option key={a.code} value={a.code}>
-                  {a.code} â€” {a.name}
+                  {a.code} — {a.name}
                 </option>
               ))}
             </select>
@@ -394,13 +394,13 @@ export default function FlightSearch({
         </button>
       </div>
 
-      {/* Results â€” Real OTA Links */}
+      {/* Results — Real OTA Links */}
       {searched && (
         <div className="mt-4">
           {/* Header */}
           <div className="flex items-center justify-between mb-3">
             <div>
-              <p className="text-sm font-bold text-gray-900">{from} â†’ {to}</p>
+              <p className="text-sm font-bold text-gray-900">{from} → {to}</p>
               <p className="text-xs text-gray-500">{departure}{tripType === 'round-trip' ? ' \u00b7 Return ' + returnDate : ''} \u00b7 {passengers} pax</p>
             </div>
             <span className="text-xs text-emerald-600 font-semibold flex items-center gap-1">
@@ -411,10 +411,10 @@ export default function FlightSearch({
           {/* CIRA tip */}
           {pointsBalance > 0 && (
             <div className="bg-amber-50 border border-amber-200 rounded-xl p-3 mb-3">
-              <p className="text-xs font-semibold text-amber-800 mb-1">ðŸ’¡ CIRA's tip for this route</p>
+              <p className="text-xs font-semibold text-amber-800 mb-1">💡 CIRA's tip for this route</p>
               <p className="text-xs text-amber-700">
                 Pay with your {bank} card on any of these platforms to earn reward points. 
-                For award redemption, use the Points route above â€” transfers to KrisFlyer or Air India Flying Returns typically give 2-3x more value than cashback.
+                For award redemption, use the Points route above — transfers to KrisFlyer or Air India Flying Returns typically give 2-3x more value than cashback.
               </p>
             </div>
           )}
