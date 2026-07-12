@@ -30,6 +30,33 @@ const BROWSE_LINKS = [
   { label: 'UAE Cards', href: '/uae', icon: '🇦🇪' },
 ]
 
+// App nav — shown to LOGGED-IN users on every page. Mirrors the wallet's nav
+// (ciq TabBar / WalletView) so nav identity never changes across app + marketing
+// pages. Auth state — not the route — decides which nav renders.
+const APP_NAV = [
+  { label: 'Wallet',   href: '/dashboard' },
+  { label: 'Cards',    href: '/my-cards' },
+  { label: 'Travel',   href: '/trip-planner' },
+  { label: 'Optimize', href: '/optimize' },
+  { label: 'You',      href: '/profile' },
+]
+const APP_TABS: { label: string; href: string; d: string }[] = [
+  { label: 'Wallet',   href: '/dashboard',    d: 'M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z M9 22V12h6v10' },
+  { label: 'Cards',    href: '/my-cards',     d: 'M1 4h22v16a2 2 0 01-2 2H3a2 2 0 01-2-2V4z M1 10h22' },
+  { label: 'Travel',   href: '/trip-planner', d: 'M22 2L11 13 M22 2L15 22 11 13 2 9l20-7z' },
+  { label: 'Optimize', href: '/optimize',     d: 'M13 2L3 14h9l-1 8 10-12h-9l1-8z' },
+  { label: 'You',      href: '/profile',      d: 'M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2 M12 3a4 4 0 100 8 4 4 0 000-8z' },
+]
+// Which app tab owns a given path (marketing routes like /flights, /travel,
+// /points-optimizer fold into their app-nav parent so the tab stays lit).
+const APP_ACTIVE: Record<string, (p: string) => boolean> = {
+  '/dashboard':    p => p.startsWith('/dashboard'),
+  '/my-cards':     p => p.startsWith('/my-cards') || p.startsWith('/cards') || p.startsWith('/card/') || p.startsWith('/compare'),
+  '/trip-planner': p => p.startsWith('/trip-planner') || p.startsWith('/flights') || p.startsWith('/travel') || p.startsWith('/lounge-tracker'),
+  '/optimize':     p => p.startsWith('/optimize') || p.startsWith('/points-optimizer') || p.startsWith('/spend-optimizer') || p.startsWith('/smart-match') || p.startsWith('/statement-truth') || p.startsWith('/card-switch') || p.startsWith('/card-roast'),
+  '/profile':      p => p.startsWith('/profile'),
+}
+
 export function Header() {
   const pathname = usePathname()
   const router = useRouter()
@@ -88,7 +115,15 @@ export function Header() {
     return pathname.startsWith(href)
   }
 
+  // App-nav active state (logged-in). Folds marketing routes into their app tab.
+  const appActive = (href: string) => {
+    if (!pathname) return false
+    const m = APP_ACTIVE[href]
+    return m ? m(pathname) : pathname.startsWith(href)
+  }
+
   const isTabActive = (tab: { href: string; label: string }) => {
+    if (user) return appActive(tab.href)
     if (tab.href === '/') return pathname === '/'
     if (tab.label === 'AI') return AI_PATHS.some(p => pathname.startsWith(p))
     if (tab.label === 'Trip') return pathname.startsWith('/trip-planner')
@@ -152,8 +187,8 @@ export function Header() {
       <header className={`ciq-header${scrolled ? ' scrolled' : ''}`} style={{ background: 'var(--surface,#fff)' }}>
         <div className="ciq-inner">
 
-          {/* Logo */}
-          <Link href="/" className="ciq-logo">
+          {/* Logo — Home. Logged-in Home is the wallet, logged-out Home is the landing page. */}
+          <Link href={user ? '/dashboard' : '/'} className="ciq-logo">
             <div className="ciq-logo-icon">
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
                 <rect x="1" y="4" width="22" height="16" rx="3" fill="white" fillOpacity="0.9"/>
@@ -167,8 +202,14 @@ export function Header() {
             </div>
           </Link>
 
-          {/* Desktop pill nav */}
+          {/* Desktop pill nav — app nav when signed in, marketing dropdowns when signed out */}
           <nav className="ciq-nav" style={{ position: 'relative' }}>
+            {user ? (
+              APP_NAV.map(n => (
+                <Link key={n.href} href={n.href} className={`ciq-nav-item${appActive(n.href) ? ' active' : ''}`}>{n.label}</Link>
+              ))
+            ) : (
+            <>
             <div style={{ position: 'relative' }} onMouseEnter={() => { cancelClose(closeTimers.discover); setDiscoverOpen(true) }} onMouseLeave={() => delayClose(setDiscoverOpen, closeTimers.discover)}>
               <button className={`ciq-nav-item${isActive('/') ? ' active' : ''}`} style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
                 Discover
@@ -277,6 +318,8 @@ export function Header() {
             </div>
 
             <Link href={user ? '/dashboard' : '/login'} className={`ciq-nav-item${isActive('/dashboard') ? ' active' : ''}`}>My Wallet</Link>
+            </>
+            )}
           </nav>
 
           {/* Right side */}
@@ -301,12 +344,14 @@ export function Header() {
               <Link href={loginHref} className="ciq-theme-desktop" style={{ padding: '8px 16px', fontSize: 13, fontWeight: 600, color: '#fff', background: '#C9972E', textDecoration: 'none', borderRadius: 100 }}>Sign In</Link>
             )}
 
-            <Link href="/smart-match" className="ciq-cta">
-              Find my card
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                <path d="M5 12h14M12 5l7 7-7 7"/>
-              </svg>
-            </Link>
+            {!user && (
+              <Link href="/smart-match" className="ciq-cta">
+                Find my card
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                  <path d="M5 12h14M12 5l7 7-7 7"/>
+                </svg>
+              </Link>
+            )}
 
             <button className="ciq-hamburger" onClick={() => setMobileOpen(v => !v)} aria-label="Menu">
               <span className="ciq-bar" style={{ transform: mobileOpen ? 'rotate(45deg) translate(5px,5px)' : 'none' }}/>
@@ -319,21 +364,34 @@ export function Header() {
         {/* Mobile menu — all emoji as proper Unicode, no hardcoded garbled strings */}
         {mobileOpen && (
           <div className="ciq-mobile-menu">
-            <div className="ciq-mobile-section">Browse</div>
-            {BROWSE_LINKS.map(i => (
-              <Link key={i.href} href={i.href} className="ciq-mobile-link">
-                <span style={{ fontSize: 20, width: 28, textAlign: 'center' }}>{i.icon}</span>
-                {i.label}
-              </Link>
-            ))}
-            <div className="ciq-mobile-section">AI Tools</div>
-            {AI_TOOLS.map(i => (
-              <Link key={i.href} href={i.href} className="ciq-mobile-link">
-                <span style={{ fontSize: 18, width: 28, textAlign: 'center' }}>{i.icon}</span>
-                {i.label}
-                {i.badge && <span className={`ciq-badge ${i.badge.toLowerCase()}`} style={{ marginLeft: 8 }}>{i.badge}</span>}
-              </Link>
-            ))}
+            {user ? (
+              <>
+                <div className="ciq-mobile-section">Your wallet</div>
+                {APP_NAV.map(i => (
+                  <Link key={i.href} href={i.href} className={`ciq-mobile-link${appActive(i.href) ? ' active' : ''}`}>
+                    {i.label}
+                  </Link>
+                ))}
+              </>
+            ) : (
+              <>
+                <div className="ciq-mobile-section">Browse</div>
+                {BROWSE_LINKS.map(i => (
+                  <Link key={i.href} href={i.href} className="ciq-mobile-link">
+                    <span style={{ fontSize: 20, width: 28, textAlign: 'center' }}>{i.icon}</span>
+                    {i.label}
+                  </Link>
+                ))}
+                <div className="ciq-mobile-section">AI Tools</div>
+                {AI_TOOLS.map(i => (
+                  <Link key={i.href} href={i.href} className="ciq-mobile-link">
+                    <span style={{ fontSize: 18, width: 28, textAlign: 'center' }}>{i.icon}</span>
+                    {i.label}
+                    {i.badge && <span className={`ciq-badge ${i.badge.toLowerCase()}`} style={{ marginLeft: 8 }}>{i.badge}</span>}
+                  </Link>
+                ))}
+              </>
+            )}
             <div style={{ marginTop: 16, paddingTop: 16, borderTop: '1px solid rgba(20,41,80,0.08)' }}>
               {user
                 ? <button onClick={signOut} style={{ width: '100%', padding: '13px', background: '#C9972E', color: '#fff', border: 'none', borderRadius: 12, fontSize: 15, fontWeight: 700, cursor: 'pointer' }}>Sign Out</button>
@@ -344,14 +402,15 @@ export function Header() {
         )}
       </header>
 
-      {/* Bottom tab bar */}
+      {/* Bottom tab bar — app tabs when signed in, marketing tabs when signed out.
+          Same auth rule as the top nav so mobile never shows a different nav identity. */}
       <nav className="ciq-tab-bar">
-        {([
+        {(user ? APP_TABS : [
           { label: 'Home', href: '/', d: 'M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z M9 22V12h6v10' },
           { label: 'Cards', href: '/cards', d: 'M1 4h22v16a2 2 0 01-2 2H3a2 2 0 01-2-2V4z M1 10h22' },
           { label: 'Trip', href: '/trip-planner', d: 'M22 2L11 13 M22 2L15 22 11 13 2 9l20-7z' },
           { label: 'AI', href: '/smart-match', d: 'M13 2L3 14h9l-1 8 10-12h-9l1-8z' },
-          { label: 'My Cards', href: user ? '/dashboard' : '/login', d: 'M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2 M12 3a4 4 0 100 8 4 4 0 000-8z' },
+          { label: 'My Cards', href: '/login', d: 'M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2 M12 3a4 4 0 100 8 4 4 0 000-8z' },
         ] as { label: string; href: string; d: string }[]).map(tab => {
           const active = isTabActive(tab)
           const paths = tab.d.split(' M').map((p, i) => i === 0 ? p : 'M' + p)
