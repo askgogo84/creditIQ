@@ -58,9 +58,14 @@ export async function requireAdminOrCron(req: NextRequest): Promise<NextResponse
   const secret = process.env.CRON_SECRET;
   const tok = bearer(req);
   if (secret) {
-    if (tok === secret) return null;
-    if (req.headers.get('x-cron-secret') === secret) return null;
+    if (tok === secret) return null;                                  // Vercel Cron / Bearer
+    if (req.headers.get('x-cron-secret') === secret) return null;     // header form
+    // Query param form: cron-job.org sends a plain GET with no Authorization header,
+    // so accept ?secret=<CRON_SECRET> too (same convention as AskGogo's reminders URL).
+    try {
+      if (new URL(req.url).searchParams.get('secret') === secret) return null;
+    } catch { /* ignore malformed URL */ }
   }
-  if (await verifyAdminToken(tok)) return null;
+  if (await verifyAdminToken(tok)) return null;                       // admin UI (Supabase token)
   return NextResponse.json({ error: 'unauthorized' }, { status: 401 });
 }
