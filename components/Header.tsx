@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import { createBrowserClient } from '@supabase/ssr'
+import { TabBar } from '@/components/ciq/TabBar'
 
 const NAV_LINKS = [
   { label: 'Discover', href: '/' },
@@ -40,13 +41,6 @@ const APP_NAV = [
   { label: 'Optimize', href: '/optimize' },
   { label: 'You',      href: '/profile' },
 ]
-const APP_TABS: { label: string; href: string; d: string }[] = [
-  { label: 'Wallet',   href: '/dashboard',    d: 'M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z M9 22V12h6v10' },
-  { label: 'Cards',    href: '/my-cards',     d: 'M1 4h22v16a2 2 0 01-2 2H3a2 2 0 01-2-2V4z M1 10h22' },
-  { label: 'Travel',   href: '/trip-planner', d: 'M22 2L11 13 M22 2L15 22 11 13 2 9l20-7z' },
-  { label: 'Optimize', href: '/optimize',     d: 'M13 2L3 14h9l-1 8 10-12h-9l1-8z' },
-  { label: 'You',      href: '/profile',      d: 'M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2 M12 3a4 4 0 100 8 4 4 0 000-8z' },
-]
 // Which app tab owns a given path (marketing routes like /flights, /travel,
 // /points-optimizer fold into their app-nav parent so the tab stays lit).
 const APP_ACTIVE: Record<string, (p: string) => boolean> = {
@@ -67,6 +61,10 @@ export function Header() {
   const [discoverOpen, setDiscoverOpen] = useState(false)
   const [mobileOpen, setMobileOpen] = useState(false)
   const [scrolled, setScrolled] = useState(false)
+  // Mirror the wallet's theme choice so the injected gold ciq TabBar looks
+  // identical here to what /dashboard shows (CiqTheme persists 'ciq-theme',
+  // defaults dark).
+  const [ciqTheme, setCiqTheme] = useState<'light' | 'dark'>('dark')
 
   const closeTimers = {
     discover: { ref: null as any },
@@ -96,6 +94,13 @@ export function Header() {
   }, [])
 
   useEffect(() => { setMobileOpen(false); setAiOpen(false); setDiscoverOpen(false) }, [pathname])
+
+  useEffect(() => {
+    try {
+      const saved = window.localStorage.getItem('ciq-theme')
+      if (saved === 'light' || saved === 'dark') setCiqTheme(saved)
+    } catch {}
+  }, [])
 
   const signOut = async () => {
     const sb = createBrowserClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!)
@@ -402,29 +407,37 @@ export function Header() {
         )}
       </header>
 
-      {/* Bottom tab bar — app tabs when signed in, marketing tabs when signed out.
-          Same auth rule as the top nav so mobile never shows a different nav identity. */}
-      <nav className="ciq-tab-bar">
-        {(user ? APP_TABS : [
-          { label: 'Home', href: '/', d: 'M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z M9 22V12h6v10' },
-          { label: 'Cards', href: '/cards', d: 'M1 4h22v16a2 2 0 01-2 2H3a2 2 0 01-2-2V4z M1 10h22' },
-          { label: 'Trip', href: '/trip-planner', d: 'M22 2L11 13 M22 2L15 22 11 13 2 9l20-7z' },
-          { label: 'AI', href: '/smart-match', d: 'M13 2L3 14h9l-1 8 10-12h-9l1-8z' },
-          { label: 'My Cards', href: '/login', d: 'M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2 M12 3a4 4 0 100 8 4 4 0 000-8z' },
-        ] as { label: string; href: string; d: string }[]).map(tab => {
-          const active = isTabActive(tab)
-          const paths = tab.d.split(' M').map((p, i) => i === 0 ? p : 'M' + p)
-          return (
-            <Link key={tab.href} href={tab.href} className={`ciq-tab${active ? ' active' : ''}`}>
-              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-                {paths.map((p, i) => <path key={i} d={p}/>)}
-              </svg>
-              <span className="ciq-tab-label">{tab.label}</span>
-              {active && <span className="ciq-tab-dot"/>}
-            </Link>
-          )
-        })}
-      </nav>
+      {/* Bottom bar (mobile). Signed in -> the exact gold ciq TabBar the wallet
+          uses, wrapped in [data-ciq] so its --ciq tokens resolve on marketing
+          pages too (the fixed bar inherits them; the wrapper is zero-height).
+          Signed out -> the marketing tabs. */}
+      {user ? (
+        <div data-ciq data-theme={ciqTheme} className="md:hidden">
+          <TabBar />
+        </div>
+      ) : (
+        <nav className="ciq-tab-bar">
+          {([
+            { label: 'Home', href: '/', d: 'M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z M9 22V12h6v10' },
+            { label: 'Cards', href: '/cards', d: 'M1 4h22v16a2 2 0 01-2 2H3a2 2 0 01-2-2V4z M1 10h22' },
+            { label: 'Trip', href: '/trip-planner', d: 'M22 2L11 13 M22 2L15 22 11 13 2 9l20-7z' },
+            { label: 'AI', href: '/smart-match', d: 'M13 2L3 14h9l-1 8 10-12h-9l1-8z' },
+            { label: 'My Cards', href: '/login', d: 'M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2 M12 3a4 4 0 100 8 4 4 0 000-8z' },
+          ] as { label: string; href: string; d: string }[]).map(tab => {
+            const active = isTabActive(tab)
+            const paths = tab.d.split(' M').map((p, i) => i === 0 ? p : 'M' + p)
+            return (
+              <Link key={tab.href} href={tab.href} className={`ciq-tab${active ? ' active' : ''}`}>
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                  {paths.map((p, i) => <path key={i} d={p}/>)}
+                </svg>
+                <span className="ciq-tab-label">{tab.label}</span>
+                {active && <span className="ciq-tab-dot"/>}
+              </Link>
+            )
+          })}
+        </nav>
+      )}
 
       <style>{`
         @media (max-width: 768px) {
