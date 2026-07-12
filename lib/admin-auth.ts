@@ -60,10 +60,15 @@ export async function requireAdminOrCron(req: NextRequest): Promise<NextResponse
   if (secret) {
     if (tok === secret) return null;                                  // Vercel Cron / Bearer
     if (req.headers.get('x-cron-secret') === secret) return null;     // header form
-    // Query param form: cron-job.org sends a plain GET with no Authorization header,
-    // so accept ?secret=<CRON_SECRET> too (same convention as AskGogo's reminders URL).
+  }
+  // Query-param form for header-less callers (cron-job.org sends a plain GET). This uses
+  // a SEPARATE, revocable secret (CRON_URL_SECRET) — never the master CRON_SECRET — so a
+  // URL captured in access logs cannot be replayed as a Bearer token or admin credential,
+  // and can be rotated on its own. Disabled entirely when CRON_URL_SECRET is unset.
+  const urlSecret = process.env.CRON_URL_SECRET;
+  if (urlSecret) {
     try {
-      if (new URL(req.url).searchParams.get('secret') === secret) return null;
+      if (new URL(req.url).searchParams.get('secret') === urlSecret) return null;
     } catch { /* ignore malformed URL */ }
   }
   if (await verifyAdminToken(tok)) return null;                       // admin UI (Supabase token)
