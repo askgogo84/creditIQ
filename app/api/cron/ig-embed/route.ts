@@ -1,6 +1,7 @@
 // app/api/cron/ig-embed/route.ts
 // One-time + ongoing: generate embeddings for insights missing them
 import { NextRequest, NextResponse } from 'next/server';
+import { requireAdminOrCron } from '@/lib/admin-auth';
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
@@ -18,6 +19,7 @@ async function getEmbedding(text: string, openaiKey: string): Promise<number[] |
 }
 
 export async function GET(req: NextRequest) {
+  const denied = await requireAdminOrCron(req); if (denied) return denied;
   // Vercel crons are called by Vercel infrastructure only — no secret needed
   const openaiKey = process.env.OPENAI_API_KEY;
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;

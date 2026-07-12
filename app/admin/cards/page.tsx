@@ -1,8 +1,11 @@
 'use client';
 import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import { createBrowserClient } from '@supabase/ssr';
+import { authedFetch } from '@/lib/authed-fetch';
 import { Header } from '@/components/Header';
 import { DesignFooter } from '@/components/design/Footer';
-import { RefreshCw, Check, X, Plus, Loader2 } from 'lucide-react';
+import { RefreshCw, Check, X, Loader2 } from 'lucide-react';
 
 interface PendingCard {
   slug: string;
@@ -20,26 +23,27 @@ interface PendingCard {
 }
 
 export default function AdminCardsPage() {
-  const [password, setPassword] = useState('');
+  const router = useRouter();
   const [authed, setAuthed] = useState(false);
   const [pending, setPending] = useState<PendingCard[]>([]);
   const [scanning, setScanning] = useState(false);
   const [scanResult, setScanResult] = useState<any>(null);
   const [loading, setLoading] = useState(false);
 
-  const login = () => {
-    if (password === process.env.NEXT_PUBLIC_ADMIN_PASSWORD || password === 'CreditIQ2026') {
+  // Server-enforced by app/admin/layout.tsx (Supabase session + ADMIN_EMAIL).
+  useEffect(() => {
+    const sb = createBrowserClient(process.env.NEXT_PUBLIC_SUPABASE_URL || '', process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '');
+    sb.auth.getUser().then(({ data: { user } }) => {
+      if (!user) { router.replace('/login?next=/admin/cards'); return; }
       setAuthed(true);
       loadPending();
-    } else {
-      alert('Wrong password');
-    }
-  };
+    });
+  }, []);
 
   const loadPending = async () => {
     setLoading(true);
     try {
-      const res = await fetch('/api/admin/pending-cards');
+      const res = await authedFetch('/api/admin/pending-cards');
       const data = await res.json();
       setPending(data.cards || []);
     } catch {}
@@ -50,10 +54,7 @@ export default function AdminCardsPage() {
     setScanning(true);
     setScanResult(null);
     try {
-      const res = await fetch('/api/cards-sync', {
-        method: 'POST',
-        headers: { Authorization: `Bearer ${process.env.NEXT_PUBLIC_SYNC_SECRET || 'CreditIQ-sync-2026'}` },
-      });
+      const res = await authedFetch('/api/cards-sync', { method: 'POST' });
       const data = await res.json();
       setScanResult(data);
       await loadPending();
@@ -64,19 +65,15 @@ export default function AdminCardsPage() {
   };
 
   const approve = async (slug: string) => {
-    await fetch('/api/admin/approve-card', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ slug }),
+    await authedFetch('/api/admin/approve-card', {
+      method: 'POST', body: JSON.stringify({ slug }),
     });
     setPending(p => p.filter(c => c.slug !== slug));
   };
 
   const reject = async (slug: string) => {
-    await fetch('/api/admin/reject-card', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ slug }),
+    await authedFetch('/api/admin/reject-card', {
+      method: 'POST', body: JSON.stringify({ slug }),
     });
     setPending(p => p.filter(c => c.slug !== slug));
   };
@@ -84,14 +81,7 @@ export default function AdminCardsPage() {
   if (!authed) {
     return (
       <main className="min-h-screen flex items-center justify-center px-4">
-        <div className="w-full max-w-sm bg-ink-900/40 border border-white/10 rounded-xl p-8 space-y-4">
-          <h1 className="font-display text-2xl text-ink-50">Admin - Card Manager</h1>
-          <input type="password" value={password} onChange={e => setPassword(e.target.value)}
-            onKeyDown={e => e.key === 'Enter' && login()}
-            placeholder="Password"
-            style={{ width: '100%', background: 'var(--bg-input)', border: '1px solid var(--border)', borderRadius: 6, padding: '10px 12px', fontSize: 14, color: 'var(--text)', outline: 'none' }} />
-          <button onClick={login} className="btn-primary w-full">Enter</button>
-        </div>
+        <p style={{ fontFamily: 'monospace', fontSize: 13, letterSpacing: '0.08em', color: 'var(--ink-3,#5A6A8A)' }}>VERIFYING ADMIN…</p>
       </main>
     );
   }

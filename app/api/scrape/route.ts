@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { runScrapers } from '@/lib/scrapers';
 import { parseScrapedCard } from '@/lib/scrapers/parser';
 import { createClient } from '@supabase/supabase-js';
+import { requireAdminOrCron } from '@/lib/admin-auth';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
@@ -9,10 +10,7 @@ export const revalidate = 0;
 export const maxDuration = 300;
 
 export async function GET(req: NextRequest) {
-  const auth = req.headers.get('authorization');
-  if (auth !== `Bearer ${process.env.CRON_SECRET}`) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-  }
+  const denied = await requireAdminOrCron(req); if (denied) return denied;
 
   // Respond immediately — cron-job.org only waits 30s
   // The actual scraping runs async after response is sent
@@ -31,6 +29,7 @@ export async function GET(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
+  const denied = await requireAdminOrCron(req); if (denied) return denied;
   const url = new URL(req.url);
   const bank = url.searchParams.get('bank');
   const banks = bank && bank !== 'all' ? [bank] : undefined;

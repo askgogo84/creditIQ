@@ -1,5 +1,7 @@
 // app/api/cron/ig-fetch-results/route.ts
 import { NextRequest, NextResponse } from 'next/server';
+import { requireAdminOrCron } from '@/lib/admin-auth';
+import { cleanForStorage } from '@/lib/sanitize-text';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -64,6 +66,7 @@ async function extractInsights(post: any, anthropicKey: string): Promise<any | n
 }
 
 export async function GET(req: NextRequest) {
+  const denied = await requireAdminOrCron(req); if (denied) return denied;
   const apifyToken = process.env.APIFY_TOKEN;
   const anthropicKey = process.env.ANTHROPIC_API_KEY;
   const openaiKey = process.env.OPENAI_API_KEY || '';
@@ -134,9 +137,9 @@ export async function GET(req: NextRequest) {
             source: 'instagram',
             source_url: insight.post_url,
             creator_handle: insight.source_handle,
-            creator_name: insight.source_handle,
-            title: insight.insight_summary,
-            content: insight.caption,
+            creator_name: cleanForStorage(insight.source_handle),
+            title: cleanForStorage(insight.insight_summary),
+            content: cleanForStorage(insight.caption),
             insight_type: insight.insight_type,
             card_mentions: insight.structured_data?.cards_mentioned || [],
             trust_score: Math.min(1.0, (insight.likes || 0) / 10000),

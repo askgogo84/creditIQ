@@ -1,11 +1,14 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
+import { useRouter } from 'next/navigation';
+import { createBrowserClient } from '@supabase/ssr';
+import { authedFetch } from '@/lib/authed-fetch';
 import { Header } from '@/components/Header';
 import { DesignFooter } from '@/components/design/Footer';
 import { SEED_CARDS } from '@/lib/data/seed-cards';
 import {
-  Lock, RefreshCw, Database, Eye, EyeOff,
+  RefreshCw, Database,
   AlertTriangle, CheckCircle, Clock, Activity,
   TrendingDown, Search, Zap, Brain
 } from 'lucide-react';
@@ -50,10 +53,8 @@ function Stat({ label, value, sub, color }: { label: string; value: string | num
 }
 
 export default function AdminPage() {
+  const router = useRouter();
   const [authed, setAuthed] = useState(false);
-  const [password, setPassword] = useState('');
-  const [showPwd, setShowPwd] = useState(false);
-  const [error, setError] = useState('');
   const [activeTab, setActiveTab] = useState<'overview' | 'devaluations' | 'pending' | 'cards' | 'logs' | 'intelligence' | 'moat'>('overview');
 
   const [cronLogs, setCronLogs] = useState<CronLog[]>([]);
@@ -67,31 +68,21 @@ export default function AdminPage() {
   const [igTriggerStatus, setIgTriggerStatus] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
 
+  // Auth is enforced server-side by app/admin/layout.tsx (Supabase session +
+  // ADMIN_EMAIL). This just avoids a flash and gives the client the session for
+  // authedFetch; a non-admin never reaches this component.
   useEffect(() => {
-    if (typeof window !== 'undefined' && sessionStorage.getItem('CreditIQ-admin') === '1') {
+    const sb = createBrowserClient(process.env.NEXT_PUBLIC_SUPABASE_URL || '', process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '');
+    sb.auth.getUser().then(({ data: { user } }) => {
+      if (!user) { router.replace('/login?next=/admin'); return; }
       setAuthed(true);
-    }
-  }, []);
-
-  const checkPassword = async () => {
-    const res = await fetch('/api/admin/auth', {
-      method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ password }),
     });
-    if (res.ok) {
-      setAuthed(true);
-      sessionStorage.setItem('CreditIQ-admin', '1');
-    } else {
-      setError('Wrong password');
-    }
-  };
+  }, []);
 
   const loadData = useCallback(async () => {
     setLoading(true);
     try {
-      const res = await fetch('/api/admin/pipeline-data', {
-        headers: { 'Authorization': `Bearer ${sessionStorage.getItem('CreditIQ-admin-token') || password}` }
-      });
+      const res = await authedFetch('/api/admin/pipeline-data');
       if (res.ok) {
         const data = await res.json();
         setCronLogs(data.cronLogs || []);
@@ -101,7 +92,7 @@ export default function AdminPage() {
       }
     } catch {}
     setLoading(false);
-  }, [password]);
+  }, []);
 
   const loadIgInsights = useCallback(async () => {
     setIgLoading(true);
@@ -131,10 +122,7 @@ export default function AdminPage() {
         ? `/api/scrape${bank ? `?bank=${bank}` : ''}`
         : job === 'cards-sync' ? '/api/cards-sync' : '/api/cron/detect-devaluations';
       const method = job === 'detect-devaluations' ? 'GET' : 'POST';
-      const res = await fetch(url, {
-        method,
-        headers: { 'Authorization': `Bearer ${process.env.NEXT_PUBLIC_CRON_SECRET || 'CreditIQ-cron-2026'}` },
-      });
+      const res = await authedFetch(url, { method });
       const data = await res.json();
       setTriggerStatus(data.message || JSON.stringify(data));
       setTimeout(loadData, 5000);
@@ -146,9 +134,7 @@ export default function AdminPage() {
   const triggerIgScrape = async () => {
     setIgTriggerStatus('Starting Apify runs for all 5 handles...');
     try {
-      const res = await fetch('/api/cron/ig-start-runs', {
-        headers: { 'x-cron-secret': 'CreditIQ-cron-2026' },
-      });
+      const res = await authedFetch('/api/cron/ig-start-runs');
       const data = await res.json();
       setIgTriggerStatus(`Started ${data.runs_started} runs. Fetch results in 10 mins.`);
     } catch (e: any) {
@@ -159,9 +145,7 @@ export default function AdminPage() {
   const triggerIgFetch = async () => {
     setIgTriggerStatus('Fetching completed Apify runs + extracting insights...');
     try {
-      const res = await fetch('/api/cron/ig-fetch-results', {
-        headers: { 'x-cron-secret': 'CreditIQ-cron-2026' },
-      });
+      const res = await authedFetch('/api/cron/ig-fetch-results');
       const data = await res.json();
       setIgTriggerStatus(`Done: ${data.insights_saved || 0} insights saved from ${data.posts_scraped || 0} posts.`);
       setTimeout(loadIgInsights, 2000);
@@ -171,17 +155,15 @@ export default function AdminPage() {
   };
 
   const updateDevalStatus = async (id: string, status: string) => {
-    await fetch('/api/admin/update-deval', {
-      method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ id, status }),
+    await authedFetch('/api/admin/update-deval', {
+      method: 'POST', body: JSON.stringify({ id, status }),
     });
     loadData();
   };
 
   const publishPendingCard = async (id: string) => {
-    await fetch('/api/admin/publish-card', {
-      method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ id }),
+    await authedFetch('/api/admin/publish-card', {
+      method: 'POST', body: JSON.stringify({ id }),
     });
     loadData();
   };
@@ -199,28 +181,9 @@ export default function AdminPage() {
     return (
       <>
         <Header />
-        <div style={{ minHeight: '80vh', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '120px 16px 60px' }}>
-          <div style={{ background: 'var(--paper,#FAF5EB)', border: '1px solid var(--line,rgba(20,41,80,0.08))', borderRadius: 20, padding: 40, width: '100%', maxWidth: 400 }}>
-            <Lock style={{ width: 28, height: 28, color: 'var(--copper,#8C5F12)', marginBottom: 16 }} />
-            <h1 style={{ fontSize: 28, fontWeight: 800, color: 'var(--ink,#142950)', margin: '0 0 6px', letterSpacing: '-0.02em' }}>Admin</h1>
-            <p style={{ fontSize: 13, color: 'var(--ink-3,#5A6A8A)', margin: '0 0 24px' }}>CreditIQ internal panel</p>
-            <div style={{ position: 'relative', marginBottom: 12 }}>
-              <input type={showPwd ? 'text' : 'password'} value={password}
-                onChange={e => setPassword(e.target.value)}
-                onKeyDown={e => e.key === 'Enter' && checkPassword()}
-                placeholder="Admin password"
-                style={{ width: '100%', padding: '11px 40px 11px 14px', borderRadius: 10, border: '1.5px solid var(--line,rgba(20,41,80,0.12))', fontSize: 14, color: 'var(--ink,#142950)', background: 'var(--surface,#fff)', outline: 'none', boxSizing: 'border-box' as const }} />
-              <button onClick={() => setShowPwd(!showPwd)} style={{ position: 'absolute', right: 12, top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: 'var(--ink-3,#5A6A8A)' }}>
-                {showPwd ? <EyeOff size={16} /> : <Eye size={16} />}
-              </button>
-            </div>
-            {error && <p style={{ color: '#B84230', fontSize: 13, marginBottom: 12 }}>{error}</p>}
-            <button onClick={checkPassword} style={{ width: '100%', padding: '12px', background: 'var(--ink,#142950)', color: '#fff', border: 'none', borderRadius: 10, fontSize: 15, fontWeight: 700, cursor: 'pointer' }}>
-              Sign in
-            </button>
-          </div>
+        <div style={{ minHeight: '60vh', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '120px 16px 60px' }}>
+          <p style={{ fontFamily: 'var(--font-mono,monospace)', fontSize: 13, letterSpacing: '0.08em', color: 'var(--ink-3,#5A6A8A)' }}>VERIFYING ADMIN…</p>
         </div>
-        <DesignFooter />
       </>
     );
   }
@@ -242,7 +205,11 @@ export default function AdminPage() {
               <button onClick={loadData} style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '10px 18px', background: 'var(--paper,#FAF5EB)', border: '1px solid var(--line,rgba(20,41,80,0.12))', borderRadius: 10, fontSize: 13, fontWeight: 600, cursor: 'pointer', color: 'var(--ink,#142950)' }}>
                 <RefreshCw size={14} style={{ animation: loading ? 'spin 1s linear infinite' : 'none' }} /> Refresh
               </button>
-              <button onClick={() => { sessionStorage.removeItem('CreditIQ-admin'); setAuthed(false); }} style={{ padding: '10px 18px', background: 'transparent', border: '1.5px solid var(--line,rgba(20,41,80,0.12))', borderRadius: 10, fontSize: 13, fontWeight: 600, cursor: 'pointer', color: 'var(--ink-3,#5A6A8A)' }}>
+              <button onClick={async () => {
+                const sb = createBrowserClient(process.env.NEXT_PUBLIC_SUPABASE_URL || '', process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '');
+                await sb.auth.signOut();
+                router.replace('/');
+              }} style={{ padding: '10px 18px', background: 'transparent', border: '1.5px solid var(--line,rgba(20,41,80,0.12))', borderRadius: 10, fontSize: 13, fontWeight: 600, cursor: 'pointer', color: 'var(--ink-3,#5A6A8A)' }}>
                 Sign out
               </button>
             </div>

@@ -1,4 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { requireAdminOrCron } from '@/lib/admin-auth';
+import { cleanForStorage } from '@/lib/sanitize-text';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -62,11 +64,11 @@ Text: ${combined}`
     for (const card of newCards) {
       const slug = card.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/-+/g, '-');
       const { error } = await supabase.from('pending_cards').upsert({
-        slug, name: card.name, bank: card.bank,
+        slug, name: cleanForStorage(card.name), bank: cleanForStorage(card.bank),
         joining_fee_inr: card.joining_fee || 0,
         annual_fee_inr: card.annual_fee || 0,
         base_reward_rate: card.reward_rate || 1,
-        best_for: card.best_for || '',
+        best_for: cleanForStorage(card.best_for || ''),
         category: card.category || [],
         apr_percent: card.apr || 42,
         tier: card.tier || 'entry',
@@ -83,18 +85,14 @@ Text: ${combined}`
 
 // Vercel cron triggers GET
 export async function GET(req: NextRequest) {
-  // Vercel crons are called by Vercel infrastructure only — no secret needed
+  const denied = await requireAdminOrCron(req); if (denied) return denied;
   const result = await runDiscovery();
   return NextResponse.json(result);
 }
 
 // Manual trigger from admin panel triggers POST
 export async function POST(req: NextRequest) {
-  const auth = req.headers.get('authorization');
-  const secret = process.env.SYNC_SECRET || 'CreditIQ-sync-2026';
-  if (auth !== `Bearer ${secret}`) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-  }
+  const denied = await requireAdminOrCron(req); if (denied) return denied;
   const result = await runDiscovery();
   return NextResponse.json(result);
 }

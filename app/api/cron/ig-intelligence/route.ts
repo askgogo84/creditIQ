@@ -1,4 +1,6 @@
 ﻿import { NextRequest, NextResponse } from "next/server";
+import { requireAdminOrCron } from '@/lib/admin-auth';
+import { cleanForStorage } from '@/lib/sanitize-text';
 
 export const runtime = "nodejs";
 export const dynamic = 'force-dynamic';
@@ -70,10 +72,10 @@ async function extractInsights(post: any, anthropicKey: string): Promise<any | n
       source_handle: post.ownerUsername,
       post_id: post.id,
       post_url: `https://instagram.com/p/${post.shortCode}`,
-      caption: post.caption?.slice(0, 500) || "",
+      caption: cleanForStorage(post.caption?.slice(0, 500) || ""),
       post_date: post.timestamp,
       insight_type: parsed.insight_type,
-      insight_summary: parsed.insight_summary,
+      insight_summary: cleanForStorage(parsed.insight_summary),
       structured_data: parsed.structured_data,
       likes: post.likesCount || 0,
       scraped_at: new Date().toISOString(),
@@ -82,6 +84,7 @@ async function extractInsights(post: any, anthropicKey: string): Promise<any | n
 }
 
 export async function GET(req: NextRequest) {
+  const denied = await requireAdminOrCron(req); if (denied) return denied;
   // Vercel crons are called by Vercel infrastructure only — no secret needed
   const apifyToken = process.env.APIFY_TOKEN;
   const anthropicKey = process.env.ANTHROPIC_API_KEY;

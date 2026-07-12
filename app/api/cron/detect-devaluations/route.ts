@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { requireAdminOrCron } from '@/lib/admin-auth';
 import { createClient } from '@supabase/supabase-js';
 
 export const runtime = 'nodejs';
@@ -83,6 +84,7 @@ async function runDetection() {
 }
 
 export async function GET(req: NextRequest) {
+  const denied = await requireAdminOrCron(req); if (denied) return denied;
   // Vercel crons are called by Vercel infrastructure only — no secret needed
   // Respond immediately — run detection in background
   runDetection().catch(console.error);

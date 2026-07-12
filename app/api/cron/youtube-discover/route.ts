@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { requireAdminOrCron } from '@/lib/admin-auth'
 import { createClient } from '@supabase/supabase-js'
 
 export const runtime = 'nodejs'
@@ -24,6 +25,7 @@ const DISCOVERY_QUERIES = [
 const MIN_SUBSCRIBERS = 5000
 
 export async function GET(req: NextRequest) {
+  const denied = await requireAdminOrCron(req); if (denied) return denied;
   const ytKey = process.env.YOUTUBE_API_KEY
   const sb = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!)
 

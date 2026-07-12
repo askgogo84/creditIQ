@@ -19,6 +19,7 @@ type Card = {
 const NAV = [
   { label: 'Wallet',   href: '/dashboard' },
   { label: 'Cards',    href: '/my-cards' },
+  { label: 'Feed',     href: '/feed' },
   { label: 'Travel',   href: '/trip-planner' },
   { label: 'Optimize', href: '/optimize' },
   { label: 'You',      href: '/profile' },

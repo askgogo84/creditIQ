@@ -2,6 +2,7 @@
 // Probes the services we can check without guessing, upserts results into service_monitors.
 // Omits renews_on/notes from the upsert so any manually-set values survive.
 import { NextRequest, NextResponse } from 'next/server';
+import { requireAdmin } from '@/lib/admin-auth';
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
@@ -18,7 +19,8 @@ async function httpProbe(url: string, opts: RequestInit, detectPaused = false) {
   }
 }
 
-export async function GET(_req: NextRequest) {
+export async function GET(req: NextRequest) {
+  const denied = await requireAdmin(req); if (denied) return denied;
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
   const apifyToken = process.env.APIFY_TOKEN;

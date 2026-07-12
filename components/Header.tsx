@@ -37,6 +37,7 @@ const BROWSE_LINKS = [
 const APP_NAV = [
   { label: 'Wallet',   href: '/dashboard' },
   { label: 'Cards',    href: '/my-cards' },
+  { label: 'Feed',     href: '/feed' },
   { label: 'Travel',   href: '/trip-planner' },
   { label: 'Optimize', href: '/optimize' },
   { label: 'You',      href: '/profile' },
@@ -46,6 +47,7 @@ const APP_NAV = [
 const APP_ACTIVE: Record<string, (p: string) => boolean> = {
   '/dashboard':    p => p.startsWith('/dashboard'),
   '/my-cards':     p => p.startsWith('/my-cards') || p.startsWith('/cards') || p.startsWith('/card/') || p.startsWith('/compare'),
+  '/feed':         p => p.startsWith('/feed') || p.startsWith('/intelligence'),
   '/trip-planner': p => p.startsWith('/trip-planner') || p.startsWith('/flights') || p.startsWith('/travel') || p.startsWith('/lounge-tracker'),
   '/optimize':     p => p.startsWith('/optimize') || p.startsWith('/points-optimizer') || p.startsWith('/spend-optimizer') || p.startsWith('/smart-match') || p.startsWith('/statement-truth') || p.startsWith('/card-switch') || p.startsWith('/card-roast'),
   '/profile':      p => p.startsWith('/profile'),

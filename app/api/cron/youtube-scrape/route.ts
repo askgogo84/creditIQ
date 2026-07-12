@@ -1,4 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { requireAdminOrCron } from '@/lib/admin-auth'
+import { cleanForStorage } from '@/lib/sanitize-text'
 import { createClient } from '@supabase/supabase-js'
 
 export const runtime = 'nodejs'
@@ -98,6 +100,7 @@ async function boostConfirmation(sb: any, embedding: number[], insightTitle: str
 }
 
 export async function GET(req: NextRequest) {
+  const denied = await requireAdminOrCron(req); if (denied) return denied;
   const ytKey = process.env.YOUTUBE_API_KEY
   if (!ytKey) return NextResponse.json({ error: 'Missing YOUTUBE_API_KEY' }, { status: 500 })
 
@@ -156,8 +159,8 @@ export async function GET(req: NextRequest) {
           creator_handle: channel.channel_name || channel.channel_id,
           creator_name: channel.channel_name || channel.channel_id,
           creator_followers: subs,
-          title: insight.title,
-          content: insight.content,
+          title: cleanForStorage(insight.title),
+          content: cleanForStorage(insight.content),
           insight_type: (['transfer_hack','devaluation','sweet_spot','strategy','general','card_review','reward_tip','lounge','forex'].includes(insight.insight_type) ? insight.insight_type : 'strategy'),
           card_mentions: insight.card_mentions || [],
           // Trust score: base from subscribers + quality bonus for specific facts

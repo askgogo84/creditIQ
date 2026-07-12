@@ -2,6 +2,7 @@
 // Step 1: Start Apify runs for all handles, save run IDs to Supabase
 // Runs in < 5 seconds, no timeout
 import { NextRequest, NextResponse } from 'next/server';
+import { requireAdminOrCron } from '@/lib/admin-auth';
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
@@ -24,7 +25,7 @@ const TARGET_HANDLES = [
 const APIFY_BASE = 'https://api.apify.com/v2';
 const APIFY_ACTOR = 'apify~instagram-scraper';
 export async function GET(req: NextRequest) {
-  // Vercel crons are called by Vercel infrastructure only - no secret needed
+  const denied = await requireAdminOrCron(req); if (denied) return denied;
   const apifyToken = process.env.APIFY_TOKEN;
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY;

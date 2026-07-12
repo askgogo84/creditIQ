@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { requireAdmin } from '@/lib/admin-auth';
 export const runtime = 'edge';
 export async function POST(req: NextRequest) {
+  const denied = await requireAdmin(req); if (denied) return denied;
   const { slug } = await req.json();
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const key = process.env.SUPABASE_SERVICE_ROLE_KEY;

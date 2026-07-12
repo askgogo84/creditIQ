@@ -1,4 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { requireAdminOrCron } from '@/lib/admin-auth'
+import { cleanForStorage } from '@/lib/sanitize-text'
 import { createClient } from '@supabase/supabase-js'
 
 export const runtime = 'nodejs'
@@ -85,6 +87,7 @@ Return ONLY valid JSON:
 }
 
 export async function GET(req: NextRequest) {
+  const denied = await requireAdminOrCron(req); if (denied) return denied;
   const sb = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!)
 
   const token = await getRedditToken()
@@ -130,8 +133,8 @@ export async function GET(req: NextRequest) {
           creator_handle: post.author,
           creator_name: 'r/' + source.subreddit,
           creator_followers: post.score,
-          title: insight.title,
-          content: insight.content,
+          title: cleanForStorage(insight.title),
+          content: cleanForStorage(insight.content),
           insight_type: (['transfer_hack','devaluation','sweet_spot','strategy','general','card_review','reward_tip','lounge','forex'].includes(insight.insight_type) ? insight.insight_type : 'strategy'),
           card_mentions: insight.card_mentions || [],
           trust_score: Math.min(1.0, post.score / 1000),

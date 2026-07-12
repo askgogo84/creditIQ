@@ -1,8 +1,10 @@
 // app/api/admin/update-deval/route.ts
 import { NextRequest, NextResponse } from 'next/server';
+import { requireAdmin } from '@/lib/admin-auth';
 import { createClient } from '@supabase/supabase-js';
 
 export async function POST(req: NextRequest) {
+  const denied = await requireAdmin(req); if (denied) return denied;
   const { id, status } = await req.json();
   const supabase = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
