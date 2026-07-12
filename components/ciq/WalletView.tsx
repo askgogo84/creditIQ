@@ -58,6 +58,7 @@ export function WalletView({
   const verified = Math.round(vPoints * RATE);
   const estimated = Math.round(ePoints * RATE);
   const totalValue = verified + estimated;
+  const hasVerified = vPoints > 0;
 
   return (
     <CiqTheme>
@@ -136,6 +137,30 @@ export function WalletView({
               </>
             )}
 
+            {/* verified-points CTA — prominent for anyone with zero verified points.
+                This is a gold ACTION (not verified data), so it uses gold, never green. */}
+            {!hasVerified && (
+              <div className="ciq-rise d3" style={{
+                margin: '26px 20px 0', padding: 18, borderRadius: 18,
+                background: 'var(--ciq-gold-soft)', border: '1px solid var(--ciq-gold-line)',
+              }}>
+                <div className="ciq-mono" style={{ fontSize: 10, letterSpacing: '.12em', textTransform: 'uppercase', color: 'var(--ciq-gold-2)' }}>
+                  Your next step
+                </div>
+                <h3 className="ciq-display" style={{ fontWeight: 600, fontSize: 17, letterSpacing: '-.01em', marginTop: 8, color: 'var(--ciq-ink)' }}>
+                  Get your verified points
+                </h3>
+                <p style={{ fontSize: 12.5, lineHeight: 1.5, color: 'var(--ciq-ink-2)', marginTop: 6 }}>
+                  Upload a bank statement and we read your real points balance in seconds. <b style={{ color: 'var(--ciq-ink)' }}>Verified from your statement — never guessed.</b>
+                </p>
+                <Link href="/upload-statement" style={{
+                  display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, marginTop: 14, padding: 13,
+                  borderRadius: 12, fontSize: 14, fontWeight: 700, textDecoration: 'none',
+                  background: 'linear-gradient(135deg,var(--ciq-gold-2),var(--ciq-gold))', color: '#1a1710',
+                }}>↑ Upload a statement</Link>
+              </div>
+            )}
+
             {/* cards */}
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '26px 20px 12px' }}>
               <h2 className="ciq-display" style={{ fontSize: 18, fontWeight: 600, letterSpacing: '-.01em' }}>Your cards</h2>
@@ -154,6 +179,15 @@ export function WalletView({
                 alignItems: 'center', justifyContent: 'center', gap: 8, color: 'var(--ciq-gold-2)',
                 fontWeight: 600, fontSize: 13.5, background: 'transparent', cursor: 'pointer',
               }}>＋ Add a card</button>
+              {/* Upload entry stays reachable once the user already has verified points
+                  (the prominent CTA above only shows while they have none). */}
+              {hasVerified && (
+                <Link href="/upload-statement" style={{
+                  border: '1px solid var(--ciq-line-2)', borderRadius: 18, padding: 13, display: 'flex',
+                  alignItems: 'center', justifyContent: 'center', gap: 8, color: 'var(--ciq-ink-2)',
+                  fontWeight: 600, fontSize: 12.5, background: 'var(--ciq-panel)', textDecoration: 'none',
+                }}>↑ Upload a statement to verify more</Link>
+              )}
             </div>
           </div>
 

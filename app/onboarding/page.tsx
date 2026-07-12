@@ -31,6 +31,11 @@ export default function OnboardingPage() {
   const [pending, setPending] = useState<CatalogCard | null>(null);
   const [pendingPts, setPendingPts] = useState('');
   const [airport, setAirport] = useState('');
+  // Fallback for cards not in the catalogue — no user should ever hit a dead end here.
+  const [showCustom, setShowCustom] = useState(false);
+  const [customName, setCustomName] = useState('');
+  const [customBank, setCustomBank] = useState('');
+  const [customPts, setCustomPts] = useState('');
 
   // ---- auth load (unchanged logic) ----
   useEffect(() => {
@@ -64,9 +69,23 @@ export default function OnboardingPage() {
     setPending(null); setPendingPts(''); setQ(''); setResults([]);
   };
 
+  const addCustom = () => {
+    const nm = customName.trim(), bk = customBank.trim();
+    if (!nm || !bk) return;
+    const id = `custom:${bk.toLowerCase()}:${nm.toLowerCase()}`;
+    setWallet(w => [...w.filter(x => x.id !== id), {
+      id, name: nm, bank: bk, currency: 'Points', points: parseInt(customPts) || 0,
+    }]);
+    setShowCustom(false); setCustomName(''); setCustomBank(''); setCustomPts('');
+    setQ(''); setResults([]); setPending(null);
+  };
+
   const finish = async () => {
     if (!user || saving) return;
     setSaving(true);
+    // Save cards and profile independently, and ALWAYS enter the wallet afterwards.
+    // A profile write can fail (e.g. a stray NOT NULL on date_of_birth in the DB) — that
+    // must never strand a new user on this screen, so it can't block navigation.
     try {
       for (const c of wallet) {
         await authedFetch('/api/manual-cards', {
@@ -74,12 +93,14 @@ export default function OnboardingPage() {
           body: JSON.stringify({ bank: c.bank, cardName: c.name, cardLast4: '', pointsBalance: String(c.points), pointsCurrency: c.currency }),
         });
       }
+    } catch {}
+    try {
       await authedFetch('/api/onboarding', {
         method: 'POST',
         body: JSON.stringify({ displayName: name, dateOfBirth: dob || null, homeAirport: airport || null, complete: true }),
       });
-      router.replace('/dashboard');
-    } catch { setSaving(false); }
+    } catch {}
+    router.replace('/dashboard');
   };
 
   const canNext = step === 0 ? name.trim().length > 0 : true;
@@ -175,6 +196,38 @@ export default function OnboardingPage() {
                     <input style={{ ...inputStyle, flex: 1 }} type="number" autoFocus value={pendingPts}
                       onChange={e => setPendingPts(e.target.value)} placeholder={`${pending.reward_currency || 'Points'} balance`} />
                     <button onClick={confirmPending} style={{ ...goldBtn(), width: 'auto', padding: '0 20px' }}>Add</button>
+                  </div>
+                </div>
+              )}
+
+              {/* can't find your card? — never a dead end */}
+              {!pending && !showCustom && (
+                <button onClick={() => { setShowCustom(true); setCustomName(q.trim()); }}
+                  style={{ marginTop: 12, background: 'none', border: 'none', color: 'var(--ciq-gold-2)', fontSize: 13, fontWeight: 600, cursor: 'pointer', textAlign: 'left', padding: 0 }}>
+                  Can&apos;t find your card? Add it manually →
+                </button>
+              )}
+
+              {/* manual card entry (fallback for any card not in the catalogue) */}
+              {showCustom && (
+                <div style={{ marginTop: 12, padding: 14, borderRadius: 14, background: 'var(--ciq-panel)', border: '1px solid var(--ciq-gold-line)' }}>
+                  <div style={{ fontWeight: 600, fontSize: 14, marginBottom: 10 }}>Add your card manually</div>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                    <input style={inputStyle} value={customName} onChange={e => setCustomName(e.target.value)} placeholder="Card name (e.g. Kotak IndiGo 6E)" />
+                    <input style={inputStyle} value={customBank} onChange={e => setCustomBank(e.target.value)} placeholder="Bank (e.g. Kotak)" />
+                    <div style={{ display: 'flex', gap: 8 }}>
+                      <input style={{ ...inputStyle, flex: 1 }} type="number" value={customPts}
+                        onChange={e => setCustomPts(e.target.value)} placeholder="Points balance (optional)" />
+                      <button onClick={addCustom} disabled={!customName.trim() || !customBank.trim()}
+                        style={{ ...goldBtn(!customName.trim() || !customBank.trim()), width: 'auto', padding: '0 20px' }}>Add</button>
+                    </div>
+                    <div style={{ fontSize: 11, color: 'var(--ciq-ink-3)', lineHeight: 1.4 }}>
+                      Added as an <b style={{ color: 'var(--ciq-ink-2)' }}>Estimated</b> balance — upload a statement later to verify.
+                    </div>
+                    <button onClick={() => { setShowCustom(false); setCustomBank(''); setCustomPts(''); }}
+                      style={{ background: 'none', border: 'none', color: 'var(--ciq-ink-3)', fontSize: 12, cursor: 'pointer', textAlign: 'left', padding: '2px 0 0' }}>
+                      Cancel
+                    </button>
                   </div>
                 </div>
               )}
