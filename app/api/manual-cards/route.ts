@@ -53,8 +53,12 @@ export async function POST(req: NextRequest) {
     const last4 = (cardLast4 || '').trim() || null;
     const svc = svcClient();
 
-    // Dedupe: same bank + card name + last-4 → update the existing row instead of
-    // inserting a duplicate. If the incoming last-4 is blank, match on bank + name only.
+    // Dedupe: same bank + card name → update the existing row instead of inserting a
+    // duplicate. Last-4 matching (given bank + name already match):
+    //  - incoming last-4 blank        → match any existing row (bank + name only)
+    //  - existing row has no last-4   → match and backfill the incoming last-4 onto it
+    //  - both present and equal       → match
+    //  - both present but different   → NOT a match (two distinct cards)
     const norm = (s: any) => (s || '').toString().trim().toLowerCase();
     const { data: existing } = await svc
       .from('manual_cards')
@@ -64,7 +68,7 @@ export async function POST(req: NextRequest) {
       (r: any) =>
         norm(r.bank) === norm(bank) &&
         norm(r.card_name) === norm(cardName) &&
-        (last4 ? norm(r.card_last4) === norm(last4) : true)
+        (!last4 || !r.card_last4 || norm(r.card_last4) === norm(last4))
     );
 
     if (dupe) {
