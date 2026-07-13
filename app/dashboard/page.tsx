@@ -159,7 +159,9 @@ export default function DashboardPage() {
   };
 
   const handleAddCard = async () => {
-    if (!user || !addForm.cardName || !addForm.pointsBalance) return;
+    // Points balance is OPTIONAL — a new user often doesn't know it yet.
+    // Blank or 0 is valid; the card saves with 0 points (grey "Estimated").
+    if (!user || !addForm.cardName) return;
     setAddLoading(true);
     try {
       const res = await authedFetch('/api/manual-cards', {
@@ -269,9 +271,16 @@ export default function DashboardPage() {
               <input placeholder="Last 4 digits (optional)" value={addForm.cardLast4}
                 onChange={e => setAddForm({ ...addForm, cardLast4: e.target.value })}
                 style={{ padding: '12px 14px', borderRadius: 12, background: 'var(--ciq-panel-2)', border: '1px solid var(--ciq-line-2)', color: 'var(--ciq-ink)' }} />
-              <input placeholder="Points balance" type="number" value={addForm.pointsBalance}
+              <input placeholder="Points balance (optional)" type="number" value={addForm.pointsBalance}
                 onChange={e => setAddForm({ ...addForm, pointsBalance: e.target.value })}
                 style={{ padding: '12px 14px', borderRadius: 12, background: 'var(--ciq-panel-2)', border: '1px solid var(--ciq-line-2)', color: 'var(--ciq-ink)' }} />
+              <p style={{ fontSize: 11.5, lineHeight: 1.45, color: 'var(--ciq-ink-3)', margin: '-4px 2px 0' }}>
+                Don't know your balance?{' '}
+                <Link href="/upload-statement" style={{ color: 'var(--ciq-gold-2)', fontWeight: 600, textDecoration: 'none' }}>
+                  Upload a statement
+                </Link>{' '}
+                and we'll verify it.
+              </p>
               <input placeholder="Currency (e.g. Points, EDGE Miles)" value={addForm.pointsCurrency}
                 onChange={e => setAddForm({ ...addForm, pointsCurrency: e.target.value })}
                 style={{ padding: '12px 14px', borderRadius: 12, background: 'var(--ciq-panel-2)', border: '1px solid var(--ciq-line-2)', color: 'var(--ciq-ink)' }} />
