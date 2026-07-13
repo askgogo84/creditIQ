@@ -113,7 +113,6 @@ export default function StatementTruthPage() {
                       <div style={{ fontSize: 48, marginBottom: 12 }}>📄</div>
                       <div style={{ fontSize: 16, fontWeight: 700, color: 'var(--ink,#142950)', marginBottom: 6 }}>Drop your statement PDF here</div>
                       <div style={{ fontFamily: 'var(--font-mono,monospace)', fontSize: 11, color: 'var(--ink-3,#5A6A8A)', marginBottom: 8 }}>or click to browse &bull; PDF only &bull; Not stored anywhere</div>
-                      <div style={{ fontFamily: 'var(--font-mono,monospace)', fontSize: 10, color: 'var(--ink-3,#5A6A8A)', opacity: 0.6 }}>Password protected? Unlock at ilovepdf.com first</div>
                     </>
                   )}
                 </div>

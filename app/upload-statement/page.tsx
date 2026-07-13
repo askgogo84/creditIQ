@@ -5,7 +5,7 @@ import { createBrowserClient } from '@supabase/ssr';
 import { authedFetch } from '@/lib/authed-fetch';
 import { Header } from '@/components/Header';
 import { DesignFooter } from '@/components/design/Footer';
-import { Upload, FileText, CheckCircle, AlertCircle, Zap, ArrowRight, Lock, X, ExternalLink, LogIn } from 'lucide-react';
+import { Upload, FileText, CheckCircle, AlertCircle, Zap, ArrowRight, Lock, X, LogIn, Eye, EyeOff } from 'lucide-react';
 import Link from 'next/link';
 
 // WEBSITE page (per site/app split decision): marketing Header + Footer stay.
@@ -68,6 +68,8 @@ export default function UploadStatementPage() {
   const [error, setError] = useState('');
   const [needsPassword, setNeedsPassword] = useState(false);
   const [pwdHint, setPwdHint] = useState('');
+  const [pdfPassword, setPdfPassword] = useState('');
+  const [showPwd, setShowPwd] = useState(false);
   const [userId, setUserId] = useState<string | null>(null);
   const [savedCount, setSavedCount] = useState(0);
   const [manualPoints, setManualPoints] = useState('');
@@ -108,13 +110,17 @@ export default function UploadStatementPage() {
       formData.append('file', file);
       formData.append('bank', selectedBank?.id || 'Unknown');
       if (userId) formData.append('userId', userId);
+      // Locked PDFs are unlocked server-side, in memory, with this password.
+      if (pdfPassword.trim()) formData.append('password', pdfPassword.trim());
 
       const res = await fetch('/api/parse-statement', { method: 'POST', body: formData });
       const data = await res.json();
 
       if (data.needsPassword) {
+        // Stay on the form; reveal/spotlight the password field with the bank's hint.
         setNeedsPassword(true);
         setPwdHint(data.hint || selectedBank?.pwdHint || '');
+        setError(data.error || 'This PDF is locked — enter its password to unlock it.');
       } else if (!res.ok || data.error) {
         setError(data.error || 'Failed to parse statement');
       } else {
@@ -153,6 +159,7 @@ export default function UploadStatementPage() {
     setResult(null); setFile(null);
     setNeedsPassword(false); setError('');
     setSelectedBank(null); setManualPoints('');
+    setPdfPassword(''); setShowPwd(false);
   };
 
   return (
@@ -194,7 +201,7 @@ export default function UploadStatementPage() {
             </div>
           )}
 
-          {!result && !needsPassword && (
+          {!result && (
             <div className="space-y-5">
               <div>
                 <label className="text-xs font-mono uppercase tracking-widest mb-3 block" style={{ color: 'var(--text-dim)' }}>
@@ -216,7 +223,7 @@ export default function UploadStatementPage() {
 
               <div>
                 <label className="text-xs font-mono uppercase tracking-widest mb-3 block" style={{ color: 'var(--text-dim)' }}>
-                  2. Upload PDF statement (unlocked)
+                  2. Upload PDF statement
                 </label>
                 <div onDragOver={e => { e.preventDefault(); setDragging(true); }}
                   onDragLeave={() => setDragging(false)}
@@ -241,10 +248,41 @@ export default function UploadStatementPage() {
                     <div>
                       <Upload className="w-6 h-6 mx-auto mb-3" style={{ color: 'var(--text-dim)' }} />
                       <p className="text-sm font-medium mb-1" style={{ color: 'var(--text)' }}>Drop PDF here or tap to browse</p>
-                      <p className="text-xs" style={{ color: 'var(--text-dim)' }}>Must be unlocked (password removed) . Max 10MB</p>
+                      <p className="text-xs" style={{ color: 'var(--text-dim)' }}>PDF up to 10MB . Locked PDFs are fine — add the password below</p>
                     </div>
                   )}
                 </div>
+              </div>
+
+              <div>
+                <label className="text-xs font-mono uppercase tracking-widest mb-3 block" style={{ color: 'var(--text-dim)' }}>
+                  3. PDF password <span style={{ textTransform: 'none', letterSpacing: 0, color: 'var(--text-dim)' }}>— only if your statement is locked</span>
+                </label>
+                <div style={{ position: 'relative' }}>
+                  <input
+                    type={showPwd ? 'text' : 'password'}
+                    value={pdfPassword}
+                    maxLength={256}
+                    onChange={e => setPdfPassword(e.target.value)}
+                    autoComplete="off"
+                    placeholder={selectedBank ? `e.g. ${selectedBank.pwdHint}` : 'The password your bank set on the PDF'}
+                    className="w-full rounded-xl text-sm"
+                    style={{ background: 'var(--bg-elevated)', border: `1px solid ${needsPassword ? 'var(--accent)' : 'var(--border)'}`, color: 'var(--text)', padding: '12px 46px 12px 14px' }}
+                  />
+                  <button type="button" onClick={() => setShowPwd(s => !s)}
+                    aria-label={showPwd ? 'Hide password' : 'Show password'}
+                    style={{ position: 'absolute', right: 0, top: 0, height: '100%', width: 46, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'transparent', border: 'none', cursor: 'pointer', color: 'var(--text-dim)' }}>
+                    {showPwd ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                  </button>
+                </div>
+                {needsPassword && (
+                  <p className="text-xs mt-2" style={{ color: 'var(--accent)' }}>
+                    {selectedBank?.name || 'Your bank'} format: {pwdHint || selectedBank?.pwdHint}
+                  </p>
+                )}
+                <p className="text-xs mt-2" style={{ color: 'var(--text-dim)' }}>
+                  Used once to unlock the PDF in memory. Never saved, never leaves CreditIQ.
+                </p>
               </div>
 
               {error && (
@@ -257,7 +295,7 @@ export default function UploadStatementPage() {
                 className="w-full text-base flex items-center justify-center gap-2"
                 style={{ ...GOLD_BTN, opacity: !file || loading ? 0.55 : 1 }}>
                 <Zap className="w-5 h-5" />
-                {loading ? 'Reading your statement...' : 'Extract my points'}
+                {loading ? 'Reading your statement...' : needsPassword ? 'Unlock & extract my points' : 'Extract my points'}
               </button>
 
               <div className="rounded-xl p-4 border flex items-start gap-3" style={{ borderColor: 'var(--border)', background: 'var(--bg-elevated)' }}>
@@ -266,49 +304,6 @@ export default function UploadStatementPage() {
                   <strong style={{ color: 'var(--text)' }}>Your data is private.</strong> PDF is processed and immediately discarded. Only points balance is saved to your account.
                 </p>
               </div>
-            </div>
-          )}
-
-          {needsPassword && !result && (
-            <div className="space-y-4">
-              <div className="rounded-2xl border p-6" style={{ borderColor: 'color-mix(in srgb, var(--accent) 30%, transparent)', background: 'color-mix(in srgb, var(--accent) 6%, transparent)' }}>
-                <div className="flex items-start gap-3 mb-5">
-                  <div className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0" style={{ background: 'color-mix(in srgb, var(--accent) 15%, transparent)' }}>
-                    <Lock className="w-5 h-5" style={{ color: 'var(--accent)' }} />
-                  </div>
-                  <div>
-                    <h3 className="font-display text-xl mb-1" style={{ color: 'var(--text)' }}>PDF is password protected</h3>
-                    <p className="text-sm" style={{ color: 'var(--text-muted)' }}>Remove the password first using ilovepdf -- takes 30 seconds.</p>
-                  </div>
-                </div>
-                <div className="rounded-xl p-4 mb-4" style={{ background: 'var(--bg-elevated)', border: '1px solid var(--border)' }}>
-                  <div className="text-xs font-mono uppercase tracking-widest mb-2" style={{ color: 'var(--text-dim)' }}>
-                    {selectedBank?.name || 'Your bank'} password format
-                  </div>
-                  <p className="text-sm font-medium" style={{ color: 'var(--text)' }}>{pwdHint || selectedBank?.pwdHint}</p>
-                </div>
-                <div className="space-y-3 mb-5">
-                  {[
-                    'Open your statement PDF and note the password (format above)',
-                    'Go to ilovepdf.com/unlock_pdf -- free, no account needed',
-                    'Upload your PDF, enter the password, click Unlock PDF',
-                    'Download the unlocked PDF and upload it here',
-                  ].map((s, i) => (
-                    <div key={i} className="flex items-start gap-3 text-sm" style={{ color: 'var(--text-muted)' }}>
-                      <div className="w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold shrink-0 mt-0.5" style={{ background: 'var(--accent)', color: '#141105' }}>{i + 1}</div>
-                      {s}
-                    </div>
-                  ))}
-                </div>
-                <a href="https://www.ilovepdf.com/unlock_pdf" target="_blank" rel="noopener noreferrer"
-                  className="w-full flex items-center justify-center gap-2 text-sm"
-                  style={{ ...GOLD_BTN, textDecoration: 'none', boxSizing: 'border-box' }}>
-                  Open ilovepdf.com/unlock_pdf <ExternalLink className="w-4 h-4" />
-                </a>
-              </div>
-              <button onClick={() => { setNeedsPassword(false); setFile(null); }} className="w-full text-sm" style={GHOST_BTN}>
-                &larr; Upload a different file
-              </button>
             </div>
           )}
 
