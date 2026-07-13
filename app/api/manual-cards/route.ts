@@ -48,14 +48,56 @@ export async function POST(req: NextRequest) {
     if (!bank || !cardName) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
     }
-    const { data, error } = await svcClient()
+    // Points balance is OPTIONAL — blank or 0 saves as 0 points (grey "Estimated").
+    const points = parseInt(pointsBalance) || 0;
+    const last4 = (cardLast4 || '').trim() || null;
+    const svc = svcClient();
+
+    // Dedupe: same bank + card name → update the existing row instead of inserting a
+    // duplicate. Last-4 matching (given bank + name already match):
+    //  - incoming last-4 blank        → match any existing row (bank + name only)
+    //  - existing row has no last-4   → match and backfill the incoming last-4 onto it
+    //  - both present and equal       → match
+    //  - both present but different   → NOT a match (two distinct cards)
+    const norm = (s: any) => (s || '').toString().trim().toLowerCase();
+    const { data: existing } = await svc
+      .from('manual_cards')
+      .select('*')
+      .eq('user_id', userId);
+    const dupe = (existing || []).find(
+      (r: any) =>
+        norm(r.bank) === norm(bank) &&
+        norm(r.card_name) === norm(cardName) &&
+        (!last4 || !r.card_last4 || norm(r.card_last4) === norm(last4))
+    );
+
+    if (dupe) {
+      const { data, error } = await svc
+        .from('manual_cards')
+        .update({
+          points_balance: points,
+          points_currency: pointsCurrency || 'Points',
+          card_last4: last4 || dupe.card_last4 || null, // keep an existing last-4 if none supplied now
+        })
+        .eq('id', dupe.id)
+        .eq('user_id', userId) // can only touch own rows
+        .select()
+        .single();
+      if (error) {
+        console.error('manual-cards POST (dedupe update) error:', error.message);
+        return NextResponse.json({ error: error.message }, { status: 500 });
+      }
+      return NextResponse.json({ card: data, deduped: true });
+    }
+
+    const { data, error } = await svc
       .from('manual_cards')
       .insert({
         user_id: userId, // from token, never from body
         bank,
         card_name: cardName,
-        card_last4: cardLast4 || null,
-        points_balance: parseInt(pointsBalance) || 0,
+        card_last4: last4,
+        points_balance: points,
         points_currency: pointsCurrency || 'Points',
       })
       .select()
