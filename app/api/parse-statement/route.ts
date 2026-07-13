@@ -25,11 +25,17 @@ class PdfPasswordError extends Error {
   constructor(public hadPassword: boolean) { super('pdf_password'); }
 }
 
-// Decrypt (if locked) and extract text ENTIRELY IN MEMORY using unpdf's serverless
-// PDF.js build (no worker file to resolve on Vercel). The password is used only to open
-// the document on the getDocumentProxy line below — it is never stored, logged, or
-// persisted anywhere, and the buffer is discarded when this request ends.
-async function pdfToText(buf: Buffer, password?: string): Promise<string> {
+// HYBRID reader. Opens the PDF in memory with unpdf's serverless PDF.js build to
+// determine whether it is encrypted, and decrypts it when a password is supplied.
+//   - unencrypted (opens without a password) -> mode:'document'  (caller sends the
+//     original PDF to Claude's native document reader, which keeps OCR for scanned/
+//     image statements — no regression)
+//   - encrypted + correct password           -> mode:'text'      (Claude cannot read the
+//     locked bytes, so we hand it the decrypted text we just extracted here)
+//   - encrypted + missing/wrong password     -> PdfPasswordError
+// The password is used ONLY on the getDocumentProxy line below. It is never stored,
+// logged, or persisted, and the buffer is discarded when the request ends.
+async function readPdf(buf: Buffer, password?: string): Promise<{ mode: 'document' } | { mode: 'text'; text: string }> {
   const { getDocumentProxy, extractText } = await import('unpdf');
   let pdf: any;
   try {
@@ -41,9 +47,12 @@ async function pdfToText(buf: Buffer, password?: string): Promise<string> {
     }
     throw e;
   }
+  // Opened without a password -> unencrypted. Prefer Claude's native document reading.
+  if (!password) return { mode: 'document' };
+  // A password was supplied and the document opened -> extract the now-decrypted text.
   const { text } = await extractText(pdf, { mergePages: true });
   const out = Array.isArray(text) ? text.join('\n') : String(text ?? '');
-  return out.slice(0, MAX_TEXT_CHARS);
+  return { mode: 'text', text: out.slice(0, MAX_TEXT_CHARS) };
 }
 
 const EXTRACT_INSTRUCTIONS = `Extract ONLY these fields as JSON:
@@ -81,11 +90,11 @@ export async function POST(req: NextRequest) {
     const bytes = await file.arrayBuffer();
     const buffer = Buffer.from(bytes);
 
-    // Read the PDF in memory. A locked PDF is unlocked HERE with the user's password —
+    // Decide how to read the PDF. A locked PDF is unlocked HERE with the user's password —
     // never on a third-party site — then the bytes are dropped.
-    let text: string;
+    let read: { mode: 'document' } | { mode: 'text'; text: string };
     try {
-      text = await pdfToText(buffer, password);
+      read = await readPdf(buffer, password);
     } catch (e: any) {
       if (e instanceof PdfPasswordError) {
         return NextResponse.json({
@@ -102,26 +111,38 @@ export async function POST(req: NextRequest) {
       }, { status: 422 });
     }
 
-    if (!text || text.trim().length < 100) {
-      return NextResponse.json({
-        error: "We opened the PDF but couldn't find readable text — it may be a scanned image. Download a fresh PDF from your bank app or net banking and try again.",
-      }, { status: 422 });
+    // Build the Claude request: native document mode for unencrypted PDFs (keeps OCR),
+    // extracted-text mode for the decrypted-in-memory case.
+    const headers: Record<string, string> = {
+      'Content-Type': 'application/json',
+      'x-api-key': apiKey,
+      'anthropic-version': '2023-06-01',
+    };
+    let content: any;
+
+    if (read.mode === 'text') {
+      if (!read.text || read.text.trim().length < 100) {
+        return NextResponse.json({
+          error: "We unlocked the PDF but couldn't find readable text — it may be a scanned image. Download a fresh PDF from your bank app or net banking and try again.",
+        }, { status: 422 });
+      }
+      content = `This is a ${bank} credit card statement. The text extracted from the PDF is between the markers below.\n\n<statement>\n${read.text}\n</statement>\n\n${EXTRACT_INSTRUCTIONS}`;
+    } else {
+      const base64 = buffer.toString('base64');
+      headers['anthropic-beta'] = 'pdfs-2024-09-25';
+      content = [
+        { type: 'document', source: { type: 'base64', media_type: 'application/pdf', data: base64 } },
+        { type: 'text', text: `This is a ${bank} credit card statement. ${EXTRACT_INSTRUCTIONS}` },
+      ];
     }
 
     const response = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'x-api-key': apiKey,
-        'anthropic-version': '2023-06-01',
-      },
+      headers,
       body: JSON.stringify({
         model: 'claude-sonnet-4-6',
         max_tokens: 1024,
-        messages: [{
-          role: 'user',
-          content: `This is a ${bank} credit card statement. The text extracted from the PDF is between the markers below.\n\n<statement>\n${text}\n</statement>\n\n${EXTRACT_INSTRUCTIONS}`,
-        }],
+        messages: [{ role: 'user', content }],
       }),
     });
 
