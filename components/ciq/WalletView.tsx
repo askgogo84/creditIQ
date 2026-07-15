@@ -1,48 +1,16 @@
 // components/ciq/WalletView.tsx
 'use client';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
 import { CiqTheme, ThemeToggle } from './ThemeProvider';
 import { HeroGauge } from './HeroGauge';
 import { CardRow } from './CardRow';
 import { BestMove } from './BestMove';
-import { TabBar } from './TabBar';
 
 type Card = {
   id: string; bank: string; card_name?: string; cardName?: string;
   card_last4?: string; points_balance: number; points_currency?: string;
   source: 'statement' | 'manual';
 };
-
-// Desktop-only slim nav (>=768px). Mirrors TabBar destinations so all
-// do-not-break routes stay reachable when the tab bar is hidden on desktop.
-const NAV = [
-  { label: 'Wallet',   href: '/dashboard' },
-  { label: 'Cards',    href: '/my-cards' },
-  { label: 'Feed',     href: '/feed' },
-  { label: 'Travel',   href: '/trip-planner' },
-  { label: 'Optimize', href: '/optimize' },
-  { label: 'You',      href: '/profile' },
-];
-
-function DesktopNav({ onSignOut }: { onSignOut: () => void }) {
-  const path = usePathname();
-  return (
-    <div className="hidden md:flex" style={{ alignItems: 'center', gap: 4 }}>
-      {NAV.map(n => {
-        const active = path === n.href || (n.href !== '/dashboard' && path.startsWith(n.href));
-        return (
-          <Link key={n.href} href={n.href} style={{
-            fontSize: 12.5, fontWeight: 600, textDecoration: 'none', padding: '7px 12px', borderRadius: 10,
-            color: active ? 'var(--ciq-ink)' : 'var(--ciq-ink-3)',
-            background: active ? 'var(--ciq-line)' : 'transparent',
-            border: active ? '1px solid var(--ciq-line-2)' : '1px solid transparent',
-          }}>{n.label}</Link>
-        );
-      })}
-    </div>
-  );
-}
 
 export function WalletView({
   displayName, email, cards, totalPoints, bestValue, primaryBank,
@@ -70,7 +38,6 @@ export function WalletView({
             Credit<span style={{ color: 'var(--ciq-gold-2)' }}>IQ</span>
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
-            <DesktopNav onSignOut={onSignOut} />
             <ThemeToggle />
             <button onClick={onSignOut} className="ciq-mono" style={{
               fontSize: 10.5, color: 'var(--ciq-ink-2)', background: 'var(--ciq-line)',
@@ -193,11 +160,6 @@ export function WalletView({
           </div>
 
         </div>
-      </div>
-
-      {/* bottom tab bar: mobile only — desktop uses the top nav */}
-      <div className="md:hidden">
-        <TabBar />
       </div>
     </CiqTheme>
   );

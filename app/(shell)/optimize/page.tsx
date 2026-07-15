@@ -3,7 +3,6 @@
 import Link from 'next/link';
 import { useState, useMemo, useEffect, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
-import { Header } from '@/components/Header';
 import { DesignFooter } from '@/components/design/Footer';
 import { CreditCard3D } from '@/components/design/CreditCard3D';
 import { SEED_CARDS } from '@/lib/data/seed-cards';
@@ -76,8 +75,6 @@ function OptimizeContent() {
 
   return (
     <main className="min-h-screen" style={{ overflowX: 'hidden' }}>
-      <Header />
-
       {/* Hero */}
       <section className="pt-20 pb-6 px-4 grain relative" style={{ overflow: 'hidden' }}>
         <div className="divider-rule mb-4 max-w-xs">Points optimizer</div>

@@ -3,7 +3,6 @@ import { useEffect, useState } from 'react';
 import { createBrowserClient } from '@supabase/ssr';
 import { useRouter } from 'next/navigation';
 import { CiqTheme } from '@/components/ciq/ThemeProvider';
-import { TabBar } from '@/components/ciq/TabBar';
 import { authedFetch } from '@/lib/authed-fetch';
 
 // ---- Pricing (single source of truth) ----
@@ -272,8 +271,6 @@ export default function ProPage() {
           </p>
         </div>
       </div>
-
-      <TabBar />
     </CiqTheme>
   );
 }

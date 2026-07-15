@@ -1,7 +1,6 @@
 ﻿'use client'
 
 import { useState } from 'react'
-import { Header } from '@/components/Header'
 import { DesignFooter } from '@/components/design/Footer'
 import { Reveal } from '@/components/design/Reveal'
 import { StatNumber } from '@/components/design/StatNumber'
@@ -62,7 +61,6 @@ export default function CardRoastPage() {
 
   return (
     <>
-      <Header />
       <div className="page-fade">
         <section style={{ position: 'relative', paddingTop: 'clamp(120px,18vw,150px)' }}>
           <div className="aurora" style={{ top: -100, left: -100, width: 600, height: 500, background: 'radial-gradient(circle,rgba(196,106,82,0.35),transparent 60%)' }} />

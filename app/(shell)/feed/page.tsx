@@ -6,7 +6,6 @@ import Link from 'next/link';
 import { createBrowserClient } from '@supabase/ssr';
 import { authedFetch } from '@/lib/authed-fetch';
 import { CiqTheme, ThemeToggle } from '@/components/ciq/ThemeProvider';
-import { TabBar } from '@/components/ciq/TabBar';
 
 type FeedItem = {
   id: string;
@@ -166,7 +165,6 @@ export default function FeedPage() {
           })}
         </div>
       </div>
-      <TabBar />
     </CiqTheme>
   );
 }

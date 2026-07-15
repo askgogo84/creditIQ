@@ -7,7 +7,6 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { CiqTheme, ThemeToggle } from '@/components/ciq/ThemeProvider';
 import { CardRow } from '@/components/ciq/CardRow';
-import { TabBar } from '@/components/ciq/TabBar';
 import { getSmartRedemptions } from '@/lib/redemptions';
 
 type SavedCard = {
@@ -125,7 +124,6 @@ export default function MyCardsPage() {
           </>
         )}
       </div>
-      <TabBar />
     </CiqTheme>
   );
 }

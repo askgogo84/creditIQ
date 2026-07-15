@@ -4,7 +4,6 @@ import { useState, useEffect } from 'react';
 import { createBrowserClient } from '@supabase/ssr';
 import { authedFetch } from '@/lib/authed-fetch';
 import { useRouter } from 'next/navigation';
-import { Header } from '@/components/Header';
 import { DesignFooter } from '@/components/design/Footer';
 import { Plus, TrendingUp, ArrowRight, Zap, RefreshCw, FileText, MessageSquare, LogOut, CreditCard, Upload, Trash2, X, Check, Building2, ChevronDown } from 'lucide-react';
 import Link from 'next/link';

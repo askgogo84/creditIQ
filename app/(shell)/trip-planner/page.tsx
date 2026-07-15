@@ -3,7 +3,6 @@
 import { useState, useEffect, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
-import { Header } from '@/components/Header';
 import { DesignFooter } from '@/components/design/Footer';
 import { getApplyUrl } from '@/lib/affiliate';
 import { BookingModal } from '@/components/BookingModal';
@@ -226,7 +225,6 @@ function TripPlannerPageInner() {
 
   return (
     <div style={{ minHeight: '100vh', background: 'var(--bg, #f8f9fc)' }}>
-      <Header />
       <main style={{ maxWidth: 880, margin: '0 auto', padding: '32px 20px 100px' }}>
 
         {/* Hero */}

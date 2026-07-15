@@ -4,7 +4,6 @@ import { useEffect, useState } from 'react';
 import { createBrowserClient } from '@supabase/ssr';
 import { useRouter } from 'next/navigation';
 import { CiqTheme, ThemeToggle } from '@/components/ciq/ThemeProvider';
-import { TabBar } from '@/components/ciq/TabBar';
 
 const JOIN_CODE = 'CIQ-2850AF';
 
@@ -162,8 +161,6 @@ export default function ProfilePage() {
           </button>
         </div>
       </div>
-
-      <TabBar />
     </CiqTheme>
   );
 }
