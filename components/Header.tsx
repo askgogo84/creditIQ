@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import { createBrowserClient } from '@supabase/ssr'
 import { TabBar } from '@/components/ciq/TabBar'
+import { MORE_GROUPS } from '@/components/ciq/moreNav'
 
 const NAV_LINKS = [
   { label: 'Discover', href: '/' },
@@ -61,6 +62,7 @@ export function Header() {
   const [cardsOpen, setCardsOpen] = useState(false)
   const [travelOpen, setTravelOpen] = useState(false)
   const [discoverOpen, setDiscoverOpen] = useState(false)
+  const [moreOpen, setMoreOpen] = useState(false)
   const [mobileOpen, setMobileOpen] = useState(false)
   const [scrolled, setScrolled] = useState(false)
   // Mirror the wallet's theme choice so the injected gold ciq TabBar looks
@@ -73,6 +75,7 @@ export function Header() {
     cards:    { ref: null as any },
     ai:       { ref: null as any },
     travel:   { ref: null as any },
+    more:     { ref: null as any },
   }
 
   const delayClose = (setter: (v: boolean) => void, timerRef: { ref: any }) => {
@@ -95,7 +98,7 @@ export function Header() {
     return () => window.removeEventListener('scroll', onScroll)
   }, [])
 
-  useEffect(() => { setMobileOpen(false); setAiOpen(false); setDiscoverOpen(false) }, [pathname])
+  useEffect(() => { setMobileOpen(false); setAiOpen(false); setDiscoverOpen(false); setCardsOpen(false); setTravelOpen(false); setMoreOpen(false) }, [pathname])
 
   useEffect(() => {
     try {
@@ -166,6 +169,8 @@ export function Header() {
         .ciq-badge.new { background: #2E7D32; }
         .ciq-badge.beta { background: #1565C0; }
         .ciq-badge.popular { background: #C9972E; }
+        .ciq-more-mega { position: absolute; top: calc(100% + 8px); right: 0; background: var(--surface,#fff); border: 1px solid var(--line,rgba(20,41,80,0.08)); border-radius: 20px; box-shadow: 0 12px 40px rgba(0,0,0,0.14); padding: 16px; display: grid; grid-template-columns: repeat(2, minmax(212px, 1fr)); gap: 4px 14px; z-index: 300; }
+        .ciq-more-title { font-size: 10px; font-weight: 700; color: #C9972E; letter-spacing: 1.5px; text-transform: uppercase; padding: 6px 12px 4px; }
         .ciq-mobile-menu { position: absolute; top: 100%; left: 0; right: 0; background: var(--surface,#fff); border-bottom: 1px solid var(--line,rgba(20,41,80,0.08)); box-shadow: 0 8px 32px rgba(0,0,0,0.1); padding: 12px 20px 20px; max-height: 80vh; overflow-y: auto; }
         .ciq-mobile-section { font-size: 10px; font-weight: 700; color: #C9972E; letter-spacing: 1.5px; text-transform: uppercase; padding: 12px 0 6px; }
         .ciq-mobile-link { display: flex; align-items: center; gap: 10px; padding: 11px 0; font-size: 15px; font-weight: 600; color: var(--ink,#142950); text-decoration: none; border-bottom: 1px solid var(--line-soft,rgba(20,41,80,0.04)); }
@@ -212,9 +217,42 @@ export function Header() {
           {/* Desktop pill nav — app nav when signed in, marketing dropdowns when signed out */}
           <nav className="ciq-nav" style={{ position: 'relative' }}>
             {user ? (
-              APP_NAV.map(n => (
-                <Link key={n.href} href={n.href} className={`ciq-nav-item${appActive(n.href) ? ' active' : ''}`}>{n.label}</Link>
-              ))
+              <>
+                {APP_NAV.map(n => (
+                  <Link key={n.href} href={n.href} className={`ciq-nav-item${appActive(n.href) ? ' active' : ''}`}>{n.label}</Link>
+                ))}
+                {/* More — recreates the old marketing dropdowns for signed-in users,
+                    without bringing back a second header. Same links as the mobile sheet. */}
+                <div style={{ position: 'relative' }} onMouseEnter={() => { cancelClose(closeTimers.more); setMoreOpen(true) }} onMouseLeave={() => delayClose(setMoreOpen, closeTimers.more)}>
+                  <button type="button" className="ciq-nav-item" onClick={() => setMoreOpen(v => !v)} style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                    More
+                    <svg width="10" height="10" viewBox="0 0 10 10" fill="none" style={{ opacity: 0.5, transform: moreOpen ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s' }}>
+                      <path d="M2 3.5l3 3 3-3" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+                    </svg>
+                  </button>
+                  {moreOpen && (
+                    <div className="ciq-more-mega">
+                      {MORE_GROUPS.map(group => (
+                        <div key={group.title}>
+                          <div className="ciq-more-title">{group.title}</div>
+                          {group.links.map(link => (
+                            <Link key={`${group.title}-${link.href}`} href={link.href} className="ciq-ai-item">
+                              <div className="ciq-ai-icon">{link.icon}</div>
+                              <div style={{ flex: 1 }}>
+                                <div className="ciq-ai-label">
+                                  {link.label}
+                                  {link.badge && <span className={`ciq-badge ${link.badge.toLowerCase()}`}>{link.badge}</span>}
+                                </div>
+                                {link.desc && <div style={{ fontSize: 11, color: 'var(--ink-3,#5A6A8A)', marginTop: 1 }}>{link.desc}</div>}
+                              </div>
+                            </Link>
+                          ))}
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </>
             ) : (
             <>
             <div style={{ position: 'relative' }} onMouseEnter={() => { cancelClose(closeTimers.discover); setDiscoverOpen(true) }} onMouseLeave={() => delayClose(setDiscoverOpen, closeTimers.discover)}>
