@@ -59,9 +59,6 @@ export async function POST(req: NextRequest) {
       key_secret: process.env.RAZORPAY_KEY_SECRET!,
     });
 
-    // TEMPORARY DEBUG — remove after diagnosing live plan_id mismatch
-    console.log('create-subscription debug:', JSON.stringify({ planId: planId, planIdLength: planId?.length, keyPrefix: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID?.slice(0, 8) }));
-
     const sub = await rzp.subscriptions.create({
       plan_id: planId,
       total_count: cfg.totalCount,
