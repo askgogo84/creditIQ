@@ -3,7 +3,6 @@
 import { useState } from 'react';
 import type { CSSProperties } from 'react';
 import Link from 'next/link';
-import { Header } from '@/components/Header';
 import { DesignFooter } from '@/components/design/Footer';
 import { SEED_CARDS } from '@/lib/data/seed-cards';
 import { getApplyUrl } from '@/lib/affiliate';
@@ -129,7 +128,6 @@ export default function CardSwitchPage() {
 
   return (
     <div style={{ minHeight: '100vh', background: 'var(--bg, #08080E)' }}>
-      <Header />
       <main style={{ maxWidth: 720, margin: '0 auto', padding: '32px 20px 100px' }}>
 
         {/* Hero */}

@@ -1,7 +1,6 @@
 'use client';
 
 import { useState } from 'react';
-import { Header } from '@/components/Header';
 
 const CATEGORIES = [
   { id: 'dining', label: 'Dining & Restaurants', color: '#e11d48', placeholder: '5000', icon: '🍽️' },
@@ -113,7 +112,6 @@ Respond ONLY with valid JSON (no markdown, no backticks, no explanation outside 
 
   return (
     <div className="min-h-screen" style={{ backgroundColor: '#f1f5f9' }}>
-      <Header />
       <main className="mx-auto px-4 pb-28" style={{ maxWidth: 700, paddingTop: 40 }}>
 
         {/* Hero */}

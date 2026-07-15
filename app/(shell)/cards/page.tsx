@@ -1,5 +1,4 @@
 import { Metadata } from 'next';
-import { Header } from '@/components/Header';
 import { SectionHeader } from '@/components/design/SectionHeader';
 import { CopperCTA, GhostCTA } from '@/components/design/CTAs';
 import { DesignFooter } from '@/components/design/Footer';
@@ -45,7 +44,6 @@ export default async function CardsIndexPage() {
 
   return (
     <>
-      <Header />
       <div className="page-fade">
         {/* HERO */}
         <section style={{ position: 'relative', paddingTop: 'clamp(120px, 18vw, 160px)' }}>

@@ -3,7 +3,6 @@ import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import { SEED_CARDS } from '@/lib/data/seed-cards';
 import { createClient } from '@supabase/supabase-js';
-import { Header } from '@/components/Header';
 import { getApplyUrl } from '@/lib/affiliate';
 
 interface Props {
@@ -86,7 +85,6 @@ export default async function CardDetailPage({ params }: Props) {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
       />
       <div style={{ minHeight: '100vh', backgroundColor: '#f8fafc' }}>
-        <Header />
 
         {/* Breadcrumb */}
         <div style={{ backgroundColor: '#fff', borderBottom: '1px solid #e2e8f0' }}>

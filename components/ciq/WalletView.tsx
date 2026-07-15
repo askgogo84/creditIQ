@@ -32,11 +32,9 @@ export function WalletView({
   return (
     <CiqTheme>
       <div className="max-w-[420px] md:max-w-[1100px] mx-auto pb-[104px] md:pb-16" style={{ position: 'relative' }}>
-        {/* masthead */}
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '18px 20px 8px' }}>
-          <div className="ciq-display" style={{ fontWeight: 700, fontSize: 20, letterSpacing: '-.02em' }}>
-            Credit<span style={{ color: 'var(--ciq-gold-2)' }}>IQ</span>
-          </div>
+        {/* masthead — wordmark dropped (shell Header supplies the logo); keeps the
+            wallet-specific ThemeToggle (ciq-theme) + sign out, right-aligned */}
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', padding: '18px 20px 8px' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
             <ThemeToggle />
             <button onClick={onSignOut} className="ciq-mono" style={{

@@ -2,7 +2,6 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { Header } from '@/components/Header';
 import { DesignFooter } from '@/components/design/Footer';
 import { Reveal } from '@/components/design/Reveal';
 import { SEED_CARDS } from '@/lib/data/seed-cards';
@@ -44,7 +43,6 @@ export default function ComparePage() {
 
   return (
     <>
-      <Header />
       <div className="page-fade">
         <section style={{ position: 'relative', paddingTop: 'clamp(120px,18vw,150px)', paddingBottom: 40 }}>
           <div className="aurora" style={{ top: -80, right: -100, width: 600, height: 500, background: 'radial-gradient(circle,rgba(212,163,115,0.20),transparent 60%)' }} />

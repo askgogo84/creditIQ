@@ -1,6 +1,5 @@
 ﻿'use client'
 import { useState } from 'react'
-import { Header } from '@/components/Header'
 import { DesignFooter } from '@/components/design/Footer'
 import { Reveal } from '@/components/design/Reveal'
 
@@ -24,7 +23,6 @@ export default function LoungeTrackerPage() {
 
   return (
     <>
-      <Header />
       <div className="page-fade">
         <section style={{ position: 'relative', paddingTop: 'clamp(120px,18vw,150px)', paddingBottom: 80 }}>
           <div className="aurora" style={{ top: -100, right: -100, width: 600, height: 500, background: 'radial-gradient(circle,rgba(124,137,112,0.30),transparent 60%)' }} />

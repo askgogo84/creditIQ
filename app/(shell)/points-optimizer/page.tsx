@@ -2,7 +2,6 @@
 
 import { authedFetch } from '@/lib/authed-fetch';
 import { useState } from 'react';
-import { Header } from '@/components/Header';
 
 const CARDS_WITH_POINTS = [
   { value: 'hdfc-infinia', label: 'HDFC Infinia', bank: 'HDFC Bank', pointName: 'Reward Points', ratio: '1 pt = Rs.1 (SmartBuy) / 0.5 base' },
@@ -163,7 +162,6 @@ Respond ONLY with valid JSON (no markdown, no code fences):
 
   return (
     <div className="min-h-screen" style={{ backgroundColor: '#f1f5f9' }}>
-      <Header />
       <main className="mx-auto px-4 pb-28" style={{ maxWidth: 760, paddingTop: 40 }}>
 
         {/* Hero */}

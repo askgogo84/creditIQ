@@ -2,7 +2,6 @@
 
 import { authedFetch } from '@/lib/authed-fetch';
 import { useState, useRef } from 'react';
-import { Header } from '@/components/Header';
 import { DesignFooter } from '@/components/design/Footer';
 import { Reveal } from '@/components/design/Reveal';
 
@@ -66,7 +65,6 @@ export default function StatementTruthPage() {
 
   return (
     <>
-      <Header />
       <div className="page-fade">
 
         {/* Hero */}

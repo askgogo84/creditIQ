@@ -1,5 +1,4 @@
 import { SEED_CARDS } from '@/lib/data/seed-cards';
-import { Header } from '@/components/Header';
 import { DesignFooter } from '@/components/design/Footer';
 import { Reveal } from '@/components/design/Reveal';
 import { CardTile } from '@/components/design/CardTile';
@@ -59,7 +58,6 @@ export default function BankPage({ params }: { params: { bank: string } }) {
 
   return (
     <>
-      <Header />
       <div className="page-fade">
         <section style={{ position: 'relative', paddingTop: 'clamp(120px,18vw,150px)', paddingBottom: 48 }}>
           <div className="aurora" style={{ top: -80, left: -80, width: 500, height: 400, background: `radial-gradient(circle,${meta.color}25,transparent 60%)` }} />

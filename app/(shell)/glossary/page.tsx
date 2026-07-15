@@ -1,4 +1,3 @@
-import { Header } from '@/components/Header';
 import { DesignFooter } from '@/components/design/Footer';
 import { Reveal } from '@/components/design/Reveal';
 
@@ -49,7 +48,6 @@ export default function GlossaryPage() {
 
   return (
     <>
-      <Header />
       <div className="page-fade">
         <section style={{ position: 'relative', paddingTop: 'clamp(120px,18vw,150px)', paddingBottom: 48 }}>
           <div className="aurora" style={{ top: -80, right: -100, width: 600, height: 500, background: 'radial-gradient(circle,rgba(212,163,115,0.22),transparent 60%)' }} />

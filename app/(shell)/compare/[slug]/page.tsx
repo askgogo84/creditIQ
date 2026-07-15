@@ -1,6 +1,5 @@
 import { notFound } from 'next/navigation'
 import { createClient } from '@supabase/supabase-js'
-import { Header } from '@/components/Header'
 import { DesignFooter } from '@/components/design/Footer'
 import Link from 'next/link'
 
@@ -64,7 +63,6 @@ export default async function ComparePage({ params }: { params: { slug: string }
 
   return (
     <>
-      <Header />
       <div className="page-fade" style={{ paddingTop: 'clamp(80px,12vw,100px)', paddingBottom: 80 }}>
         <div className="shell" style={{ maxWidth: 900, margin: '0 auto', padding: '0 clamp(16px,4vw,24px)' }}>
 

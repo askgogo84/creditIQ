@@ -2,7 +2,6 @@
 
 import { useState, useRef, useEffect, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
-import { Header } from '@/components/Header';
 import { authedFetch } from '@/lib/authed-fetch';
 
 interface Message {
@@ -80,7 +79,6 @@ function TravelPageInner() {
 
   return (
     <div style={{ minHeight: '100vh', backgroundColor: 'var(--bg,#F5EFE6)', display: 'flex', flexDirection: 'column' }}>
-      <Header />
 
       {/* Aurora background */}
       <div className="aurora" style={{ position: 'fixed', top: -80, right: -120, width: 600, height: 500, background: 'radial-gradient(circle,rgba(212,163,115,0.18),transparent 60%)', pointerEvents: 'none', zIndex: 0 }} />
