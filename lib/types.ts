@@ -1,5 +1,10 @@
 // Core domain types for CreditIQ
 
+// Type-only imports for LiveDestinationPrice (see bottom of file). Aliased because
+// this file already exports a different `RedemptionOption` (see below).
+import type { RedemptionOption as FusionRedemptionOption } from './fusion-core';
+import type { SeatsAeroTrip } from './seats-aero';
+
 export type Bank =
   | 'HDFC' | 'SBI' | 'ICICI' | 'Axis' | 'Kotak' | 'Amex'
   | 'IDFC' | 'RBL' | 'Yes' | 'IndusInd' | 'SC' | 'AU' | 'AmEx' | 'HSBC' | 'Federal'
@@ -160,5 +165,34 @@ export interface RedemptionRecommendation {
   points_used: number;
   ranking: number;
   ai_suggestion?: string;
+}
+
+// ── Live award/cash destination price (POST /api/trip-planner/live-price) ──────
+// INFERRED shape — the live-award TRD (docs/live-award/) was not in the repo when
+// this was authored; reconcile field names/semantics against TRD section 3 when
+// it lands. Every non-`live` field is optional so the graceful failure body
+// `{ live: false }` type-checks. HONESTY CONTRACT: `verified` is always false.
+export interface LiveDestinationPrice {
+  live: boolean;                 // false => no live award or an upstream failed
+  origin?: string;
+  destination?: string;
+  cabin?: 'economy' | 'business';
+  award?: {
+    program: string;             // human label for the seats.aero source
+    source: string;              // seats.aero source slug (e.g. 'singapore')
+    mileageCost: number;         // miles for the chosen award
+    seats: number;               // remaining award seats
+    airlineCode: string;         // e.g. 'SQ'
+    isDirect: boolean;
+    date: string;                // YYYY-MM-DD
+    trip: SeatsAeroTrip | null;  // enriched detail (single getAvailabilityTrips call)
+  } | null;
+  cashPrice?: number | null;     // cheapest cash fare in INR, or null
+  bestOption?: FusionRedemptionOption | null; // best verified redemption (or reachable)
+  verifiedPoints?: number;       // total statement-sourced (verified) points
+  zeroVerified?: boolean;        // user has no verified points
+  affordable?: boolean;          // an affordable verified redemption exists
+  shortfall?: number;            // points short for bestOption (0 when affordable)
+  verified?: false;              // honesty contract — never rendered verified-green
 }
 
