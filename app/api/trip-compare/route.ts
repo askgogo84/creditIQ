@@ -372,10 +372,22 @@ Respond ONLY with valid JSON:
       }
     })
 
+    // Ground "cheapest total" in the real fare: real round-trip flight + cheapest
+    // (still-estimated) hotel total for the stay. bestValueTotal stays LLM-estimated.
+    let tripSummary = parsed.tripSummary
+    if (liveFare && tripSummary) {
+      const hotelTotals = (parsed.hotels || [])
+        .map((h: any) => Number(h.cashPriceTotal))
+        .filter((n: number) => Number.isFinite(n) && n > 0)
+      const cheapestHotel = hotelTotals.length ? Math.min(...hotelTotals) : 0
+      tripSummary = { ...tripSummary, cheapestTotal: liveFare.price + cheapestHotel }
+    }
+
     const result = {
       ...parsed,
       liveFare,
       flights,
+      tripSummary,
       hotels: (parsed.hotels || []).map((h: any) => ({
         ...h,
         urls: {
