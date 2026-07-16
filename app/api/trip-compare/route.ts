@@ -372,15 +372,23 @@ Respond ONLY with valid JSON:
       }
     })
 
-    // Ground "cheapest total" in the real fare: real round-trip flight + cheapest
-    // (still-estimated) hotel total for the stay. bestValueTotal stays LLM-estimated.
+    // Ground the summary totals in the real fare (real round-trip flight + a hotel
+    // total; hotels are still estimated). cheapestTotal uses the cheapest hotel;
+    // bestValueTotal uses the rank-1 "best value" hotel (LLM marks hotels[0]).
+    // bestValueTotal >= cheapestTotal by construction (rank-1 hotel >= min hotel).
     let tripSummary = parsed.tripSummary
     if (liveFare && tripSummary) {
       const hotelTotals = (parsed.hotels || [])
         .map((h: any) => Number(h.cashPriceTotal))
         .filter((n: number) => Number.isFinite(n) && n > 0)
       const cheapestHotel = hotelTotals.length ? Math.min(...hotelTotals) : 0
-      tripSummary = { ...tripSummary, cheapestTotal: liveFare.price + cheapestHotel }
+      const rank1Hotel = Number(parsed.hotels?.[0]?.cashPriceTotal)
+      const bestValueHotel = Number.isFinite(rank1Hotel) && rank1Hotel > 0 ? rank1Hotel : cheapestHotel
+      tripSummary = {
+        ...tripSummary,
+        cheapestTotal: liveFare.price + cheapestHotel,
+        bestValueTotal: liveFare.price + bestValueHotel,
+      }
     }
 
     const result = {
