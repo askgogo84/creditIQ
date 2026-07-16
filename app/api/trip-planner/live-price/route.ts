@@ -32,10 +32,8 @@ import {
   type SeatsAeroTrip,
 } from '@/lib/seats-aero';
 import {
-  buildRedemption,
-  pickBest,
-  pickBestAwardOnly,
-  programLabel,
+  pickLiveAward,
+  assembleLivePrice,
   type UserCard,
 } from '@/lib/fusion-core';
 import type { LiveDestinationPrice } from '@/lib/types';
@@ -128,71 +126,6 @@ async function fetchVerifiedCards(userId: string): Promise<UserCard[]> {
     console.error('live-price: verified card fetch failed', e);
     return [];
   }
-}
-
-// ── pure assembly (exported for deterministic unit tests) ──────────────────────
-
-// Lowest-mileage LIVE award, or null. Discards anything not 'seats.aero (live)'.
-export function pickLiveAward(awards: SeatsAeroResult[]): SeatsAeroResult | null {
-  const live = awards.filter((a) => a.dataSource === 'seats.aero (live)');
-  if (!live.length) return null;
-  return live.reduce((b, a) => (a.mileageCost < b.mileageCost ? a : b));
-}
-
-// Assemble the response from already-fetched inputs. Pure + synchronous so it can
-// be unit-tested without network. `best === null` => there's no live price.
-export function assembleLivePrice(params: {
-  origin: string;
-  destination: string;
-  cabin: LiveCabin;
-  best: SeatsAeroResult | null;
-  trip: SeatsAeroTrip | null;
-  cashPrice: number | null;
-  verifiedCards: UserCard[];
-}): LiveDestinationPrice {
-  const { origin, destination, cabin, best, trip, cashPrice, verifiedCards } = params;
-
-  // No live award => there is no live price to show.
-  if (!best) return { live: false };
-
-  const redemption = buildRedemption(verifiedCards, best, cashPrice ?? 0);
-  const bestAffordable = pickBest(redemption); // best affordable, by value-per-point
-  const bestOption = bestAffordable ?? pickBestAwardOnly(redemption); // else cheapest reachable
-
-  const verifiedPoints = verifiedCards.reduce(
-    (sum, c) => sum + (Number(c.points_balance) || 0),
-    0,
-  );
-  const zeroVerified = verifiedPoints === 0;
-  const affordable = bestAffordable !== null;
-  const shortfall =
-    bestOption && !bestOption.canAfford
-      ? Math.max(0, (bestOption.cardPointsNeeded ?? 0) - (bestOption.yourPoints ?? 0))
-      : 0;
-
-  return {
-    live: true,
-    origin,
-    destination,
-    cabin,
-    award: {
-      program: programLabel(best.source),
-      source: best.source,
-      mileageCost: best.mileageCost,
-      seats: best.remainingSeats,
-      airlineCode: best.airlines,
-      isDirect: best.isDirect,
-      date: best.date,
-      trip,
-    },
-    cashPrice: cashPrice ?? null,
-    bestOption: bestOption ?? null,
-    verifiedPoints,
-    zeroVerified,
-    affordable,
-    shortfall,
-    verified: false,
-  };
 }
 
 // ── handler ────────────────────────────────────────────────────────────────────
