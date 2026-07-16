@@ -63,12 +63,14 @@ export interface LiveAwardRowProps {
   destination: string;      // destination IATA, e.g. 'SIN'
   destinationCity: string;  // e.g. 'Singapore'
   defaultOrigin?: string;   // default 'BLR'
+  onPlanFullTrip?: () => void; // runs the full AI trip planner for this destination
 }
 
 export default function LiveAwardRow({
   destination,
   destinationCity,
   defaultOrigin = 'BLR',
+  onPlanFullTrip,
 }: LiveAwardRowProps) {
   const [origin, setOrigin] = useState(defaultOrigin);
   const [cabin, setCabin] = useState<LiveCabin>('economy');
@@ -249,6 +251,23 @@ export default function LiveAwardRow({
       >
         {renderState()}
       </div>
+
+      {/* Escape hatch to the full AI trip planner (the pre-expand tap behavior).
+          Present in every state so the reserved height stays stable. */}
+      {onPlanFullTrip && (
+        <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: 2 }}>
+          <button
+            type="button"
+            onClick={onPlanFullTrip}
+            style={{
+              minHeight: 44, padding: '0 4px', background: 'none', border: 'none',
+              color: GOLD, fontSize: 12.5, fontWeight: 700, cursor: 'pointer',
+            }}
+          >
+            Plan full trip {'→'}
+          </button>
+        </div>
+      )}
     </div>
   );
 }

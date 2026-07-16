@@ -472,7 +472,17 @@ function TripPlannerPageInner() {
                 </div>
                 {expandedCity === d.city && (
                   <div style={{ gridColumn: '1 / -1' }}>
-                    <LiveAwardRow destination={d.iata} destinationCity={d.city} defaultOrigin="BLR" />
+                    <LiveAwardRow
+                      destination={d.iata}
+                      destinationCity={d.city}
+                      defaultOrigin="BLR"
+                      onPlanFullTrip={() => {
+                        const q = `Trip to ${d.city} for ${d.nights} nights`;
+                        setQuery(q);
+                        plan(q);
+                        window.scrollTo({ top: 0, behavior: 'smooth' });
+                      }}
+                    />
                   </div>
                 )}
                 </Fragment>
