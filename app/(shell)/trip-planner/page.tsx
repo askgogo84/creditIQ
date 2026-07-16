@@ -1,8 +1,9 @@
 'use client';
 
-import { useState, useEffect, Suspense } from 'react';
+import { useState, useEffect, Suspense, Fragment } from 'react';
 import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
+import LiveAwardRow from '@/components/ciq/LiveAwardRow';
 import { DesignFooter } from '@/components/design/Footer';
 import { getApplyUrl } from '@/lib/affiliate';
 import { BookingModal } from '@/components/BookingModal';
@@ -77,34 +78,34 @@ const IMG = (id: string) => `https://images.unsplash.com/${id}?auto=format&fit=c
 
 interface Dest {
   city: string; flag: string; region: 'india' | 'international';
-  miles: number; flightTime: string; image: string; nights: number;
+  miles: number; flightTime: string; image: string; nights: number; iata: string;
 }
 
 const DESTS: Dest[] = [
   // International
-  { city: 'Singapore',    flag: '\u{1F1F8}\u{1F1EC}', region: 'international', miles: 14000, flightTime: '4h 35m', nights: 4, image: IMG('photo-1525625293386-3f8f99389edd') },
-  { city: 'Dubai',        flag: '\u{1F1E6}\u{1F1EA}', region: 'international', miles: 24000, flightTime: '4h 00m', nights: 3, image: IMG('photo-1512453979798-5ea266f8880c') },
-  { city: 'Bangkok',      flag: '\u{1F1F9}\u{1F1ED}', region: 'international', miles: 18000, flightTime: '4h 20m', nights: 5, image: IMG('photo-1508009603885-50cf7c579365') },
-  { city: 'Tokyo',        flag: '\u{1F1EF}\u{1F1F5}', region: 'international', miles: 35000, flightTime: '9h 30m', nights: 6, image: IMG('photo-1540959733332-eab4deabeeaf') },
-  { city: 'London',       flag: '\u{1F1EC}\u{1F1E7}', region: 'international', miles: 28000, flightTime: '10h 45m', nights: 5, image: IMG('photo-1513635269975-59663e0ac1ad') },
-  { city: 'Paris',        flag: '\u{1F1EB}\u{1F1F7}', region: 'international', miles: 33000, flightTime: '10h 30m', nights: 5, image: IMG('photo-1502602898657-3e91760cbb34') },
-  { city: 'Hong Kong',    flag: '\u{1F1ED}\u{1F1F0}', region: 'international', miles: 13000, flightTime: '6h 00m', nights: 4, image: IMG('photo-1536599018102-9f803c140fc1') },
-  { city: 'Kuala Lumpur', flag: '\u{1F1F2}\u{1F1FE}', region: 'international', miles: 22000, flightTime: '4h 30m', nights: 4, image: IMG('photo-1596422846543-75c6fc197f07') },
-  { city: 'Colombo',      flag: '\u{1F1F1}\u{1F1F0}', region: 'international', miles: 12000, flightTime: '1h 30m', nights: 3, image: IMG('photo-1566296314736-6eaac1ca0cb9') },
-  { city: 'Denpasar',     flag: '\u{1F1EE}\u{1F1E9}', region: 'international', miles: 35000, flightTime: '6h 45m', nights: 5, image: IMG('photo-1537996194471-e657df975ab4') },
-  { city: 'Seoul',        flag: '\u{1F1F0}\u{1F1F7}', region: 'international', miles: 20000, flightTime: '8h 40m', nights: 5, image: IMG('photo-1538485399081-7191377e8241') },
-  { city: 'Istanbul',     flag: '\u{1F1F9}\u{1F1F7}', region: 'international', miles: 31000, flightTime: '8h 15m', nights: 4, image: IMG('photo-1524231757912-21f4fe3a7200') },
-  { city: 'Rome',         flag: '\u{1F1EE}\u{1F1F9}', region: 'international', miles: 33000, flightTime: '9h 45m', nights: 5, image: IMG('photo-1552832230-c0197dd311b5') },
-  { city: 'Abu Dhabi',    flag: '\u{1F1E6}\u{1F1EA}', region: 'international', miles: 26000, flightTime: '4h 05m', nights: 3, image: IMG('photo-1512632578888-169bbbc64f33') },
+  { city: 'Singapore',    flag: '\u{1F1F8}\u{1F1EC}', region: 'international', miles: 14000, flightTime: '4h 35m', nights: 4, iata: 'SIN', image: IMG('photo-1525625293386-3f8f99389edd') },
+  { city: 'Dubai',        flag: '\u{1F1E6}\u{1F1EA}', region: 'international', miles: 24000, flightTime: '4h 00m', nights: 3, iata: 'DXB', image: IMG('photo-1512453979798-5ea266f8880c') },
+  { city: 'Bangkok',      flag: '\u{1F1F9}\u{1F1ED}', region: 'international', miles: 18000, flightTime: '4h 20m', nights: 5, iata: 'BKK', image: IMG('photo-1508009603885-50cf7c579365') },
+  { city: 'Tokyo',        flag: '\u{1F1EF}\u{1F1F5}', region: 'international', miles: 35000, flightTime: '9h 30m', nights: 6, iata: 'NRT', image: IMG('photo-1540959733332-eab4deabeeaf') },
+  { city: 'London',       flag: '\u{1F1EC}\u{1F1E7}', region: 'international', miles: 28000, flightTime: '10h 45m', nights: 5, iata: 'LHR', image: IMG('photo-1513635269975-59663e0ac1ad') },
+  { city: 'Paris',        flag: '\u{1F1EB}\u{1F1F7}', region: 'international', miles: 33000, flightTime: '10h 30m', nights: 5, iata: 'CDG', image: IMG('photo-1502602898657-3e91760cbb34') },
+  { city: 'Hong Kong',    flag: '\u{1F1ED}\u{1F1F0}', region: 'international', miles: 13000, flightTime: '6h 00m', nights: 4, iata: 'HKG', image: IMG('photo-1536599018102-9f803c140fc1') },
+  { city: 'Kuala Lumpur', flag: '\u{1F1F2}\u{1F1FE}', region: 'international', miles: 22000, flightTime: '4h 30m', nights: 4, iata: 'KUL', image: IMG('photo-1596422846543-75c6fc197f07') },
+  { city: 'Colombo',      flag: '\u{1F1F1}\u{1F1F0}', region: 'international', miles: 12000, flightTime: '1h 30m', nights: 3, iata: 'CMB', image: IMG('photo-1566296314736-6eaac1ca0cb9') },
+  { city: 'Denpasar',     flag: '\u{1F1EE}\u{1F1E9}', region: 'international', miles: 35000, flightTime: '6h 45m', nights: 5, iata: 'DPS', image: IMG('photo-1537996194471-e657df975ab4') },
+  { city: 'Seoul',        flag: '\u{1F1F0}\u{1F1F7}', region: 'international', miles: 20000, flightTime: '8h 40m', nights: 5, iata: 'ICN', image: IMG('photo-1538485399081-7191377e8241') },
+  { city: 'Istanbul',     flag: '\u{1F1F9}\u{1F1F7}', region: 'international', miles: 31000, flightTime: '8h 15m', nights: 4, iata: 'IST', image: IMG('photo-1524231757912-21f4fe3a7200') },
+  { city: 'Rome',         flag: '\u{1F1EE}\u{1F1F9}', region: 'international', miles: 33000, flightTime: '9h 45m', nights: 5, iata: 'FCO', image: IMG('photo-1552832230-c0197dd311b5') },
+  { city: 'Abu Dhabi',    flag: '\u{1F1E6}\u{1F1EA}', region: 'international', miles: 26000, flightTime: '4h 05m', nights: 3, iata: 'AUH', image: IMG('photo-1512632578888-169bbbc64f33') },
   // India
-  { city: 'Delhi',      flag: '\u{1F1EE}\u{1F1F3}', region: 'india', miles: 16000, flightTime: '2h 45m', nights: 3, image: IMG('photo-1587474260584-136574528ed5') },
-  { city: 'Mumbai',     flag: '\u{1F1EE}\u{1F1F3}', region: 'india', miles: 15000, flightTime: '1h 40m', nights: 3, image: IMG('photo-1566552881560-0be862a7c445') },
-  { city: 'Goa',        flag: '\u{1F1EE}\u{1F1F3}', region: 'india', miles: 12000, flightTime: '1h 15m', nights: 3, image: IMG('photo-1512343879784-a960bf40e7f2') },
-  { city: 'Jaipur',     flag: '\u{1F1EE}\u{1F1F3}', region: 'india', miles: 15000, flightTime: '2h 20m', nights: 3, image: IMG('photo-1477587458883-47145ed94245') },
-  { city: 'Kolkata',    flag: '\u{1F1EE}\u{1F1F3}', region: 'india', miles: 16000, flightTime: '2h 30m', nights: 3, image: IMG('photo-1558431382-27e303142255') },
-  { city: 'Kochi',      flag: '\u{1F1EE}\u{1F1F3}', region: 'india', miles: 11000, flightTime: '1h 20m', nights: 3, image: IMG('photo-1602216056096-3b40cc0c9944') },
-  { city: 'Udaipur',    flag: '\u{1F1EE}\u{1F1F3}', region: 'india', miles: 15000, flightTime: '2h 15m', nights: 3, image: IMG('photo-1590050752117-238cb0fb12b1') },
-  { city: 'Srinagar',   flag: '\u{1F1EE}\u{1F1F3}', region: 'india', miles: 18000, flightTime: '3h 20m', nights: 4, image: IMG('photo-1566837945700-30057527ade9') },
+  { city: 'Delhi',      flag: '\u{1F1EE}\u{1F1F3}', region: 'india', miles: 16000, flightTime: '2h 45m', nights: 3, iata: 'DEL', image: IMG('photo-1587474260584-136574528ed5') },
+  { city: 'Mumbai',     flag: '\u{1F1EE}\u{1F1F3}', region: 'india', miles: 15000, flightTime: '1h 40m', nights: 3, iata: 'BOM', image: IMG('photo-1566552881560-0be862a7c445') },
+  { city: 'Goa',        flag: '\u{1F1EE}\u{1F1F3}', region: 'india', miles: 12000, flightTime: '1h 15m', nights: 3, iata: 'GOI', image: IMG('photo-1512343879784-a960bf40e7f2') },
+  { city: 'Jaipur',     flag: '\u{1F1EE}\u{1F1F3}', region: 'india', miles: 15000, flightTime: '2h 20m', nights: 3, iata: 'JAI', image: IMG('photo-1477587458883-47145ed94245') },
+  { city: 'Kolkata',    flag: '\u{1F1EE}\u{1F1F3}', region: 'india', miles: 16000, flightTime: '2h 30m', nights: 3, iata: 'CCU', image: IMG('photo-1558431382-27e303142255') },
+  { city: 'Kochi',      flag: '\u{1F1EE}\u{1F1F3}', region: 'india', miles: 11000, flightTime: '1h 20m', nights: 3, iata: 'COK', image: IMG('photo-1602216056096-3b40cc0c9944') },
+  { city: 'Udaipur',    flag: '\u{1F1EE}\u{1F1F3}', region: 'india', miles: 15000, flightTime: '2h 15m', nights: 3, iata: 'UDR', image: IMG('photo-1590050752117-238cb0fb12b1') },
+  { city: 'Srinagar',   flag: '\u{1F1EE}\u{1F1F3}', region: 'india', miles: 18000, flightTime: '3h 20m', nights: 4, iata: 'SXR', image: IMG('photo-1566837945700-30057527ade9') },
 ];
 
 function TripPlannerPageInner() {
@@ -188,6 +189,7 @@ function TripPlannerPageInner() {
   const [modalHotel, setModalHotel] = useState<TripResult['hotels'][0] | null>(null);
   const [detectedDestIata, setDetectedDestIata] = useState<string>('');
   const [inspireRegion, setInspireRegion] = useState<'india' | 'international'>('international');
+  const [expandedCity, setExpandedCity] = useState<string | null>(null);
 
   const plan = async (overrideQuery?: string) => {
     const tripQuery = overrideQuery ?? query;
@@ -437,14 +439,10 @@ function TripPlannerPageInner() {
 
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: 14 }}>
               {DESTS.filter(d => d.region === inspireRegion).map((d) => (
+                <Fragment key={d.city}>
                 <div
-                  key={d.city}
-                  onClick={() => {
-                    const q = `Trip to ${d.city} for ${d.nights} nights`;
-                    setQuery(q);
-                    plan(q);
-                    window.scrollTo({ top: 0, behavior: 'smooth' });
-                  }}
+                  onClick={() => setExpandedCity(prev => (prev === d.city ? null : d.city))}
+                  aria-expanded={expandedCity === d.city}
                   style={{
                     position: 'relative', borderRadius: 16, overflow: 'hidden',
                     aspectRatio: '4 / 3', boxShadow: '0 4px 16px rgba(15,23,42,0.10)',
@@ -472,6 +470,12 @@ function TripPlannerPageInner() {
                     </div>
                   </div>
                 </div>
+                {expandedCity === d.city && (
+                  <div style={{ gridColumn: '1 / -1' }}>
+                    <LiveAwardRow destination={d.iata} destinationCity={d.city} defaultOrigin="BLR" />
+                  </div>
+                )}
+                </Fragment>
               ))}
             </div>
             <p style={{ fontSize: 12, color: 'var(--text-muted, #94a3b8)', marginTop: 16, textAlign: 'center' }}>
