@@ -6,9 +6,9 @@ interface FlightOption {
   rank: number;
   badge?: string;
   airline: string;
-  flightNo: string;
-  departure: string;
-  arrival: string;
+  flightNo: string | null;
+  departure: string | null;
+  arrival: string | null;
   duration: string;
   stops: number;
   cashPriceMin: number;
@@ -20,6 +20,12 @@ interface FlightOption {
   pointsSaving: number;
   canAfford: boolean;
   whyBest: string;
+  // Real cached-fare fields (present only on the #1 card when a live fare exists)
+  dataSource?: 'live' | 'estimated';
+  airlineCode?: string;
+  sampleDate?: string | null;
+  source?: string;
+  liveBookingLink?: string;
   urls: { kayak: string; mmt: string; googleFlights: string; easemytrip?: string; goibibo?: string };
 }
 
@@ -46,6 +52,7 @@ interface CompareData {
   nights: number;
   cabin: string;
   priceNote: string;
+  liveFare?: { price: number; airlineName: string; sampleDate: string | null; source: string } | null;
   flights: FlightOption[];
   hotels: HotelOption[];
   tripSummary: {
@@ -201,20 +208,28 @@ export function TripComparison({ destination, origin = 'Bangalore', nights = 3, 
 
   if (!data) return null;
 
+  const liveCard = data.flights?.find(f => f.dataSource === 'live') || null;
+  const hasLive = !!liveCard;
+  const liveSampleDate = liveCard?.sampleDate || data.liveFare?.sampleDate || null;
+
   return (
     <div style={{ marginTop: 24 }}>
       {/* Header */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16, flexWrap: 'wrap' as const, gap: 8 }}>
         <div>
           <div style={{ fontSize: 10, fontWeight: 700, color: GOLD, letterSpacing: 1.5, textTransform: 'uppercase' as const, marginBottom: 4 }}>
-            Live price comparison
+            Trip price comparison
           </div>
           <div style={{ fontSize: 18, fontWeight: 800, color: 'var(--text, #0f172a)' }}>
             {data.origin} {'->'} {data.destination} . {data.nights} nights
           </div>
         </div>
-        <div style={{ fontSize: 11, color: 'var(--text-muted, #64748b)', maxWidth: 200, textAlign: 'right' as const, lineHeight: 1.4 }}>
-          Estimated ranges . click to see live rates
+        <div style={{ fontSize: 11, color: 'var(--text-muted, #64748b)', maxWidth: 210, textAlign: 'right' as const, lineHeight: 1.4 }}>
+          {activeTab === 'hotels'
+            ? 'Estimated typical rates'
+            : hasLive
+              ? 'Top fare is a real cached price . others are estimated ranges'
+              : 'Estimated ranges . click to see live rates'}
         </div>
       </div>
 
@@ -303,23 +318,32 @@ export function TripComparison({ destination, origin = 'Bangalore', nights = 3, 
       </div>
 
       {/* Flights */}
-      {activeTab === 'flights' && data.flights?.map((f, i) => (
+      {activeTab === 'flights' && data.flights?.map((f, i) => {
+        const isLive = f.dataSource === 'live';
+        return (
         <div key={i} style={i === 0 ? bestCard : card}>
           {f.badge && <div style={badge}>{f.badge}</div>}
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap' as const, gap: 12 }}>
-            <div style={{ flex: 1 }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
+            <div style={{ flex: 1, minWidth: 180 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4, flexWrap: 'wrap' as const }}>
                 <span style={{ fontSize: 10, fontWeight: 700, color: 'var(--text-muted, #94a3b8)', background: 'var(--bg-surface, #f8fafc)', padding: '2px 8px', borderRadius: 100 }}>
                   #{f.rank}
                 </span>
                 <span style={{ fontSize: 15, fontWeight: 700, color: 'var(--text, #0f172a)' }}>
                   {f.airline}
                 </span>
-                <span style={{ fontSize: 12, color: 'var(--text-muted, #64748b)' }}>{f.flightNo}</span>
+                {f.flightNo && <span style={{ fontSize: 12, color: 'var(--text-muted, #64748b)' }}>{f.flightNo}</span>}
+                {isLive && (
+                  <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 9, fontWeight: 800, letterSpacing: 0.8, textTransform: 'uppercase' as const, color: GOLD, background: 'rgba(201,151,46,0.12)', border: '1px solid rgba(201,151,46,0.35)', padding: '2px 8px', borderRadius: 100 }}>
+                    <span style={{ width: 5, height: 5, borderRadius: '50%', background: GOLD }} /> Live . cached
+                  </span>
+                )}
               </div>
-              <div style={{ fontSize: 13, color: 'var(--text-muted, #64748b)', marginBottom: 6 }}>
-                {f.departure} {'->'} {f.arrival} {'.'} {f.duration} {'.'} {f.stops === 0 ? 'Non-stop' : `${f.stops} stop`}
-              </div>
+              {f.departure && f.arrival && (
+                <div style={{ fontSize: 13, color: 'var(--text-muted, #64748b)', marginBottom: 6 }}>
+                  {f.departure} {'->'} {f.arrival} {'.'} {f.duration} {'.'} {f.stops === 0 ? 'Non-stop' : `${f.stops} stop`}
+                </div>
+              )}
               {f.pointsOption && (
                 <div style={{ fontSize: 12, color: f.canAfford ? '#16a34a' : '#f59e0b', marginBottom: 8 }}>
                   {f.canAfford ? '(ok)' : '(!!)'} {f.pointsNeeded.toLocaleString('en-IN')} {cardBank} pts via {f.pointsPartner}
@@ -330,7 +354,8 @@ export function TripComparison({ destination, origin = 'Bangalore', nights = 3, 
                 {f.whyBest}
               </div>
               <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' as const }}>
-                {platformBtn(f.urls.kayak, 'Kayak', true)}
+                {isLive && f.liveBookingLink && platformBtn(f.liveBookingLink, 'View fare', true)}
+                {platformBtn(f.urls.kayak, 'Kayak', !isLive)}
                 {platformBtn(f.urls.mmt, 'MakeMyTrip')}
                 {platformBtn(f.urls.easemytrip || 'https://www.easemytrip.com', 'EaseMyTrip')}
                 {platformBtn(f.urls.goibibo || 'https://www.goibibo.com', 'Goibibo')}
@@ -342,9 +367,23 @@ export function TripComparison({ destination, origin = 'Bangalore', nights = 3, 
                 </div>
               )}
             </div>
-            <div style={{ textAlign: 'right' as const, minWidth: 120 }}>
-              <div style={{ fontSize: 11, color: 'var(--text-muted, #94a3b8)', marginBottom: 4 }}>Return price range</div>
-              <PriceRange min={f.cashPriceMin * 2} max={f.cashPriceMax * 2} />
+            <div style={{ textAlign: 'right' as const, minWidth: 130 }}>
+              {isLive ? (
+                <>
+                  <div style={{ fontSize: 11, color: 'var(--text-muted, #94a3b8)', marginBottom: 4 }}>Round-trip fare</div>
+                  <div style={{ fontSize: 18, fontWeight: 800, color: 'var(--text, #0f172a)' }}>
+                    Rs.{f.cashPriceMid.toLocaleString('en-IN')}
+                  </div>
+                  <div style={{ fontSize: 10, color: 'var(--text-muted, #94a3b8)', marginTop: 4, lineHeight: 1.4, maxWidth: 160, marginLeft: 'auto' }}>
+                    Cached cheapest fare via Travelpayouts{f.sampleDate ? ` . sample date ${f.sampleDate}` : ''} . not your exact dates
+                  </div>
+                </>
+              ) : (
+                <>
+                  <div style={{ fontSize: 11, color: 'var(--text-muted, #94a3b8)', marginBottom: 4 }}>Return price range</div>
+                  <PriceRange min={f.cashPriceMin * 2} max={f.cashPriceMax * 2} />
+                </>
+              )}
               {f.pointsOption && (
                 <div style={{ fontSize: 12, color: GOLD, marginTop: 4, fontWeight: 700 }}>
                   or {f.pointsNeeded.toLocaleString('en-IN')} pts
@@ -353,9 +392,15 @@ export function TripComparison({ destination, origin = 'Bangalore', nights = 3, 
             </div>
           </div>
         </div>
-      ))}
+        );
+      })}
 
       {/* Hotels */}
+      {activeTab === 'hotels' && (
+        <div style={{ fontSize: 11, color: 'var(--text-muted, #64748b)', marginBottom: 12 }}>
+          Hotel prices are <strong>estimated typical rates</strong> {'—'} not live quotes.
+        </div>
+      )}
       {activeTab === 'hotels' && data.hotels?.map((h, i) => (
         <div key={i} style={i === 0 ? bestCard : card}>
           {h.badge && <div style={badge}>{h.badge}</div>}
@@ -408,7 +453,9 @@ export function TripComparison({ destination, origin = 'Bangalore', nights = 3, 
         borderRadius: 10, fontSize: 11,
         color: 'var(--text-muted, #64748b)', lineHeight: 1.5,
       }}>
-        Prices are estimated ranges based on typical fares for this route  --  not live quotes. Click any platform button to see real-time pricing. Points calculations use standard transfer ratios and may vary.
+        {hasLive
+          ? `The top flight is a real cached cheapest fare from Travelpayouts${liveSampleDate ? ` (sample date ${liveSampleDate})` : ''} — for that sample date, not your exact dates. Other flights and all hotels are estimated ranges based on typical fares. Click any platform button for real-time pricing. Points calculations use standard transfer ratios and may vary.`
+          : `Prices are estimated ranges based on typical fares for this route — not live quotes. Click any platform button to see real-time pricing. Points calculations use standard transfer ratios and may vary.`}
       </div>
     </div>
   );

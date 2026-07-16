@@ -34,6 +34,45 @@ const HOTEL_PRICE_RANGES: Record<string, { budget: [number,number], mid: [number
   'default': { budget: [2000, 5000], mid: [5000, 12000],  luxury: [12000, 40000] },
 }
 
+// City/name -> IATA resolver (superset of the per-builder maps below). Used to
+// query the live cached-fare endpoint. 'GOA' is not a valid airport code (Goa = GOI).
+const CITY_IATA: Record<string, string> = {
+  'bangalore': 'BLR', 'bengaluru': 'BLR', 'mumbai': 'BOM', 'delhi': 'DEL',
+  'hyderabad': 'HYD', 'chennai': 'MAA', 'kolkata': 'CCU', 'pune': 'PNQ',
+  'goa': 'GOI', 'jaipur': 'JAI', 'kochi': 'COK', 'ahmedabad': 'AMD',
+  'dubai': 'DXB', 'singapore': 'SIN', 'bangkok': 'BKK', 'london': 'LHR',
+  'new york': 'JFK', 'tokyo': 'NRT', 'paris': 'CDG', 'sydney': 'SYD',
+  'bali': 'DPS', 'denpasar': 'DPS', 'colombo': 'CMB', 'kuala lumpur': 'KUL',
+  'hong kong': 'HKG', 'maldives': 'MLE', 'male': 'MLE', 'abu dhabi': 'AUH',
+  'seoul': 'ICN', 'istanbul': 'IST', 'rome': 'FCO', 'phuket': 'HKT', 'kathmandu': 'KTM',
+}
+function resolveIata(s: string): string {
+  const k = (s || '').toLowerCase().trim()
+  if (CITY_IATA[k]) return CITY_IATA[k]
+  let code = (s || '').toUpperCase().replace(/[^A-Z]/g, '').substring(0, 3)
+  if (code === 'GOA') code = 'GOI'
+  return code
+}
+
+// IATA airline code -> display name (no existing map in the repo to reuse).
+const AIRLINE_NAMES: Record<string, string> = {
+  '6E': 'IndiGo', 'AI': 'Air India', 'IX': 'Air India Express', 'UK': 'Air India',
+  'SG': 'SpiceJet', 'QP': 'Akasa Air', 'I5': 'AIX Connect', 'G8': 'Go First',
+  'VN': 'Vietnam Airlines', 'SQ': 'Singapore Airlines', 'TR': 'Scoot', 'AK': 'AirAsia',
+  'FD': 'Thai AirAsia', 'EK': 'Emirates', 'FZ': 'flydubai', 'QR': 'Qatar Airways',
+  'EY': 'Etihad Airways', 'WY': 'Oman Air', 'GF': 'Gulf Air', 'SV': 'Saudia',
+  'TG': 'Thai Airways', 'MH': 'Malaysia Airlines', 'CX': 'Cathay Pacific',
+  'BA': 'British Airways', 'LH': 'Lufthansa', 'AF': 'Air France', 'KL': 'KLM',
+  'TK': 'Turkish Airlines', 'ET': 'Ethiopian Airlines', 'UL': 'SriLankan Airlines',
+  'BG': 'Biman Bangladesh', 'KE': 'Korean Air', 'OZ': 'Asiana Airlines',
+  'NH': 'ANA', 'JL': 'Japan Airlines', 'QF': 'Qantas', 'VS': 'Virgin Atlantic',
+  'AA': 'American Airlines', 'UA': 'United Airlines', 'DL': 'Delta Air Lines',
+}
+function airlineName(code: string): string {
+  const c = (code || '').toUpperCase()
+  return AIRLINE_NAMES[c] || (c ? `Airline ${c}` : 'Airline')
+}
+
 function getFlightRange(dest: string, cls: string): [number, number] {
   const code = dest.toUpperCase().substring(0, 3)
   const ranges = FLIGHT_PRICE_RANGES[code] || FLIGHT_PRICE_RANGES['default']
@@ -258,20 +297,86 @@ Respond ONLY with valid JSON:
     const clean = text.replace(/```json/g, '').replace(/```/g, '').trim()
     const parsed = JSON.parse(clean)
 
-    // Inject all affiliate URLs server-side (not from Claude)
+    // Fetch the REAL cheapest cached fare (Travelpayouts) for the #1 card. No date
+    // param — the cache is date-sparse, so pinning an exact day usually returns [].
+    const originIata = resolveIata(origin)
+    let destIata = resolveIata(destination)
+    if (destIata === 'GOA') destIata = 'GOI'
+    let liveFare: {
+      price: number; airlineCode: string; airlineName: string;
+      flightNumber: string | null; sampleDate: string | null;
+      source: 'travelpayouts'; bookingLink: string;
+    } | null = null
+    try {
+      const base = new URL(req.url).origin
+      const fr = await fetch(`${base}/api/flights/cheapest?origin=${originIata}&destination=${destIata}`, { cache: 'no-store' })
+      if (fr.ok) {
+        const fj = await fr.json()
+        const destObj = fj?.data?.[destIata]
+        const first = destObj && typeof destObj === 'object' ? (Object.values(destObj)[0] as any) : null
+        if (first && Number(first.price) > 0) {
+          const tpMarker = process.env.TRAVELPAYOUTS_MARKER || ''
+          const code = String(first.airline || '').toUpperCase()
+          liveFare = {
+            price: Math.round(Number(first.price)), // ROUND-TRIP already — do not double
+            airlineCode: code,
+            airlineName: airlineName(code),
+            flightNumber: first.flight_number != null ? `${code}-${first.flight_number}` : null,
+            sampleDate: String(first.departure_at || '').slice(0, 10) || null,
+            source: 'travelpayouts',
+            bookingLink: `https://www.aviasales.com/search/${originIata}${destIata}1${tpMarker ? `?marker=${tpMarker}` : ''}`,
+          }
+        }
+      }
+    } catch (e) {
+      console.error('trip-compare live fare fetch failed:', e)
+    }
+
+    const flightUrls = {
+      kayak: kayakUrl,
+      mmt: mmtFlightUrl,
+      googleFlights: googleFlightsUrl,
+      easemytrip: buildEasemytripUrl(origin, destination),
+      goibibo: buildGoibiboUrl(origin, destination),
+    }
+
+    // #1 card becomes the real cached fare; every other card stays estimated and
+    // must NOT carry an invented flight number or specific clock times.
+    const flights = (parsed.flights || []).map((f: any, i: number) => {
+      if (i === 0 && liveFare) {
+        return {
+          ...f,
+          dataSource: 'live',
+          airline: liveFare.airlineName,
+          airlineCode: liveFare.airlineCode,
+          flightNo: liveFare.flightNumber,
+          departure: null,
+          arrival: null,
+          cashPriceMin: liveFare.price,
+          cashPriceMax: liveFare.price,
+          cashPriceMid: liveFare.price,
+          pointsSaving: 0, // LLM saving was derived from an invented cash price
+          sampleDate: liveFare.sampleDate,
+          source: liveFare.source,
+          liveBookingLink: liveFare.bookingLink,
+          urls: flightUrls,
+        }
+      }
+      return {
+        ...f,
+        dataSource: 'estimated',
+        flightNo: null,
+        departure: null,
+        arrival: null,
+        urls: flightUrls,
+      }
+    })
+
     const result = {
       ...parsed,
-      flights: parsed.flights.map((f: any) => ({
-        ...f,
-        urls: {
-          kayak: kayakUrl,
-          mmt: mmtFlightUrl,
-          googleFlights: googleFlightsUrl,
-          easemytrip: buildEasemytripUrl(origin, destination),
-          goibibo: buildGoibiboUrl(origin, destination),
-        }
-      })),
-      hotels: parsed.hotels.map((h: any) => ({
+      liveFare,
+      flights,
+      hotels: (parsed.hotels || []).map((h: any) => ({
         ...h,
         urls: {
           booking: bookingUrl,
