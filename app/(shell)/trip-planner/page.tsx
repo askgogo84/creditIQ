@@ -496,7 +496,42 @@ function TripPlannerPageInner() {
 
         {loading && (
           <div style={{ textAlign: 'center', padding: '48px 0' }}>
-            <div style={{ fontSize: 44, marginBottom: 16 }}>&#9992;&#65039;</div>
+            {/* Infinity-path flight loader (pure CSS/SVG; falls back to a pulse
+                when the user prefers reduced motion). Decorative -> aria-hidden. */}
+            <style>{`
+              @keyframes ttpFly { from { offset-distance: 0%; } to { offset-distance: 100%; } }
+              @keyframes ttpPulse {
+                0%, 100% { opacity: 0.5; transform: translate(-50%, -50%) scale(0.9); }
+                50%      { opacity: 1;   transform: translate(-50%, -50%) scale(1.08); }
+              }
+              .ttp-loader { position: relative; width: 100px; height: 60px; margin: 0 auto 16px; }
+              .ttp-loader__track { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
+              .ttp-loader__plane {
+                position: absolute; top: 0; left: 0; width: 20px; height: 20px; line-height: 0; color: #C9972E;
+                offset-path: path('M50,30 C50,15 25,15 25,30 C25,45 50,45 50,30 C50,15 75,15 75,30 C75,45 50,45 50,30 Z');
+                offset-rotate: auto;
+                animation: ttpFly 2.6s linear infinite;
+              }
+              @media (prefers-reduced-motion: reduce) {
+                .ttp-loader__plane {
+                  offset-path: none; top: 50%; left: 50%;
+                  animation: ttpPulse 1.6s ease-in-out infinite;
+                }
+              }
+            `}</style>
+            <div className="ttp-loader" aria-hidden="true">
+              <svg className="ttp-loader__track" viewBox="0 0 100 60" fill="none">
+                <path
+                  d="M50,30 C50,15 25,15 25,30 C25,45 50,45 50,30 C50,15 75,15 75,30 C75,45 50,45 50,30 Z"
+                  stroke="rgba(201,151,46,0.22)" strokeWidth="1.5" strokeDasharray="3 4" strokeLinecap="round"
+                />
+              </svg>
+              <span className="ttp-loader__plane">
+                <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden="true">
+                  <path d="M2 4 L22 12 L2 20 L7 12 Z" />
+                </svg>
+              </span>
+            </div>
             <div style={{ fontSize: 16, fontWeight: 700, color: 'var(--text, #0f172a)', marginBottom: 8 }}>Finding the best options&hellip;</div>
             <div style={{ fontSize: 13, color: 'var(--text-muted, #64748b)' }}>Checking flights, hotels, transfer partners and pricing</div>
           </div>
