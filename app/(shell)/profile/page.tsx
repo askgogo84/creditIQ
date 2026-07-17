@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { createBrowserClient } from '@supabase/ssr';
 import { useRouter } from 'next/navigation';
 import { CiqTheme, ThemeToggle } from '@/components/ciq/ThemeProvider';
+import { LinkWhatsAppButton } from './LinkWhatsAppButton';
 
 const JOIN_CODE = 'CIQ-2850AF';
 
@@ -123,6 +124,9 @@ export default function ProfilePage() {
             </div>
             <ThemeToggle />
           </div>
+
+          {/* Link WhatsApp */}
+          <LinkWhatsAppButton sb={sb} />
 
           {/* Referral */}
           <div style={{
