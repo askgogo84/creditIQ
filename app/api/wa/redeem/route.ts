@@ -1,10 +1,26 @@
 // app/api/wa/redeem/route.ts
 // Server-to-server: AskGogo redeems a 6-digit code. Shared-secret auth (no user token).
-// Validates + single-use burns the code, returns the CreditIQ user id.
+//
+// Hardening:
+//  - Every failure (bad format, never-issued, used, expired, attempt-capped) returns
+//    ONE identical generic response (400 { ok: false }) so a caller cannot enumerate
+//    which codes were ever real. Only success is distinguishable (200 + user id).
+//  - Consume is a single atomic UPDATE guarded on used_at IS NULL + not expired +
+//    under the attempt cap, so expiry + single-use + consume happen in one round-trip.
+//  - Per-CODE attempt cap (defense-in-depth): each failed redeem of an existing code
+//    increments attempts; at MAX_ATTEMPTS the code is treated as consumed. Per-SENDER
+//    throttling/lockout must live in the AskGogo bot — this endpoint gets only { code }.
 import { NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 
 export const runtime = 'nodejs';
+
+const MAX_ATTEMPTS = 5;
+
+// One identical failure for every non-success case (no enumeration signal).
+function genericFail() {
+  return NextResponse.json({ ok: false }, { status: 400 });
+}
 
 function svc() {
   return createClient(
@@ -22,32 +38,29 @@ export async function POST(req: Request) {
 
   let code = '';
   try { code = String((await req.json())?.code ?? '').trim(); } catch { /* empty body */ }
-  if (!/^\d{6}$/.test(code)) {
-    return NextResponse.json({ ok: false, error: 'bad_code' }, { status: 400 });
-  }
+  if (!/^\d{6}$/.test(code)) return genericFail();
 
   const b = svc();
-  const { data: row } = await b
-    .from('wa_link_codes')
-    .select('code, consumer_user_id, expires_at, used_at')
-    .eq('code', code)
-    .maybeSingle();
+  const nowIso = new Date().toISOString();
 
-  if (!row)                                        return NextResponse.json({ ok: false, error: 'not_found' }, { status: 404 });
-  if (row.used_at)                                 return NextResponse.json({ ok: false, error: 'already_used' }, { status: 409 });
-  if (new Date(row.expires_at).getTime() < Date.now())
-                                                   return NextResponse.json({ ok: false, error: 'expired' }, { status: 410 });
-
-  // Burn atomically-ish: only succeed if still unused (guards against double-redeem races).
+  // Single atomic consume: succeeds only if the code is unused, unexpired, and under
+  // the attempt cap. Folds expiry + single-use + consume into one round-trip.
   const { data: burned } = await b
     .from('wa_link_codes')
-    .update({ used_at: new Date().toISOString() })
+    .update({ used_at: nowIso })
     .eq('code', code)
     .is('used_at', null)
+    .gt('expires_at', nowIso)
+    .lt('attempts', MAX_ATTEMPTS)
     .select('consumer_user_id')
     .maybeSingle();
 
-  if (!burned) return NextResponse.json({ ok: false, error: 'already_used' }, { status: 409 });
+  if (burned) {
+    return NextResponse.json({ ok: true, consumer_user_id: burned.consumer_user_id });
+  }
 
-  return NextResponse.json({ ok: true, consumer_user_id: burned.consumer_user_id });
+  // Failure: best-effort per-code attempt increment (no-ops if the code was never
+  // issued), then the SAME generic response so nothing is enumerable.
+  try { await b.rpc('increment_wa_link_attempts', { p_code: code }); } catch { /* best-effort; never blocks the response */ }
+  return genericFail();
 }
