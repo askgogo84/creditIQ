@@ -7,6 +7,7 @@ import { DesignFooter } from '@/components/design/Footer';
 import { CreditCard3D } from '@/components/design/CreditCard3D';
 import { SEED_CARDS } from '@/lib/data/seed-cards';
 import { optimizeRedemption } from '@/lib/redemption';
+import { authedFetch } from '@/lib/authed-fetch';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Sparkles, Loader2, Plane, ShoppingBag, CreditCard, Hotel, Package, ArrowDownRight } from 'lucide-react';
 import { formatINR } from '@/lib/utils';
@@ -59,11 +60,14 @@ function OptimizeContent() {
     setAiLoading(true);
     setAiAdvice('');
     try {
-      const res = await fetch('/api/claude/redemption', {
+      const res = await authedFetch('/api/claude/redemption', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ cardId: card.id, points, recommendations: recommendations.slice(0, 5) }),
       });
+      if (res.status === 401) {
+        setAiAdvice('Sign in to see your AI strategy.');
+        return;
+      }
       const data = await res.json();
       setAiAdvice(data.advice || 'AI strategy unavailable. See redemption paths below.');
     } catch {
