@@ -20,10 +20,31 @@ export function CiqTheme({ children, className = '' }: { children: ReactNode; cl
     } catch {}
   }, []);
 
+  // Re-read the persisted theme whenever another surface flips it (e.g. the
+  // Settings toggle inside the TabBar "More" sheet, which lives outside this
+  // context and broadcasts 'ciq-theme-change').
+  useEffect(() => {
+    const sync = () => {
+      try {
+        const saved = window.localStorage.getItem('ciq-theme') as Theme | null;
+        if (saved === 'light' || saved === 'dark') setTheme(saved);
+      } catch {}
+    };
+    window.addEventListener('ciq-theme-change', sync);
+    window.addEventListener('storage', sync);
+    return () => {
+      window.removeEventListener('ciq-theme-change', sync);
+      window.removeEventListener('storage', sync);
+    };
+  }, []);
+
   const toggle = () => {
     setTheme(t => {
       const next = t === 'dark' ? 'light' : 'dark';
-      try { window.localStorage.setItem('ciq-theme', next); } catch {}
+      try {
+        window.localStorage.setItem('ciq-theme', next);
+        window.dispatchEvent(new Event('ciq-theme-change'));
+      } catch {}
       return next;
     });
   };

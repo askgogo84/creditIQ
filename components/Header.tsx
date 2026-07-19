@@ -107,6 +107,23 @@ export function Header() {
     } catch {}
   }, [])
 
+  // Keep the injected ciq TabBar wrapper in sync when the theme is flipped from
+  // the TabBar "More" sheet (or another tab) — it broadcasts 'ciq-theme-change'.
+  useEffect(() => {
+    const sync = () => {
+      try {
+        const saved = window.localStorage.getItem('ciq-theme')
+        if (saved === 'light' || saved === 'dark') setCiqTheme(saved)
+      } catch {}
+    }
+    window.addEventListener('ciq-theme-change', sync)
+    window.addEventListener('storage', sync)
+    return () => {
+      window.removeEventListener('ciq-theme-change', sync)
+      window.removeEventListener('storage', sync)
+    }
+  }, [])
+
   const signOut = async () => {
     const sb = createBrowserClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!)
     await sb.auth.signOut()
@@ -136,7 +153,7 @@ export function Header() {
     if (user) return appActive(tab.href)
     if (tab.href === '/') return pathname === '/'
     if (tab.label === 'AI') return AI_PATHS.some(p => pathname.startsWith(p))
-    if (tab.label === 'Trip') return pathname.startsWith('/trip-planner')
+    if (tab.label === 'Travel') return pathname.startsWith('/trip-planner') || pathname.startsWith('/travel') || pathname.startsWith('/flights')
     return pathname.startsWith(tab.href)
   }
 
@@ -457,12 +474,13 @@ export function Header() {
         </div>
       ) : (
         <nav className="ciq-tab-bar">
+          {/* Home · Cards · Travel · AI — icons aligned with the logged-in TabBar
+              equivalents. "More" (below) opens the existing hamburger menu. */}
           {([
             { label: 'Home', href: '/', d: 'M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z M9 22V12h6v10' },
             { label: 'Cards', href: '/cards', d: 'M1 4h22v16a2 2 0 01-2 2H3a2 2 0 01-2-2V4z M1 10h22' },
-            { label: 'Trip', href: '/trip-planner', d: 'M22 2L11 13 M22 2L15 22 11 13 2 9l20-7z' },
+            { label: 'Travel', href: '/trip-planner', d: 'M22 2L11 13 M22 2L15 22 11 13 2 9l20-7z' },
             { label: 'AI', href: '/smart-match', d: 'M13 2L3 14h9l-1 8 10-12h-9l1-8z' },
-            { label: 'My Cards', href: '/login', d: 'M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2 M12 3a4 4 0 100 8 4 4 0 000-8z' },
           ] as { label: string; href: string; d: string }[]).map(tab => {
             const active = isTabActive(tab)
             const paths = tab.d.split(' M').map((p, i) => i === 0 ? p : 'M' + p)
@@ -476,6 +494,17 @@ export function Header() {
               </Link>
             )
           })}
+          {/* "More" — opens the existing hamburger sheet (single mobileOpen state,
+              so it can never be open twice). Three-dot icon matches logged-in. */}
+          <button type="button" onClick={() => setMobileOpen(v => !v)} className={`ciq-tab${mobileOpen ? ' active' : ''}`} aria-label="More" aria-expanded={mobileOpen} style={{ background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'inherit' }}>
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+              <circle cx="5" cy="12" r="1.7" fill="currentColor"/>
+              <circle cx="12" cy="12" r="1.7" fill="currentColor"/>
+              <circle cx="19" cy="12" r="1.7" fill="currentColor"/>
+            </svg>
+            <span className="ciq-tab-label">More</span>
+            {mobileOpen && <span className="ciq-tab-dot"/>}
+          </button>
         </nav>
       )}
 

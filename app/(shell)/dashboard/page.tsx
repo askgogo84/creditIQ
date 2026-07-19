@@ -215,12 +215,6 @@ export default function DashboardPage() {
     setEditSaving(false);
   };
 
-  const signOut = async () => {
-    const sb = createBrowserClient(process.env.NEXT_PUBLIC_SUPABASE_URL || '', process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '');
-    await sb.auth.signOut();
-    router.replace('/');
-  };
-
   const totalPoints = cards.reduce((s, c) => s + (c.points_balance || 0), 0);
   const bestValue = Math.round(totalPoints * 1.8);
   const conservativeValue = Math.round(totalPoints * 0.25);
@@ -246,7 +240,6 @@ export default function DashboardPage() {
         bestValue={bestValue}
         primaryBank={primaryBank}
         onAddCard={() => setShowAddModal(true)}
-        onSignOut={signOut}
         onRefresh={() => { setRefreshing(true); loadCards(user.id).then(() => setRefreshing(false)); }}
         refreshing={refreshing}
       />

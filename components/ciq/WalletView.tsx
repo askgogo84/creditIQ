@@ -1,7 +1,7 @@
 // components/ciq/WalletView.tsx
 'use client';
 import Link from 'next/link';
-import { CiqTheme, ThemeToggle } from './ThemeProvider';
+import { CiqTheme } from './ThemeProvider';
 import { HeroGauge } from './HeroGauge';
 import { CardRow } from './CardRow';
 import { BestMove } from './BestMove';
@@ -14,11 +14,11 @@ type Card = {
 
 export function WalletView({
   displayName, email, cards, totalPoints, bestValue, primaryBank,
-  onAddCard, onSignOut, onRefresh, refreshing,
+  onAddCard, onRefresh, refreshing,
 }: {
   displayName: string; email?: string; cards: Card[];
   totalPoints: number; bestValue: number; primaryBank: string;
-  onAddCard: () => void; onSignOut: () => void; onRefresh: () => void; refreshing?: boolean;
+  onAddCard: () => void; onRefresh: () => void; refreshing?: boolean;
 }) {
   // verified/estimated split from real source tags — flat rate for now (upgrade to per-program next)
   const RATE = 1.8;
@@ -31,18 +31,9 @@ export function WalletView({
 
   return (
     <CiqTheme>
-      <div className="max-w-[420px] md:max-w-[1100px] mx-auto pb-[104px] md:pb-16" style={{ position: 'relative' }}>
-        {/* masthead — wordmark dropped (shell Header supplies the logo); keeps the
-            wallet-specific ThemeToggle (ciq-theme) + sign out, right-aligned */}
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', padding: '18px 20px 8px' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
-            <ThemeToggle />
-            <button onClick={onSignOut} className="ciq-mono" style={{
-              fontSize: 10.5, color: 'var(--ciq-ink-2)', background: 'var(--ciq-line)',
-              border: '1px solid var(--ciq-line-2)', borderRadius: 8, padding: '6px 10px', cursor: 'pointer',
-            }}>Sign out</button>
-          </div>
-        </div>
+      <div className="max-w-[420px] md:max-w-[1100px] mx-auto pt-4 pb-[104px] md:pb-16" style={{ position: 'relative' }}>
+        {/* Theme toggle + sign out moved to the TabBar "More" sheet (Settings +
+            Sign out). The shell Header supplies the logo/top chrome. */}
 
         {/* responsive body: single column on mobile, two columns >=768px */}
         <div className="md:grid md:grid-cols-[minmax(0,5fr)_minmax(0,6fr)] md:gap-6 md:items-start md:px-2 md:pt-4">
