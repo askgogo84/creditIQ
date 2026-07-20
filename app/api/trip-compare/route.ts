@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { callClaude, MODELS } from '@/lib/ai'
 
 export const runtime = 'nodejs'
 
@@ -278,24 +279,22 @@ Respond ONLY with valid JSON:
   }
 }`
 
-    const response = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'x-api-key': process.env.ANTHROPIC_API_KEY!,
-        'anthropic-version': '2023-06-01',
-      },
-      body: JSON.stringify({
-        model: 'claude-opus-4-8',
-        max_tokens: 2500,
-        messages: [{ role: 'user', content: prompt }],
-      }),
+    const ai = await callClaude({
+      model: MODELS.opus,
+      max_tokens: 2500,
+      messages: [{ role: 'user', content: prompt }],
     })
+    if (!ai.ok) {
+      return NextResponse.json({ ok: false, reason: ai.reason }, { status: ai.status })
+    }
 
-    const data = await response.json()
-    const text = data.content?.[0]?.text ?? ''
-    const clean = text.replace(/```json/g, '').replace(/```/g, '').trim()
-    const parsed = JSON.parse(clean)
+    const clean = ai.text.replace(/```json/g, '').replace(/```/g, '').trim()
+    let parsed: any
+    try {
+      parsed = JSON.parse(clean)
+    } catch {
+      return NextResponse.json({ ok: false, reason: 'ai_bad_response' }, { status: 502 })
+    }
 
     // Fetch the REAL cheapest cached fare (Travelpayouts) for the #1 card. No date
     // param — the cache is date-sparse, so pinning an exact day usually returns [].

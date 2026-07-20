@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { retrieveRelevantCards, buildRagSystemPrompt } from '@/lib/rag';
+import { callClaude, MODELS } from '@/lib/ai';
 
 export const runtime = 'nodejs';
 
@@ -48,27 +49,18 @@ Examples of good responses:
       { role: 'user', content: message },
     ];
 
-    const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 15000);
-    const response = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'x-api-key': process.env.ANTHROPIC_API_KEY!,
-        'anthropic-version': '2023-06-01',
-      },
-      signal: controller.signal,
-      body: JSON.stringify({
-        model: 'claude-haiku-4-5-20251001',
-        max_tokens: 300,
-        system: systemPrompt,
-        messages,
-      }),
+    const ai = await callClaude({
+      model: MODELS.haiku,
+      max_tokens: 300,
+      system: systemPrompt,
+      messages,
+      timeoutMs: 15000,
     });
+    if (!ai.ok) {
+      return NextResponse.json({ ok: false, reason: ai.reason }, { status: ai.status });
+    }
 
-    clearTimeout(timeout);
-    const data = await response.json();
-    let text = data.content?.[0]?.text ?? 'Sorry, I could not get a response.';
+    let text = ai.text || 'Sorry, I could not get a response.';
 
     // Strip any JSON blocks if they sneak through
     text = text.replace(/```json[\s\S]*?```/g, '').trim();

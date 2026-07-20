@@ -1,4 +1,4 @@
-import Anthropic from '@anthropic-ai/sdk';
+import { callClaude, MODELS } from '../ai';
 import type { CreditCard } from '../types';
 import type { ScrapeResult } from './index';
 
@@ -12,8 +12,6 @@ export async function parseScrapedCard(scrape: ScrapeResult): Promise<Partial<Cr
     return null;
   }
   if (scrape.error || !scrape.html) return null;
-
-  const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 
   const prompt = `You are a credit card data extraction assistant. Given the raw text from a bank's credit card webpage, extract structured data.
 
@@ -52,19 +50,18 @@ Extract and return ONLY a valid JSON object matching this exact schema (no markd
 If you cannot determine a field with confidence, use null. Do not invent data.`;
 
   try {
-    const msg = await client.messages.create({
-      model: 'claude-haiku-4-5-20251001',
+    const ai = await callClaude({
+      model: MODELS.haiku,
       max_tokens: 2000,
       messages: [{ role: 'user', content: prompt }],
     });
-
-    const text = msg.content
-      .filter((b: any) => b.type === 'text')
-      .map((b: any) => b.text)
-      .join('\n');
+    if (!ai.ok) {
+      console.error('parseScrapedCard AI failed:', ai.reason);
+      return null;
+    }
 
     // Strip markdown fences if present
-    const clean = text
+    const clean = ai.text
       .replace(/```json/g, '')
       .replace(/```/g, '')
       .trim();

@@ -1,10 +1,6 @@
 import { requirePro } from '@/lib/api-auth';
 import { NextRequest, NextResponse } from 'next/server';
-import Anthropic from '@anthropic-ai/sdk';
-
-const anthropic = new Anthropic({
-  apiKey: process.env.ANTHROPIC_API_KEY,
-});
+import { callClaude, MODELS } from '@/lib/ai';
 
 const SYSTEM_PROMPT = `You are a credit card statement analyst specializing in Indian bank statements (HDFC, ICICI, Axis, SBI, etc.).
 
@@ -89,11 +85,8 @@ export async function POST(request: NextRequest) {
     const arrayBuffer = await file.arrayBuffer();
     const base64Data = Buffer.from(arrayBuffer).toString('base64');
 
-    // Cast to any to bypass SDK type restrictions on 'document' type
-    // The Anthropic API supports document type but older SDK typings don't include it
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const messageBody: any = {
-      model: 'claude-opus-4-5-20251101',
+    const ai = await callClaude({
+      model: MODELS.opus,
       max_tokens: 4096,
       system: SYSTEM_PROMPT,
       messages: [
@@ -115,19 +108,21 @@ export async function POST(request: NextRequest) {
           ],
         },
       ],
-    };
-
-    const response = await anthropic.messages.create(messageBody);
-
-    const textContent = response.content.find((c) => c.type === 'text');
-    if (!textContent || textContent.type !== 'text') {
-      return NextResponse.json({ error: 'No response from AI' }, { status: 500 });
+      extraHeaders: { 'anthropic-beta': 'pdfs-2024-09-25' },
+    });
+    if (!ai.ok) {
+      return NextResponse.json({ ok: false, reason: ai.reason }, { status: ai.status });
     }
 
-    let rawText = textContent.text.trim();
+    let rawText = (ai.text || '').trim();
     rawText = rawText.replace(/^```json\s*/i, '').replace(/^```\s*/i, '').replace(/\s*```$/i, '');
 
-    const data = JSON.parse(rawText);
+    let data: any;
+    try {
+      data = JSON.parse(rawText);
+    } catch {
+      return NextResponse.json({ ok: false, reason: 'ai_bad_response' }, { status: 502 });
+    }
 
     // Safety net: if closing_balance was set to only earned (Infinia bug), recalculate
     if (

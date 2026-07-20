@@ -1,10 +1,11 @@
 // app/api/admin/enrich-cards/route.ts
 // AI enrichment pipeline ? populates empty card fields using Claude Haiku
 import { NextRequest, NextResponse } from 'next/server';
+import { callClaude, MODELS } from '@/lib/ai';
 export const runtime = 'nodejs';
 export const maxDuration = 300;
 
-async function enrichCard(card: any, anthropicKey: string): Promise<any | null> {
+async function enrichCard(card: any): Promise<any | null> {
   const prompt = [
     'You are a credit card data expert for India. Fill in accurate data for this card.',
     'Card: ' + card.name + ' by ' + card.bank,
@@ -28,14 +29,13 @@ async function enrichCard(card: any, anthropicKey: string): Promise<any | null> 
     'For category_rewards include at minimum the top 2-3 spend categories for this card.',
   ].join('\n');
 
-  const res = await fetch('https://api.anthropic.com/v1/messages', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json', 'x-api-key': anthropicKey, 'anthropic-version': '2023-06-01' },
-    body: JSON.stringify({ model: 'claude-haiku-4-5-20251001', max_tokens: 1000, messages: [{ role: 'user', content: prompt }] }),
+  const ai = await callClaude({
+    model: MODELS.haiku,
+    max_tokens: 1000,
+    messages: [{ role: 'user', content: prompt }],
   });
-  if (!res.ok) return null;
-  const data = await res.json();
-  const text = (data.content?.[0]?.text || '').replace(/`json|`/g, '').trim();
+  if (!ai.ok) { console.error('enrich-cards AI failed:', ai.reason); return null; }
+  const text = (ai.text || '').replace(/`json|`/g, '').trim();
   try { return JSON.parse(text); } catch { return null; }
 }
 
@@ -63,7 +63,7 @@ export async function POST(req: NextRequest) {
 
   for (const card of cards) {
     try {
-      const enriched = await enrichCard(card, anthropicKey);
+      const enriched = await enrichCard(card);
       if (!enriched) { results.failed++; results.details.push({ id: card.id, status: 'parse_failed' }); continue; }
 
       // Build update object ? only update fields that are empty

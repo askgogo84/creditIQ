@@ -209,12 +209,12 @@ function TripPlannerPageInner() {
         }),
       });
       const data = await res.json();
-      if (data.error) throw new Error(data.error);
+      if (data.ok === false || data.error) throw new Error(data.reason || data.error);
       setResult(data);
       const detectedIata = detectIataFromText(tripQuery);
       if (detectedIata) setDetectedDestIata(detectedIata);
     } catch {
-      setError('Could not plan your trip. Please try again.');
+      setError('Couldn’t plan this trip right now — try again in a minute.');
     } finally {
       setLoading(false);
     }

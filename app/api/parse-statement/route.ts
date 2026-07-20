@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { callClaude, MODELS } from '@/lib/ai';
 
 export const runtime = 'nodejs';
 export const maxDuration = 30;
@@ -113,11 +114,7 @@ export async function POST(req: NextRequest) {
 
     // Build the Claude request: native document mode for unencrypted PDFs (keeps OCR),
     // extracted-text mode for the decrypted-in-memory case.
-    const headers: Record<string, string> = {
-      'Content-Type': 'application/json',
-      'x-api-key': apiKey,
-      'anthropic-version': '2023-06-01',
-    };
+    const extraHeaders: Record<string, string> = {};
     let content: any;
 
     if (read.mode === 'text') {
@@ -129,31 +126,26 @@ export async function POST(req: NextRequest) {
       content = `This is a ${bank} credit card statement. The text extracted from the PDF is between the markers below.\n\n<statement>\n${read.text}\n</statement>\n\n${EXTRACT_INSTRUCTIONS}`;
     } else {
       const base64 = buffer.toString('base64');
-      headers['anthropic-beta'] = 'pdfs-2024-09-25';
+      extraHeaders['anthropic-beta'] = 'pdfs-2024-09-25';
       content = [
         { type: 'document', source: { type: 'base64', media_type: 'application/pdf', data: base64 } },
         { type: 'text', text: `This is a ${bank} credit card statement. ${EXTRACT_INSTRUCTIONS}` },
       ];
     }
 
-    const response = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
-      headers,
-      body: JSON.stringify({
-        model: 'claude-sonnet-4-6',
-        max_tokens: 1024,
-        messages: [{ role: 'user', content }],
-      }),
+    const ai = await callClaude({
+      model: MODELS.sonnet,
+      max_tokens: 1024,
+      messages: [{ role: 'user', content }],
+      extraHeaders,
     });
-
-    const data = await response.json();
-    if (!response.ok) {
+    if (!ai.ok) {
       // Log status only — never the statement text or any secret.
-      console.error('parse-statement Claude error status:', response.status);
+      console.error('parse-statement Claude error:', ai.reason);
       return NextResponse.json({ error: 'Our reader hit a snag. Please try again in a moment.' }, { status: 502 });
     }
 
-    const out = data.content?.[0]?.text || '{}';
+    const out = ai.text || '{}';
     let parsed: any = {};
     try { parsed = JSON.parse(out.replace(/```json|```/g, '').trim()); } catch {}
 

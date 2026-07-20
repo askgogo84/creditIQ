@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { retrieveRelevantCards, buildRagSystemPrompt, cardToText } from '@/lib/rag'
 import { getAllCards } from '@/lib/supabase'
+import { callClaude, MODELS } from '@/lib/ai'
 
 export const runtime = 'nodejs'
 
@@ -76,25 +77,23 @@ Respond ONLY with valid JSON:
   "keepIfCondition": "Condition under which they should keep current card"
 }`
 
-    const response = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'x-api-key': process.env.ANTHROPIC_API_KEY!,
-        'anthropic-version': '2023-06-01',
-      },
-      body: JSON.stringify({
-        model: 'claude-sonnet-4-6',
-        max_tokens: 1200,
-        system: systemPrompt,
-        messages: [{ role: 'user', content: userPrompt }],
-      }),
+    const ai = await callClaude({
+      model: MODELS.sonnet,
+      max_tokens: 1200,
+      system: systemPrompt,
+      messages: [{ role: 'user', content: userPrompt }],
     })
+    if (!ai.ok) {
+      return NextResponse.json({ ok: false, reason: ai.reason }, { status: ai.status })
+    }
 
-    const data = await response.json()
-    const text = data.content?.[0]?.text ?? ''
-    const clean = text.replace(/```json|```/g, '').trim()
-    const parsed = JSON.parse(clean)
+    const clean = ai.text.replace(/```json|```/g, '').trim()
+    let parsed: any
+    try {
+      parsed = JSON.parse(clean)
+    } catch {
+      return NextResponse.json({ ok: false, reason: 'ai_bad_response' }, { status: 502 })
+    }
     // Map alternatives to cards for frontend compatibility
     const response_data = {
       ...parsed,

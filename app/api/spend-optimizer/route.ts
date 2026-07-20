@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { retrieveRelevantCards, buildRagSystemPrompt } from '@/lib/rag'
+import { callClaude, MODELS } from '@/lib/ai'
 
 export const runtime = 'nodejs'
 
@@ -40,32 +41,18 @@ export async function POST(req: NextRequest) {
 
     const systemPrompt = buildRagSystemPrompt(context, devaluations)
 
-    const response = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'x-api-key': process.env.ANTHROPIC_API_KEY!,
-        'anthropic-version': '2023-06-01',
-      },
-      body: JSON.stringify({
-        model: 'claude-sonnet-4-6',
-        max_tokens: 3000,  // was 2000 — more room for 5 cards
-        system: systemPrompt,
-        messages: [{ role: 'user', content: prompt }],
-      }),
+    const ai = await callClaude({
+      model: MODELS.sonnet,
+      max_tokens: 3000,  // was 2000 — more room for 5 cards
+      system: systemPrompt,
+      messages: [{ role: 'user', content: prompt }],
     })
-
-    if (!response.ok) {
-      const err = await response.text()
-      console.error('Anthropic error:', err)
-      return NextResponse.json({ error: 'AI analysis failed' }, { status: 500 })
+    if (!ai.ok) {
+      return NextResponse.json({ ok: false, reason: ai.reason }, { status: ai.status })
     }
 
-    const data = await response.json()
-    const text = data.content?.[0]?.text ?? ''
-
     // Robust JSON extraction — handles cases where AI wraps in markdown
-    let clean = text.trim()
+    let clean = ai.text.trim()
     // Strip markdown code fences if present
     clean = clean.replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/i, '').trim()
     // Find the first { and last } to extract just the JSON object
@@ -75,7 +62,12 @@ export async function POST(req: NextRequest) {
       clean = clean.substring(firstBrace, lastBrace + 1)
     }
 
-    const parsed = JSON.parse(clean)
+    let parsed: any
+    try {
+      parsed = JSON.parse(clean)
+    } catch {
+      return NextResponse.json({ ok: false, reason: 'ai_bad_response' }, { status: 502 })
+    }
     return NextResponse.json(parsed)
   } catch (err) {
     console.error('Spend optimizer error:', err)

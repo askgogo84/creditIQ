@@ -1,5 +1,6 @@
 ﻿// app/api/rewards-calculator/route.ts
 import { NextRequest, NextResponse } from 'next/server';
+import { callClaude, MODELS } from '@/lib/ai';
 export const runtime = 'nodejs';
 
 function calcRewards(card: any, spends: Record<string, number>): number {
@@ -49,18 +50,15 @@ export async function POST(req: NextRequest) {
     const annualGap = monthlyGap * 12;
 
     let aiExplanation = '';
-    if (monthlyGap > 100 && process.env.ANTHROPIC_API_KEY) {
+    if (monthlyGap > 100) {
       const prompt = 'User has ' + card.name + ' earning Rs.' + currentRewards + '/month rewards on Rs.' + totalMonthly + '/month spend. '
         + bestCard.name + ' would earn Rs.' + bestRewards + '/month. In 2 sentences max, explain why ' + bestCard.name + ' is better for their spend pattern. Be specific about rates. Do not use markdown formatting.';
-      const res = await fetch('https://api.anthropic.com/v1/messages', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'x-api-key': process.env.ANTHROPIC_API_KEY!, 'anthropic-version': '2023-06-01' },
-        body: JSON.stringify({ model: 'claude-haiku-4-5-20251001', max_tokens: 150, messages: [{ role: 'user', content: prompt }] }),
+      const ai = await callClaude({
+        model: MODELS.haiku,
+        max_tokens: 150,
+        messages: [{ role: 'user', content: prompt }],
       });
-      if (res.ok) {
-        const d = await res.json();
-        aiExplanation = d.content?.[0]?.text || '';
-      }
+      if (ai.ok) aiExplanation = ai.text || '';
     }
 
     return NextResponse.json({

@@ -4,6 +4,10 @@ import { GeistMono } from "geist/font/mono";
 import "./globals.css";
 import { CreditIQAssistant } from "@/components/CreditIQAssistant";
 import { AppDownloadBanner } from '@/components/AppDownloadBanner';
+import { logMissingEnv } from "@/lib/env-check";
+
+// Runs once per server cold start (module-level guard inside). Log-only.
+logMissingEnv();
 
 export const metadata: Metadata = {
   title: "CreditIQ - India's Honest Credit Card Intelligence",

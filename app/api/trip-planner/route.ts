@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { retrieveRelevantCards, buildRagSystemPrompt } from '@/lib/rag'
+import { callClaude, MODELS } from '@/lib/ai'
 
 export const runtime = 'nodejs'
 
@@ -203,27 +204,25 @@ Respond ONLY with valid JSON (no markdown, no preamble):
   ]
 }`
 
-    const response = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'x-api-key': process.env.ANTHROPIC_API_KEY!,
-        'anthropic-version': '2023-06-01',
-      },
-      body: JSON.stringify({
-        model: 'claude-opus-4-8',
-        max_tokens: 2500,
-        system: systemPrompt,
-        messages: [{ role: 'user', content: userPrompt }],
-      }),
+    const ai = await callClaude({
+      model: MODELS.opus,
+      max_tokens: 2500,
+      system: systemPrompt,
+      messages: [{ role: 'user', content: userPrompt }],
     })
+    if (!ai.ok) {
+      return NextResponse.json({ ok: false, reason: ai.reason }, { status: ai.status })
+    }
 
-    const data = await response.json()
-    const text = data.content?.[0]?.text ?? ''
-    const clean = text.replace(/```json/g, '').replace(/```/g, '').trim()
+    const clean = ai.text.replace(/```json/g, '').replace(/```/g, '').trim()
     // Nuclear strip on raw string BEFORE parse — catches every field
     const sanitized = stripVistara(clean)
-    let parsed = JSON.parse(sanitized)
+    let parsed: any
+    try {
+      parsed = JSON.parse(sanitized)
+    } catch {
+      return NextResponse.json({ ok: false, reason: 'ai_bad_response' }, { status: 502 })
+    }
 
     // Field-level strip as secondary safety net
     const vr = (s: string) => s?.replace(/Vistara/gi, 'Air India').replace(/\bUK-\d+\b/g, 'AI') ?? s

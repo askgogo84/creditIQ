@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { requireAdminOrCron } from '@/lib/admin-auth'
 import { cleanForStorage } from '@/lib/sanitize-text'
 import { createClient } from '@supabase/supabase-js'
+import { callClaude, MODELS } from '@/lib/ai'
 
 export const runtime = 'nodejs'
 export const maxDuration = 300
@@ -37,13 +38,10 @@ async function getEmbedding(text: string): Promise<number[] | null> {
 
 async function extractInsight(title: string, desc: string, channelName: string): Promise<any | null> {
   const text = title + '. ' + desc.slice(0, 1200)
-  const res = await fetch('https://api.anthropic.com/v1/messages', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json', 'x-api-key': process.env.ANTHROPIC_API_KEY!, 'anthropic-version': '2023-06-01' },
-    body: JSON.stringify({
-      model: 'claude-haiku-4-5-20251001',
-      max_tokens: 500,
-      messages: [{ role: 'user', content: `Indian credit card YouTube video from "${channelName}".
+  const ai = await callClaude({
+    model: MODELS.haiku,
+    max_tokens: 500,
+    messages: [{ role: 'user', content: `Indian credit card YouTube video from "${channelName}".
 Title: "${title}"
 Description: "${desc.slice(0, 800)}"
 
@@ -51,11 +49,9 @@ Extract the KEY credit card insight. Only mark is_valuable:true if this contains
 
 Return ONLY valid JSON:
 {"insight_type":"transfer_hack|devaluation|sweet_spot|strategy|card_review|reward_tip|general","title":"specific insight headline","content":"2-3 sentences with the specific data","card_mentions":[],"key_facts":["specific fact 1","specific fact 2"],"is_valuable":true}` }],
-    }),
   })
-  if (!res.ok) return null
-  const d = await res.json()
-  const raw = d.content?.[0]?.text || ''
+  if (!ai.ok) { console.error('youtube-scrape AI failed:', ai.reason); return null }
+  const raw = ai.text || ''
   const clean = raw.replace(/\`\`\`json|\`\`\`/g, '').replace(/^[^{]*/,'').replace(/[^}]*$/,'').trim()
   try {
     const p = JSON.parse(clean)

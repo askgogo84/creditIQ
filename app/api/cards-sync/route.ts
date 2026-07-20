@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { requireAdminOrCron } from '@/lib/admin-auth';
 import { cleanForStorage } from '@/lib/sanitize-text';
+import { callClaude, MODELS } from '@/lib/ai';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -30,29 +31,28 @@ async function runDiscovery() {
   const texts = await Promise.all(SOURCES.map(fetchPageText));
   const combined = texts.join('\n\n---\n\n').slice(0, 10000);
 
-  const response = await fetch('https://api.anthropic.com/v1/messages', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json', 'x-api-key': apiKey, 'anthropic-version': '2023-06-01' },
-    body: JSON.stringify({
-      model: 'claude-sonnet-4-6',
-      max_tokens: 3000,
-      messages: [{
-        role: 'user',
-        content: `Extract NEW Indian credit cards from this text that are NOT in this list: HDFC Infinia, HDFC Regalia Gold, HDFC Millennia, HDFC Diners Black, HDFC Swiggy, HDFC Freedom, HDFC MoneyBack+, HDFC Marriott Bonvoy, HDFC IndianOil, HDFC Diners ClubMiles, HDFC Platinum Times, SBI Cashback, SBI Elite, SBI SimplyCLICK, SBI SimplySAVE, SBI PULSE, SBI Prime, SBI AURUM, SBI Club Vistara, SBI BPCL Octane, SBI Air India, Amazon Pay ICICI, ICICI Sapphiro, ICICI Emeralde, ICICI Coral, ICICI Rubyx, ICICI MakeMyTrip Platinum, ICICI MakeMyTrip Signature, ICICI HPCL Super Saver, ICICI Expressions, Axis Magnus, Axis Atlas, Axis ACE, Axis Flipkart, Axis Vistara, Axis MyZone, Axis Horizon, Axis Reserve, Airtel Axis, IndianOil Axis, Axis NEO, Amex Platinum Travel, Amex Gold, Amex MRCC, Amex SmartEarn, IDFC Wealth, IDFC Select, IDFC Classic, IDFC WOW, IDFC Millennia, IDFC Club Vistara, Kotak 811, Kotak League, Kotak Royale, Kotak White, Kotak Privy League, Kotak Essentia, RBL ShopRite, RBL Popcorn, RBL World Safari, RBL ICON, RBL Fun Plus, Bajaj RBL SuperCard, YES Marquee, YES First Preferred, YES Prosperity, YES ACE, SC Ultimate, SC Smart, SC DigiSmart, SC Manhattan, SC Super Value, AU Zenith, AU LIT, AU Altura, AU Vetta, IndusInd Pinnacle, IndusInd Celesta, IndusInd Iconia, IndusInd Nexxt, IndusInd Legend, HSBC Cashback, HSBC Premier, HSBC Live+, OneCard, Federal Signet, Federal Celesta, BOB Eterna, BOB Prime, IDBI Imperium, Tata Neu Infinity, Tata Neu Plus.
+  const ai = await callClaude({
+    model: MODELS.sonnet,
+    max_tokens: 3000,
+    messages: [{
+      role: 'user',
+      content: `Extract NEW Indian credit cards from this text that are NOT in this list: HDFC Infinia, HDFC Regalia Gold, HDFC Millennia, HDFC Diners Black, HDFC Swiggy, HDFC Freedom, HDFC MoneyBack+, HDFC Marriott Bonvoy, HDFC IndianOil, HDFC Diners ClubMiles, HDFC Platinum Times, SBI Cashback, SBI Elite, SBI SimplyCLICK, SBI SimplySAVE, SBI PULSE, SBI Prime, SBI AURUM, SBI Club Vistara, SBI BPCL Octane, SBI Air India, Amazon Pay ICICI, ICICI Sapphiro, ICICI Emeralde, ICICI Coral, ICICI Rubyx, ICICI MakeMyTrip Platinum, ICICI MakeMyTrip Signature, ICICI HPCL Super Saver, ICICI Expressions, Axis Magnus, Axis Atlas, Axis ACE, Axis Flipkart, Axis Vistara, Axis MyZone, Axis Horizon, Axis Reserve, Airtel Axis, IndianOil Axis, Axis NEO, Amex Platinum Travel, Amex Gold, Amex MRCC, Amex SmartEarn, IDFC Wealth, IDFC Select, IDFC Classic, IDFC WOW, IDFC Millennia, IDFC Club Vistara, Kotak 811, Kotak League, Kotak Royale, Kotak White, Kotak Privy League, Kotak Essentia, RBL ShopRite, RBL Popcorn, RBL World Safari, RBL ICON, RBL Fun Plus, Bajaj RBL SuperCard, YES Marquee, YES First Preferred, YES Prosperity, YES ACE, SC Ultimate, SC Smart, SC DigiSmart, SC Manhattan, SC Super Value, AU Zenith, AU LIT, AU Altura, AU Vetta, IndusInd Pinnacle, IndusInd Celesta, IndusInd Iconia, IndusInd Nexxt, IndusInd Legend, HSBC Cashback, HSBC Premier, HSBC Live+, OneCard, Federal Signet, Federal Celesta, BOB Eterna, BOB Prime, IDBI Imperium, Tata Neu Infinity, Tata Neu Plus.
 
 Return ONLY a JSON array (no markdown, no text):
 [{"name":"Card Name","bank":"Bank Name","joining_fee":999,"annual_fee":999,"reward_rate":1.0,"best_for":"One line","category":["cashback"],"apr":42,"tier":"entry"}]
 If none found: []
 
 Text: ${combined}`
-      }],
-    }),
+    }],
   });
 
-  const data = await response.json();
-  const text = data.content?.[0]?.text || '[]';
+  if (!ai.ok) {
+    console.error('cards-sync AI failed:', ai.reason);
+    return { error: ai.reason, found: 0, stored: 0 };
+  }
+
   let newCards: any[] = [];
-  try { newCards = JSON.parse(text.replace(/```json|```/g, '').trim()); } catch { newCards = []; }
+  try { newCards = JSON.parse((ai.text || '[]').replace(/```json|```/g, '').trim()); } catch { newCards = []; }
 
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY;

@@ -1,6 +1,7 @@
 import { requireAuth } from '@/lib/api-auth';
 import { NextRequest, NextResponse } from 'next/server'
 import { retrieveRelevantCards, buildRagSystemPrompt } from '@/lib/rag'
+import { callClaude, MODELS } from '@/lib/ai'
 
 export const runtime = 'nodejs'
 export const maxDuration = 60
@@ -196,28 +197,18 @@ RULES:
 - Never hardcode lounge visit counts — say "verify with bank as benefits change"
 - Plain text with **bold** for key numbers only`
 
-    const controller = new AbortController()
-    const timeout = setTimeout(() => controller.abort(), 20000)
-
-    const response = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
-      signal: controller.signal,
-      headers: {
-        'Content-Type': 'application/json',
-        'x-api-key': process.env.ANTHROPIC_API_KEY!,
-        'anthropic-version': '2023-06-01',
-      },
-      body: JSON.stringify({
-        model: 'claude-haiku-4-5-20251001',
-        max_tokens: 500,
-        system: systemPrompt,
-        messages: [...history, { role: 'user', content: message }],
-      }),
+    const ai = await callClaude({
+      model: MODELS.haiku,
+      max_tokens: 500,
+      system: systemPrompt,
+      messages: [...history, { role: 'user', content: message }],
+      timeoutMs: 20000,
     })
+    if (!ai.ok) {
+      return NextResponse.json({ ok: false, reason: ai.reason }, { status: ai.status })
+    }
 
-    clearTimeout(timeout)
-    const data = await response.json()
-    const reply = data.content?.[0]?.text ?? 'Sorry, I could not get a response.'
+    const reply = ai.text || 'Sorry, I could not get a response.'
     return NextResponse.json({ reply, message: reply })
 
   } catch (err: any) {

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { requireAdminOrCron } from '@/lib/admin-auth';
 import { createClient } from '@supabase/supabase-js';
+import { callClaude, MODELS } from '@/lib/ai';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -37,16 +38,13 @@ async function fetchPageSnapshot(url: string): Promise<string> {
 
 async function detectChanges(card: string, bank: string, oldSnap: string, newSnap: string) {
   if (!oldSnap || !newSnap || oldSnap === newSnap) return { changed: false, events: [] };
-  const res = await fetch('https://api.anthropic.com/v1/messages', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json', 'x-api-key': process.env.ANTHROPIC_API_KEY!, 'anthropic-version': '2023-06-01' },
-    body: JSON.stringify({
-      model: 'claude-sonnet-4-6', max_tokens: 1000,
-      messages: [{ role: 'user', content: `Compare these two snapshots of ${card} (${bank}) credit card page. Find meaningful benefit changes (fees, reward rates, caps, lounges, partners). Ignore layout/wording changes.\n\nYESTERDAY:\n${oldSnap.slice(0, 2500)}\n\nTODAY:\n${newSnap.slice(0, 2500)}\n\nRespond ONLY with JSON: {"changed":true/false,"events":[{"category":"reward-rate|lounge|cap-added|fee-hike|exclusion|redemption","description":"plain English","impact":"high|medium|low"}]}` }],
-    }),
+  const ai = await callClaude({
+    model: MODELS.sonnet,
+    max_tokens: 1000,
+    messages: [{ role: 'user', content: `Compare these two snapshots of ${card} (${bank}) credit card page. Find meaningful benefit changes (fees, reward rates, caps, lounges, partners). Ignore layout/wording changes.\n\nYESTERDAY:\n${oldSnap.slice(0, 2500)}\n\nTODAY:\n${newSnap.slice(0, 2500)}\n\nRespond ONLY with JSON: {"changed":true/false,"events":[{"category":"reward-rate|lounge|cap-added|fee-hike|exclusion|redemption","description":"plain English","impact":"high|medium|low"}]}` }],
   });
-  const data = await res.json();
-  try { return JSON.parse(data.content?.[0]?.text?.replace(/```json|```/g, '').trim() || '{"changed":false,"events":[]}'); }
+  if (!ai.ok) { console.error('detect-devaluations AI failed:', ai.reason); return { changed: false, events: [] }; }
+  try { return JSON.parse(ai.text?.replace(/```json|```/g, '').trim() || '{"changed":false,"events":[]}'); }
   catch { return { changed: false, events: [] }; }
 }
 

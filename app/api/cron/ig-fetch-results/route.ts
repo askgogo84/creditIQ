@@ -2,6 +2,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { requireAdminOrCron } from '@/lib/admin-auth';
 import { cleanForStorage } from '@/lib/sanitize-text';
+import { callClaude, MODELS } from '@/lib/ai';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -22,7 +23,7 @@ async function getEmbedding(text: string, openaiKey: string): Promise<number[] |
   } catch { return null; }
 }
 
-async function extractInsights(post: any, anthropicKey: string): Promise<any | null> {
+async function extractInsights(post: any): Promise<any | null> {
   if (!post.caption || post.caption.length < 50) return null;
   const prompt = [
     'You are screening an Instagram post for an Indian credit-card & points intelligence database.',
@@ -36,14 +37,13 @@ async function extractInsights(post: any, anthropicKey: string): Promise<any | n
     'Return ONLY valid JSON, no markdown:',
     '{"insight_type":"transfer_hack|devaluation|card_comparison|sweet_spot|strategy|general","insight_summary":"one clear sentence","is_valuable":true,"structured_data":{"cards_mentioned":[],"actionable_tip":""}}'
   ].join('\n');
-  const res = await fetch('https://api.anthropic.com/v1/messages', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json', 'x-api-key': anthropicKey, 'anthropic-version': '2023-06-01' },
-    body: JSON.stringify({ model: 'claude-haiku-4-5-20251001', max_tokens: 600, messages: [{ role: 'user', content: prompt }] }),
+  const ai = await callClaude({
+    model: MODELS.haiku,
+    max_tokens: 600,
+    messages: [{ role: 'user', content: prompt }],
   });
-  if (!res.ok) return null;
-  const data = await res.json();
-  const raw = data.content?.[0]?.text || '';
+  if (!ai.ok) { console.error('ig-fetch-results AI failed:', ai.reason); return null; }
+  const raw = ai.text || '';
   const text = raw.replace(/`json|`|'''json|'''/g, '').replace(/^[^{]*/, '').replace(/[^}]*$/, '').trim();
   try {
     const parsed = JSON.parse(text);
@@ -129,7 +129,7 @@ export async function GET(req: NextRequest) {
 
         for (const post of newPosts) {
           if (Date.now() > deadline) { runHadDeadline = true; break; }
-          const insight = await extractInsights(post, anthropicKey);
+          const insight = await extractInsights(post);
           if (!insight) continue;
           results.insights_extracted++;
 

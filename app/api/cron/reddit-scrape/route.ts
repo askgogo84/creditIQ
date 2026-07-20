@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { requireAdminOrCron } from '@/lib/admin-auth'
 import { cleanForStorage } from '@/lib/sanitize-text'
 import { createClient } from '@supabase/supabase-js'
+import { callClaude, MODELS } from '@/lib/ai'
 
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic';
@@ -70,14 +71,13 @@ You are filtering for a credit card intelligence platform. ONLY return is_valuab
 Return ONLY valid JSON:
 {"insight_type":"transfer_hack|devaluation|sweet_spot|strategy|general|card_review|reward_tip","title":"one clear insight headline under 15 words","content":"2-3 sentence summary of what Indian CC users would find useful","card_mentions":["any card names mentioned"],"is_valuable":true}`
 
-  const res = await fetch('https://api.anthropic.com/v1/messages', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json', 'x-api-key': process.env.ANTHROPIC_API_KEY!, 'anthropic-version': '2023-06-01' },
-    body: JSON.stringify({ model: 'claude-haiku-4-5-20251001', max_tokens: 400, messages: [{ role: 'user', content: prompt }] }),
+  const ai = await callClaude({
+    model: MODELS.haiku,
+    max_tokens: 400,
+    messages: [{ role: 'user', content: prompt }],
   })
-  if (!res.ok) return null
-  const data = await res.json()
-  const raw = data.content?.[0]?.text || ''
+  if (!ai.ok) { console.error('reddit-scrape AI failed:', ai.reason); return null }
+  const raw = ai.text || ''
   const clean = raw.replace(/```json|```/g, '').replace(/^[^{]*/,'').replace(/[^}]*$/,'').trim()
   try {
     const parsed = JSON.parse(clean)

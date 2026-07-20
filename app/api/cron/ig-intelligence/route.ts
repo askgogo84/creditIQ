@@ -1,6 +1,7 @@
 ﻿import { NextRequest, NextResponse } from "next/server";
 import { requireAdminOrCron } from '@/lib/admin-auth';
 import { cleanForStorage } from '@/lib/sanitize-text';
+import { callClaude, MODELS } from '@/lib/ai';
 
 export const runtime = "nodejs";
 export const dynamic = 'force-dynamic';
@@ -42,7 +43,7 @@ async function scrapeHandle(handle: string, apifyToken: string): Promise<any[]> 
   return await dataRes.json();
 }
 
-async function extractInsights(post: any, anthropicKey: string): Promise<any | null> {
+async function extractInsights(post: any): Promise<any | null> {
   if (!post.caption || post.caption.length < 50) return null;
   const content: any[] = [{
     type: "text",
@@ -57,14 +58,13 @@ async function extractInsights(post: any, anthropicKey: string): Promise<any | n
       content.push({ type: "image", source: { type: "base64", media_type: "image/jpeg", data: base64 } });
     } catch {}
   }
-  const res = await fetch("https://api.anthropic.com/v1/messages", {
-    method: "POST",
-    headers: { "Content-Type": "application/json", "x-api-key": anthropicKey, "anthropic-version": "2023-06-01" },
-    body: JSON.stringify({ model: "claude-opus-4-5", max_tokens: 800, messages: [{ role: "user", content }] }),
+  const ai = await callClaude({
+    model: MODELS.opus,
+    max_tokens: 800,
+    messages: [{ role: "user", content }],
   });
-  if (!res.ok) return null;
-  const data = await res.json();
-  const text = data.content?.[0]?.text || "";
+  if (!ai.ok) { console.error('ig-intelligence AI failed:', ai.reason); return null; }
+  const text = ai.text || "";
   try {
     const parsed = JSON.parse(text.replace(/```json|```/g, "").trim());
     if (!parsed.is_valuable) return null;
@@ -103,7 +103,7 @@ export async function GET(req: NextRequest) {
       results.posts_scraped += posts.length;
       const newPosts = posts.filter((p: any) => !existingIds.has(p.id));
       for (const post of newPosts) {
-        const insight = await extractInsights(post, anthropicKey);
+        const insight = await extractInsights(post);
         if (!insight) continue;
         results.insights_extracted++;
         const { error } = await sb.from("ig_knowledge_base").upsert(insight, { onConflict: "post_id" });

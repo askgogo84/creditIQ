@@ -1,5 +1,6 @@
 import { requireAuth } from '@/lib/api-auth';
 import { NextRequest, NextResponse } from 'next/server';
+import { callClaude, MODELS } from '@/lib/ai';
 
 export const runtime = 'nodejs';
 
@@ -45,23 +46,17 @@ CRITICAL RULES:
 
 Write as a sharp, opinionated advisor who knows Indian credit card rewards deeply.`;
 
-    const response = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'x-api-key': process.env.ANTHROPIC_API_KEY,
-        'anthropic-version': '2023-06-01',
-      },
-      body: JSON.stringify({
-        model: 'claude-sonnet-4-6',
-        max_tokens: 600,
-        system: 'You are CreditIQ\'s points strategy advisor. You give sharp, card-specific, actionable advice. You NEVER contradict the ranked redemption data provided. Your top recommendation must always match the #1 ranked option in the data.',
-        messages: [{ role: 'user', content: prompt }],
-      }),
+    const ai = await callClaude({
+      model: MODELS.sonnet,
+      max_tokens: 600,
+      system: 'You are CreditIQ\'s points strategy advisor. You give sharp, card-specific, actionable advice. You NEVER contradict the ranked redemption data provided. Your top recommendation must always match the #1 ranked option in the data.',
+      messages: [{ role: 'user', content: prompt }],
     });
+    if (!ai.ok) {
+      return NextResponse.json({ advice: 'AI strategy unavailable. See redemption paths above for best option.' });
+    }
 
-    const data = await response.json();
-    const advice = data.content?.[0]?.text || 'Unable to generate strategy.';
+    const advice = ai.text || 'Unable to generate strategy.';
     return NextResponse.json({ advice });
   } catch (err) {
     console.error('Redemption AI error:', err);
