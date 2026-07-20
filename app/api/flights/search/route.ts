@@ -50,6 +50,10 @@ export async function GET(req: NextRequest) {
       const url = new URL('https://api.travelpayouts.com/v1/prices/cheap')
       url.searchParams.set('origin', from)
       url.searchParams.set('destination', to)
+      // Make the fallback date-aware: without depart_date, prices/cheap returns
+      // a stale cheapest-ever cached fare on an unrelated date. depart_date
+      // accepts YYYY-MM-DD (or YYYY-MM); we pass the searched departure date.
+      if (dateFrom) url.searchParams.set('depart_date', dateFrom)
       url.searchParams.set('currency', 'INR')
       url.searchParams.set('token', tpToken)
 
@@ -69,7 +73,9 @@ export async function GET(req: NextRequest) {
           to,
           departure: f.departure_at || new Date().toISOString(),
           arrival: f.return_at || new Date().toISOString(),
-          duration: f.duration || 2,
+          // TP reports duration in MINUTES; the Kiwi branch (and the UI) use
+          // hours. Convert so the card stops showing impossible values (1660h).
+          duration: f.duration ? Math.round(f.duration / 60) : 2,
           stops: f.transfers || 0,
           bookingLink: `https://www.aviasales.com/search/${from}${dateFrom?.replace(/-/g,'')}${to}1${tpMarker ? `?marker=${tpMarker}` : ''}`,
         }))

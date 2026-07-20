@@ -63,6 +63,32 @@ interface CompareData {
   };
 }
 
+// Cached fare from /api/fares (cron-populated cached_fares). `stale` = TP's
+// expires_at is in the past; the UI demotes stale fares to estimates (no badge).
+interface CachedFare {
+  price_inr: number;
+  airline: string | null;
+  airlineName: string;
+  flight_number: string | null;
+  depart_date: string;
+  return_date: string | null;
+  found_at: string;
+  source: string;
+  expires_at: string | null;
+  stale: boolean;
+}
+
+// "updated 6h ago" from an ISO timestamp — the freshness anchor for cached fares.
+function relTime(iso: string): string {
+  const then = new Date(iso).getTime();
+  if (isNaN(then)) return 'recently';
+  const mins = Math.max(1, Math.round((Date.now() - then) / 60000));
+  if (mins < 60) return `${mins}m ago`;
+  const hrs = Math.round(mins / 60);
+  if (hrs < 24) return `${hrs}h ago`;
+  return `${Math.round(hrs / 24)}d ago`;
+}
+
 interface TripComparisonProps {
   destination: string;
   origin?: string;
@@ -93,6 +119,7 @@ function PriceRange({ min, max }: { min: number; max: number }) {
 
 export function TripComparison({ destination, origin = 'Bangalore', nights = 3, cabin = 'economy', userPoints = 0, cardBank = 'HDFC' }: TripComparisonProps) {
   const [data, setData] = useState<CompareData | null>(null);
+  const [fares, setFares] = useState<CachedFare[] | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [activeTab, setActiveTab] = useState<'flights' | 'hotels'>('flights');
@@ -114,6 +141,18 @@ export function TripComparison({ destination, origin = 'Bangalore', nights = 3, 
       .catch(() => setError('Could not load comparison. Try again.'))
       .finally(() => setLoading(false));
   }, [destination, origin, nights, userPoints, cardBank]);
+
+  // Parallel, independent read of the cron-cached real fares. Never blocks the
+  // page: a miss/empty just means every card falls back to an estimate.
+  useEffect(() => {
+    if (!destination) return;
+    setFares(null);
+    const params = new URLSearchParams({ origin, destination });
+    fetch(`/api/fares?${params.toString()}`)
+      .then(r => r.json())
+      .then(d => setFares(Array.isArray(d?.fares) ? d.fares : []))
+      .catch(() => setFares([]));
+  }, [destination, origin]);
 
   if (!destination) return null;
 
@@ -164,39 +203,14 @@ export function TripComparison({ destination, origin = 'Bangalore', nights = 3, 
     </a>
   );
 
-      if (loading) return (
-    <div style={{ background: 'linear-gradient(135deg, #0d1117, #1a1f2e)', border: '1px solid rgba(201,151,46,0.2)', borderRadius: 20, padding: '32px 24px', marginTop: 24, overflow: 'hidden', position: 'relative' as const }}>
-      <style>{`
-        @keyframes shimmer { 0%{transform:translateX(-100%)} 100%{transform:translateX(400%)} }
-        @keyframes pulse { 0%,100%{opacity:0.4} 50%{opacity:1} }
-        @keyframes fly { 0%{transform:translateX(-10px)} 50%{transform:translateX(10px)} 100%{transform:translateX(-10px)} }
-        .ciq-shimmer { animation: shimmer 2s infinite; }
-        .ciq-pulse { animation: pulse 1.5s infinite; }
-        .ciq-fly { animation: fly 2s ease-in-out infinite; }
-      `}</style>
-      <div style={{ textAlign: 'center' as const, marginBottom: 24 }}>
-        <div className="ciq-fly" style={{ fontSize: 36, marginBottom: 12 }}>{''}</div>
-        <div style={{ fontSize: 11, fontWeight: 700, color: '#C9972E', letterSpacing: 2, textTransform: 'uppercase' as const, marginBottom: 8 }}>Scanning live prices</div>
-        <div style={{ fontSize: 13, color: 'rgba(255,255,255,0.5)', marginBottom: 20 }}>{origin} {'->'} {destination} . {nights} nights</div>
-      </div>
-      {[
-        { icon: '', label: 'Checking Kayak flights...', delay: '0s' },
-        { icon: '🏨', label: 'Scanning Booking.com hotels...', delay: '0.3s' },
-        { icon: '📱', label: 'Comparing MakeMyTrip rates...', delay: '0.6s' },
-      ].map((item, i) => (
-        <div key={i} className="ciq-pulse" style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '10px 16px', background: 'rgba(255,255,255,0.04)', borderRadius: 10, marginBottom: 8, animationDelay: item.delay }}>
-          <span style={{ fontSize: 18 }}>{item.icon}</span>
-          <div style={{ flex: 1 }}>
-            <div style={{ height: 8, borderRadius: 4, background: 'rgba(255,255,255,0.08)', position: 'relative' as const, overflow: 'hidden' }}>
-              <div className="ciq-shimmer" style={{ position: 'absolute' as const, top: 0, left: 0, width: '40%', height: '100%', background: 'linear-gradient(90deg, transparent, rgba(201,151,46,0.3), transparent)' }} />
-            </div>
-          </div>
-          <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.3)', whiteSpace: 'nowrap' as const }}>{item.label}</div>
-        </div>
-      ))}
-      <div style={{ textAlign: 'center' as const, marginTop: 16, fontSize: 11, color: 'rgba(255,255,255,0.2)' }}>
-        Finding best value across 3 platforms...
-      </div>
+  // Honest loader: a real spinner that resolves when the trip-compare request
+  // returns. No simulated "checking Kayak / scanning Booking.com" theatre.
+  if (loading) return (
+    <div style={{ marginTop: 24, textAlign: 'center' as const, padding: '40px 24px', background: 'var(--bg-card, #fff)', border: '1px solid var(--border, #e2e8f0)', borderRadius: 16 }}>
+      <style>{`@keyframes ciqspin { to { transform: rotate(360deg); } }`}</style>
+      <span style={{ width: 28, height: 28, border: '3px solid var(--border, #e2e8f0)', borderTopColor: GOLD, borderRadius: '50%', display: 'inline-block', animation: 'ciqspin 0.8s linear infinite', marginBottom: 14 }} />
+      <div style={{ fontSize: 14, fontWeight: 700, color: 'var(--text, #0f172a)' }}>Finding fares{'…'}</div>
+      <div style={{ fontSize: 12, color: 'var(--text-muted, #64748b)', marginTop: 4 }}>{origin} {'->'} {destination} {'·'} {nights} nights</div>
     </div>
   );
 
@@ -208,9 +222,10 @@ export function TripComparison({ destination, origin = 'Bangalore', nights = 3, 
 
   if (!data) return null;
 
-  const liveCard = data.flights?.find(f => f.dataSource === 'live') || null;
-  const hasLive = !!liveCard;
-  const liveSampleDate = liveCard?.sampleDate || data.liveFare?.sampleDate || null;
+  // Real fare = cheapest FRESH cached fare (expired ones are demoted, never
+  // badged). Overlaid on the #1 flight card only; everything else stays estimated.
+  const realFare = (fares || []).find(f => !f.stale) || null;
+  const hasLive = !!realFare;
 
   return (
     <div style={{ marginTop: 24 }}>
@@ -319,7 +334,7 @@ export function TripComparison({ destination, origin = 'Bangalore', nights = 3, 
 
       {/* Flights */}
       {activeTab === 'flights' && data.flights?.map((f, i) => {
-        const isLive = f.dataSource === 'live';
+        const isLive = i === 0 && !!realFare;
         return (
         <div key={i} style={i === 0 ? bestCard : card}>
           {f.badge && <div style={badge}>{f.badge}</div>}
@@ -330,12 +345,14 @@ export function TripComparison({ destination, origin = 'Bangalore', nights = 3, 
                   #{f.rank}
                 </span>
                 <span style={{ fontSize: 15, fontWeight: 700, color: 'var(--text, #0f172a)' }}>
-                  {f.airline}
+                  {isLive && realFare ? realFare.airlineName : f.airline}
                 </span>
-                {f.flightNo && <span style={{ fontSize: 12, color: 'var(--text-muted, #64748b)' }}>{f.flightNo}</span>}
-                {isLive && (
+                {(isLive && realFare?.flight_number)
+                  ? <span style={{ fontSize: 12, color: 'var(--text-muted, #64748b)' }}>{realFare.flight_number}</span>
+                  : (f.flightNo && <span style={{ fontSize: 12, color: 'var(--text-muted, #64748b)' }}>{f.flightNo}</span>)}
+                {isLive && realFare && (
                   <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 9, fontWeight: 800, letterSpacing: 0.8, textTransform: 'uppercase' as const, color: GOLD, background: 'rgba(201,151,46,0.12)', border: '1px solid rgba(201,151,46,0.35)', padding: '2px 8px', borderRadius: 100 }}>
-                    <span style={{ width: 5, height: 5, borderRadius: '50%', background: GOLD }} /> Live . cached
+                    <span style={{ width: 5, height: 5, borderRadius: '50%', background: GOLD }} /> Cached . updated {relTime(realFare.found_at)}
                   </span>
                 )}
               </div>
@@ -354,8 +371,8 @@ export function TripComparison({ destination, origin = 'Bangalore', nights = 3, 
                 {f.whyBest}
               </div>
               <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' as const }}>
-                {isLive && f.liveBookingLink && platformBtn(f.liveBookingLink, 'View fare', true)}
-                {platformBtn(f.urls.kayak, 'Kayak', !isLive)}
+                {f.liveBookingLink && platformBtn(f.liveBookingLink, 'View fare', true)}
+                {platformBtn(f.urls.kayak, 'Kayak', !f.liveBookingLink)}
                 {platformBtn(f.urls.mmt, 'MakeMyTrip')}
                 {platformBtn(f.urls.easemytrip || 'https://www.easemytrip.com', 'EaseMyTrip')}
                 {platformBtn(f.urls.goibibo || 'https://www.goibibo.com', 'Goibibo')}
@@ -368,18 +385,21 @@ export function TripComparison({ destination, origin = 'Bangalore', nights = 3, 
               )}
             </div>
             <div style={{ textAlign: 'right' as const, minWidth: 130 }}>
-              {isLive ? (
+              {isLive && realFare ? (
                 <>
                   <div style={{ fontSize: 11, color: 'var(--text-muted, #94a3b8)', marginBottom: 4 }}>Round-trip fare</div>
                   <div style={{ fontSize: 18, fontWeight: 800, color: 'var(--text, #0f172a)' }}>
-                    Rs.{f.cashPriceMid.toLocaleString('en-IN')}
+                    Rs.{realFare.price_inr.toLocaleString('en-IN')}
                   </div>
                   <div style={{ fontSize: 10, color: 'var(--text-muted, #94a3b8)', marginTop: 4, lineHeight: 1.4, maxWidth: 160, marginLeft: 'auto' }}>
-                    Cached cheapest fare via Travelpayouts{f.sampleDate ? ` . sample date ${f.sampleDate}` : ''} . not your exact dates
+                    Cached cheapest via Travelpayouts . updated {relTime(realFare.found_at)}{realFare.depart_date ? ` . sample ${realFare.depart_date}` : ''} . not your exact dates
                   </div>
                 </>
               ) : (
                 <>
+                  <span style={{ display: 'inline-block', fontSize: 9, fontWeight: 800, letterSpacing: 0.8, textTransform: 'uppercase' as const, color: '#8A857B', background: 'rgba(138,133,123,0.12)', border: '1px solid rgba(138,133,123,0.3)', padding: '2px 8px', borderRadius: 100, marginBottom: 4 }}>
+                    Estimated
+                  </span>
                   <div style={{ fontSize: 11, color: 'var(--text-muted, #94a3b8)', marginBottom: 4 }}>Return price range</div>
                   <PriceRange min={f.cashPriceMin * 2} max={f.cashPriceMax * 2} />
                 </>
@@ -453,8 +473,8 @@ export function TripComparison({ destination, origin = 'Bangalore', nights = 3, 
         borderRadius: 10, fontSize: 11,
         color: 'var(--text-muted, #64748b)', lineHeight: 1.5,
       }}>
-        {hasLive
-          ? `The top flight is a real cached cheapest fare from Travelpayouts${liveSampleDate ? ` (sample date ${liveSampleDate})` : ''} — for that sample date, not your exact dates. Other flights and all hotels are estimated ranges based on typical fares. Click any platform button for real-time pricing. Points calculations use standard transfer ratios and may vary.`
+        {hasLive && realFare
+          ? `The top flight is a real cached cheapest fare from Travelpayouts${realFare.depart_date ? ` (sample date ${realFare.depart_date})` : ''}, updated ${relTime(realFare.found_at)} — for that sample date, not your exact dates. Other flights and all hotels are estimated ranges based on typical fares. Click any platform button for real-time pricing. Points calculations use standard transfer ratios and may vary.`
           : `Prices are estimated ranges based on typical fares for this route — not live quotes. Click any platform button to see real-time pricing. Points calculations use standard transfer ratios and may vary.`}
       </div>
     </div>
