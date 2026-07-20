@@ -69,8 +69,8 @@ export async function GET(req: NextRequest) {
         url.searchParams.set('destination', destination)
         url.searchParams.set('depart_date', month) // YYYY-MM: cheapest within the month
         url.searchParams.set('currency', 'INR')
-        url.searchParams.set('token', token)
-
+        // Auth via header only — never the query string (token would leak into
+        // request/access logs). TP accepts X-Access-Token.
         const res = await fetch(url.toString(), { headers: { 'X-Access-Token': token } })
         summary.calls++
         if (!res.ok) { summary.errors++; await sleep(THROTTLE_MS); continue }
