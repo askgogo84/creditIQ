@@ -3,6 +3,9 @@ import { retrieveRelevantCards, buildRagSystemPrompt } from '@/lib/rag'
 import { callClaude, MODELS } from '@/lib/ai'
 
 export const runtime = 'nodejs'
+// Real 5-card output runs ~18s with no maxDuration guard — one slow generation
+// from the same 504 that hit points-optimizer. Defensive headroom.
+export const maxDuration = 60
 
 export async function POST(req: NextRequest) {
   try {
@@ -39,7 +42,11 @@ export async function POST(req: NextRequest) {
       maxFee: spends?.maxFee,
     })
 
-    const systemPrompt = buildRagSystemPrompt(context, devaluations)
+    // buildRagSystemPrompt is prose-oriented (shared with /api/assistant, which wants
+    // prose). This route JSON.parse()s the reply, so pin the output format here at the
+    // route level — insurance against a rare prose reply. Scoped to this route only.
+    const systemPrompt = buildRagSystemPrompt(context, devaluations) +
+      '\n\nOUTPUT FORMAT: Respond with valid JSON ONLY, exactly matching the schema in the user message. No markdown, no code fences, no prose before or after the JSON.'
 
     const ai = await callClaude({
       model: MODELS.sonnet,

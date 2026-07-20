@@ -3,6 +3,10 @@ import { NextRequest, NextResponse } from 'next/server';
 import { callClaude, MODELS } from '@/lib/ai';
 
 export const runtime = 'nodejs';
+// Real 3-path redemption output measures ~1600-1920 tokens and ~33-39s on sonnet
+// (verified). Give the function room to finish; the per-call callClaude timeout
+// below is raised to match. Shared 30s default in lib/ai.ts is left untouched.
+export const maxDuration = 60;
 
 export async function POST(req: NextRequest) {
   const gate = await requirePro(req);
@@ -14,7 +18,8 @@ export async function POST(req: NextRequest) {
 
     const ai = await callClaude({
       model: MODELS.sonnet,
-      max_tokens: 2000,
+      max_tokens: 2500, // natural 3-path output peaks ~1920 tokens; 2500 = headroom, never truncates
+      timeoutMs: 55000, // this route's healthy generation runs ~33-39s; per-call only, not the shared default
       system: `You are CreditIQ's points redemption expert specialising in Indian credit cards.
 You know the exact transfer partners, ratios, and redemption rules for all major Indian cards.
 You ALWAYS respond with valid JSON only — no markdown, no code fences, no explanation outside the JSON structure.
