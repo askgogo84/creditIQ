@@ -6,10 +6,14 @@
 --   * Codes are stored as Travelpayouts CITY codes (BLR, DEL, BOM, DXB, SIN, BKK,
 --     LON, GOI, MAA, HYD, CCU). London is LON, never LHR — TP keys responses by
 --     city, so the cron and read API normalise airport -> city.
---   * found_at is the freshness anchor for the UI's "updated Xh ago" label.
---   * expires_at is Travelpayouts' own fare expiry. Read/UI rule: expires_at < now()
---     => the fare is demoted to an ESTIMATE (no gold badge); only future-valid
---     fares earn the champagne-gold "cached" badge.
+--   * found_at is the freshness anchor for the UI's "updated Xh ago" label AND the
+--     demotion rule. Read/UI rule: found_at age > 26h => demoted to an ESTIMATE (no
+--     gold badge); fresher rows earn the champagne-gold "cached" badge. The cron
+--     refreshes daily at 07:00 (healthy age <24h); 26h tolerates cron jitter and
+--     only demotes if a full daily run was missed.
+--   * expires_at is Travelpayouts' own fare expiry, kept as informational metadata
+--     only. On this call shape TP returns a ~1h server-cache TTL, not fare validity,
+--     so it does NOT drive the badge.
 --   * Table is written by the cron (service role) and read by /api/fares (service
 --     role). RLS is ON with no public policies: only the service role touches it.
 
@@ -40,4 +44,4 @@ alter table public.cached_fares enable row level security;
 -- which bypasses RLS. Public/anon clients get nothing directly.
 
 comment on table public.cached_fares is
-  'Daily-refreshed cheapest Travelpayouts fares for top India routes. City codes only (LON not LHR). found_at = freshness anchor; expires_at<now() => demote to estimate.';
+  'Daily-refreshed cheapest Travelpayouts fares for top India routes. City codes only (LON not LHR). found_at = freshness anchor AND demotion rule: found_at age > 26h => demote to estimate. expires_at = TP''s own ~1h cache TTL, informational only.';

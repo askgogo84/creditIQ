@@ -4,8 +4,11 @@
 // Resolves names/airports -> TP city codes, returns fares sorted cheapest-first
 // with found_at (freshness anchor) and a per-row `stale` flag.
 //
-// Honesty contract: `stale` is TP's expires_at < now. The UI DEMOTES stale fares
-// to estimates (no gold badge) — freshness is a demotion here, not a caveat.
+// Honesty contract: `stale` is found_at age > 26h. The cron refreshes daily at
+// 07:00 so a healthy fare is <24h old; 26h tolerates cron jitter and only demotes
+// if a full daily run was missed. TP's expires_at is stored as informational
+// metadata (a ~1h server-cache TTL on this call shape) but no longer drives the
+// badge. The UI DEMOTES stale fares to estimates (no gold badge).
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 import { normalizeToCity, airlineName } from '@/lib/fares'
@@ -14,6 +17,10 @@ export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
 
 const DATE_WINDOW_DAYS = 2
+// Freshness = found_at age, not TP's expires_at (a ~1h server-cache TTL on the
+// /v1/prices/cheap call shape). Cron refreshes daily at 07:00 -> a healthy fare is
+// <24h old; 26h tolerates jitter and only demotes if a full daily run was missed.
+const FRESH_MAX_AGE_MS = 26 * 60 * 60 * 1000
 
 function shiftDate(ymd: string, deltaDays: number): string | null {
   const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(ymd)
@@ -71,7 +78,7 @@ export async function GET(req: NextRequest) {
       found_at: r.found_at,
       source: r.source,
       expires_at: r.expires_at,
-      stale: !!r.expires_at && new Date(r.expires_at).getTime() < now,
+      stale: now - new Date(r.found_at).getTime() > FRESH_MAX_AGE_MS,
     }))
 
     return NextResponse.json({ origin, destination, fares })
