@@ -36,9 +36,10 @@ export async function GET(req: NextRequest) {
   const errors: string[] = [];
   for (const handle of TARGET_HANDLES) {
     try {
-      const res = await fetch(`${APIFY_BASE}/acts/${APIFY_ACTOR}/runs?token=${apifyToken}`, {
+      const res = await fetch(`${APIFY_BASE}/acts/${APIFY_ACTOR}/runs`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        // Token in the Authorization header only — never the query string (leaks to access logs)
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${apifyToken}` },
         body: JSON.stringify({
           directUrls: [`https://www.instagram.com/${handle}/`],
           resultsType: 'posts',

@@ -99,7 +99,7 @@ export async function GET(req: NextRequest) {
     for (const [handle, runId] of Object.entries(runIds)) {
       if (Date.now() > deadline) { results.errors.push('deadline_reached'); runHadDeadline = true; break; }
       try {
-        const statusRes = await fetch(APIFY_BASE + '/actor-runs/' + runId + '?token=' + apifyToken);
+        const statusRes = await fetch(APIFY_BASE + '/actor-runs/' + runId, { headers: { Authorization: 'Bearer ' + apifyToken } });
         if (!statusRes.ok) { results.errors.push(handle + ': status fetch failed'); continue; }
         const status = await statusRes.json();
         const runStatus = status.data?.status || 'UNKNOWN';
@@ -113,7 +113,7 @@ export async function GET(req: NextRequest) {
         }
 
         // FIX: pull all 20 (was limit=5)
-        const dataRes = await fetch(APIFY_BASE + '/actor-runs/' + runId + '/dataset/items?token=' + apifyToken + '&limit=20');
+        const dataRes = await fetch(APIFY_BASE + '/actor-runs/' + runId + '/dataset/items?limit=20', { headers: { Authorization: 'Bearer ' + apifyToken } });
         if (!dataRes.ok) continue;
         const posts = await dataRes.json();
         results.posts_scraped += posts.length;

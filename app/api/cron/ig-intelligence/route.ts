@@ -20,9 +20,10 @@ const APIFY_ACTOR = "apify~instagram-scraper";
 const APIFY_BASE = "https://api.apify.com/v2";
 
 async function scrapeHandle(handle: string, apifyToken: string): Promise<any[]> {
-  const runRes = await fetch(`${APIFY_BASE}/acts/${APIFY_ACTOR}/runs?token=${apifyToken}`, {
+  const runRes = await fetch(`${APIFY_BASE}/acts/${APIFY_ACTOR}/runs`, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    // Token in the Authorization header only — never the query string (leaks to access logs)
+    headers: { "Content-Type": "application/json", Authorization: `Bearer ${apifyToken}` },
     body: JSON.stringify({ directUrls: [`https://www.instagram.com/${handle}/`], resultsType: "posts", resultsLimit: 20 }),
   });
   if (!runRes.ok) return [];
@@ -32,13 +33,13 @@ async function scrapeHandle(handle: string, apifyToken: string): Promise<any[]> 
   let attempts = 0;
   while (attempts < 24) {
     await new Promise(r => setTimeout(r, 5000));
-    const statusRes = await fetch(`${APIFY_BASE}/actor-runs/${runId}?token=${apifyToken}`);
+    const statusRes = await fetch(`${APIFY_BASE}/actor-runs/${runId}`, { headers: { Authorization: `Bearer ${apifyToken}` } });
     const status = await statusRes.json();
     if (status.data?.status === "SUCCEEDED") break;
     if (status.data?.status === "FAILED") return [];
     attempts++;
   }
-  const dataRes = await fetch(`${APIFY_BASE}/actor-runs/${runId}/dataset/items?token=${apifyToken}`);
+  const dataRes = await fetch(`${APIFY_BASE}/actor-runs/${runId}/dataset/items`, { headers: { Authorization: `Bearer ${apifyToken}` } });
   if (!dataRes.ok) return [];
   return await dataRes.json();
 }

@@ -44,7 +44,7 @@ export async function GET(req: NextRequest) {
   // 3. Apify — real usage via users/me
   if (apifyToken) {
     try {
-      const r = await fetch(`https://api.apify.com/v2/users/me?token=${apifyToken}`, { signal: AbortSignal.timeout(8000) });
+      const r = await fetch(`https://api.apify.com/v2/users/me`, { headers: { Authorization: `Bearer ${apifyToken}` }, signal: AbortSignal.timeout(8000) });
       if (r.ok) {
         const d = await r.json();
         probed.push({ id: 'apify', name: 'Apify', category: 'scraper', check_type: 'usage', status: 'up', detail: { plan: d?.data?.plan?.id ?? null, usageCycle: d?.data?.monthlyUsageCycle ?? null } });
