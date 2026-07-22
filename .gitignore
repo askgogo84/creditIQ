@@ -53,3 +53,12 @@ fix_*.py
 swap_*.py
 apply-*.ps1
 fix-*.ps1
+
+# env — ignore all env files, keep the tracked example
+.env*
+!.env.example
+
+# one-off junk / backups
+body.json
+*.bak
+nul
