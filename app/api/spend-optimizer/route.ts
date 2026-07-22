@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { retrieveRelevantCards, buildRagSystemPrompt } from '@/lib/rag'
 import { callClaude, MODELS } from '@/lib/ai'
+import { rateLimit } from '@/lib/rate-limit'
 
 export const runtime = 'nodejs'
 // Real 5-card output runs ~18s with no maxDuration guard — one slow generation
@@ -9,6 +10,9 @@ export const maxDuration = 60
 
 export async function POST(req: NextRequest) {
   try {
+    const rl = await rateLimit(req, 'spend-optimizer')
+    if (!rl.ok) return rl.res
+
     const { prompt, spends, totalSpend } = await req.json()
     if (!prompt) return NextResponse.json({ error: 'Missing prompt' }, { status: 400 })
 

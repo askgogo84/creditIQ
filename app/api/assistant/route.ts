@@ -1,11 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { retrieveRelevantCards, buildRagSystemPrompt } from '@/lib/rag';
 import { callClaude, MODELS } from '@/lib/ai';
+import { rateLimit } from '@/lib/rate-limit';
 
 export const runtime = 'nodejs';
 
 export async function POST(req: NextRequest) {
   try {
+    const rl = await rateLimit(req, 'assistant');
+    if (!rl.ok) return rl.res;
+
     const body = await req.json();
     // Accept BOTH {message, history} (web) and {messages:[{role,content}]} (mobile)
     let message = body.message;

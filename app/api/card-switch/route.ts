@@ -2,11 +2,15 @@ import { NextRequest, NextResponse } from 'next/server'
 import { retrieveRelevantCards, buildRagSystemPrompt, cardToText } from '@/lib/rag'
 import { getAllCards } from '@/lib/supabase'
 import { callClaude, MODELS } from '@/lib/ai'
+import { rateLimit } from '@/lib/rate-limit'
 
 export const runtime = 'nodejs'
 
 export async function POST(req: NextRequest) {
   try {
+    const rl = await rateLimit(req, 'card-switch')
+    if (!rl.ok) return rl.res
+
     const { currentCardId, monthlySpend, spendProfile } = await req.json()
 
     const allCards = await getAllCards()

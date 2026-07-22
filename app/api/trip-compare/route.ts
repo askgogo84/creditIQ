@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { callClaude, MODELS } from '@/lib/ai'
+import { rateLimit } from '@/lib/rate-limit'
 
 export const runtime = 'nodejs'
 
@@ -159,6 +160,9 @@ function buildGoibiboUrl(origin: string, dest: string): string {
 
 export async function POST(req: NextRequest) {
   try {
+    const rl = await rateLimit(req, 'trip-compare')
+    if (!rl.ok) return rl.res
+
     const {
       destination, origin = 'Bangalore', nights = 3, cabin = 'economy',
       departDate, returnDate, userPoints = 0, cardBank = 'HDFC', budget = 'mid',

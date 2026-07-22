@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { retrieveRelevantCards, buildRagSystemPrompt } from '@/lib/rag'
 import { callClaude, MODELS } from '@/lib/ai'
+import { rateLimit } from '@/lib/rate-limit'
 
 export const runtime = 'nodejs'
 
@@ -27,6 +28,9 @@ function stripVistara(raw: string): string {
 
 export async function POST(req: NextRequest) {
   try {
+    const rl = await rateLimit(req, 'trip-planner')
+    if (!rl.ok) return rl.res
+
     const { query, userPoints, cardBank, destination, origin, travelers, budget } = await req.json()
     const rawQuery = query || ('travel to ' + (destination || 'unknown'))
     const tripQuery = normalizeDestination(rawQuery)
