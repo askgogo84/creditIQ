@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { DesignFooter } from '@/components/design/Footer';
 import { SEED_CARDS } from '@/lib/data/seed-cards';
 import { getApplyUrl } from '@/lib/affiliate';
+import { authedFetch } from '@/lib/authed-fetch';
 
 type Step = 'current' | 'reason' | 'debt' | 'result';
 
@@ -89,7 +90,7 @@ export default function CardSwitchPage() {
   const analyze = async () => {
     setLoading(true);
     try {
-      const res = await fetch('/api/card-switch', {
+      const res = await authedFetch('/api/card-switch', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

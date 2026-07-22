@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { authedFetch } from '@/lib/authed-fetch';
 
 const CATEGORIES = [
   { id: 'dining', label: 'Dining & Restaurants', color: '#e11d48', placeholder: '5000', icon: '🍽️' },
@@ -87,7 +88,7 @@ Respond ONLY with valid JSON (no markdown, no backticks, no explanation outside 
   "insight": "One surprising insight about their spend pattern or a card opportunity they might not know"
 }`;
 
-      const response = await fetch('/api/spend-optimizer', {
+      const response = await authedFetch('/api/spend-optimizer', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ prompt, spends, totalSpend }),

@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { authedFetch } from '@/lib/authed-fetch';
 
 interface FlightOption {
   rank: number;
@@ -128,7 +129,7 @@ export function TripComparison({ destination, origin = 'Bangalore', nights = 3, 
     if (!destination) return;
     setLoading(true);
     setError('');
-    fetch('/api/trip-compare', {
+    authedFetch('/api/trip-compare', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ destination, origin, nights, cabin, userPoints, cardBank }),

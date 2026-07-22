@@ -198,7 +198,7 @@ function TripPlannerPageInner() {
     setError('');
     setResult(null);
     try {
-      const res = await fetch('/api/trip-planner', {
+      const res = await authedFetch('/api/trip-planner', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

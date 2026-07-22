@@ -1,6 +1,7 @@
 "use client";
 import { useState, useRef, useEffect } from "react";
 import { Header } from "@/components/Header";
+import { authedFetch } from "@/lib/authed-fetch";
 
 interface Message { role: "user" | "assistant"; content: string; }
 
@@ -50,7 +51,7 @@ export default function CiraPage() {
     setInput("");
     setLoading(true);
     try {
-      const res = await fetch("/api/assistant", {
+      const res = await authedFetch("/api/assistant", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ message: text, history }),

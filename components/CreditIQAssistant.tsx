@@ -1,5 +1,6 @@
 ﻿'use client';
 import { useState, useRef, useEffect } from 'react';
+import { authedFetch } from '@/lib/authed-fetch';
 
 interface Message {
   role: 'user' | 'assistant';
@@ -50,7 +51,7 @@ export function CreditIQAssistant() {
     setLoading(true);
 
     try {
-      const res = await fetch('/api/assistant', {
+      const res = await authedFetch('/api/assistant', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
