@@ -18,7 +18,8 @@ export async function GET(req: NextRequest) {
     url.searchParams.set('origin', origin)
     if (destination) url.searchParams.set('destination', destination)
     url.searchParams.set('currency', currency)
-    url.searchParams.set('token', token)
+    // Token goes in the X-Access-Token header ONLY — never the query string, which
+    // would leak it into edge/access logs (same fix as cron/refresh-fares).
 
     const res = await fetch(url.toString(), {
       headers: { 'X-Access-Token': token },

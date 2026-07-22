@@ -75,7 +75,8 @@ async function fetchCheapestCash(
     url.searchParams.set('origin', origin);
     url.searchParams.set('destination', destination);
     url.searchParams.set('currency', 'INR');
-    url.searchParams.set('token', token);
+    // Token goes in the X-Access-Token header ONLY — never the query string, which
+    // would leak it into edge/access logs (same fix as cron/refresh-fares).
     const res = await fetch(url.toString(), {
       headers: { 'X-Access-Token': token },
       next: { revalidate: 3600 }, // cache 1 hour

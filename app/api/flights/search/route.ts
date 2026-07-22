@@ -55,7 +55,8 @@ export async function GET(req: NextRequest) {
       // accepts YYYY-MM-DD (or YYYY-MM); we pass the searched departure date.
       if (dateFrom) url.searchParams.set('depart_date', dateFrom)
       url.searchParams.set('currency', 'INR')
-      url.searchParams.set('token', tpToken)
+      // Token goes in the X-Access-Token header ONLY — never the query string, which
+      // would leak it into edge/access logs (same fix as cron/refresh-fares).
 
       const res = await fetch(url.toString(), {
         headers: { 'X-Access-Token': tpToken },

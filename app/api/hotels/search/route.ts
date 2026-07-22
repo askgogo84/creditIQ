@@ -48,9 +48,13 @@ export async function GET(req: NextRequest) {
     url.searchParams.set('checkOut', checkOut)
     url.searchParams.set('currency', 'inr')
     url.searchParams.set('limit', String(limit))
-    url.searchParams.set('token', tpToken)
+    // Token goes in the X-Access-Token header ONLY — never the query string, which
+    // would leak it into edge/access logs (same fix as cron/refresh-fares).
 
-    const res = await fetch(url.toString(), { next: { revalidate: 3600 } })
+    const res = await fetch(url.toString(), {
+      headers: { 'X-Access-Token': tpToken },
+      next: { revalidate: 3600 },
+    })
 
     if (!res.ok) {
       console.error('hotellook cache API error:', res.status, await res.text())
