@@ -946,7 +946,7 @@ const NEW_CARDS: CreditCard[] = [
     forex_markup_percent: 1.5,
     fuel_surcharge_waiver: true,
     redemption_options: [
-      { type: 'transfer', partner: 'InterMiles', value_per_point_inr: 0.5, notes: '1 point = 0.5 InterMiles' },
+      { type: 'transfer', partner: 'Air India Flying Returns', value_per_point_inr: 0.8, notes: '1 point = 1 Air India mile (1:1) — the only airline transfer partner' },
       { type: 'flight', partner: 'iShop Travel', value_per_point_inr: 1.0, best_for: 'Flight redemptions at full value' },
       { type: 'hotel', partner: 'iShop Hotels', value_per_point_inr: 1.0, best_for: 'Hotel bookings — up to 36% return' },
       { type: 'cashback', value_per_point_inr: 0.25, best_for: 'Statement credit' },
@@ -963,7 +963,7 @@ const NEW_CARDS: CreditCard[] = [
       'BookMyShow BOGO twice/month',
       'Metal card — invite only',
     ],
-    drawbacks: ['InterMiles ecosystem lock-in', 'Invite-only', 'Forex markup higher than Infinia'],
+    drawbacks: ['Only one airline transfer partner (Air India) — otherwise iShop-centric', 'Invite-only', 'Forex markup higher than Infinia'],
     expert_rating: 8.8,
     devaluations: [],
     active: true,

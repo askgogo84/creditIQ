@@ -184,7 +184,7 @@ export async function POST(req: NextRequest) {
       'HDFC':   [{ partner: 'Singapore KrisFlyer', ratio: 1.0, program: 'krisflyer' }],
       'Axis':   [{ partner: 'Singapore KrisFlyer', ratio: 1.0, program: 'krisflyer' }],
       'SBI':    [{ partner: 'Air India Flying Returns', ratio: 1.0, program: 'flying-returns' }],
-      'ICICI':  [{ partner: 'Singapore KrisFlyer', ratio: 1.0, program: 'krisflyer' }],
+      'ICICI':  [{ partner: 'Air India Flying Returns', ratio: 1.0, program: 'flying-returns' }],
       'Amex':   [{ partner: 'Singapore KrisFlyer', ratio: 1.0, program: 'krisflyer' }, { partner: 'Marriott Bonvoy', ratio: 1.0, program: 'marriott' }],
       'default':[{ partner: 'Singapore KrisFlyer', ratio: 1.0, program: 'krisflyer' }],
     }

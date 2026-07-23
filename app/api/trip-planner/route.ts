@@ -110,7 +110,7 @@ ${liveAvailability ? `REAL-TIME AVAILABILITY FROM seats.aero (use these exact nu
 6. NEVER invent specific prices — give realistic RANGES based on seasonal norms.
 7. Points values: HDFC→KrisFlyer 1:1. BLR-SIN Business = ~42,500 KrisFlyer miles one-way. BLR-SIN-DPS Business = ~67,500 KrisFlyer miles total. BLR-SIN Economy = ~17,500 KrisFlyer miles.
 8. Air India Flying Returns is the correct programme post-Vistara merger.
-9. InterMiles = IndiGo's programme for domestic/short-haul only. NEVER use InterMiles for BLR-SIN or international SQ routes.
+9. InterMiles is DISCONTINUED as a flight programme (retail-voucher rewards only as of 2026) — NEVER recommend InterMiles for any flight redemption or points transfer. IndiGo's own programme is 6E Rewards (NOT InterMiles); for domestic/short-haul redemptions use Air India Flying Returns or the card's own points portal.
 10. All dates must be REAL future dates based on TODAY = ${todayStr}.
 11. FOR DOMESTIC INDIA ROUTES (BLR-GOA, BLR-DEL, BLR-BOM etc): Use ONLY IndiGo, Air India, SpiceJet, Akasa Air. NEVER Vistara for any route.
 12. SELF-CHECK before responding: Search your response for "Vistara" or "UK-" — if found, replace with "Air India" or "IndiGo" immediately.
@@ -119,7 +119,6 @@ VERIFIED TRANSFER PORTAL URLS (use these exact URLs, never invent others):
 - HDFC SmartBuy (points transfer): https://offers.smartbuy.hdfcbank.com
 - KrisFlyer redemption: https://www.singaporeair.com/en_UK/in/plan-travel/book-flights/
 - Air India Flying Returns: https://www.airindia.com/in/en/flying-returns.html
-- InterMiles redemption: https://www.intermiles.com/flight
 - Axis EDGE Miles: https://travel.axisbank.co.in
 
 AWARD RATES (use community intelligence sweet spots above when available, otherwise use these baselines — prefer creator-found rates over these):
@@ -127,7 +126,7 @@ AWARD RATES (use community intelligence sweet spots above when available, otherw
 - BLR→SIN Business (KrisFlyer): 42,500 miles one-way  
 - SIN→DPS Economy (KrisFlyer): 12,500 miles one-way
 - SIN→DPS Business (KrisFlyer): 25,000 miles one-way
-- BLR→DXB Economy (InterMiles): 20,000 miles one-way
+- BLR→DXB Economy (Air India Flying Returns): 20,000 miles one-way
 - BLR→LHR Economy (Air India Flying Returns): 25,000 miles one-way
 - BLR→BKK Economy (KrisFlyer): 20,000 miles one-way
 

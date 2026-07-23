@@ -35,8 +35,8 @@ export function getSmartRedemptions(totalPoints: number, bank: string = 'HDFC'):
     { title: 'Marriott Goa (1 night)', partner: 'HDFC -> Marriott Bonvoy', pointsNeeded: 15000, cashValue: 7500, tag: 'HOTEL', tagColor: '#7c2d12', query: 'Goa 1 night Marriott' },
     { title: 'ITC Hotels (2 nights)', partner: `${bank} Catalog`, pointsNeeded: 20000, cashValue: 10000, tag: 'HOTEL', tagColor: '#7c2d12', query: 'ITC hotel 2 nights India' },
     // International - short haul — conservative economy fares
-    { title: 'Bangkok return flight', partner: 'InterMiles', pointsNeeded: 25000, cashValue: 15000, tag: 'FLIGHT', tagColor: '#0473ea', query: 'Bangkok return flight from India' },
-    { title: 'Dubai return flight', partner: 'InterMiles', pointsNeeded: 30000, cashValue: 18000, tag: 'FLIGHT', tagColor: '#0473ea', query: 'Dubai return flight from India' },
+    { title: 'Bangkok return flight', partner: 'KrisFlyer', pointsNeeded: 25000, cashValue: 15000, tag: 'FLIGHT', tagColor: '#0473ea', query: 'Bangkok return flight from India' },
+    { title: 'Dubai return flight', partner: 'Air India Flying Returns', pointsNeeded: 30000, cashValue: 18000, tag: 'FLIGHT', tagColor: '#0473ea', query: 'Dubai return flight from India' },
     { title: 'Singapore return (economy)', partner: 'KrisFlyer', pointsNeeded: 35000, cashValue: 22000, tag: 'FLIGHT', tagColor: '#0473ea', query: 'Singapore return economy flight' },
     // Mid-range
     { title: 'Marriott Singapore (2 nights)', partner: 'HDFC -> Marriott', pointsNeeded: 40000, cashValue: 28000, tag: 'HOTEL', tagColor: '#7c2d12', query: 'Singapore 2 nights Marriott' },

@@ -19,7 +19,6 @@ const PARTNERS = [
       { name: 'Turkish Miles&Smiles', type: 'airline', ratio: '1:1', timeline: '24-48 hours', value: 'Rs.1.0-1.5/pt', sweet_spot: 'DEL-IST-NRT J class — fixed zone pricing', rating: 5 },
       { name: 'Marriott Bonvoy', type: 'hotel', ratio: '1:1', timeline: '3-5 days', value: 'Rs.0.8-1.2/pt', sweet_spot: 'Cat 1-4 India hotels — 7,500-25,000 pts', rating: 4 },
       { name: 'Air France KLM Flying Blue', type: 'airline', ratio: '1:1', timeline: '24-48 hours', value: 'Rs.0.8-1.2/pt', sweet_spot: 'India-Europe via CDG/AMS promo awards', rating: 3 },
-      { name: 'InterMiles', type: 'airline', ratio: '1:1', timeline: '24 hours', value: 'Rs.0.5-0.8/pt', sweet_spot: 'Domestic India routes — check promo awards', rating: 2 },
       { name: 'Taj InnerCircle', type: 'hotel', ratio: '1:1', timeline: '3-5 days', value: 'Rs.0.6-1.0/pt', sweet_spot: 'Taj Safaris and resort properties', rating: 3 },
     ],
   },
