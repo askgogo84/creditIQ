@@ -181,12 +181,12 @@ export async function POST(req: NextRequest) {
 
     // Points transfer rates per bank (realistic values)
     const TRANSFER_PARTNERS: Record<string, { partner: string; ratio: number; program: string }[]> = {
-      'HDFC':   [{ partner: 'InterMiles', ratio: 1.0, program: 'intermiles' }, { partner: 'Singapore KrisFlyer', ratio: 1.0, program: 'krisflyer' }],
-      'Axis':   [{ partner: 'InterMiles', ratio: 1.0, program: 'intermiles' }],
+      'HDFC':   [{ partner: 'Singapore KrisFlyer', ratio: 1.0, program: 'krisflyer' }],
+      'Axis':   [{ partner: 'Singapore KrisFlyer', ratio: 1.0, program: 'krisflyer' }],
       'SBI':    [{ partner: 'Air India Flying Returns', ratio: 1.0, program: 'flying-returns' }],
-      'ICICI':  [{ partner: 'InterMiles', ratio: 1.0, program: 'intermiles' }],
+      'ICICI':  [{ partner: 'Singapore KrisFlyer', ratio: 1.0, program: 'krisflyer' }],
       'Amex':   [{ partner: 'Singapore KrisFlyer', ratio: 1.0, program: 'krisflyer' }, { partner: 'Marriott Bonvoy', ratio: 1.0, program: 'marriott' }],
-      'default':[{ partner: 'InterMiles', ratio: 1.0, program: 'intermiles' }],
+      'default':[{ partner: 'Singapore KrisFlyer', ratio: 1.0, program: 'krisflyer' }],
     }
 
     const bank = cardBank || 'HDFC'
@@ -279,7 +279,7 @@ Respond ONLY with valid JSON:
     "cheapestTotal": 15000,
     "bestValueTotal": 18000,
     "pointsCoveragePercent": 65,
-    "recommendedStrategy": "Use HDFC points for flight via InterMiles, pay cash for mid-range hotel"
+    "recommendedStrategy": "Use HDFC points for flight via Singapore KrisFlyer, pay cash for mid-range hotel"
   }
 }`
 

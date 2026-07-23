@@ -40,8 +40,8 @@ interface BookingModalProps {
   cardBank: string;
 }
 
-const HDFC_TRANSFER = 'https://www.smartbuy.hdfcbank.com/';
-const AXIS_TRANSFER = 'https://www.axisbank.com/retail/cards/credit-card/reward-points';
+const HDFC_TRANSFER = 'https://offers.smartbuy.hdfcbank.com/';
+const AXIS_TRANSFER = 'https://www.axisbank.com/';
 const SBI_TRANSFER = 'https://www.sbicard.com/en/personal/rewards.page';
 const ICICI_TRANSFER = 'https://www.icicibank.com/personal-banking/cards/credit-card/rewards';
 
@@ -55,17 +55,14 @@ function getBankTransferUrl(bank: string): string {
 }
 
 function getTransferPartnerUrl(partner: string): string {
-  if (partner.includes('InterMiles')) return 'https://www.intermiles.com/earn-miles/transfer-points';
-  if (partner.includes('KrisFlyer') || partner.includes('Singapore')) return 'https://www.singaporeair.com/en_UK/in/plan-travel/book-flights/';
-  if (partner.includes('Marriott')) return 'https://www.marriott.com/loyalty/redeem/travel/redeem-points-for-flights.mi';
+  if (partner.includes('KrisFlyer') || partner.includes('Singapore')) return 'https://www.singaporeair.com/';
+  if (partner.includes('Marriott')) return 'https://www.marriott.com/';
   if (partner.includes('Air India')) return 'https://www.airindia.com/in/en/plan-my-travel/book-flights.html';
-  return 'https://www.intermiles.com/earn-miles/transfer-points';
+  return 'https://www.singaporeair.com/';
 }
 
 function buildFlightSearchUrl(partner: string, destination: string): string {
-  const dest = encodeURIComponent(destination);
-  if (partner.includes('InterMiles')) return 'https://www.intermiles.com/flights/search?to=' + dest;
-  if (partner.includes('KrisFlyer') || partner.includes('Singapore')) return 'https://www.singaporeair.com/en_UK/in/plan-travel/book-flights/';
+  if (partner.includes('KrisFlyer') || partner.includes('Singapore')) return 'https://www.singaporeair.com/';
   if (partner.includes('Air India')) return 'https://www.airindia.com/in/en/plan-my-travel/book-flights.html';
   return "https://bitli.in/cv7BwVU";
 }
