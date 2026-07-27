@@ -41,15 +41,19 @@ export default function LandingPage() {
           <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.18em', textTransform: 'uppercase', color: 'var(--prov-cached)', marginBottom: 20 }}>
             Live · India
           </div>
-          <h1 style={{ fontFamily: clash, fontSize: 'clamp(40px, 8vw, 84px)', fontWeight: 600, lineHeight: 1.02, letterSpacing: '-0.03em', margin: 0, color: '#F5F0E8' }}>
-            Your cards leak
+          <h1 style={{ fontFamily: clash, fontSize: 'clamp(40px, 8vw, 84px)', fontWeight: 600, lineHeight: 1.08, letterSpacing: '-0.03em', margin: 0, color: '#F5F0E8' }}>
+            Your cards leak <LeakMeter target={184000} /> every year.
           </h1>
-          <div style={{ margin: '18px 0 6px' }}>
-            <LeakMeter target={184000} />
+          {/* Provenance sits BELOW the completed sentence — qualifies the figure without
+              breaking the headline into fragments. */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginTop: 22 }}>
+            <span style={{ alignSelf: 'flex-start', fontSize: 9, fontWeight: 800, letterSpacing: '0.8px', textTransform: 'uppercase', color: 'var(--prov-estimated)', background: 'color-mix(in srgb, var(--prov-estimated) 12%, transparent)', border: '1px solid color-mix(in srgb, var(--prov-estimated) 30%, transparent)', padding: '2px 8px', borderRadius: 100 }}>
+              Estimated
+            </span>
+            <div style={{ fontSize: 12, fontWeight: 600, letterSpacing: '0.14em', textTransform: 'uppercase', color: '#8A93A3' }}>
+              Estimated annual leak · based on typical Indian card usage
+            </div>
           </div>
-          <h1 style={{ fontFamily: clash, fontSize: 'clamp(40px, 8vw, 84px)', fontWeight: 600, lineHeight: 1.02, letterSpacing: '-0.03em', margin: '10px 0 0', color: '#F5F0E8' }}>
-            every year.
-          </h1>
           <p style={{ maxWidth: 520, margin: '28px 0 0', fontSize: 'clamp(16px, 1.6vw, 19px)', lineHeight: 1.6, color: '#9AA3B2' }}>
             We don&rsquo;t guess. Upload one statement and we&rsquo;ll prove it from your{' '}
             <span style={{ color: 'var(--prov-verified)', fontWeight: 600 }}>real spend</span> — not a projection.

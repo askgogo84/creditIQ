@@ -1,23 +1,18 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { Figure } from '@/components/design/Figure';
-
-interface LeakMeterProps {
-  /** Target annual-leak figure in ₹ */
-  target: number;
-  durationMs?: number;
-}
 
 const prefersReducedMotion = () =>
   typeof window !== 'undefined' &&
   window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
 
-// Count-up 0 → target over ~1.2s (rAF, ease-out), then holds. Under
-// prefers-reduced-motion the final value renders immediately with no animation.
-export function LeakMeter({ target, durationMs = 1200 }: LeakMeterProps) {
-  // Start at 0 on both server and client (deterministic — no hydration mismatch),
-  // then either jump to the final value (reduced motion) or animate up to it.
+// The animated ₹ leak figure, rendered as an INLINE monospace span so it lives
+// inside the headline sentence ("Your cards leak ₹X every year.") at the headline's
+// own size — the number is the punch inside a sentence, not a separate billboard.
+// Count-up 0→target over ~1.2s (ease-out, holds); prefers-reduced-motion jumps to the
+// final value with no animation. Provenance (the ESTIMATED pill + caption) is composed
+// by the page BELOW the sentence, so the headline completes first.
+export function LeakMeter({ target, durationMs = 1200 }: { target: number; durationMs?: number }) {
   const [value, setValue] = useState(0);
 
   useEffect(() => {
@@ -39,32 +34,17 @@ export function LeakMeter({ target, durationMs = 1200 }: LeakMeterProps) {
   }, [target, durationMs]);
 
   return (
-    <div>
-      <Figure
-        value={`₹${value.toLocaleString('en-IN')}`}
-        unit="inr"
-        provenance="estimated"
-        valueColor="#F5F0E8"
-        style={{
-          alignItems: 'flex-start',
-          fontSize: 'clamp(48px, 12vw, 112px)',
-          fontWeight: 700,
-          lineHeight: 1,
-          letterSpacing: '-0.03em',
-        }}
-      />
-      <div
-        style={{
-          marginTop: 14,
-          fontSize: 12,
-          fontWeight: 600,
-          letterSpacing: '0.14em',
-          textTransform: 'uppercase',
-          color: '#8A93A3',
-        }}
-      >
-        Estimated annual leak · based on typical Indian card usage
-      </div>
-    </div>
+    <span
+      style={{
+        fontFamily: 'var(--font-jbmono), ui-monospace, monospace',
+        fontVariantNumeric: 'tabular-nums',
+        fontFeatureSettings: '"tnum" 1',
+        fontSize: '0.92em', // optical match to the Clash headline (mono reads a touch larger)
+        letterSpacing: '-0.02em',
+        whiteSpace: 'nowrap', // never split ₹1,84,000 across lines on mobile
+      }}
+    >
+      ₹{value.toLocaleString('en-IN')}
+    </span>
   );
 }

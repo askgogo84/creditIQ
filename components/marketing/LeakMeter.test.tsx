@@ -26,9 +26,7 @@ describe('LeakMeter', () => {
   it('prefers-reduced-motion: renders the final value immediately (no animation)', () => {
     mockReducedMotion(true);
     render(<LeakMeter target={184000} />);
+    // Renders ONLY the inline ₹ figure; the ESTIMATED pill/caption are composed by the page.
     expect(screen.getByText(`₹${(184000).toLocaleString('en-IN')}`)).toBeInTheDocument();
-    // provenance is estimated (grey pill) + the descriptive caption
-    expect(screen.getByText('Estimated')).toBeInTheDocument();
-    expect(screen.getByText(/estimated annual leak/i)).toBeInTheDocument();
   });
 });
