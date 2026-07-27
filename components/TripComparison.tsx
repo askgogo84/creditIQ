@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { authedFetch } from '@/lib/authed-fetch';
+import { Figure } from '@/components/design/Figure';
 
 interface FlightOption {
   rank: number;
@@ -106,14 +107,6 @@ function Stars({ count }: { count: number }) {
   return (
     <span style={{ color: GOLD, fontSize: 11 }}>
       {''.repeat(count)}{''.repeat(5 - count)}
-    </span>
-  );
-}
-
-function PriceRange({ min, max }: { min: number; max: number }) {
-  return (
-    <span style={{ fontSize: 13, color: 'var(--text-muted, #64748b)' }}>
-      Rs.{min.toLocaleString('en-IN')} - {max.toLocaleString('en-IN')}
     </span>
   );
 }
@@ -389,20 +382,28 @@ export function TripComparison({ destination, origin = 'Bangalore', nights = 3, 
               {isLive && realFare ? (
                 <>
                   <div style={{ fontSize: 11, color: 'var(--text-muted, #94a3b8)', marginBottom: 4 }}>Round-trip fare</div>
-                  <div style={{ fontSize: 18, fontWeight: 800, color: 'var(--text, #0f172a)' }}>
-                    Rs.{realFare.price_inr.toLocaleString('en-IN')}
-                  </div>
+                  <Figure
+                    value={realFare.price_inr}
+                    unit="inr"
+                    provenance="cached"
+                    asOf={realFare.found_at}
+                    valueColor="var(--text, #0f172a)"
+                    style={{ alignItems: 'flex-end', fontSize: 18, fontWeight: 800 }}
+                  />
                   <div style={{ fontSize: 10, color: 'var(--text-muted, #94a3b8)', marginTop: 4, lineHeight: 1.4, maxWidth: 160, marginLeft: 'auto' }}>
-                    Cached cheapest via Travelpayouts . updated {relTime(realFare.found_at)}{realFare.depart_date ? ` . sample ${realFare.depart_date}` : ''} . not your exact dates
+                    Cheapest via Travelpayouts{realFare.depart_date ? ` . sample ${realFare.depart_date}` : ''} . not your exact dates
                   </div>
                 </>
               ) : (
                 <>
-                  <span style={{ display: 'inline-block', fontSize: 9, fontWeight: 800, letterSpacing: 0.8, textTransform: 'uppercase' as const, color: '#8A857B', background: 'rgba(138,133,123,0.12)', border: '1px solid rgba(138,133,123,0.3)', padding: '2px 8px', borderRadius: 100, marginBottom: 4 }}>
-                    Estimated
-                  </span>
                   <div style={{ fontSize: 11, color: 'var(--text-muted, #94a3b8)', marginBottom: 4 }}>Return price range</div>
-                  <PriceRange min={f.cashPriceMin * 2} max={f.cashPriceMax * 2} />
+                  <Figure
+                    value={`Rs.${(f.cashPriceMin * 2).toLocaleString('en-IN')} - ${(f.cashPriceMax * 2).toLocaleString('en-IN')}`}
+                    unit="inr"
+                    provenance="estimated"
+                    valueColor="var(--text-muted, #64748b)"
+                    style={{ alignItems: 'flex-end', fontSize: 13, fontWeight: 600 }}
+                  />
                 </>
               )}
               {f.pointsOption && (
