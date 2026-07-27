@@ -7,6 +7,7 @@ import { DesignFooter } from '@/components/design/Footer'
 import { Reveal } from '@/components/design/Reveal'
 import { StatNumber } from '@/components/design/StatNumber'
 import { CopperCTA } from '@/components/design/CTAs'
+import { CreditCard3D, type CardVariant } from '@/components/design/CreditCard3D'
 import { SEED_CARDS, cardPageExists } from '@/lib/data/seed-cards'
 import { authedFetch } from '@/lib/authed-fetch'
 
@@ -39,6 +40,18 @@ interface RoastResult {
 const CARD_OPTIONS = [...SEED_CARDS].sort((a: any, b: any) =>
   (a.bank + ' ' + a.name).localeCompare(b.bank + ' ' + b.name),
 )
+
+// Curated visual grid — popular cards, all valid SEED_CARDS ids. Full 49 live in
+// the "more cards" select underneath.
+const CURATED: { id: string; bank: string; name: string; variant: CardVariant }[] = [
+  { id: 'hdfc-infinia',        bank: 'HDFC',  name: 'Infinia',         variant: 'obsidian' },
+  { id: 'hdfc-regalia-gold',   bank: 'HDFC',  name: 'Regalia Gold',    variant: 'navy' },
+  { id: 'axis-atlas',          bank: 'AXIS',  name: 'Atlas',           variant: 'plum' },
+  { id: 'icici-amazon-pay',    bank: 'ICICI', name: 'Amazon Pay',      variant: 'iris' },
+  { id: 'sbi-cashback',        bank: 'SBI',   name: 'Cashback',        variant: 'gold' },
+  { id: 'amex-platinum-travel', bank: 'AMEX', name: 'Platinum Travel', variant: 'cream' },
+]
+const feeOf = (id: string) => ((SEED_CARDS.find((c: any) => c.id === id) as any)?.annual_fee_inr ?? 0)
 
 export default function CardRoastPage() {
   const [step, setStep] = useState<Step>('input')
@@ -125,18 +138,39 @@ export default function CardRoastPage() {
 
             {step === 'input' && (
               <Reveal>
-                <div style={{ padding: 'clamp(28px,4vw,48px)', maxWidth: 720, margin: '0 auto', background: 'var(--paper,#FAF5EB)', borderRadius: 24, border: '1px solid var(--line,rgba(20,41,80,0.08))' }}>
+                <div style={{ padding: 'clamp(28px,4vw,48px)', maxWidth: 900, margin: '0 auto', background: 'var(--paper,#FAF5EB)', borderRadius: 24, border: '1px solid var(--line,rgba(20,41,80,0.08))' }}>
                   {/* 1. card */}
                   <div style={{ marginBottom: 36 }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16 }}>
                       <span style={{ width: 26, height: 26, borderRadius: 999, background: 'var(--copper-3,#D89B2A)', color: '#FFF', fontWeight: 700, fontSize: 13, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>1</span>
                       <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: '0.15em', textTransform: 'uppercase', color: 'var(--copper,#8C5F12)' }}>PICK YOUR CARD</div>
                     </div>
-                    <select value={selectedCard} onChange={e => setSelectedCard(e.target.value)} style={inputCardStyle}>
-                      {CARD_OPTIONS.map((c: any) => (
-                        <option key={c.id} value={c.id}>{c.bank} &mdash; {c.name}</option>
-                      ))}
-                    </select>
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 12 }} className="grid-1-mobile">
+                      {CURATED.map(c => {
+                        const fee = feeOf(c.id)
+                        const active = selectedCard === c.id
+                        return (
+                          <div key={c.id} onClick={() => setSelectedCard(c.id)} style={{ padding: 14, borderRadius: 16, border: `1px solid ${active ? 'var(--copper-3,#D89B2A)' : 'var(--line,rgba(20,41,80,0.08))'}`, background: active ? 'rgba(212,163,115,0.10)' : 'var(--surface,#fff)', cursor: 'pointer', transition: 'all 0.25s', display: 'flex', gap: 12, alignItems: 'center' }}>
+                            <div style={{ width: 58, flexShrink: 0 }}>
+                              <CreditCard3D variant={c.variant} name={c.name.toUpperCase()} bank={c.bank} tagline="" network="VISA" small interactive={false} />
+                            </div>
+                            <div style={{ flex: 1, minWidth: 0 }}>
+                              <div style={{ fontSize: 9, fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', color: 'var(--ink-3,#5A6A8A)' }}>{c.bank}</div>
+                              <div style={{ fontWeight: 600, fontSize: 14, marginTop: 2, letterSpacing: '-0.01em', color: 'var(--ink,#142950)' }}>{c.name}</div>
+                              <div style={{ fontFamily: 'var(--font-mono,monospace)', fontSize: 10.5, color: 'var(--ink-3,#5A6A8A)', marginTop: 3 }}>{fee === 0 ? 'Lifetime free' : 'Rs.' + fee.toLocaleString('en-IN') + '/yr'}</div>
+                            </div>
+                          </div>
+                        )
+                      })}
+                    </div>
+                    <div style={{ marginTop: 16 }}>
+                      <label style={{ display: 'block', fontSize: 11, fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--copper,#8C5F12)', marginBottom: 8 }}>Or pick from all {CARD_OPTIONS.length} cards</label>
+                      <select value={selectedCard} onChange={e => setSelectedCard(e.target.value)} style={inputCardStyle}>
+                        {CARD_OPTIONS.map((c: any) => (
+                          <option key={c.id} value={c.id}>{c.bank} &mdash; {c.name}</option>
+                        ))}
+                      </select>
+                    </div>
                   </div>
 
                   {/* 2. spend vibe -> prefills editable spend */}
