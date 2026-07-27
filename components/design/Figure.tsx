@@ -8,9 +8,12 @@ import type { CSSProperties } from 'react';
 // Contract:
 //   • numeral in JetBrains Mono, tabular figures (aligns in tables/columns)
 //   • ALWAYS a text label alongside — colour is never the only signal
-//     (accessibility + honesty). The label carries the provenance colour; the
-//     numeral stays neutral so cached prices don't turn gold, etc.
-//   • colours come ONLY from the --prov-* tokens (Phase-1 = current rendered values)
+//     (accessibility + honesty). The label is a filled PILL (chip) in the
+//     provenance colour; the numeral stays neutral so cached prices don't turn
+//     gold, etc. The pill is the SINGLE treatment — no per-surface variant prop,
+//     so provenance looks identical everywhere (one primitive, one meaning).
+//   • colours come ONLY from the --prov-* tokens (Phase-1 = current rendered
+//     values); the pill's fill/border derive from that one token via color-mix.
 
 export type Provenance = 'verified' | 'cached' | 'estimated';
 export type FigureUnit = 'inr' | 'pts' | 'miles';
@@ -93,11 +96,18 @@ export function Figure(props: FigureProps) {
         aria-hidden="true"
         data-provenance={provenance}
         style={{
-          fontSize: '0.6875rem',
-          fontWeight: 700,
-          letterSpacing: '0.06em',
+          display: 'inline-block',
+          width: 'fit-content',
+          marginTop: 4,
+          fontSize: 9,
+          fontWeight: 800,
+          letterSpacing: '0.8px',
           textTransform: 'uppercase',
           color: meta.token,
+          background: `color-mix(in srgb, ${meta.token} 12%, transparent)`,
+          border: `1px solid color-mix(in srgb, ${meta.token} 30%, transparent)`,
+          padding: '2px 8px',
+          borderRadius: 100,
         }}
       >
         {label}

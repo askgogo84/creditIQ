@@ -48,9 +48,11 @@ describe('Figure — provenance primitive', () => {
     expect(aria).toContain('Rs.18,400');
   });
 
-  it('colours the label (not the numeral) from the --prov-* token', () => {
+  it('renders the label as a coloured PILL (single treatment) from the --prov-* token', () => {
     render(<Figure value={1} unit="inr" provenance="cached" asOf={Date.now()} />);
     const label = screen.getByText(/^Cached/);
     expect(label).toHaveStyle({ color: 'var(--prov-cached)' });
+    expect(label).toHaveStyle({ borderRadius: '100px' }); // pill, not a plain word
+    expect(label).toHaveStyle({ display: 'inline-block' });
   });
 });
