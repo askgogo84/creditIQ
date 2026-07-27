@@ -344,11 +344,9 @@ export function TripComparison({ destination, origin = 'Bangalore', nights = 3, 
                 {(isLive && realFare?.flight_number)
                   ? <span style={{ fontSize: 12, color: 'var(--text-muted, #64748b)' }}>{realFare.flight_number}</span>
                   : (f.flightNo && <span style={{ fontSize: 12, color: 'var(--text-muted, #64748b)' }}>{f.flightNo}</span>)}
-                {isLive && realFare && (
-                  <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 9, fontWeight: 800, letterSpacing: 0.8, textTransform: 'uppercase' as const, color: GOLD, background: 'rgba(201,151,46,0.12)', border: '1px solid rgba(201,151,46,0.35)', padding: '2px 8px', borderRadius: 100 }}>
-                    <span style={{ width: 5, height: 5, borderRadius: '50%', background: GOLD }} /> Cached . updated {relTime(realFare.found_at)}
-                  </span>
-                )}
+                {/* Cached provenance is now the sole responsibility of <Figure> in the
+                    price column (the design-system primitive) — the old airline-row
+                    gold pill was removed to avoid a duplicate cached signal. */}
               </div>
               {f.departure && f.arrival && (
                 <div style={{ fontSize: 13, color: 'var(--text-muted, #64748b)', marginBottom: 6 }}>
