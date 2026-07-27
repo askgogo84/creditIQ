@@ -104,6 +104,10 @@ export function Figure(props: FigureProps) {
           letterSpacing: '0.8px',
           textTransform: 'uppercase',
           color: meta.token,
+          // Graceful degradation: color-mix() needs a 2023+ browser. Where it's
+          // unsupported the fill + border simply drop out and the label falls back
+          // to coloured text in the correct --prov-* token colour — i.e. the exact
+          // pre-pill treatment. Degrades, never breaks; no *-soft fallback needed.
           background: `color-mix(in srgb, ${meta.token} 12%, transparent)`,
           border: `1px solid color-mix(in srgb, ${meta.token} 30%, transparent)`,
           padding: '2px 8px',
