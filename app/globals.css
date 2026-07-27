@@ -61,6 +61,21 @@
   --red:          #B84230;
   --red-soft:     #F0CCC4;
 
+  /* ── Phase 1 design-system additions (see 5-TRD.md §2 / 2-UIUX-Brief.md §3) ──
+     STAGING NOTE — DO NOT "fix" these to the doc hex values. They are intentionally
+     set to what renders TODAY so Phase 1 changes nothing visually. The TRD/Brief
+     describe the Phase-2 END STATE (page-ground inversion to --bg-deep, and
+     verified #4FBF87 / cached-gold #C9A227). Phase 2 does the inversion and retunes
+     the three --prov-* hexes IN ONE PLACE.
+       • --bg-deep is the future page ground, added under a NON-colliding name — it
+         is NOT --ink (which stays the current navy text token #142950).
+       • <Figure> reads ONLY the --prov-* tokens. One green, one meaning. */
+  --bg-deep:        #0E1420;
+  --muted:          #6B7280;
+  --prov-verified:  var(--green);   /* existing verified green (#4F8C58) — themes with --green */
+  --prov-cached:    #C9972E;         /* TripComparison's live GOLD (not --copper-3, not doc #C9A227) */
+  --prov-estimated: #8A857B;         /* live estimated grey */
+
   /* Type — Syne Bold + Inter (Creative Power Pairing) */
   --font-display: "Syne", "Inter", -apple-system, BlinkMacSystemFont, sans-serif;
   --font-body:    "Inter", -apple-system, BlinkMacSystemFont, sans-serif;
