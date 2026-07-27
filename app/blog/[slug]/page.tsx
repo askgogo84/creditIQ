@@ -3,6 +3,7 @@ import Link from 'next/link'
 import { Header } from '@/components/Header'
 import { DesignFooter } from '@/components/design/Footer'
 import { createClient } from '@supabase/supabase-js'
+import { cardPageExists } from '@/lib/data/seed-cards'
 import type { Metadata } from 'next'
 
 export const revalidate = 3600
@@ -120,7 +121,7 @@ export default async function BlogArticlePage({ params }: { params: { slug: stri
 
             {/* CTAs */}
             <div style={{ marginTop: 32, display: 'flex', gap: 12, flexWrap: 'wrap' }}>
-              {article.related_card_slug && (
+              {article.related_card_slug && cardPageExists(article.related_card_slug) && (
                 <Link href={`/cards/${article.related_card_slug}`} style={{ display: 'inline-block', background: 'var(--copper-3,#D89B2A)', color: '#fff', padding: '12px 24px', borderRadius: 10, fontWeight: 700, fontSize: 14, textDecoration: 'none' }}>
                   View {article.related_card} &rarr;
                 </Link>

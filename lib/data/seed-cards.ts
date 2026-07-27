@@ -2610,3 +2610,13 @@ const NEW_CARDS: CreditCard[] = [
 
 
 ];
+
+// A card-detail page (/card/<slug> and /cards/<slug>) is statically generated for
+// every SEED_CARDS entry (both routes key off id, and id === slug). Use this before
+// linking to a card page from any DYNAMIC source (AI output, DB rows, editorial
+// fields) so we never emit a link to a slug that has no page. Hardcoded slugs are
+// caught separately by scripts/validate-card-links.ts at build time.
+export function cardPageExists(slug: string | null | undefined): boolean {
+  if (!slug) return false;
+  return SEED_CARDS.some((c) => c.id === slug || c.slug === slug);
+}

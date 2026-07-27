@@ -13,6 +13,7 @@ import FlightSearch, { detectIataFromText, buildKayakUrl, buildMMTUrl, INDIRECT_
 import { ProGate } from '@/components/design/ProGate';
 import { createBrowserClient } from '@supabase/ssr';
 import { authedFetch } from '@/lib/authed-fetch';
+import { cardPageExists } from '@/lib/data/seed-cards';
 
 interface TripResult {
   destination: string;
@@ -569,9 +570,15 @@ function TripPlannerPageInner() {
                   </div>
                 </div>
                 {!result.canAfford && (
-                  <Link href={`/cards/${result.bestCardId}`} style={{ padding: '8px 16px', background: '#C9972E', color: '#0a0a0a', borderRadius: 10, fontSize: 12, fontWeight: 700, textDecoration: 'none' }}>
-                    Get {result.bestCard} &rarr;
-                  </Link>
+                  cardPageExists(result.bestCardId) ? (
+                    <Link href={`/cards/${result.bestCardId}`} style={{ padding: '8px 16px', background: '#C9972E', color: '#0a0a0a', borderRadius: 10, fontSize: 12, fontWeight: 700, textDecoration: 'none' }}>
+                      Get {result.bestCard} &rarr;
+                    </Link>
+                  ) : (
+                    <span style={{ padding: '8px 16px', color: '#C9972E', fontSize: 12, fontWeight: 700 }}>
+                      Consider {result.bestCard}
+                    </span>
+                  )
                 )}
               </div>
 

@@ -1,6 +1,7 @@
 ﻿'use client';
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import { cardPageExists } from '@/lib/data/seed-cards';
 
 function BankBadge({ name, bank, imageUrl }: { name: string; bank: string; imageUrl?: string }) {
   const initial = (bank || name || '?')[0].toUpperCase();
@@ -155,15 +156,17 @@ export function RewardsHeroWidget() {
               </div>
 
               {/* BUTTONS — explicit colors, no CSS vars */}
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+              <div style={{ display: 'grid', gridTemplateColumns: cardPageExists(result.best_card.slug || result.best_card.id) ? '1fr 1fr' : '1fr', gap: 10 }}>
                 <button onClick={goToFullCalculator}
                   style={{ padding: '12px', borderRadius: 8, background: '#C9972E', color: '#FFFFFF', fontWeight: 700, fontSize: 13, border: 'none', cursor: 'pointer' }}>
                   See full breakdown
                 </button>
-                <button onClick={() => router.push('/cards/' + (result.best_card.slug || result.best_card.id))}
-                  style={{ padding: '12px', borderRadius: 8, background: '#F8F9FC', color: '#1B3A5C', fontWeight: 700, fontSize: 13, border: '1px solid rgba(20,41,80,0.20)', cursor: 'pointer' }}>
-                  View {result.best_card.name.split(' ').slice(0,3).join(' ')} +
-                </button>
+                {cardPageExists(result.best_card.slug || result.best_card.id) && (
+                  <button onClick={() => router.push('/cards/' + (result.best_card.slug || result.best_card.id))}
+                    style={{ padding: '12px', borderRadius: 8, background: '#F8F9FC', color: '#1B3A5C', fontWeight: 700, fontSize: 13, border: '1px solid rgba(20,41,80,0.20)', cursor: 'pointer' }}>
+                    View {result.best_card.name.split(' ').slice(0,3).join(' ')} +
+                  </button>
+                )}
               </div>
             </div>
           )}
