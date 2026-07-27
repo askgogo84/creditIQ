@@ -260,13 +260,13 @@ export const SEED_CARDS: CreditCard[] = [
     min_income_inr_monthly: 200000,
     credit_score_min: 780,
     reward_currency: 'edge',
-    base_reward_rate: 4.8,
-    category_rewards: [
-      { category: 'travel-edge', rate: 25, unit: 'multiplier', notes: '25X on Travel Edge portal' },
-    ],
-    milestones: [
-      { spend_threshold_inr: 100000, reward_inr_equivalent: 25000, description: 'Tier-based bonus on milestones', period: 'monthly' },
-    ],
+    // CORRECTED 2026-07-27 — base 4.8%->1.2% (12 EDGE pts/Rs.200 @ Rs.0.20/pt); removed the 25X travel-edge
+    // category (real accel = 35 pts/Rs.200 only ABOVE Rs.1.5L/mo & capped — schema has no spend-tier field,
+    // so omitted rather than misrepresented as uncapped) and the Rs.25k/mo (Rs.3L/yr) milestone (no such
+    // milestone exists post-devaluation). Source: Axis Magnus-Burgundy T&C PDF (axis.bank.in).
+    base_reward_rate: 1.2,
+    category_rewards: [],
+    milestones: [],
     lounges: [
       { type: 'international', network: 'priority-pass', notes: 'Unlimited' },
       { type: 'domestic', network: 'priority-pass', notes: 'Unlimited' },
@@ -282,14 +282,14 @@ export const SEED_CARDS: CreditCard[] = [
     golf: { rounds_per_year: 6 },
     color: '#7c1d3a',
     best_for: 'Burgundy Banking customers  --  best mile-transfer card in India',
-    highlights: ['25X Travel Edge', 'Best mile transfers (KrisFlyer, Marriott)', 'Unlimited lounges', 'Burgundy private banking'],
+    highlights: ['Best mile transfers (KrisFlyer, Marriott)', 'Unlimited lounges', 'Burgundy private banking'],
     drawbacks: ['Burgundy relationship required', 'Multiple devaluations in 2024-25'],
     expert_rating: 8.8,
     devaluations: [
       { date: '2025-09-01', category: 'reward-rate', description: 'Capped milestone benefits introduced', impact: 'high' },
     ],
     active: true,
-    last_verified: '2026-05-01',
+    last_verified: '2026-07-27',
   },
   {
     id: 'axis-atlas',
@@ -737,13 +737,14 @@ const MORE_CARDS: CreditCard[] = [
   { id: 'amex-gold', slug: 'amex-gold', name: 'American Express Gold Card', bank: 'AmEx', category: ['rewards','dining','lifestyle'], tier: 'mid', joining_fee_inr: 4500, annual_fee_inr: 4500, min_income_inr_monthly: 40000, reward_currency: 'membership-rewards', base_reward_rate: 1, category_rewards: [], milestones: [{ spend_threshold_inr: 150000, reward_inr_equivalent: 4500, description: '4,500 bonus MR points + Rs.4,500 Taj voucher on Rs.1.5L spend', period: 'annual' }], welcome_benefit_inr: 4000, welcome_benefit_description: '4,000 MR points on first spend', lounges: [], forex_markup_percent: 3.5, redemption_options: [{ type: 'transfer', partner: 'Marriott Bonvoy (1:1)', value_per_point_inr: 1.3 },{ type: 'voucher', partner: 'Taj IHCL', value_per_point_inr: 0.50 }], color: '#d97706', best_for: 'Milestone spenders wanting Taj hotel vouchers', highlights: ['Taj IHCL vouchers on milestones','MR points transfer to Marriott','Dining offers at 2,000+ restaurants'], expert_rating: 7.5, active: true, last_verified: '2026-05-01' },
   { id: 'amex-mrcc', slug: 'amex-mrcc', name: 'Amex Membership Rewards Credit Card', bank: 'AmEx', category: ['rewards','entry-level'], tier: 'entry', joining_fee_inr: 1000, annual_fee_inr: 4500, fee_waiver_spend_inr: 150000, min_income_inr_monthly: 25000, reward_currency: 'membership-rewards', base_reward_rate: 0.5, category_rewards: [], milestones: [{ spend_threshold_inr: 150000, reward_inr_equivalent: 3000, description: '18,000 bonus MR points on Rs.1.5L annual spend', period: 'annual' }], welcome_benefit_inr: 2000, welcome_benefit_description: '2,000 MR bonus points', lounges: [], redemption_options: [{ type: 'transfer', partner: 'Marriott Bonvoy', value_per_point_inr: 1.3 },{ type: 'cashback', value_per_point_inr: 0.25 }], color: '#92400e', best_for: 'Amex beginners  --  gateway to the MR ecosystem', highlights: ['Gateway to Amex MR points','Marriott/airline transfers','Strong milestone bonus'], expert_rating: 7.0, active: true, last_verified: '2026-05-01' },
   // ===== IndusInd =====
-  { id: 'indusind-pinnacle', slug: 'indusind-pinnacle', name: 'IndusInd Bank Pinnacle Credit Card', bank: 'IndusInd', category: ['premium','travel','lifestyle'], tier: 'super-premium', joining_fee_inr: 60000, annual_fee_inr: 60000, min_income_inr_monthly: 500000, reward_currency: 'reward-points', base_reward_rate: 2.5, category_rewards: [{ category: 'international', rate: 5, unit: 'multiplier' }], welcome_benefit_inr: 60000, welcome_benefit_description: 'Complimentary golf + luxury hotel vouchers', lounges: [{ type: 'domestic', network: 'priority-pass', notes: 'Unlimited' },{ type: 'international', network: 'priority-pass', notes: 'Unlimited' }], forex_markup_percent: 0, golf: { rounds_per_year: 24 }, redemption_options: [{ type: 'cashback', value_per_point_inr: 0.50 }], color: '#312e81', best_for: 'Ultra HNI customers  --  IndusInd Exclusive banking', highlights: ['0% forex markup','24 golf rounds/year','Unlimited lounges'], expert_rating: 8.7, active: true, last_verified: '2026-05-01' },
+  // REMOVED 2026-07-27 — duplicate 'indusind-pinnacle' entry (inflated: base 2.5%, welcome Rs.60k, joining Rs.60k, 5X international). Canonical Pinnacle entry retained below with sourced corrections.
   { id: 'indusind-celesta', slug: 'indusind-celesta', name: 'IndusInd Bank Celesta Credit Card', bank: 'IndusInd', category: ['premium','travel'], tier: 'premium', joining_fee_inr: 10000, annual_fee_inr: 10000, fee_waiver_spend_inr: 1200000, min_income_inr_monthly: 200000, reward_currency: 'reward-points', base_reward_rate: 2, category_rewards: [{ category: 'travel', rate: 3, unit: 'multiplier' }], lounges: [{ type: 'domestic', network: 'priority-pass', visits_per_year: 12 },{ type: 'international', network: 'priority-pass', visits_per_year: 6 }], forex_markup_percent: 1.8, golf: { rounds_per_year: 6 }, redemption_options: [{ type: 'cashback', value_per_point_inr: 0.40 }], color: '#4c1d95', best_for: 'IndusInd premium banking customers', highlights: ['6 golf rounds','12 domestic lounge visits','Low forex markup'], expert_rating: 7.8, active: true, last_verified: '2026-05-01' },
   { id: 'indusind-iconia', slug: 'indusind-iconia', name: 'IndusInd Bank Iconia Amex', bank: 'IndusInd', category: ['rewards'], tier: 'mid', joining_fee_inr: 3500, annual_fee_inr: 3500, fee_waiver_spend_inr: 400000, min_income_inr_monthly: 60000, reward_currency: 'reward-points', base_reward_rate: 1.5, category_rewards: [{ category: 'weekend', rate: 2, unit: 'multiplier' }], lounges: [{ type: 'domestic', network: 'dreamfolks', visits_per_year: 6 }], redemption_options: [{ type: 'cashback', value_per_point_inr: 0.30 }], color: '#be185d', best_for: 'Weekend shoppers and dining enthusiasts', highlights: ['2X on weekends','6 lounge visits','Amex network acceptance'], expert_rating: 7.0, active: true, last_verified: '2026-05-01' },
   // ===== SBI more =====
   { id: 'sbi-simplyclick', slug: 'sbi-simplyclick', name: 'SBI Card SimplyCLICK', bank: 'SBI', category: ['cashback','shopping','entry-level'], tier: 'entry', joining_fee_inr: 499, annual_fee_inr: 499, fee_waiver_spend_inr: 100000, min_income_inr_monthly: 20000, reward_currency: 'reward-points', base_reward_rate: 0.25, category_rewards: [{ category: 'online-exclusive', rate: 10, unit: 'multiplier', notes: '10X on Amazon, BookMyShow, Cleartrip, Dominos, Lenskart, Netmeds, Swiggy' },{ category: 'online-others', rate: 5, unit: 'multiplier' }], welcome_benefit_inr: 500, welcome_benefit_description: 'Rs.500 Amazon voucher', lounges: [], fuel_surcharge_waiver: true, redemption_options: [{ type: 'cashback', value_per_point_inr: 0.25 }], color: '#1d4ed8', best_for: 'Online shoppers on partner platforms', highlights: ['10X on 7 partner brands','5X on all other online','Rs.500 Amazon welcome'], expert_rating: 7.8, active: true, last_verified: '2026-05-01' },
   { id: 'sbi-bpcl-octane', slug: 'sbi-bpcl-octane', name: 'SBI Card BPCL Octane', bank: 'SBI', category: ['fuel','cashback'], tier: 'entry', joining_fee_inr: 1499, annual_fee_inr: 1499, fee_waiver_spend_inr: 150000, min_income_inr_monthly: 25000, reward_currency: 'reward-points', base_reward_rate: 1, category_rewards: [{ category: 'bpcl-fuel', rate: 7.25, unit: 'percent', notes: '7.25% value back on BPCL fuel (25X points)' },{ category: 'grocery-dining', rate: 3, unit: 'multiplier' }], welcome_benefit_inr: 1500, welcome_benefit_description: '6,000 bonus reward points', lounges: [], fuel_surcharge_waiver: true, redemption_options: [{ type: 'fuel', partner: 'BPCL', value_per_point_inr: 0.25 }], color: '#15803d', best_for: 'BPCL loyal customers  --  highest fuel cashback in India', highlights: ['7.25% back on BPCL fuel','Best fuel card in India'], expert_rating: 8.0, active: true, last_verified: '2026-05-01' },
-  { id: 'sbi-air-india-signature', slug: 'sbi-air-india-signature', name: 'Air India SBI Signature', bank: 'SBI', category: ['travel','premium'], tier: 'premium', joining_fee_inr: 4999, annual_fee_inr: 4999, min_income_inr_monthly: 75000, reward_currency: 'miles', base_reward_rate: 1.5, category_rewards: [{ category: 'air-india', rate: 30, unit: 'multiplier', notes: '30 Flying Returns miles per Rs.100 on Air India' }], welcome_benefit_inr: 5000, welcome_benefit_description: '20,000 Flying Returns miles on joining', lounges: [{ type: 'domestic', network: 'priority-pass', visits_per_year: 8 }], forex_markup_percent: 1.99, redemption_options: [{ type: 'flight', partner: 'Air India Flying Returns', value_per_point_inr: 0.50 }], color: '#991b1b', best_for: 'Frequent Air India travelers', highlights: ['30X miles on Air India','20K welcome miles'], expert_rating: 7.5, active: true, last_verified: '2026-05-01' },
+  // CORRECTED 2026-07-27 — air-india accel 30->10 miles/Rs.100 (cut 2025-03-31 per SBI communication) + ~1L bonus-pts/yr cap. Data-truth fix only (engine does not map 'air-india'). Source: SBI Card / Air India Maharaja partner page; corroborated by Business Standard + Live From A Lounge.
+  { id: 'sbi-air-india-signature', slug: 'sbi-air-india-signature', name: 'Air India SBI Signature', bank: 'SBI', category: ['travel','premium'], tier: 'premium', joining_fee_inr: 4999, annual_fee_inr: 4999, min_income_inr_monthly: 75000, reward_currency: 'miles', base_reward_rate: 1.5, category_rewards: [{ category: 'air-india', rate: 10, unit: 'multiplier', cap_inr_annual: 50000, notes: '10 miles per Rs.100 on Air India (cut from 30 on 2025-03-31); ~1L bonus pts/yr cap' }], welcome_benefit_inr: 5000, welcome_benefit_description: '20,000 Flying Returns miles on joining', lounges: [{ type: 'domestic', network: 'priority-pass', visits_per_year: 8 }], forex_markup_percent: 1.99, redemption_options: [{ type: 'flight', partner: 'Air India Flying Returns', value_per_point_inr: 0.50 }], color: '#991b1b', best_for: 'Frequent Air India travelers', highlights: ['10X miles on Air India','20K welcome miles'], expert_rating: 7.5, active: true, last_verified: '2026-07-27' },
   // ===== RBL more =====
   { id: 'rbl-popcorn', slug: 'rbl-popcorn', name: 'RBL Bank Popcorn Credit Card', bank: 'RBL', category: ['lifestyle','dining','entry-level'], tier: 'entry', joining_fee_inr: 0, annual_fee_inr: 0, min_income_inr_monthly: 15000, reward_currency: 'reward-points', base_reward_rate: 1, category_rewards: [{ category: 'movies', rate: 10, unit: 'multiplier', notes: '10X on BookMyShow (free movie ticket monthly)' },{ category: 'dining', rate: 5, unit: 'multiplier' }], welcome_benefit_inr: 1000, welcome_benefit_description: 'Free movie ticket on first transaction', lounges: [], fuel_surcharge_waiver: true, redemption_options: [{ type: 'voucher', partner: 'BookMyShow', value_per_point_inr: 0.25 }], color: '#7c2d12', best_for: 'Movie buffs  --  free ticket every month', highlights: ['Free movie ticket every month','10X on BookMyShow','Lifetime free'], expert_rating: 7.2, active: true, last_verified: '2026-05-01' },
   // ===== Yes more =====
@@ -754,7 +755,8 @@ const MORE_CARDS: CreditCard[] = [
     card_image_url: 'https://asset21.ckassets.com/resources/image/stores/au-lit-credit-card-1778234628.png', name: 'AU Bank LIT Credit Card', bank: 'AU', category: ['cashback','entry-level'], tier: 'entry', joining_fee_inr: 499, annual_fee_inr: 499, min_income_inr_monthly: 20000, reward_currency: 'cashback', base_reward_rate: 1, category_rewards: [{ category: 'online', rate: 5, unit: 'percent', notes: 'User picks 2 categories monthly' }], welcome_benefit_inr: 500, lounges: [], fuel_surcharge_waiver: true, redemption_options: [{ type: 'cashback', value_per_point_inr: 1.0 }], color: '#0891b2', best_for: 'Choose-your-own-rewards card', highlights: ['Choose your reward categories','5% on selected categories','Flexible benefit toggle'], expert_rating: 7.3, active: true, last_verified: '2026-05-01' },
   // ===== SC more =====
   { id: 'sc-smart', slug: 'sc-smart', name: 'Standard Chartered Smart Credit Card', bank: 'SC', category: ['cashback','entry-level','zero-fee'], tier: 'entry', joining_fee_inr: 0, annual_fee_inr: 0, min_income_inr_monthly: 25000, reward_currency: 'cashback', base_reward_rate: 1, category_rewards: [{ category: 'online', rate: 5, unit: 'percent', cap_inr_monthly: 1000 }], lounges: [], fuel_surcharge_waiver: true, redemption_options: [{ type: 'cashback', value_per_point_inr: 1.0 }], color: '#0473ea', best_for: 'SC banking customers wanting a simple free cashback card', highlights: ['Lifetime free','5% online cashback','Auto cashback credit'], expert_rating: 7.5, active: true, last_verified: '2026-05-01' },
-  { id: 'sc-digismart', slug: 'sc-digismart', name: 'Standard Chartered DigiSmart', bank: 'SC', category: ['cashback','shopping'], tier: 'entry', joining_fee_inr: 49, annual_fee_inr: 49, min_income_inr_monthly: 20000, reward_currency: 'cashback', base_reward_rate: 1, category_rewards: [{ category: 'myntra', rate: 10, unit: 'percent' },{ category: 'netflix-prime', rate: 20, unit: 'percent', notes: '20% off Netflix/Prime (up to Rs.200/month)' },{ category: 'swiggy-zomato', rate: 10, unit: 'percent' }], lounges: [], redemption_options: [{ type: 'cashback', value_per_point_inr: 1.0 }], color: '#0284c7', best_for: 'Millennials heavy on OTT, food delivery and Myntra', highlights: ['20% off OTT subscriptions','10% on Myntra','10% on Swiggy/Zomato','Only Rs.49/month'], expert_rating: 7.8, active: true, last_verified: '2026-05-01' },
+  // CORRECTED 2026-07-27 — removed the FABRICATED 'netflix-prime 20%' category; sc.bank.in confirms no Netflix/Prime benefit and no flat category reward exists (only capped merchant discounts). Data-truth fix only (engine does not map these categories). myntra/swiggy-zomato left in but FLAGGED: real benefits are capped discounts the schema can't model. Source: sc.bank.in/credit-cards/digismart-card.
+  { id: 'sc-digismart', slug: 'sc-digismart', name: 'Standard Chartered DigiSmart', bank: 'SC', category: ['cashback','shopping'], tier: 'entry', joining_fee_inr: 49, annual_fee_inr: 49, min_income_inr_monthly: 20000, reward_currency: 'cashback', base_reward_rate: 1, category_rewards: [{ category: 'myntra', rate: 10, unit: 'percent' },{ category: 'swiggy-zomato', rate: 10, unit: 'percent' }], lounges: [], redemption_options: [{ type: 'cashback', value_per_point_inr: 1.0 }], color: '#0284c7', best_for: 'Millennials heavy on OTT, food delivery and Myntra', highlights: ['10% on Myntra','10% on Swiggy/Zomato','Only Rs.49/month'], expert_rating: 7.8, active: true, last_verified: '2026-07-27' },
   // ===== IDFC more =====
   { id: 'idfc-first-select', slug: 'idfc-first-select', name: 'IDFC FIRST Select Credit Card', bank: 'IDFC', category: ['rewards','zero-fee'], tier: 'mid', joining_fee_inr: 0, annual_fee_inr: 0, min_income_inr_monthly: 35000, reward_currency: 'reward-points', base_reward_rate: 1.5, category_rewards: [{ category: 'over-20k-monthly', rate: 3, unit: 'multiplier' }], lounges: [{ type: 'domestic', network: 'visa-airport', visits_per_quarter: 2 }], forex_markup_percent: 1.5, fuel_surcharge_waiver: true, redemption_options: [{ type: 'cashback', value_per_point_inr: 0.25 }], color: '#9b0c2c', best_for: 'Mid-income earners wanting a free card with lounge access', highlights: ['Lifetime free','3X above Rs.20K spend','8 lounge visits/year'], expert_rating: 8.2, active: true, last_verified: '2026-05-01' },
   { id: 'idfc-first-classic', slug: 'idfc-first-classic', name: 'IDFC FIRST Classic Credit Card', bank: 'IDFC', category: ['rewards','entry-level','zero-fee'], tier: 'entry', joining_fee_inr: 0, annual_fee_inr: 0, min_income_inr_monthly: 15000, credit_score_min: 650, reward_currency: 'reward-points', base_reward_rate: 1, category_rewards: [{ category: 'online', rate: 2, unit: 'multiplier' }], lounges: [], fuel_surcharge_waiver: true, redemption_options: [{ type: 'cashback', value_per_point_inr: 0.25 }], color: '#be123c', best_for: 'First credit card with low income requirement', highlights: ['Lifetime free','Low income requirement','No joining fee'], expert_rating: 6.5, active: true, last_verified: '2026-05-01' },
@@ -1075,13 +1077,18 @@ const NEW_CARDS: CreditCard[] = [
     min_income_inr_monthly: 100000,
     credit_score_min: 730,
     reward_currency: 'reward-points',
-    base_reward_rate: 1.0,
+    // CORRECTED 2026-07-27 — base 1.0%->0.75% (1 RP/Rs.100 @ Rs.0.75/pt); categories set to sourced
+    // structure: online 2.5 RP/Rs.100 (1.875%) + travel 1.5 RP/Rs.100 (1.125%). Welcome zeroed — real
+    // benefit is a brand voucher of choice whose value isn't published where we could source it (do NOT
+    // restore Rs.60k/Rs.2.5k without a source). A duplicate inflated 'indusind-pinnacle' entry was removed
+    // above. Source: paisabazaar.com/indusind-bank/pinnacle-credit-card (secondary — confirm on IndusInd MITC).
+    base_reward_rate: 0.75,
     category_rewards: [
-      { category: 'travel', rate: 1.5, unit: 'percent', notes: '1.5X on travel bookings' },
-      { category: 'dining', rate: 1.5, unit: 'percent', notes: '1.5X on dining' },
+      { category: 'online', rate: 1.875, unit: 'percent', notes: '2.5 RP/Rs.100 online @ Rs.0.75/pt' },
+      { category: 'travel', rate: 1.125, unit: 'percent', notes: '1.5 RP/Rs.100 travel @ Rs.0.75/pt' },
     ],
-    welcome_benefit_inr: 2500,
-    welcome_benefit_description: '2,500 points on first spend',
+    welcome_benefit_inr: 0,
+    welcome_benefit_description: 'Brand voucher of choice — value not published (flagged, not sourced)',
     lounges: [
       { type: 'domestic', network: 'dreamfolks', visits_per_year: 8, notes: '2 per quarter' },
       { type: 'international', network: 'priority-pass', visits_per_year: 4 },
@@ -1103,11 +1110,11 @@ const NEW_CARDS: CreditCard[] = [
       '6 free golf rounds/year',
       'Rs.0.70/point — best non-travel redemption in mid-tier',
     ],
-    drawbacks: ['1% base rate — not the highest', 'IndusInd ecosystem less mature than HDFC/Axis'],
+    drawbacks: ['0.75% base rate — not the highest', 'IndusInd ecosystem less mature than HDFC/Axis'],
     expert_rating: 8.2,
     devaluations: [],
     active: true,
-    last_verified: '2026-05-15',
+    last_verified: '2026-07-27',
   },
 
   {
