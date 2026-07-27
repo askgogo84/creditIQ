@@ -845,7 +845,19 @@ SEED_CARDS.forEach(card => {
   }
 });
 
-//  44 NEW CARDS (takes us from 49 to 93) 
+// ============================================================================
+// !!! DEAD CODE - NOT PUSHED TO SEED_CARDS. EDITS HERE HAVE NO EFFECT. !!!
+// This NEW_CARDS array is declared but never spread/pushed into SEED_CARDS
+// (only MORE_CARDS is, at line ~780). The comment below shows it was meant to
+// take the catalog from 49 to 93 cards, but the wiring was never done.
+// DO NOT DELETE: some entries here are RICHER / better-sourced rewrites of LIVE
+// cards (e.g. this block's hdfc-moneyback-plus has the correct base 0.67% while
+// the LIVE one had a wrong 2%), so this may hold better data than what ships.
+// See the NEW_CARDS triage report before promoting any of these. To activate you
+// would add `SEED_CARDS.push(...NEW_CARDS)` AFTER de-duping ids against the live
+// 49 (indusind-pinnacle, hdfc-moneyback-plus, ... collide).
+// ============================================================================
+//  44 NEW CARDS (takes us from 49 to 93)
 const NEW_CARDS: CreditCard[] = [
   // HDFC
   { id:'hdfc-diners-clubmiles', slug:'hdfc-diners-clubmiles', name:'HDFC Diners Club Miles', bank:'HDFC', tier:'mid', joining_fee_inr:1000, annual_fee_inr:1000, base_reward_rate:1, color:'#1a3a5c', best_for:'Diners Club lounge access with a lower fee', expert_rating:7.2, category:['travel','rewards'], reward_currency:'reward-points', active:true, last_verified:'2026-05-17', highlights:['Diners Club lounge access','Milestone benefits'], redemption_options:[], category_rewards:[], lounges:[], devaluations:[], apr_percent:23.88, eligible_employment:['salaried','self-employed'], interest_free_days:50 },
