@@ -98,11 +98,11 @@ const AFFILIATE_LINKS: Record<string, string> = {
   "bajaj-rbl-supercard":       "https://bitli.in/cnFgfO8",
 
   //  YES BANK 
-  "yes-first-exclusive":       "https://bitli.in/pe8xoQG",
-  "yes-first-preferred":       "https://bitli.in/pe8xoQG",
-  "yes-ace":                   "https://bitli.in/pe8xoQG",
-  "yes-marquee":               "https://bitli.in/pe8xoQG",
-  "yes-prosperity-cashback":   "https://bitli.in/pe8xoQG",
+  "yes-first-exclusive":       "https://www.yesbank.in/personal-banking/yes-individual/cards",
+  "yes-first-preferred":       "https://www.yesbank.in/personal-banking/yes-individual/cards",
+  "yes-ace":                   "https://www.yesbank.in/personal-banking/yes-individual/cards",
+  "yes-marquee":               "https://www.yesbank.in/personal-banking/yes-individual/cards",
+  "yes-prosperity-cashback":   "https://www.yesbank.in/personal-banking/yes-individual/cards",
 
   //  INDUSIND 
   "tiger-credit-card":         "https://bitli.in/dhbkHA6",
@@ -121,7 +121,7 @@ const AFFILIATE_LINKS: Record<string, string> = {
   "nomo":                      "https://bitli.in/P633SQj",
 
   //  ICICI (no EarnKaro program  --  direct bank links) 
-  "icici-amazon-pay":          "https://www.icicibank.com/card/credit-cards/amazon-pay-credit-card",
+  "icici-amazon-pay":          "https://www.icicibank.com/card/credit-cards",
   "icici-emeralde":            "https://www.icicibank.com/card/credit-cards",
   "icici-rubyx":               "https://www.icicibank.com/card/credit-cards",
   "icici-sapphiro":            "https://www.icicibank.com/card/credit-cards",
