@@ -81,7 +81,7 @@ export default function ComparePage() {
                       </div>
                       <div style={{ fontFamily: 'var(--font-mono,monospace)', fontSize: 9, color: 'var(--ink-3,#5A6A8A)', marginBottom: 14, textTransform: 'uppercase', letterSpacing: '0.1em' }}>annual fee</div>
                       <a href={url} target="_blank" rel="noopener noreferrer" style={{ display: 'block', textAlign: 'center', padding: '10px', background: 'var(--copper-3,#D89B2A)', color: '#fff', borderRadius: 10, fontSize: 13, fontWeight: 700, textDecoration: 'none', marginBottom: 8 }}>{label}</a>
-                      <Link href={`/cards/${card.id}`} style={{ display: 'block', textAlign: 'center', padding: '8px', background: 'transparent', color: 'var(--ink,#142950)', borderRadius: 10, fontSize: 12, fontWeight: 600, textDecoration: 'none', border: '1.5px solid var(--line,rgba(20,41,80,0.12))' }}>Full review</Link>
+                      <Link href={`/card/${card.id}`} style={{ display: 'block', textAlign: 'center', padding: '8px', background: 'transparent', color: 'var(--ink,#142950)', borderRadius: 10, fontSize: 12, fontWeight: 600, textDecoration: 'none', border: '1.5px solid var(--line,rgba(20,41,80,0.12))' }}>Full review</Link>
                     </div>
                   </div>
                 );

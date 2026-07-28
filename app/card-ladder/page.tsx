@@ -167,7 +167,7 @@ export default function CardLadderPage() {
                     <div style={{ fontFamily: 'var(--font-mono,monospace)', fontSize: 9, fontWeight: 700, letterSpacing: '0.14em', textTransform: 'uppercase', color: 'var(--ink-3,#5A6A8A)', marginBottom: 12 }}>Recommended cards at this level</div>
                     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(220px,1fr))', gap: 10, marginBottom: 20 }}>
                       {rung.cards.map((card, ci) => (
-                        <Link key={ci} href={`/cards/${card.slug}`} style={{ textDecoration: 'none', display: 'block' }}>
+                        <Link key={ci} href={`/card/${card.slug}`} style={{ textDecoration: 'none', display: 'block' }}>
                           <div style={{ background: 'var(--surface,#fff)', borderRadius: 12, padding: '14px 16px', border: '1px solid var(--line,rgba(20,41,80,0.08))', cursor: 'pointer' }}>
                             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 8 }}>
                               <div style={{ fontSize: 14, fontWeight: 700, color: 'var(--ink,#142950)', lineHeight: 1.3 }}>{card.name}</div>

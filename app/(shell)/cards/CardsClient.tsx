@@ -138,7 +138,7 @@ export function CardsClient({ initialCards }: Props) {
             </div>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 24 }}>
               {byBank[bank].map((card, idx) => (
-                <CardTile key={card.slug} card={toTileCard(card, idx)} href={`/cards/${card.slug}`} />
+                <CardTile key={card.slug} card={toTileCard(card, idx)} href={`/card/${card.slug}`} />
               ))}
             </div>
           </div>

@@ -162,7 +162,7 @@ export function RewardsHeroWidget() {
                   See full breakdown
                 </button>
                 {cardPageExists(result.best_card.slug || result.best_card.id) && (
-                  <button onClick={() => router.push('/cards/' + (result.best_card.slug || result.best_card.id))}
+                  <button onClick={() => router.push('/card/' + (result.best_card.slug || result.best_card.id))}
                     style={{ padding: '12px', borderRadius: 8, background: '#F8F9FC', color: '#1B3A5C', fontWeight: 700, fontSize: 13, border: '1px solid rgba(20,41,80,0.20)', cursor: 'pointer' }}>
                     View {result.best_card.name.split(' ').slice(0,3).join(' ')} +
                   </button>

@@ -93,7 +93,7 @@ export default async function ComparePage({ params }: { params: { 'slug1-vs-slug
               <div key={i} style={{ background: paper, border: '1px solid ' + line, borderRadius: '12px 12px 0 0', padding: '20px 16px', textAlign: 'center' }}>
                 <div style={{ fontSize: 16, fontWeight: 800, color: ink, marginBottom: 4 }}>{c.name}</div>
                 <div style={{ fontSize: 12, color: 'var(--ink-3,#5A6A8A)' }}>{c.bank}</div>
-                <Link href={'/cards/' + c.slug} style={{ display: 'inline-block', marginTop: 12, padding: '6px 16px', background: ink, color: '#fff', borderRadius: 8, fontSize: 12, fontWeight: 600, textDecoration: 'none' }}>
+                <Link href={'/card/' + c.slug} style={{ display: 'inline-block', marginTop: 12, padding: '6px 16px', background: ink, color: '#fff', borderRadius: 8, fontSize: 12, fontWeight: 600, textDecoration: 'none' }}>
                   View full review
                 </Link>
               </div>

@@ -274,7 +274,7 @@ export default function ApprovalOddsPage() {
                           color: '#0a0a0a', borderRadius: 10, fontSize: 13, fontWeight: 700,
                           textDecoration: 'none', whiteSpace: 'nowrap' as const,
                         }}>{label}</a>
-                        <Link href={`/cards/${card.cardId}`} style={{
+                        <Link href={`/card/${card.cardId}`} style={{
                           display: 'block', textAlign: 'center' as const, padding: '8px',
                           color: 'var(--text-muted, #8888AA)', fontSize: 12, textDecoration: 'none',
                         }}>View full review →</Link>

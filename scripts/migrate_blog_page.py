@@ -128,7 +128,7 @@ export default async function BlogArticlePage({ params }: { params: { slug: stri
             {/* CTAs */}
             <div style={{ marginTop: 32, display: 'flex', gap: 12, flexWrap: 'wrap' }}>
               {article.related_card_slug && (
-                <Link href={`/cards/${article.related_card_slug}`} style={{ display: 'inline-block', background: 'var(--copper-3,#D89B2A)', color: '#fff', padding: '12px 24px', borderRadius: 10, fontWeight: 700, fontSize: 14, textDecoration: 'none' }}>
+                <Link href={`/card/${article.related_card_slug}`} style={{ display: 'inline-block', background: 'var(--copper-3,#D89B2A)', color: '#fff', padding: '12px 24px', borderRadius: 10, fontWeight: 700, fontSize: 14, textDecoration: 'none' }}>
                   View {article.related_card} &rarr;
                 </Link>
               )}

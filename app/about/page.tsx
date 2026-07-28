@@ -100,7 +100,7 @@ export default function AboutPage() {
                 </div>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                   {allDevaluations.map((d, i) => (
-                    <Link key={i} href={`/cards/${d.slug}`} style={{ textDecoration: 'none', display: 'block' }}>
+                    <Link key={i} href={`/card/${d.slug}`} style={{ textDecoration: 'none', display: 'block' }}>
                       <div style={{ display: 'grid', gridTemplateColumns: 'auto auto 1fr auto', gap: 16, alignItems: 'center', padding: '14px 20px', background: 'var(--paper,#FAF5EB)', border: '1px solid var(--line,rgba(20,41,80,0.08))', borderRadius: 12 }}>
                         <div style={{ fontFamily: 'var(--font-mono,monospace)', fontSize: 11, color: 'var(--ink-3,#5A6A8A)', whiteSpace: 'nowrap' }}>
                           {new Date(d.date).toLocaleDateString('en-IN', { month: 'short', year: 'numeric' })}

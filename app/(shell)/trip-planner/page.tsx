@@ -571,7 +571,7 @@ function TripPlannerPageInner() {
                 </div>
                 {!result.canAfford && (
                   cardPageExists(result.bestCardId) ? (
-                    <Link href={`/cards/${result.bestCardId}`} style={{ padding: '8px 16px', background: '#C9972E', color: '#0a0a0a', borderRadius: 10, fontSize: 12, fontWeight: 700, textDecoration: 'none' }}>
+                    <Link href={`/card/${result.bestCardId}`} style={{ padding: '8px 16px', background: '#C9972E', color: '#0a0a0a', borderRadius: 10, fontSize: 12, fontWeight: 700, textDecoration: 'none' }}>
                       Get {result.bestCard} &rarr;
                     </Link>
                   ) : (

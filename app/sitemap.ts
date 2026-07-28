@@ -56,7 +56,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
   }));
 
   const cardPages: MetadataRoute.Sitemap = SEED_CARDS.map(card => ({
-    url: `${BASE}/cards/${card.id}`, lastModified: now, changeFrequency: 'weekly' as const, priority: 0.8,
+    url: `${BASE}/card/${card.id}`, lastModified: now, changeFrequency: 'weekly' as const, priority: 0.8,
   }));
 
   return [...staticPages, ...categoryPages, ...bankPages, ...blogPages, ...cardPages];
