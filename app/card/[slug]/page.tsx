@@ -2,7 +2,6 @@ import { notFound } from 'next/navigation';
 import { SEED_CARDS } from '@/lib/data/seed-cards';
 import { Header } from '@/components/Header';
 import { DesignFooter } from '@/components/design/Footer';
-import { CreditCard3D } from '@/components/design/CreditCard3D';
 import { CardDetailClient } from './CardDetailClient';
 
 export async function generateStaticParams() {
@@ -37,12 +36,66 @@ export default function CardDetailPage({ params }: { params: { slug: string } })
   const card = SEED_CARDS.find((c) => c.slug === params.slug);
   if (!card) notFound();
 
+  const annualFee = card.annual_fee_inr ?? 0;
+  const category = Array.isArray((card as any).category)
+    ? ((card as any).category[0] ?? 'Rewards')
+    : ((card as any).category ?? 'Rewards');
+
+  // FinancialProduct + FAQPage JSON-LD (ported from the retired /cards/[slug] route,
+  // repointed to the canonical /card/<slug> URL).
+  const financialProduct = {
+    '@context': 'https://schema.org',
+    '@type': 'FinancialProduct',
+    name: card.name,
+    description: `${card.name} credit card by ${card.bank}`,
+    provider: { '@type': 'BankOrCreditUnion', name: card.bank },
+    annualPercentageRate: (card as any).apr_percent ?? 40,
+    feesAndCommissionsSpecification: `Annual fee: Rs.${annualFee}`,
+    url: `https://creditiq.app/card/${card.slug}`,
+  };
+
+  const faqPage = {
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    mainEntity: [
+      {
+        '@type': 'Question',
+        name: `What is the annual fee of ${card.name}?`,
+        acceptedAnswer: {
+          '@type': 'Answer',
+          text: annualFee === 0
+            ? `${card.name} has no annual fee -- it is a lifetime free credit card.`
+            : `The annual fee for ${card.name} is Rs.${annualFee} + GST.`,
+        },
+      },
+      {
+        '@type': 'Question',
+        name: `Is ${card.name} good for travel?`,
+        acceptedAnswer: {
+          '@type': 'Answer',
+          text: `${card.name} is a ${category} card from ${card.bank}. ${String(category).toLowerCase().includes('travel')
+            ? 'Yes, it offers travel benefits including lounge access and air miles.'
+            : 'It is not primarily a travel card, but may offer some travel benefits.'}`,
+        },
+      },
+      {
+        '@type': 'Question',
+        name: `How to apply for ${card.name}?`,
+        acceptedAnswer: {
+          '@type': 'Answer',
+          text: `You can apply for ${card.name} online through ${card.bank}'s website or through CreditIQ's unbiased apply link. Eligibility typically requires a credit score of 750+ and a minimum income as per bank criteria.`,
+        },
+      },
+    ],
+  };
+
   return (
     <main className="page-fade">
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(financialProduct) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqPage) }} />
       <Header />
       <CardDetailClient card={card} />
       <DesignFooter />
-      
     </main>
   );
 }

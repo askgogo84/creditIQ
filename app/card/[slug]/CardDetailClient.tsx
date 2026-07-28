@@ -47,9 +47,15 @@ export function CardDetailClient({ card }: { card: CreditCard }) {
         <div className="aurora" style={{ bottom: -60, left: -80, width: 500, height: 400, background: 'radial-gradient(circle,rgba(196,106,82,0.12),transparent 60%)' }} />
 
         <div className="shell" style={{ position: 'relative', zIndex: 2 }}>
-          <Link href="/cards" style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontFamily: 'var(--font-mono,monospace)', fontSize: 11, color: 'var(--ink-3,#5A6A8A)', textDecoration: 'none', letterSpacing: '0.05em', marginBottom: 32, fontWeight: 600 }}>
-            ← All cards
-          </Link>
+          <nav aria-label="Breadcrumb" style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 8, fontFamily: 'var(--font-mono,monospace)', fontSize: 11, color: 'var(--ink-3,#5A6A8A)', letterSpacing: '0.05em', marginBottom: 32, fontWeight: 600 }}>
+            <Link href="/" style={{ color: 'var(--ink-3,#5A6A8A)', textDecoration: 'none' }}>Home</Link>
+            <span aria-hidden="true">/</span>
+            <Link href="/cards" style={{ color: 'var(--ink-3,#5A6A8A)', textDecoration: 'none' }}>Cards</Link>
+            <span aria-hidden="true">/</span>
+            <Link href={`/cards?bank=${encodeURIComponent(card.bank)}`} style={{ color: 'var(--ink-3,#5A6A8A)', textDecoration: 'none' }}>{card.bank}</Link>
+            <span aria-hidden="true">/</span>
+            <span style={{ color: 'var(--ink,#142950)' }}>{card.name}</span>
+          </nav>
 
           <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0,1fr) minmax(0,1fr)', gap: 'clamp(32px,5vw,64px)', alignItems: 'start' }} className="grid-1-mobile">
             <Reveal>
@@ -299,12 +305,75 @@ export function CardDetailClient({ card }: { card: CreditCard }) {
           </div>
         </section>
       )}
+      {/* ── What creators say — live intelligence ── */}
+      <section style={{ padding: 'clamp(40px,6vw,64px) 0' }}>
+        <div className="shell">
+          <Reveal>
+            <WhatCreatorsSay cardSlug={card.slug ?? card.id} />
+          </Reveal>
+        </div>
+      </section>
+
+      {/* ── FAQ ── */}
+      <section style={{ padding: 'clamp(40px,6vw,64px) 0', background: 'var(--paper,#FAF5EB)', borderTop: '1px solid var(--line,rgba(20,41,80,0.08))', borderBottom: '1px solid var(--line,rgba(20,41,80,0.08))' }}>
+        <div className="shell">
+          <Reveal>
+            <div style={{ fontFamily: 'var(--font-mono,monospace)', fontSize: 9, fontWeight: 700, letterSpacing: '0.16em', textTransform: 'uppercase', color: 'var(--ink-3,#5A6A8A)', marginBottom: 12 }}>Questions</div>
+            <h2 style={{ fontSize: 'clamp(22px,3vw,34px)', fontWeight: 800, color: 'var(--ink,#142950)', margin: '0 0 24px', letterSpacing: '-0.02em' }}>
+              Frequently asked{' '}
+              <span style={{ fontFamily: 'var(--font-serif,Georgia,serif)', color: 'var(--copper-3,#D89B2A)', fontStyle: 'italic', fontWeight: 400 }}>questions</span>
+            </h2>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+              {[
+                {
+                  q: `What is the annual fee of ${card.name}?`,
+                  a: (card.annual_fee_inr ?? 0) === 0
+                    ? `${card.name} is a lifetime free card with zero annual fee.`
+                    : `The annual fee is ${formatINR(card.annual_fee_inr)} + GST. It may be waived if you meet the annual spend threshold.`,
+                },
+                {
+                  q: `What is the reward rate on ${card.name}?`,
+                  a: `${card.name} earns a base rate of ${card.base_reward_rate}%. See the reward-rates section above for category accelerators.`,
+                },
+                {
+                  q: `How to apply for ${card.name}?`,
+                  a: `Apply online through ${card.bank}'s website, or use the Apply & Earn button on this page for a direct, unbiased apply link. Eligibility typically needs a credit score of 750+ and income as per bank criteria.`,
+                },
+              ].map((faq, i) => (
+                <div key={i} style={{ background: 'var(--surface,#fff)', border: '1px solid var(--line,rgba(20,41,80,0.08))', borderRadius: 12, padding: '18px 20px' }}>
+                  <div style={{ fontSize: 15, fontWeight: 700, color: 'var(--ink,#142950)', marginBottom: 6 }}>{faq.q}</div>
+                  <div style={{ fontSize: 14, color: 'var(--ink-2,#2A3F6B)', lineHeight: 1.65 }}>{faq.a}</div>
+                </div>
+              ))}
+            </div>
+          </Reveal>
+        </div>
+      </section>
+
+      {/* ── Explore more — internal links ── */}
+      <section style={{ padding: 'clamp(40px,6vw,64px) 0' }}>
+        <div className="shell">
+          <Reveal>
+            <div style={{ fontFamily: 'var(--font-mono,monospace)', fontSize: 9, fontWeight: 700, letterSpacing: '0.16em', textTransform: 'uppercase', color: 'var(--copper,#8C5F12)', marginBottom: 16 }}>Explore more</div>
+            <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
+              {[
+                { href: '/best-cards/travel', label: 'Best Travel Cards' },
+                { href: '/best-cards/cashback', label: 'Best Cashback Cards' },
+                { href: '/best-cards/dining', label: 'Best Dining Cards' },
+                { href: '/best-cards/no-fee', label: 'Lifetime Free Cards' },
+                { href: '/spend-optimizer', label: 'Find My Best Card' },
+                { href: '/compare', label: 'Compare Cards' },
+              ].map((link, i) => (
+                <Link key={i} href={link.href} style={{ padding: '8px 16px', background: 'var(--surface,#fff)', border: '1px solid var(--line,rgba(20,41,80,0.12))', borderRadius: 100, fontSize: 13, fontWeight: 600, color: 'var(--ink-2,#2A3F6B)', textDecoration: 'none' }}>
+                  {link.label}
+                </Link>
+              ))}
+            </div>
+          </Reveal>
+        </div>
+      </section>
     </div>
   );
-      {/* ── What creators say — live intelligence ── */}
-      <section style={{ padding: '60px clamp(20px,5vw,80px)', maxWidth: 900, margin: '0 auto' }}>
-        <WhatCreatorsSay cardSlug={card.slug ?? card.id} />
-      </section>
 }
 
 function Metric({ label, value, highlight }: { label: string; value: string; highlight?: boolean }) {
