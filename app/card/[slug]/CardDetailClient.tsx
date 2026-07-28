@@ -1,5 +1,6 @@
 'use client';
 import { WhatCreatorsSay } from '@/components/WhatCreatorsSay';
+import { ReportValue } from '@/components/ReportValue';
 
 import { CreditCard3D } from '@/components/design/CreditCard3D';
 import { useCompare } from '@/lib/store';
@@ -130,6 +131,12 @@ export function CardDetailClient({ card }: { card: CreditCard }) {
                     </span>
                   </div>
                 </div>
+                <ReportValue
+                  cardSlug={card.slug}
+                  surface="card-detail"
+                  displayedValueInr={annualCalc.net_value_inr}
+                  monthlyTotalInr={monthlySpend}
+                />
               </div>
 
               {/* Breakdown */}
