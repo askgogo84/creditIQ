@@ -1,9 +1,7 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { AmbientHero } from '@/components/marketing/AmbientHero';
-import { LeakMeter } from '@/components/marketing/LeakMeter';
-import { SEED_CARDS } from '@/lib/data/seed-cards';
-import { computeLeakRange } from '@/lib/engine';
+import { HeroLeak } from '@/components/marketing/HeroLeak';
 import { LiveDemo } from '@/components/marketing/LiveDemo';
 import { WhatsLive } from '@/components/marketing/WhatsLive';
 import { PricingTeaser } from '@/components/marketing/PricingTeaser';
@@ -11,7 +9,7 @@ import { PricingTeaser } from '@/components/marketing/PricingTeaser';
 export const metadata: Metadata = {
   title: 'Your cards leak money every year | CreditIQ',
   description:
-    "Most Indian credit cards quietly leak ₹1L+ a year in missed rewards. We don't guess — upload one statement and we prove it from your real spend.",
+    "Most Indian credit cards quietly leak ₹1L+ a year in missed rewards. See the range from every card's published earn rules — statement-verified from your real spend, coming soon.",
 };
 
 // NOTE: local ink ground only. The page opts into --bg-deep as its own background;
@@ -31,14 +29,7 @@ const section: React.CSSProperties = {
   padding: '0 clamp(20px, 5vw, 48px)',
 };
 
-const clash = 'var(--font-clash), system-ui, sans-serif';
-
 export default function LandingPage() {
-  // Computed at render from the live catalogue — no hardcoded figure. Default spend
-  // Rs.50,000/mo, matching the card-detail default. floor = a cash-only card (no portal
-  // discipline, no milestones/lounge); ceiling = best card fully optimised.
-  const { floor, ceiling } = computeLeakRange(SEED_CARDS, { monthly_total_inr: 50000 });
-
   return (
     <main style={shell}>
       {/* ── HERO ── */}
@@ -48,22 +39,12 @@ export default function LandingPage() {
           <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.18em', textTransform: 'uppercase', color: 'var(--prov-cached)', marginBottom: 20 }}>
             Live · India
           </div>
-          <h1 style={{ fontFamily: clash, fontSize: 'clamp(40px, 8vw, 84px)', fontWeight: 600, lineHeight: 1.08, letterSpacing: '-0.03em', margin: 0, color: '#F5F0E8' }}>
-            Your cards leak <LeakMeter floor={floor} ceiling={ceiling} /> every year.
-          </h1>
-          {/* Provenance sits BELOW the completed sentence — qualifies the figure without
-              breaking the headline into fragments. */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginTop: 22 }}>
-            <span style={{ alignSelf: 'flex-start', fontSize: 9, fontWeight: 800, letterSpacing: '0.8px', textTransform: 'uppercase', color: 'var(--prov-estimated)', background: 'color-mix(in srgb, var(--prov-estimated) 12%, transparent)', border: '1px solid color-mix(in srgb, var(--prov-estimated) 30%, transparent)', padding: '2px 8px', borderRadius: 100 }}>
-              Estimated
-            </span>
-            <div style={{ fontSize: 12, fontWeight: 600, letterSpacing: '0.14em', textTransform: 'uppercase', color: '#8A93A3' }}>
-              Estimated annual leak
-            </div>
-          </div>
+          <HeroLeak />
           <p style={{ maxWidth: 520, margin: '28px 0 0', fontSize: 'clamp(16px, 1.6vw, 19px)', lineHeight: 1.6, color: '#9AA3B2' }}>
-            We don&rsquo;t guess. Upload one statement and we&rsquo;ll prove it from your{' '}
-            <span style={{ color: 'var(--prov-verified)', fontWeight: 600 }}>real spend</span> — not a projection.
+            That range comes from each card&rsquo;s published earn rules &mdash; real math, not a
+            self-reported guess. Statement upload is coming, so you&rsquo;ll soon replace the estimate
+            with your{' '}
+            <span style={{ color: 'var(--prov-verified)', fontWeight: 600 }}>real spend</span>.
           </p>
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: 12, marginTop: 32 }}>
             <Link href="/login" style={{ padding: '14px 26px', borderRadius: 100, background: 'var(--prov-cached)', color: '#0E1420', fontWeight: 700, fontSize: 16, textDecoration: 'none' }}>
