@@ -43,16 +43,16 @@ export function HeroLeak() {
           win. Themes the track/thumb to the hero gold on the dark ground, and gives a
           ≥44px touch target at ≤480px (WCAG); desktop keeps the global 24px thumb. */}
       <style>{`
-        input.hero-leak-range { background: rgba(245,240,232,0.18) !important; }
-        input.hero-leak-range::-webkit-slider-thumb { background: var(--prov-cached) !important; border: 2px solid #0E1420 !important; }
-        input.hero-leak-range::-moz-range-thumb { background: var(--prov-cached) !important; border: 2px solid #0E1420 !important; }
+        input.hero-leak-range { background: var(--line-strong, rgba(20,41,80,0.20)) !important; }
+        input.hero-leak-range::-webkit-slider-thumb { background: var(--copper-3, #D89B2A) !important; border: 2px solid var(--bg, #F5EFE6) !important; }
+        input.hero-leak-range::-moz-range-thumb { background: var(--copper-3, #D89B2A) !important; border: 2px solid var(--bg, #F5EFE6) !important; }
         @media (max-width: 480px) {
           input.hero-leak-range::-webkit-slider-thumb { width: 44px !important; height: 44px !important; }
           input.hero-leak-range::-moz-range-thumb { width: 44px !important; height: 44px !important; }
         }
       `}</style>
 
-      <h1 style={{ fontFamily: clash, fontSize: 'clamp(40px, 8vw, 84px)', fontWeight: 600, lineHeight: 1.08, letterSpacing: '-0.03em', margin: 0, color: '#F5F0E8' }}>
+      <h1 style={{ fontFamily: clash, fontSize: 'clamp(40px, 8vw, 84px)', fontWeight: 600, lineHeight: 1.08, letterSpacing: '-0.03em', margin: 0, color: 'var(--ink, #142950)' }}>
         Your cards leak <LeakMeter floor={floor} ceiling={ceiling} /> every year.
       </h1>
 
@@ -62,7 +62,7 @@ export function HeroLeak() {
         <span style={{ alignSelf: 'flex-start', fontSize: 9, fontWeight: 800, letterSpacing: '0.8px', textTransform: 'uppercase', color: 'var(--prov-estimated)', background: 'color-mix(in srgb, var(--prov-estimated) 12%, transparent)', border: '1px solid color-mix(in srgb, var(--prov-estimated) 30%, transparent)', padding: '2px 8px', borderRadius: 100 }}>
           Estimated
         </span>
-        <div style={{ fontSize: 12, fontWeight: 600, letterSpacing: '0.14em', textTransform: 'uppercase', color: '#8A93A3' }}>
+        <div style={{ fontSize: 12, fontWeight: 600, letterSpacing: '0.14em', textTransform: 'uppercase', color: 'var(--ink-3, #5A6A8A)' }}>
           At {rupee(spend)}/mo · cash-only floor vs. optimised
         </div>
       </div>
@@ -70,7 +70,7 @@ export function HeroLeak() {
       {/* Spend slider — same bounds/step/formatting as the card-detail control. */}
       <div style={{ maxWidth: 340, marginTop: 20 }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 8 }}>
-          <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: '0.15em', textTransform: 'uppercase', color: '#8A93A3' }}>
+          <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: '0.15em', textTransform: 'uppercase', color: 'var(--ink-3, #5A6A8A)' }}>
             Monthly spend
           </span>
           <span style={{ fontFamily: 'var(--font-jbmono), ui-monospace, monospace', fontSize: 16, fontWeight: 700, color: 'var(--prov-cached)', fontVariantNumeric: 'tabular-nums' }}>

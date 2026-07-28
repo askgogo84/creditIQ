@@ -23,10 +23,14 @@ const POSTER_SRC = '/images/hero-poster.jpg';
 const VIDEO_WEBM = '/videos/hero-loop.webm';
 const VIDEO_MP4 = '/videos/hero-loop.mp4';
 
-const INK_OVERLAY = 'rgba(14,20,32,0.72)';
-// Placeholder poster: deep-ink gradient so the hero reads as atmosphere, not a blank.
+// Light ground (matches app/card/[slug]): the hero sits on cream, so the poster is
+// a warm-cream radial and the overlay is a PAPER wash (was a dark ink wash). Once real
+// footage lands, this wash keeps imagery light enough for the navy type to stay legible.
+const PAPER_WASH = 'rgba(245,239,230,0.55)';
+// Placeholder poster: warm-cream gradient (surface-2 → bg → bg-3) so the hero reads as
+// soft atmosphere, not a blank — the same cream family as the token ground beneath it.
 const POSTER_GRADIENT =
-  'radial-gradient(120% 90% at 80% 10%, #17233f 0%, #0E1420 55%, #080d18 100%)';
+  'radial-gradient(120% 90% at 80% 10%, #FBF7EF 0%, #F5EFE6 55%, #EAE0CE 100%)';
 
 export function AmbientHero() {
   const [showVideo, setShowVideo] = useState(false);
@@ -68,8 +72,8 @@ export function AmbientHero() {
         </video>
       )}
 
-      {/* Ink overlay so type stays legible and imagery reads as atmosphere. */}
-      <div style={{ position: 'absolute', inset: 0, background: INK_OVERLAY }} />
+      {/* Paper wash so type stays legible and imagery reads as atmosphere. */}
+      <div style={{ position: 'absolute', inset: 0, background: PAPER_WASH }} />
     </div>
   );
 }

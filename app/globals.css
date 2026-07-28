@@ -1488,3 +1488,41 @@ html.dark [style*="background: 'var(--bg-surface"] {
   [data-ciq] * { animation:none!important; transition:none!important; }
   [data-ciq] .ciq-rise { opacity:1; transform:none; }
 }
+
+/* ============================================================
+   LANDING PAGE — light identity (matches app/card/[slug])
+   ------------------------------------------------------------
+   The marketing landing used to paint its own dark ground
+   (--bg-deep #0E1420) — a second visual identity. It now renders
+   the SAME cream/navy/copper tokens card detail uses.
+
+   Scope, not a new palette: this class PINS the existing light
+   token values so (a) the fixed-light AmbientHero gradient can
+   never desync against a stray dark toggle, and (b) the --prov-*
+   provenance tokens — which were tuned for the dark hero and fail
+   WCAG on cream (gold 2.2:1, grey 3.0:1, green 3.5:1) — are
+   retuned to light-ground values HERE ONLY. TripComparison (app
+   shell) and /plans keep the original dark-tuned --prov-* tokens.
+   Retuned values verified ≥4.5:1 on cream incl. the pill fill.
+   ============================================================ */
+.landing-light {
+  color-scheme: light;
+
+  /* card-detail light palette, pinned (same values as :root light) */
+  --bg:           #F5EFE6;
+  --paper:        #FAF5EB;
+  --surface:      #FFFFFF;
+  --ink:          #142950;
+  --ink-2:        #2A3F6B;
+  --ink-3:        #5A6A8A;
+  --ink-4:        #8A95AE;
+  --line:         rgba(20, 41, 80, 0.08);
+  --line-strong:  rgba(20, 41, 80, 0.20);
+  --copper:       #8C5F12;
+  --copper-3:     #D89B2A;
+
+  /* provenance — retuned for legibility on cream (see audit) */
+  --prov-verified:  #1B6B42;   /* was #4F8C58 → 3.5:1 fail */
+  --prov-cached:    #7D5410;   /* was #C9972E → 2.4:1 fail */
+  --prov-estimated: #635C51;   /* was #8A857B → 3.0:1 fail */
+}

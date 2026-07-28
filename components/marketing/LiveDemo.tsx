@@ -65,8 +65,8 @@ export function LiveDemo() {
     <div
       id="live-demo"
       style={{
-        background: 'rgba(245,240,232,0.04)',
-        border: '1px solid rgba(245,240,232,0.12)',
+        background: 'var(--surface, #fff)',
+        border: '1px solid var(--line, rgba(20,41,80,0.08))',
         borderRadius: 20,
         padding: 'clamp(20px, 4vw, 32px)',
       }}
@@ -74,10 +74,10 @@ export function LiveDemo() {
       <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.14em', textTransform: 'uppercase', color: 'var(--prov-cached)', marginBottom: 10 }}>
         ● Live · real cached fares
       </div>
-      <h3 style={{ fontFamily: 'var(--font-clash), system-ui, sans-serif', fontSize: 'clamp(22px, 3vw, 30px)', fontWeight: 600, margin: '0 0 6px', color: '#F5F0E8' }}>
+      <h3 style={{ fontFamily: 'var(--font-clash), system-ui, sans-serif', fontSize: 'clamp(22px, 3vw, 30px)', fontWeight: 600, margin: '0 0 6px', color: 'var(--ink, #142950)' }}>
         Change the route. Watch a real fare update.
       </h3>
-      <p style={{ margin: '0 0 20px', color: '#9AA3B2', fontSize: 15, lineHeight: 1.55, maxWidth: 520 }}>
+      <p style={{ margin: '0 0 20px', color: 'var(--ink-2, #2A3F6B)', fontSize: 15, lineHeight: 1.55, maxWidth: 520 }}>
         This queries our live cached-fare cache — no account needed. When we have a fresh cached price it shows{' '}
         <span style={{ color: 'var(--prov-cached)', fontWeight: 600 }}>gold</span>; otherwise an honest{' '}
         <span style={{ color: 'var(--prov-estimated)', fontWeight: 600 }}>estimate</span>.
@@ -98,9 +98,9 @@ export function LiveDemo() {
                 fontWeight: 600,
                 cursor: 'pointer',
                 fontFamily: 'inherit',
-                color: active ? '#0E1420' : '#C7CDD6',
-                background: active ? 'var(--prov-cached)' : 'transparent',
-                border: `1px solid ${active ? 'var(--prov-cached)' : 'rgba(245,240,232,0.18)'}`,
+                color: active ? '#1A0E04' : 'var(--ink-2, #2A3F6B)',
+                background: active ? 'var(--copper-3, #D89B2A)' : 'transparent',
+                border: `1px solid ${active ? 'var(--copper-3, #D89B2A)' : 'var(--line-strong, rgba(20,41,80,0.20))'}`,
               }}
             >
               {r.label}
@@ -111,9 +111,9 @@ export function LiveDemo() {
 
       {/* result */}
       <div style={{ minHeight: 90 }}>
-        <div style={{ fontSize: 11, color: '#8A93A3', marginBottom: 6 }}>Cheapest round-trip · {route.label}</div>
+        <div style={{ fontSize: 11, color: 'var(--ink-3, #5A6A8A)', marginBottom: 6 }}>Cheapest round-trip · {route.label}</div>
         {result.kind === 'loading' && (
-          <div style={{ fontFamily: 'var(--font-jbmono), monospace', fontSize: 'clamp(28px,5vw,44px)', color: '#4A5568' }}>…</div>
+          <div style={{ fontFamily: 'var(--font-jbmono), monospace', fontSize: 'clamp(28px,5vw,44px)', color: 'var(--ink-4, #8A95AE)' }}>…</div>
         )}
         {result.kind === 'cached' && (
           <>
@@ -122,10 +122,10 @@ export function LiveDemo() {
               unit="inr"
               provenance="cached"
               asOf={result.foundAt}
-              valueColor="#F5F0E8"
+              valueColor="var(--ink, #142950)"
               style={{ alignItems: 'flex-start', fontSize: 'clamp(28px,5vw,44px)', fontWeight: 700 }}
             />
-            <div style={{ fontSize: 12, color: '#8A93A3', marginTop: 6 }}>
+            <div style={{ fontSize: 12, color: 'var(--ink-3, #5A6A8A)', marginTop: 6 }}>
               {result.airline ? `${result.airline} · ` : ''}Cheapest cached fare via Travelpayouts
               {result.departDate ? ` · sample ${result.departDate}` : ''} · not your exact dates
             </div>
@@ -137,10 +137,10 @@ export function LiveDemo() {
               value={`${inr(route.est[0])} – ${inr(route.est[1])}`}
               unit="inr"
               provenance="estimated"
-              valueColor="#C7CDD6"
+              valueColor="var(--ink-2, #2A3F6B)"
               style={{ alignItems: 'flex-start', fontSize: 'clamp(24px,4vw,36px)', fontWeight: 600 }}
             />
-            <div style={{ fontSize: 12, color: '#8A93A3', marginTop: 6 }}>
+            <div style={{ fontSize: 12, color: 'var(--ink-3, #5A6A8A)', marginTop: 6 }}>
               No live fare cached for this route right now — typical range shown.
             </div>
           </>

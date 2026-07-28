@@ -12,13 +12,14 @@ export const metadata: Metadata = {
     "Most Indian credit cards quietly leak ₹1L+ a year in missed rewards. See the range from every card's published earn rules — statement-verified from your real spend, coming soon.",
 };
 
-// NOTE: local ink ground only. The page opts into --bg-deep as its own background;
-// --ink / --paper / --navy are NOT inverted app-wide (that's the deferred Phase-2
-// token inversion, issue #3). No other page's appearance changes. This is also the
-// first surface that uses the Phase-1 fonts (Clash / Satoshi / JBMono).
+// The page renders the SAME light identity as app/card/[slug] — cream ground, navy
+// ink, copper accents — via the shared semantic tokens. The `.landing-light` class
+// (globals.css) pins those tokens to the light palette and retunes the --prov-* pills
+// for cream, so this surface reads identically to card detail. Still the first surface
+// on the Phase-1 fonts (Clash / Satoshi / JBMono) — the type system is unchanged.
 const shell: React.CSSProperties = {
-  background: 'var(--bg-deep, #0E1420)',
-  color: '#C7CDD6',
+  background: 'var(--bg, #F5EFE6)',
+  color: 'var(--ink-2, #2A3F6B)',
   fontFamily: 'var(--font-satoshi), system-ui, sans-serif',
   minHeight: '100vh',
 };
@@ -31,7 +32,7 @@ const section: React.CSSProperties = {
 
 export default function LandingPage() {
   return (
-    <main style={shell}>
+    <main className="landing-light" style={shell}>
       {/* ── HERO ── */}
       <section style={{ position: 'relative', overflow: 'hidden' }}>
         <AmbientHero />
@@ -40,17 +41,17 @@ export default function LandingPage() {
             Live · India
           </div>
           <HeroLeak />
-          <p style={{ maxWidth: 520, margin: '28px 0 0', fontSize: 'clamp(16px, 1.6vw, 19px)', lineHeight: 1.6, color: '#9AA3B2' }}>
+          <p style={{ maxWidth: 520, margin: '28px 0 0', fontSize: 'clamp(16px, 1.6vw, 19px)', lineHeight: 1.6, color: 'var(--ink-2, #2A3F6B)' }}>
             That range comes from each card&rsquo;s published earn rules &mdash; real math, not a
             self-reported guess. Statement upload is coming, so you&rsquo;ll soon replace the estimate
             with your{' '}
             <span style={{ color: 'var(--prov-verified)', fontWeight: 600 }}>real spend</span>.
           </p>
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: 12, marginTop: 32 }}>
-            <Link href="/login" style={{ padding: '14px 26px', borderRadius: 100, background: 'var(--prov-cached)', color: '#0E1420', fontWeight: 700, fontSize: 16, textDecoration: 'none' }}>
+            <Link href="/login" style={{ padding: '14px 26px', borderRadius: 100, background: 'var(--copper-3, #D89B2A)', color: '#1A0E04', fontWeight: 700, fontSize: 16, textDecoration: 'none' }}>
               Find my leak →
             </Link>
-            <a href="#live-demo" style={{ padding: '14px 26px', borderRadius: 100, background: 'transparent', color: '#F5F0E8', border: '1px solid rgba(245,240,232,0.22)', fontWeight: 700, fontSize: 16, textDecoration: 'none' }}>
+            <a href="#live-demo" style={{ padding: '14px 26px', borderRadius: 100, background: 'transparent', color: 'var(--ink, #142950)', border: '1px solid var(--line-strong, rgba(20,41,80,0.20))', fontWeight: 700, fontSize: 16, textDecoration: 'none' }}>
               See what&rsquo;s live
             </a>
           </div>
