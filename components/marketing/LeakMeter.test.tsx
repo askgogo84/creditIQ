@@ -23,10 +23,11 @@ describe('LeakMeter', () => {
     (window as any).matchMedia = undefined;
   });
 
-  it('prefers-reduced-motion: renders the final value immediately (no animation)', () => {
+  it('prefers-reduced-motion: renders the final range immediately (no animation)', () => {
     mockReducedMotion(true);
-    render(<LeakMeter target={184000} />);
-    // Renders ONLY the inline ₹ figure; the ESTIMATED pill/caption are composed by the page.
-    expect(screen.getByText(`₹${(184000).toLocaleString('en-IN')}`)).toBeInTheDocument();
+    render(<LeakMeter floor={13800} ceiling={39080} />);
+    // Renders ONLY the inline ₹ range; the ESTIMATED pill/caption are composed by the page.
+    const expected = `₹${(13800).toLocaleString('en-IN')}–₹${(39080).toLocaleString('en-IN')}`;
+    expect(screen.getByText(expected)).toBeInTheDocument();
   });
 });

@@ -2,6 +2,8 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { AmbientHero } from '@/components/marketing/AmbientHero';
 import { LeakMeter } from '@/components/marketing/LeakMeter';
+import { SEED_CARDS } from '@/lib/data/seed-cards';
+import { computeLeakRange } from '@/lib/engine';
 import { LiveDemo } from '@/components/marketing/LiveDemo';
 import { WhatsLive } from '@/components/marketing/WhatsLive';
 import { PricingTeaser } from '@/components/marketing/PricingTeaser';
@@ -32,6 +34,11 @@ const section: React.CSSProperties = {
 const clash = 'var(--font-clash), system-ui, sans-serif';
 
 export default function LandingPage() {
+  // Computed at render from the live catalogue — no hardcoded figure. Default spend
+  // Rs.50,000/mo, matching the card-detail default. floor = a cash-only card (no portal
+  // discipline, no milestones/lounge); ceiling = best card fully optimised.
+  const { floor, ceiling } = computeLeakRange(SEED_CARDS, { monthly_total_inr: 50000 });
+
   return (
     <main style={shell}>
       {/* ── HERO ── */}
@@ -42,7 +49,7 @@ export default function LandingPage() {
             Live · India
           </div>
           <h1 style={{ fontFamily: clash, fontSize: 'clamp(40px, 8vw, 84px)', fontWeight: 600, lineHeight: 1.08, letterSpacing: '-0.03em', margin: 0, color: '#F5F0E8' }}>
-            Your cards leak <LeakMeter target={184000} /> every year.
+            Your cards leak <LeakMeter floor={floor} ceiling={ceiling} /> every year.
           </h1>
           {/* Provenance sits BELOW the completed sentence — qualifies the figure without
               breaking the headline into fragments. */}
@@ -51,7 +58,7 @@ export default function LandingPage() {
               Estimated
             </span>
             <div style={{ fontSize: 12, fontWeight: 600, letterSpacing: '0.14em', textTransform: 'uppercase', color: '#8A93A3' }}>
-              Estimated annual leak · based on typical Indian card usage
+              Estimated annual leak
             </div>
           </div>
           <p style={{ maxWidth: 520, margin: '28px 0 0', fontSize: 'clamp(16px, 1.6vw, 19px)', lineHeight: 1.6, color: '#9AA3B2' }}>

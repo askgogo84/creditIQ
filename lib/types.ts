@@ -148,7 +148,8 @@ export interface UserSpendProfile {
 export interface MatchScore {
   card: CreditCard;
   score: number; // 0-100
-  annual_value_inr: number; // net value after fees
+  annual_value_inr: number; // net value after fees (== year-one)
+  recurring_value_inr: number; // steady-state value: excludes one-time welcome + joining fee
   reasoning: string;
   warnings?: string[];
 }

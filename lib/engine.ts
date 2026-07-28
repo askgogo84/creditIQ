@@ -38,6 +38,26 @@ export const DEFAULT_SPEND_MIX: {
 ];
 
 /**
+ * PORTAL_CATEGORIES — accelerators you only earn by routing spend through a rewards
+ * portal or brand app (HDFC SmartBuy, the Tata Neu app / partner brands). These are a
+ * behavioural-DISCIPLINE assumption, not organic spend, so the 'cash-only' basis of
+ * calculateAnnualValue demotes them to the card's base rate.
+ *
+ * Deliberately NOT here: merchant co-brand rates (`amazon-prime`, `flipkart`). Those
+ * are earned by shopping where you already shop — no portal step — so they stay in the
+ * cash-only floor. Approved list, 2026-07-28.
+ */
+export const PORTAL_CATEGORIES = new Set(['smartbuy', 'tata-neu-app', 'tata-partners']);
+
+/**
+ * FLAT_CASHBACK_BASELINE — a plain 1%-on-everything cashback card's return, used as the
+ * COMPARISON FLOOR for the landing "leak" figure. It is NOT a real card in the catalogue;
+ * nothing is scored, ranked, or recommended off it. It exists only to answer "how much
+ * more than a boring 1% card is on the table".
+ */
+export const FLAT_CASHBACK_BASELINE = 0.01;
+
+/**
  * Post-cap ANNUAL reward for a single accelerator applied to a given monthly
  * spend on its slice. The cap logic (monthly ceiling -> x12 -> annual ceiling,
  * plus the point-currency redemption recompute) is preserved VERBATIM from the
@@ -100,7 +120,8 @@ function categoryAnnualReward(
  */
 export function calculateAnnualValue(
   card: CreditCard,
-  spend: UserSpendProfile
+  spend: UserSpendProfile,
+  options?: { basis?: 'full' | 'cash-only' }
 ): {
   gross_rewards_inr: number;
   fee_inr: number;
@@ -109,6 +130,10 @@ export function calculateAnnualValue(
   recurring_value_inr: number;
   breakdown: Record<string, number>;
 } {
+  // 'full' (default) = existing behaviour, byte-for-byte. 'cash-only' demotes portal
+  // accelerators to base rate and drops milestone + lounge value — the honest floor of
+  // what you earn with no portal discipline and no aspirational redemptions.
+  const basis = options?.basis ?? 'full';
   const monthlyTotal = spend.monthly_total_inr;
   const annualTotal = monthlyTotal * 12;
   const breakdown: Record<string, number> = {};
@@ -130,7 +155,9 @@ export function calculateAnnualValue(
     if (monthlySpendInCategory <= 0) continue;
 
     const candidates = card.category_rewards.filter(cr =>
-      slice.matches.includes(cr.category.toLowerCase())
+      slice.matches.includes(cr.category.toLowerCase()) &&
+      // cash-only: a portal accelerator is not a candidate, so the slice falls to base.
+      (basis !== 'cash-only' || !PORTAL_CATEGORIES.has(cr.category.toLowerCase()))
     );
 
     if (candidates.length === 0) {
@@ -160,8 +187,9 @@ export function calculateAnnualValue(
     totalRewards += baseRewards;
   }
 
-  // Milestone bonuses
-  if (card.milestones) {
+  // Milestone bonuses (dropped in cash-only: they assume you hit spend thresholds
+  // AND redeem the reward at face value — a discipline/redemption assumption).
+  if (basis !== 'cash-only' && card.milestones) {
     for (const m of card.milestones) {
       let triggers = 0;
       if (m.period === 'monthly' && monthlyTotal >= m.spend_threshold_inr) {
@@ -193,11 +221,12 @@ export function calculateAnnualValue(
     const visits = (l.visits_per_year ?? 0) + (l.visits_per_quarter ?? 0) * 4;
     return sum + Math.min(visits, 24);
   }, 0);
-  if (annualLoungeVisits > 0 && (spend.travel_inr ?? 0) > 0) {
+  // Lounge value is dropped in cash-only (not cash, and travel-gated / aspirational).
+  if (basis !== 'cash-only' && annualLoungeVisits > 0 && (spend.travel_inr ?? 0) > 0) {
     const loungeValue = annualLoungeVisits * 2000;
     breakdown[`Lounge access (${annualLoungeVisits} visits)`] = loungeValue;
     totalRewards += loungeValue;
-  } else if (annualLoungeVisits >= 4) {
+  } else if (basis !== 'cash-only' && annualLoungeVisits >= 4) {
     // small value even for non-travelers
     breakdown[`Lounge access (${annualLoungeVisits} visits)`] = Math.min(annualLoungeVisits * 1000, 4000);
     totalRewards += Math.min(annualLoungeVisits * 1000, 4000);
@@ -247,7 +276,7 @@ export function matchCards(
       if (!hasCategory) continue;
     }
 
-    const { net_value_inr, gross_rewards_inr, fee_inr, breakdown } = calculateAnnualValue(card, spend);
+    const { net_value_inr, recurring_value_inr, gross_rewards_inr, fee_inr, breakdown } = calculateAnnualValue(card, spend);
 
     // Score: 0-100 based on net value relative to spend and expert rating
     const valuePercent = (net_value_inr / Math.max(spend.monthly_total_inr * 12, 1)) * 100;
@@ -267,7 +296,7 @@ export function matchCards(
     }
     if (card.tier === 'invite-only') warnings.push('Invite-only  --  application not guaranteed');
 
-    results.push({ card, score, annual_value_inr: net_value_inr, reasoning, warnings });
+    results.push({ card, score, annual_value_inr: net_value_inr, recurring_value_inr, reasoning, warnings });
   }
 
   return results
@@ -301,4 +330,29 @@ export function approvalProbability(
     else p -= 40;
   }
   return Math.min(95, Math.max(5, p));
+}
+
+/**
+ * computeLeakRange — the landing hero "leak" figure, as a RANGE over a flat-1% card:
+ *   floor   = best cash-only recurring value − (annual spend × FLAT_CASHBACK_BASELINE)
+ *   ceiling = best full     recurring value − the same baseline
+ * "Best" is the catalogue-wide max by RECURRING value (steady state; welcome benefit
+ * excluded) under each basis. Both are floored at 0. Returns numbers only — no card is
+ * named, by design (at the top the leading cards are within noise of each other).
+ */
+export function computeLeakRange(
+  cards: CreditCard[],
+  spend: UserSpendProfile
+): { floor: number; ceiling: number } {
+  const baseline = spend.monthly_total_inr * 12 * FLAT_CASHBACK_BASELINE;
+  const active = cards.filter(c => c.active);
+  const bestRecurring = (basis: 'full' | 'cash-only') =>
+    active.reduce(
+      (max, c) => Math.max(max, calculateAnnualValue(c, spend, { basis }).recurring_value_inr),
+      0
+    );
+  return {
+    floor: Math.max(0, Math.round(bestRecurring('cash-only') - baseline)),
+    ceiling: Math.max(0, Math.round(bestRecurring('full') - baseline)),
+  };
 }
