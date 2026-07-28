@@ -1,19 +1,114 @@
 import type { CreditCard, UserSpendProfile, MatchScore } from './types';
 
 /**
- * Calculate the REAL annual value of a card given a spend profile.
- * Accounts for:
- *  - Category-specific reward rates with monthly caps
- *  - Base reward rate on remaining spend
- *  - Milestone bonuses
- *  - Annual fee (subtracted, but waived if eligible)
- *  - Welcome benefit (one-time, amortized over 12 months = full value year 1)
- *  - Redemption haircut (uses best redemption value)
+ * DEFAULT_SPEND_MIX — the canonical, CARD-INDEPENDENT allocation of monthly
+ * spend across categories. Fractions sum to exactly 1.0. Every card is scored
+ * against this SAME vector: a card's listed accelerators decide the RATE applied
+ * to a slice, never the SIZE of the slice. A slice with no matching accelerator
+ * on a given card earns the base rate — it is not dropped or redistributed.
+ *
+ *  - `fraction` — share of monthly_total_inr assigned to this slice.
+ *  - `field`    — UserSpendProfile override; a passed-in value wins over the
+ *                 default fraction (e.g. spend.online_inr overrides online).
+ *  - `matches`  — the seed `category_rewards.category` strings (lower-cased)
+ *                 that map onto this slice.
+ *
+ * `international` folds onto the TRAVEL slice: it has no own spend field and
+ * would otherwise double-count travel. The `other` slice (0.05) has no
+ * accelerator and always earns base rate — it closes 0.95 -> 1.0 while leaving
+ * the six real buckets at their historical literal proportions.
+ *
+ * PROVENANCE: these fractions are the same relative proportions the engine used
+ * as bare inline literals prior to 2026-07-28. They are an internal spend-shape
+ * ASSUMPTION, not a surveyed or sourced distribution.
+ */
+export const DEFAULT_SPEND_MIX: {
+  bucket: string;
+  fraction: number;
+  field?: keyof UserSpendProfile;
+  matches: string[];
+}[] = [
+  { bucket: 'online',  fraction: 0.40, field: 'online_inr',  matches: ['online', 'amazon-prime', 'flipkart', 'smartbuy', 'tata-neu-app', 'tata-partners'] },
+  { bucket: 'dining',  fraction: 0.15, field: 'dining_inr',  matches: ['dining', 'preferred'] },
+  { bucket: 'grocery', fraction: 0.12, field: 'grocery_inr', matches: ['grocery'] },
+  { bucket: 'travel',  fraction: 0.10, field: 'travel_inr',  matches: ['travel', 'travel-edge', 'international'] },
+  { bucket: 'utility', fraction: 0.10, field: 'utility_inr', matches: ['utility'] },
+  { bucket: 'fuel',    fraction: 0.08, field: 'fuel_inr',    matches: ['fuel'] },
+  { bucket: 'other',   fraction: 0.05,                        matches: [] },
+];
+
+/**
+ * Post-cap ANNUAL reward for a single accelerator applied to a given monthly
+ * spend on its slice. The cap logic (monthly ceiling -> x12 -> annual ceiling,
+ * plus the point-currency redemption recompute) is preserved VERBATIM from the
+ * prior per-category loop. Do not change it.
+ */
+function categoryAnnualReward(
+  cr: CreditCard['category_rewards'][number],
+  monthlySpendInCategory: number,
+  card: CreditCard,
+  bestRedemptionValue: number
+): number {
+  let rewardMultiplier = 0;
+  if (cr.unit === 'percent') {
+    rewardMultiplier = cr.rate / 100;
+  } else {
+    // multiplier on base rate
+    rewardMultiplier = (cr.rate * card.base_reward_rate) / 100;
+  }
+
+  let monthlyReward = monthlySpendInCategory * rewardMultiplier;
+
+  // Apply monthly cap
+  if (cr.cap_inr_monthly) {
+    monthlyReward = Math.min(monthlyReward, cr.cap_inr_monthly);
+  }
+
+  // For point-based cards, multiply by redemption value
+  if (card.reward_currency !== 'cashback') {
+    // The rate already represents % equivalent in our seed
+    // For multipliers, we approximate at best redemption value
+    if (cr.unit === 'multiplier') {
+      monthlyReward = monthlySpendInCategory * (cr.rate / 100) * bestRedemptionValue;
+      if (cr.cap_inr_monthly) monthlyReward = Math.min(monthlyReward, cr.cap_inr_monthly);
+    }
+  }
+
+  const annualCategoryReward = monthlyReward * 12;
+  const annualCap = cr.cap_inr_annual ?? Infinity;
+  return Math.min(annualCategoryReward, annualCap);
+}
+
+/**
+ * Calculate the annual value of a card given a spend profile.
+ *
+ * Spend is split across categories using DEFAULT_SPEND_MIX — the SAME
+ * card-independent vector for every card. Each slice earns the card's
+ * best-matching accelerator (highest POST-CAP annual value when several match),
+ * or the base rate when the card has no accelerator for that slice.
+ *
+ * Three value figures are returned:
+ *  - net_value_inr      — legacy field, kept for existing callers (== year_one).
+ *  - year_one_value_inr — rewards INCLUDING the one-time welcome benefit, minus
+ *                         the annual fee AND the one-time joining fee. True
+ *                         first-year net.
+ *  - recurring_value_inr — steady state: EXCLUDES the one-time welcome benefit
+ *                          and joining fee; includes the recurring annual fee.
+ *
+ * The welcome benefit is counted at FULL value in year 1 only — it is NOT
+ * amortized — and is absent from recurring_value_inr.
  */
 export function calculateAnnualValue(
   card: CreditCard,
   spend: UserSpendProfile
-): { gross_rewards_inr: number; fee_inr: number; net_value_inr: number; breakdown: Record<string, number> } {
+): {
+  gross_rewards_inr: number;
+  fee_inr: number;
+  net_value_inr: number;
+  year_one_value_inr: number;
+  recurring_value_inr: number;
+  breakdown: Record<string, number>;
+} {
   const monthlyTotal = spend.monthly_total_inr;
   const annualTotal = monthlyTotal * 12;
   const breakdown: Record<string, number> = {};
@@ -24,69 +119,42 @@ export function calculateAnnualValue(
     : 1.0;
 
   let totalRewards = 0;
-  let categorizedSpend = 0;
+  let baseAnnualSpend = 0;
 
-  // Apply category-specific rewards (with caps)
-  for (const cr of card.category_rewards) {
-    const cat = cr.category.toLowerCase();
-    let monthlySpendInCategory = 0;
-
-    // Map seed categories to user spend buckets
-    if (['online', 'amazon-prime', 'flipkart', 'smartbuy', 'tata-neu-app', 'tata-partners'].includes(cat)) {
-      monthlySpendInCategory = spend.online_inr ?? Math.min(monthlyTotal * 0.4, monthlyTotal);
-    } else if (['dining', 'preferred'].includes(cat)) {
-      monthlySpendInCategory = spend.dining_inr ?? monthlyTotal * 0.15;
-    } else if (cat === 'fuel') {
-      monthlySpendInCategory = spend.fuel_inr ?? monthlyTotal * 0.08;
-    } else if (cat === 'grocery') {
-      monthlySpendInCategory = spend.grocery_inr ?? monthlyTotal * 0.12;
-    } else if (cat === 'travel' || cat === 'travel-edge') {
-      monthlySpendInCategory = spend.travel_inr ?? monthlyTotal * 0.10;
-    } else if (cat === 'utility') {
-      monthlySpendInCategory = spend.utility_inr ?? monthlyTotal * 0.10;
-    } else if (cat === 'international') {
-      monthlySpendInCategory = spend.travel_inr ? spend.travel_inr * 0.5 : monthlyTotal * 0.05;
-    }
+  // Allocate the fixed, card-independent mix. Each slice applies the card's
+  // best-matching accelerator (by post-cap annual value), else falls to base.
+  for (const slice of DEFAULT_SPEND_MIX) {
+    const override = slice.field ? spend[slice.field] : undefined;
+    const monthlySpendInCategory = override ?? monthlyTotal * slice.fraction;
 
     if (monthlySpendInCategory <= 0) continue;
 
-    let rewardMultiplier = 0;
-    if (cr.unit === 'percent') {
-      rewardMultiplier = cr.rate / 100;
-    } else {
-      // multiplier on base rate
-      rewardMultiplier = (cr.rate * card.base_reward_rate) / 100;
+    const candidates = card.category_rewards.filter(cr =>
+      slice.matches.includes(cr.category.toLowerCase())
+    );
+
+    if (candidates.length === 0) {
+      // No accelerator on this card for this slice -> earns base rate.
+      baseAnnualSpend += monthlySpendInCategory * 12;
+      continue;
     }
 
-    let monthlyReward = monthlySpendInCategory * rewardMultiplier;
-
-    // Apply monthly cap
-    if (cr.cap_inr_monthly) {
-      monthlyReward = Math.min(monthlyReward, cr.cap_inr_monthly);
+    // Collision rule: when several accelerators map to one slice, the winner is
+    // the one with the highest POST-CAP annual value (a capped 10X can be worth
+    // less than an uncapped 5%), NOT the highest nominal rate.
+    let best = candidates[0];
+    let bestValue = categoryAnnualReward(best, monthlySpendInCategory, card, bestRedemptionValue);
+    for (let i = 1; i < candidates.length; i++) {
+      const v = categoryAnnualReward(candidates[i], monthlySpendInCategory, card, bestRedemptionValue);
+      if (v > bestValue) { best = candidates[i]; bestValue = v; }
     }
 
-    // For point-based cards, multiply by redemption value
-    if (card.reward_currency !== 'cashback') {
-      // The rate already represents % equivalent in our seed
-      // For multipliers, we approximate at best redemption value
-      if (cr.unit === 'multiplier') {
-        monthlyReward = monthlySpendInCategory * (cr.rate / 100) * bestRedemptionValue;
-        if (cr.cap_inr_monthly) monthlyReward = Math.min(monthlyReward, cr.cap_inr_monthly);
-      }
-    }
-
-    const annualCategoryReward = monthlyReward * 12;
-    const annualCap = cr.cap_inr_annual ?? Infinity;
-    const cappedAnnual = Math.min(annualCategoryReward, annualCap);
-
-    breakdown[`${cr.category} (${cr.rate}${cr.unit === 'percent' ? '%' : 'x'})`] = Math.round(cappedAnnual);
-    totalRewards += cappedAnnual;
-    categorizedSpend += monthlySpendInCategory * 12;
+    breakdown[`${best.category} (${best.rate}${best.unit === 'percent' ? '%' : 'x'})`] = Math.round(bestValue);
+    totalRewards += bestValue;
   }
 
-  // Apply base rate on remaining (non-categorized) spend
-  const remainingAnnualSpend = Math.max(annualTotal - categorizedSpend, 0);
-  const baseRewards = remainingAnnualSpend * (card.base_reward_rate / 100);
+  // Base rate on all non-accelerated slices (aggregated into one line).
+  const baseRewards = baseAnnualSpend * (card.base_reward_rate / 100);
   if (baseRewards > 0) {
     breakdown[`Base rate (${card.base_reward_rate}%)`] = Math.round(baseRewards);
     totalRewards += baseRewards;
@@ -111,8 +179,10 @@ export function calculateAnnualValue(
     }
   }
 
-  // Welcome benefit (year 1 only)
+  // Welcome benefit (year 1 only) — tracked separately so recurring can exclude it
+  let welcomeBenefit = 0;
   if (card.welcome_benefit_inr) {
+    welcomeBenefit = card.welcome_benefit_inr;
     breakdown[`Welcome benefit`] = card.welcome_benefit_inr;
     totalRewards += card.welcome_benefit_inr;
   }
@@ -144,12 +214,17 @@ export function calculateAnnualValue(
     breakdown[`Joining fee (year 1)`] = -card.joining_fee_inr;
   }
 
-  const netValue = totalRewards - effectiveFee - card.joining_fee_inr;
+  // year 1 keeps the one-time welcome benefit as income and the one-time joining
+  // fee as cost; recurring drops both one-time items but keeps the annual fee.
+  const yearOneValue = totalRewards - effectiveFee - card.joining_fee_inr;
+  const recurringValue = (totalRewards - welcomeBenefit) - effectiveFee;
 
   return {
     gross_rewards_inr: Math.round(totalRewards),
     fee_inr: effectiveFee + card.joining_fee_inr,
-    net_value_inr: Math.round(netValue),
+    net_value_inr: Math.round(yearOneValue),
+    year_one_value_inr: Math.round(yearOneValue),
+    recurring_value_inr: Math.round(recurringValue),
     breakdown,
   };
 }
