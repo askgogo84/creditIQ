@@ -69,11 +69,17 @@ export function HeroLeak() {
 
       {/* Spend slider — same bounds/step/formatting as the card-detail control. */}
       <div style={{ maxWidth: 340, marginTop: 20 }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 8 }}>
-          <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: '0.15em', textTransform: 'uppercase', color: 'var(--ink-3, #5A6A8A)' }}>
+        {/* space-between already pins the value's RIGHT edge to the row and grows it
+            leftward, so the trailing K/L can't clip on the right. These extras make the
+            invariant structural, not incidental: the value never wraps or shrinks
+            (flexShrink 0 + nowrap), and if the row ever ran out of width the LABEL yields
+            (minWidth 0 + ellipsis) — the ₹ figure is always shown in full. gap keeps the
+            two from touching when the label truncates. */}
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', gap: 8, marginBottom: 8 }}>
+          <span style={{ minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontSize: 10, fontWeight: 700, letterSpacing: '0.15em', textTransform: 'uppercase', color: 'var(--ink-3, #5A6A8A)' }}>
             Monthly spend
           </span>
-          <span style={{ fontFamily: 'var(--font-jbmono), ui-monospace, monospace', fontSize: 16, fontWeight: 700, color: 'var(--prov-cached)', fontVariantNumeric: 'tabular-nums' }}>
+          <span style={{ flexShrink: 0, whiteSpace: 'nowrap', fontFamily: 'var(--font-jbmono), ui-monospace, monospace', fontSize: 16, fontWeight: 700, color: 'var(--prov-cached)', fontVariantNumeric: 'tabular-nums' }}>
             {rupee(spend)}
           </span>
         </div>
