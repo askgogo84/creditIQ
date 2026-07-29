@@ -18,6 +18,10 @@
   --bg:           #F5EFE6;       /* warm cream */
   --bg-2:         #EFE7D8;       /* deeper cream */
   --bg-3:         #E8DDC9;       /* deepest cream / band */
+  /* Page ground as an R,G,B triplet, per theme. Deliberately NOT overridden by
+     .cinematic, so a cinematic section can fade its dissolve into the ground of the
+     (theme-following) section BELOW it — cream in light, deep navy in dark. */
+  --page-bg-rgb:  245, 239, 230;
   --surface:      #FFFFFF;
   --surface-2:    #FBF7F0;
   --paper:        #FAF5EB;
@@ -61,20 +65,16 @@
   --red:          #B84230;
   --red-soft:     #F0CCC4;
 
-  /* ── Phase 1 design-system additions (see 5-TRD.md §2 / 2-UIUX-Brief.md §3) ──
-     STAGING NOTE — DO NOT "fix" these to the doc hex values. They are intentionally
-     set to what renders TODAY so Phase 1 changes nothing visually. The TRD/Brief
-     describe the Phase-2 END STATE (page-ground inversion to --bg-deep, and
-     verified #4FBF87 / cached-gold #C9A227). Phase 2 does the inversion and retunes
-     the three --prov-* hexes IN ONE PLACE.
-       • --bg-deep is the future page ground, added under a NON-colliding name — it
-         is NOT --ink (which stays the current navy text token #142950).
-       • <Figure> reads ONLY the --prov-* tokens. One green, one meaning. */
   --bg-deep:        #0E1420;
   --muted:          #6B7280;
-  --prov-verified:  var(--green);   /* existing verified green (#4F8C58) — themes with --green */
-  --prov-cached:    #C9972E;         /* TripComparison's live GOLD (not --copper-3, not doc #C9A227) */
-  --prov-estimated: #8A857B;         /* live estimated grey */
+
+  /* ── Provenance — ONE semantic value per theme (dark set lives in the
+     [data-theme="dark"] block). <Figure> and the landing pills read ONLY these
+     three; one hue = one meaning. Each is measured ≥4.5:1 on that theme's ground.
+     LIGHT ground --bg #F5EFE6: verified 5.7:1 · cached 5.8:1 · estimated 5.8:1. */
+  --prov-verified:  #1B6B42;
+  --prov-cached:    #7D5410;
+  --prov-estimated: #635C51;
 
   /* Type — Syne Bold + Inter (Creative Power Pairing) */
   --font-display: "Syne", "Inter", -apple-system, BlinkMacSystemFont, sans-serif;
@@ -106,9 +106,9 @@
 }
 
 /* ─────────────────────────────────────
-   DARK
+   DARK  (also the source of truth for .cinematic — see bottom of file)
    ───────────────────────────────────── */
-:root[data-theme="dark"] {
+:root[data-theme="dark"], .cinematic {
   --bg:           #0A1226;
   --bg-2:         #101A36;
   --bg-3:         #142547;
@@ -143,7 +143,19 @@
   --red:          #E8806E;
   --red-soft:     rgba(232, 128, 110, 0.12);
 
+  /* Provenance — DARK. Ground --bg #0A1226: verified 8.1:1 · cached 7.1:1 · estimated 6.3:1. */
+  --prov-verified:  #4FBF87;
+  --prov-cached:    #C9972E;
+  --prov-estimated: #9A958B;
+
   color-scheme: dark;
+}
+
+/* Page ground for the DARK theme — set on the root ONLY (not the grouped .cinematic
+   selector above), so a cinematic section inherits the page ground of the section
+   BELOW it and its dissolve fades into that, never into its own dark ground. */
+:root[data-theme="dark"] {
+  --page-bg-rgb: 10, 18, 38;
 }
 
 /* Density modes */
@@ -1490,39 +1502,27 @@ html.dark [style*="background: 'var(--bg-surface"] {
 }
 
 /* ============================================================
-   LANDING PAGE — light identity (matches app/card/[slug])
+   CINEMATIC surfaces — the hero and the dark break.
    ------------------------------------------------------------
-   The marketing landing used to paint its own dark ground
-   (--bg-deep #0E1420) — a second visual identity. It now renders
-   the SAME cream/navy/copper tokens card detail uses.
+   EXEMPT from the theme toggle: they stay dark in BOTH themes.
+   `.cinematic` is joined into the [data-theme="dark"] selector at
+   the top of this file, so it inherits every dark token value
+   (surfaces, lines, copper, and the dark provenance set) — there is
+   no second value set to keep in sync.
 
-   Scope, not a new palette: this class PINS the existing light
-   token values so (a) the fixed-light AmbientHero gradient can
-   never desync against a stray dark toggle, and (b) the --prov-*
-   provenance tokens — which were tuned for the dark hero and fail
-   WCAG on cream (gold 2.2:1, grey 3.0:1, green 3.5:1) — are
-   retuned to light-ground values HERE ONLY. TripComparison (app
-   shell) and /plans keep the original dark-tuned --prov-* tokens.
-   Retuned values verified ≥4.5:1 on cream incl. the pill fill.
+   The only local overrides are the three ink tokens and the copper
+   accent, and both have a concrete reason:
+     • the inks are LIFTED because these sections sit over VIDEO,
+       which is brighter than a solid ground. Verified against the
+       brightest cloud that lands in a text box across all 22 frames
+       of the loop (worst L=0.444, frame 16): headline 7.8:1,
+       body 4.7:1, caption 4.5:1.
+     • --copper-3 is pinned to the brand copper (the hero's chosen
+       CTA accent) rather than the dark shell's champagne gold.
    ============================================================ */
-.landing-light {
-  color-scheme: light;
-
-  /* card-detail light palette, pinned (same values as :root light) */
-  --bg:           #F5EFE6;
-  --paper:        #FAF5EB;
-  --surface:      #FFFFFF;
-  --ink:          #142950;
-  --ink-2:        #2A3F6B;
-  --ink-3:        #5A6A8A;
-  --ink-4:        #8A95AE;
-  --line:         rgba(20, 41, 80, 0.08);
-  --line-strong:  rgba(20, 41, 80, 0.20);
-  --copper:       #8C5F12;
-  --copper-3:     #D89B2A;
-
-  /* provenance — retuned for legibility on cream (see audit) */
-  --prov-verified:  #1B6B42;   /* was #4F8C58 → 3.5:1 fail */
-  --prov-cached:    #7D5410;   /* was #C9972E → 2.4:1 fail */
-  --prov-estimated: #635C51;   /* was #8A857B → 3.0:1 fail */
+.cinematic {
+  --ink:    #FDFBF7;   /* headline + outline-CTA text */
+  --ink-2:  #F1EDE4;   /* body copy — 4.7:1 at the worst frame */
+  --ink-3:  #EDE9DF;   /* caption / labels — 4.5:1 at the worst frame */
+  --copper-3: #D89B2A; /* brand copper CTA, not the dark-shell gold */
 }

@@ -12,11 +12,10 @@ export const metadata: Metadata = {
     "Most Indian credit cards quietly leak ₹1L+ a year in missed rewards. See the range from every card's published earn rules — statement-verified from your real spend, coming soon.",
 };
 
-// The page renders the SAME light identity as app/card/[slug] — cream ground, navy
-// ink, copper accents — via the shared semantic tokens. The `.landing-light` class
-// (globals.css) pins those tokens to the light palette and retunes the --prov-* pills
-// for cream, so this surface reads identically to card detail. Still the first surface
-// on the Phase-1 fonts (Clash / Satoshi / JBMono) — the type system is unchanged.
+// The page reads the shared semantic tokens, so it follows the [data-theme] toggle
+// like every other surface (cream in light, deep navy in dark). Only the hero and its
+// dark break opt out, via the `.cinematic` scope (globals.css), which pins them dark in
+// both themes. The type system (Clash / Satoshi / JBMono) is unchanged.
 const shell: React.CSSProperties = {
   background: 'var(--bg, #F5EFE6)',
   color: 'var(--ink-2, #2A3F6B)',
@@ -32,11 +31,13 @@ const section: React.CSSProperties = {
 
 export default function LandingPage() {
   return (
-    <main className="landing-light" style={shell}>
-      {/* ── HERO ── */}
-      <section style={{ position: 'relative', overflow: 'hidden' }}>
+    <main style={shell}>
+      {/* ── HERO (cinematic: always dark; the sections below follow the toggle) ── */}
+      {/* paddingBottom is enlarged so the last copy clears the AmbientHero dissolve
+          band (clamp(88px,11vw,150px)) — no white text ever sits over the cream fade. */}
+      <section className="cinematic" style={{ position: 'relative', overflow: 'hidden' }}>
         <AmbientHero />
-        <div style={{ ...section, position: 'relative', zIndex: 1, paddingTop: 'clamp(72px, 12vw, 140px)', paddingBottom: 'clamp(56px, 9vw, 104px)' }}>
+        <div style={{ ...section, position: 'relative', zIndex: 1, paddingTop: 'clamp(72px, 12vw, 140px)', paddingBottom: 'clamp(120px, 14vw, 176px)' }}>
           <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.18em', textTransform: 'uppercase', color: 'var(--prov-cached)', marginBottom: 20 }}>
             Live · India
           </div>

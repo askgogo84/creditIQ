@@ -172,7 +172,10 @@ export function Header() {
         .ciq-nav-item:hover { color: var(--ink,#142950); background: rgba(255,255,255,0.6); }
         .ciq-nav-item.active { background: var(--surface,#fff); color: var(--ink,#142950); box-shadow: 0 1px 4px rgba(20,41,80,0.12); }
         .ciq-right { display: flex; align-items: center; gap: 10px; }
-        .ciq-theme-btn { width: 36px; height: 36px; border-radius: 50%; border: 1px solid var(--line,rgba(20,41,80,0.1)); background: var(--surface,#fff); cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 16px; }
+        .ciq-theme-btn { width: 36px; height: 36px; border-radius: 50%; border: 1px solid var(--line,rgba(20,41,80,0.1)); background: var(--surface,#fff); color: var(--ink,#142950); cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 16px; }
+        .ciq-ico-moon { display: none; }
+        :root[data-theme="dark"] .ciq-ico-sun { display: none; }
+        :root[data-theme="dark"] .ciq-ico-moon { display: block; }
         .ciq-cta { padding: 9px 20px; background: var(--navy,#142950); color: #fff; border: none; border-radius: 100px; font-size: 14px; font-weight: 700; cursor: pointer; text-decoration: none; white-space: nowrap; display: flex; align-items: center; gap: 6px; transition: opacity 0.15s; }
         .ciq-cta:hover { opacity: 0.88; }
         .ciq-hamburger { display: none; flex-direction: column; gap: 5px; padding: 8px; background: none; border: none; cursor: pointer; }
@@ -386,17 +389,27 @@ export function Header() {
 
           {/* Right side */}
           <div className="ciq-right">
-            <button className="ciq-theme-btn ciq-theme-desktop" onClick={() => {
-              const html = document.documentElement
-              html.classList.toggle('dark')
-              localStorage.setItem('theme', html.classList.contains('dark') ? 'dark' : 'light')
+            <button className="ciq-theme-btn ciq-theme-desktop" aria-label="Toggle light or dark theme" onClick={() => {
+              const el = document.documentElement
+              const next = el.getAttribute('data-theme') === 'dark' ? 'light' : 'dark'
+              // data-theme drives the tokens; the .dark/.light classes drive the
+              // legacy html.dark CSS overrides and Logo — keep all three in sync.
+              el.setAttribute('data-theme', next)
+              el.classList.toggle('dark', next === 'dark')
+              el.classList.toggle('light', next === 'light')
+              try { localStorage.setItem('creditiq-theme', next) } catch {}
             }}>
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              {/* Both icons are rendered on server AND client; CSS shows one based on
+                  [data-theme] (set pre-paint in layout), so there is no hydration mismatch. */}
+              <svg className="ciq-ico-sun" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                 <circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/>
                 <line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/>
                 <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/>
                 <line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/>
                 <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+              </svg>
+              <svg className="ciq-ico-moon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
               </svg>
             </button>
 

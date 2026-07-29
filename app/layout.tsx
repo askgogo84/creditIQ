@@ -37,8 +37,16 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className={`${GeistSans.variable} ${GeistMono.variable} ${clashDisplay.variable} ${satoshi.variable} ${jetbrainsMono.variable}`}>
+    <html lang="en" suppressHydrationWarning className={`${GeistSans.variable} ${GeistMono.variable} ${clashDisplay.variable} ${satoshi.variable} ${jetbrainsMono.variable}`}>
       <head>
+        {/* Resolve the theme BEFORE first paint: stored choice → OS preference →
+            light default. Setting data-theme here (not in a client effect) is what
+            removes the Header's hydration mismatch and the theme flash. */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `(function(){try{var s=localStorage.getItem('creditiq-theme');var t=(s==='dark'||s==='light')?s:((window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').matches)?'dark':'light');var el=document.documentElement;el.setAttribute('data-theme',t);el.classList.toggle('dark',t==='dark');el.classList.toggle('light',t==='light');}catch(e){var d=document.documentElement;d.setAttribute('data-theme','light');d.classList.add('light');}})();`
+          }}
+        />
         <script
           dangerouslySetInnerHTML={{
             __html: `(function () { var script = document.createElement("script"); script.async = 1; script.src = 'https://emrldco.com/NTMzNDA5.js?t=533409'; document.head.appendChild(script); })();`
