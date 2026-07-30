@@ -8,6 +8,8 @@ import { HeroProof } from '@/components/marketing/landing/HeroProof';
 import { AmbientHero } from '@/components/marketing/AmbientHero';
 import { FaresBoard } from '@/components/marketing/landing/FaresBoard';
 import { CardRankings } from '@/components/marketing/landing/CardRankings';
+import { SEED_CARDS } from '@/lib/data/seed-cards';
+import { getRedemptionOptions } from '@/lib/redemption';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // CreditIQ landing — built to the Tokens file ("CreditIQ Tokens.dc.html"), Type A.
@@ -76,21 +78,70 @@ function Pill({ kind, label }: { kind: keyof typeof PROV; label: string }) {
   );
 }
 
-// Real "what's shipped" figures — no placeholders.
+// Real "what's shipped" figures — no placeholders. Devaluation watch and award-seat
+// availability are LIVE (Devaluation Tracker at /blog, real-time award seats via the
+// trip-planner's LiveAwardRow), so they belong here, not in coming-soon.
 const PRODUCTS = [
   { no: '01', title: 'Value engine', body: 'Every card scored from its published earn rules — category caps, milestones, exclusions, all of it.', figure: '162 cards · 36 banks · 49 with computed values', pill: 'estimated' as const, href: '/cards' },
   { no: '02', title: 'Cached fare index', body: 'Lowest cash fare on the corridors Indian points actually pay for, refreshed daily and stamped with its age.', figure: '5 corridors', pill: 'cached' as const, href: '/flights' },
   { no: '03', title: 'Statement Truth', body: 'Upload a statement and your real category mix replaces our model. Figures switch from estimated to verified — live today.', figure: 'your spend', pill: 'verified' as const, href: '/statement-truth' },
   { no: '04', title: 'Redemption paths', body: 'Transfer ratios and award charts, shown as maths you can check line by line.', figure: '₹ / point', pill: 'estimated' as const, href: '/points-optimizer' },
+  { no: '05', title: 'Devaluation watch', body: 'Every 2026 benefit cut and transfer-partner nerf, tracked and dated so you see the trend before it costs you.', figure: 'transfer partners', pill: 'estimated' as const, href: '/blog/credit-card-devaluations-india-2026' },
+  { no: '06', title: 'Award-seat availability', body: 'Real-time award seats on your routes, priced against the same cached cash fares — booked with the points you already hold.', figure: 'real-time seats', pill: 'cached' as const, href: '/trip-planner' },
+  { no: '07', title: 'Spend optimiser', body: 'Enter what you actually spend by category; it scans every Indian card and ranks them by net annual value — earnings minus the fee — then names the one card to add and why. No affiliate bias.', figure: 'net ₹/year, ranked', pill: 'estimated' as const, href: '/spend-optimizer' },
 ];
 
-// Coming, with no dates promised — statement upload is deliberately NOT here (it ships today).
+// Coming, with no dates promised. Statement upload, devaluation watch, award-seat
+// availability and the spend optimiser are deliberately NOT here — they all ship
+// today. What remains is genuinely unbuilt: hotel points wait on citable rates.
 const SOON = [
-  'Devaluation watch on transfer partners',
-  'Award-seat availability, cached like fares',
-  'Multi-card portfolio optimiser',
   'Hotel points, once we can cite the rates',
 ];
+
+// ── Break-section worked example (§03) — real redemption maths, not a mockup ──
+// One real card, one stated points balance, priced two ways so the whole gap comes
+// from the card's OWN redemption_options (computed here, no hand-typed rupees). Any
+// figure whose path is missing from the card is dropped, never faked.
+const BREAK_CARD = SEED_CARDS.find((c) => c.id === 'hdfc-infinia');
+const BREAK_BALANCE = 250000; // stated reward-point balance for the example
+const inr = (n: number) => `₹${Math.round(n).toLocaleString('en-IN')}`;
+
+type BreakFigure = { value: string; pill: keyof typeof PROV; caption: string; hero: boolean };
+
+function computeBreakFigures() {
+  if (!BREAK_CARD) return null;
+  const opts = getRedemptionOptions(BREAK_CARD);
+  const figures: BreakFigure[] = [];
+
+  // Premium cabin = the card's best transfer path (a lie-flat award seat).
+  const premium = opts
+    .filter((o) => o.type === 'transfer')
+    .sort((a, b) => b.value_per_point_inr - a.value_per_point_inr)[0];
+  if (premium) {
+    figures.push({
+      value: inr(BREAK_BALANCE * premium.value_per_point_inr),
+      pill: 'estimated',
+      caption: `${premium.partner ?? 'premium cabin transfer'} · ₹${premium.value_per_point_inr.toFixed(2)}/pt`,
+      hero: true,
+    });
+  }
+
+  // Floor = a voucher/catalogue path on the SAME balance (what most people default to).
+  const floor = opts.find((o) => o.type === 'voucher') ?? opts.find((o) => o.type === 'product');
+  if (floor) {
+    figures.push({
+      value: inr(BREAK_BALANCE * floor.value_per_point_inr),
+      pill: 'estimated',
+      caption: `${floor.partner ?? (floor.type === 'voucher' ? 'brand vouchers' : 'rewards catalogue')} · ₹${floor.value_per_point_inr.toFixed(2)}/pt`,
+      hero: false,
+    });
+  }
+
+  if (!figures.length) return null;
+  return { card: BREAK_CARD.name, balance: BREAK_BALANCE.toLocaleString('en-IN'), figures };
+}
+
+const BREAK = computeBreakFigures();
 
 const h2Cream: React.CSSProperties = { fontFamily: FR, fontWeight: 300, fontSize: 'clamp(30px,4vw,54px)', lineHeight: 1.08, letterSpacing: '-0.015em', color: '#142335', margin: '16px 0 0', maxWidth: '22ch', textWrap: 'pretty' };
 const h2Dark: React.CSSProperties = { fontFamily: FR, fontWeight: 300, fontSize: 'clamp(32px,4.6vw,62px)', lineHeight: 1.06, letterSpacing: '-0.015em', color: '#f7f4ef', margin: '18px 0 0', maxWidth: '19ch', textWrap: 'pretty' };
@@ -111,6 +162,24 @@ export default function LandingPage() {
         href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;1,9..144,300;1,9..144,400&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap"
         rel="stylesheet"
       />
+
+      {/* Slow push-in for the "where points" break media — approaches, then breathes back.
+          Reduced motion: no scale, and the poster stands in for the video. */}
+      <style dangerouslySetInnerHTML={{ __html: `
+        .where-media-video {
+          animation: wherePushIn 20s ease-out infinite alternate;
+          transform-origin: center;
+        }
+        .where-media-poster { display: none; }
+        @keyframes wherePushIn {
+          from { transform: scale(1); }
+          to   { transform: scale(1.08); }
+        }
+        @media (prefers-reduced-motion: reduce) {
+          .where-media-video { display: none; }
+          .where-media-poster { display: block; }
+        }
+      ` }} />
 
       <SiteNav />
       <RailNav />
@@ -191,7 +260,11 @@ export default function LandingPage() {
           gridTemplateColumns: 'repeat(auto-fit,minmax(340px,1fr))',
         }}
       >
-        <div style={{ padding: 'clamp(72px,9vw,124px) clamp(20px,5vw,72px)' }}>
+        {/* Left copy column. Its LEFT edge is pinned to the same 1200px container as
+            every other section — max(20px, calc(...)) equals `inner`'s content edge on
+            wide viewports and collapses to 20px when the container hits full width — so
+            the image (next cell) is free to bleed to the right viewport edge. */}
+        <div style={{ padding: 'clamp(72px,9vw,124px) clamp(20px,5vw,56px) clamp(72px,9vw,124px) max(20px, calc((100vw - 1200px) / 2 + 20px))' }}>
           <Eyebrow a="Where points" b="Can go" dark />
           <h2 style={h2Dark}>
             The same balance is a <em style={emDark}>lie-flat</em> seat, or a ₹4,000 voucher.
@@ -201,15 +274,55 @@ export default function LandingPage() {
             voucher can differ by an order of magnitude. We show the redemption paths and where each rate came
             from, so you compare real numbers instead of a single blended guess.
           </p>
+
+          {/* Two figures, both COMPUTED from one real card's redemption_options on the
+              same stated balance — the whole point is that the gap is real, not drawn. */}
+          {BREAK && (
+            <div style={{ marginTop: 34 }}>
+              <div style={{ fontFamily: MO, fontSize: 12, color: 'rgba(247,244,239,.55)', letterSpacing: '0.04em' }}>
+                {BREAK.card} · {BREAK.balance} pts
+              </div>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 32, marginTop: 16 }}>
+                {BREAK.figures.map((f) => (
+                  <div key={f.caption} style={{ minWidth: 0 }}>
+                    <div style={{ fontFamily: MO, fontSize: f.hero ? 'clamp(30px,4.4vw,44px)' : 'clamp(22px,3vw,30px)', fontWeight: 500, lineHeight: 1, color: f.hero ? '#e8b45c' : 'rgba(247,244,239,.72)', fontVariantNumeric: 'tabular-nums' }}>
+                      {f.value}
+                    </div>
+                    <div style={{ marginTop: 12 }}>
+                      <Pill kind={f.pill} label={f.pill.charAt(0).toUpperCase() + f.pill.slice(1)} />
+                    </div>
+                    <div style={{ fontFamily: MO, fontSize: 11.5, color: 'rgba(247,244,239,.5)', marginTop: 10, maxWidth: '30ch' }}>
+                      {f.caption}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
           <Link href="/points-optimizer" style={{ ...ctaPrimary, marginTop: 40 }}>
             Find the paths for my points<span style={{ fontFamily: MO }}>&rarr;</span>
           </Link>
         </div>
-        <div style={{ position: 'relative', minHeight: 'clamp(320px,40vw,580px)' }}>
+        <div style={{ position: 'relative', minHeight: 'clamp(320px,40vw,580px)', overflow: 'hidden' }}>
+          <video
+            className="where-media-video"
+            autoPlay
+            muted
+            loop
+            playsInline
+            preload="metadata"
+            poster="/images/where-points.jpg"
+            aria-label="An aircraft parked at an airport gate"
+            style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }}
+          >
+            <source src="/videos/where-points.webm" type="video/webm" />
+          </video>
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
+            className="where-media-poster"
             src="/images/where-points.jpg"
-            alt="Aerial view of a tropical island — turquoise water, palms, and overwater villas"
+            alt="An aircraft parked at an airport gate"
             style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }}
           />
           <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(90deg,rgba(15,22,32,.55),rgba(15,22,32,.05))', pointerEvents: 'none' }} />

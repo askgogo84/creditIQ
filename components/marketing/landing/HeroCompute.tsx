@@ -22,13 +22,50 @@ export function HeroCompute() {
     [spend]
   );
 
+  // Filled-track position (0–100%). WebKit can't paint a progress element, so we
+  // hand the track a two-stop gradient driven by this via the --pct custom prop;
+  // Firefox uses its native ::-moz-range-progress. Kept identical so both browsers
+  // render the same copper fill + grey remainder from the comp.
+  const pct = ((spend - SPEND_MIN) / (SPEND_MAX - SPEND_MIN)) * 100;
+
   return (
     <div style={{ minWidth: 0 }}>
-      {/* Themed slider track/thumb for THIS control only, on the dark hero ground. */}
+      {/* Themed slider track/thumb for THIS control only, on the dark hero ground.
+          The comp wants a visible filled copper track + grey remainder, not a bare
+          thumb — so we style the track explicitly in both engines. */}
       <style>{`
-        input.ciqL-hero-range { accent-color: #D89B2A; }
-        input.ciqL-hero-range::-webkit-slider-thumb { background: #D89B2A; }
-        input.ciqL-hero-range::-moz-range-thumb { background: #D89B2A; border: none; }
+        input.ciqL-hero-range {
+          -webkit-appearance: none;
+          appearance: none;
+          background: transparent;
+        }
+        input.ciqL-hero-range::-webkit-slider-runnable-track {
+          height: 6px;
+          border-radius: 999px;
+          background: linear-gradient(90deg,
+            #D89B2A 0, #D89B2A var(--pct,50%),
+            rgba(255,255,255,.18) var(--pct,50%), rgba(255,255,255,.18) 100%);
+        }
+        input.ciqL-hero-range::-webkit-slider-thumb {
+          -webkit-appearance: none;
+          appearance: none;
+          width: 18px; height: 18px;
+          margin-top: -6px; /* centre the 18px thumb on the 6px track */
+          border-radius: 999px;
+          background: #E4C97E;
+          border: 2px solid #12203a;
+          cursor: pointer;
+        }
+        input.ciqL-hero-range::-moz-range-track {
+          height: 6px; border-radius: 999px; background: rgba(255,255,255,.18);
+        }
+        input.ciqL-hero-range::-moz-range-progress {
+          height: 6px; border-radius: 999px; background: #D89B2A;
+        }
+        input.ciqL-hero-range::-moz-range-thumb {
+          width: 18px; height: 18px; border-radius: 999px;
+          background: #E4C97E; border: 2px solid #12203a; cursor: pointer;
+        }
       `}</style>
 
       <h1 style={{ fontFamily: FR, fontWeight: 300, fontSize: 'clamp(40px,6.4vw,84px)', lineHeight: 1.02, letterSpacing: '-0.015em', color: '#f7f4ef', margin: '20px 0 0', textWrap: 'pretty' }}>
@@ -77,7 +114,7 @@ export function HeroCompute() {
           value={spend}
           onChange={(e) => setSpend(parseInt(e.target.value, 10))}
           aria-label="Monthly spend"
-          style={{ width: '100%', height: 44, marginTop: 4, cursor: 'pointer', background: 'transparent' }}
+          style={{ width: '100%', height: 44, marginTop: 4, cursor: 'pointer', background: 'transparent', ['--pct' as any]: `${pct}%` }}
         />
         <div style={{ display: 'flex', justifyContent: 'space-between', fontFamily: MO, fontSize: 11, color: 'rgba(255,255,255,.45)' }}>
           <span>₹5,000</span>
