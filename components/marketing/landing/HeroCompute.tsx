@@ -54,8 +54,11 @@ export function HeroCompute() {
         <LeakMeter floor={floor} ceiling={ceiling} />
       </div>
 
-      {/* The single shared spend slider */}
-      <div style={{ marginTop: 24, maxWidth: 404, padding: '18px 20px', border: '1px solid rgba(255,255,255,.16)', borderRadius: 16, background: 'rgba(255,255,255,.05)' }}>
+      {/* The single shared spend slider — panel treatment matches the comp exactly:
+          marginTop 28, 18/20 padding, 1px rgba(255,255,255,.16) border, 16 radius,
+          rgba(255,255,255,.05) fill, and the two end labels beneath the track. Fills
+          the hero column (no width cap) so it reads as a panel, not a flat strip. */}
+      <div style={{ marginTop: 28, padding: '18px 20px', border: '1px solid rgba(255,255,255,.16)', borderRadius: 16, background: 'rgba(255,255,255,.05)' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', gap: 12 }}>
           <label htmlFor="ciqL-spend" style={{ minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontFamily: IN, fontSize: 11, fontWeight: 600, letterSpacing: '0.12em', textTransform: 'uppercase', color: 'rgba(255,255,255,.6)' }}>
             Monthly spend

@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { SiteNav } from '@/components/marketing/landing/SiteNav';
+import { RailNav } from '@/components/marketing/landing/RailNav';
 import { SpendProvider } from '@/components/marketing/landing/SpendContext';
 import { HeroCompute } from '@/components/marketing/landing/HeroCompute';
 import { HeroProof } from '@/components/marketing/landing/HeroProof';
@@ -112,6 +113,7 @@ export default function LandingPage() {
       />
 
       <SiteNav />
+      <RailNav />
 
       <SpendProvider>
         {/* ── 01 · HERO (dark cinematic; .cinematic supplies light inks) ── */}
@@ -174,9 +176,22 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* ── 03 · WHERE POINTS GO (dark break — qualitative, no fabricated billboards) ── */}
-      <section style={{ background: '#0f1620', borderTop: HAIRLINE, padding: `clamp(72px,9vw,124px) 0` }}>
-        <div style={inner}>
+      {/* ── 03 · WHERE POINTS GO (dark break — full-bleed two-column: copy left, image right) ──
+          Matches the comp's break section: a grid of auto-fit,minmax(340px,1fr) so the copy
+          column carries its own padding and the image bleeds to the right edge. Collapses to
+          one column below ~680px, image below the copy (DOM order). */}
+      <section
+        id="where"
+        style={{
+          position: 'relative',
+          background: '#0f1620',
+          borderTop: HAIRLINE,
+          overflow: 'hidden',
+          display: 'grid',
+          gridTemplateColumns: 'repeat(auto-fit,minmax(340px,1fr))',
+        }}
+      >
+        <div style={{ padding: 'clamp(72px,9vw,124px) clamp(20px,5vw,72px)' }}>
           <Eyebrow a="Where points" b="Can go" dark />
           <h2 style={h2Dark}>
             The same balance is a <em style={emDark}>lie-flat</em> seat, or a ₹4,000 voucher.
@@ -189,6 +204,15 @@ export default function LandingPage() {
           <Link href="/points-optimizer" style={{ ...ctaPrimary, marginTop: 40 }}>
             Find the paths for my points<span style={{ fontFamily: MO }}>&rarr;</span>
           </Link>
+        </div>
+        <div style={{ position: 'relative', minHeight: 'clamp(320px,40vw,580px)' }}>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src="/images/where-points.jpg"
+            alt="Aerial view of a tropical island — turquoise water, palms, and overwater villas"
+            style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }}
+          />
+          <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(90deg,rgba(15,22,32,.55),rgba(15,22,32,.05))', pointerEvents: 'none' }} />
         </div>
       </section>
 
@@ -245,7 +269,7 @@ export default function LandingPage() {
       </section>
 
       {/* ── 06 · CLOSING (dark, aspiration padding) ── */}
-      <section style={{ background: '#0f1620', borderTop: HAIRLINE, paddingTop: ASPIRE_TOP }}>
+      <section id="close" style={{ background: '#0f1620', borderTop: HAIRLINE, paddingTop: ASPIRE_TOP }}>
         <div style={{ ...inner }}>
           <h2 style={h2Dark}>
             Your move. We&rsquo;ve already shown <em style={emDark}>our</em> workings.
