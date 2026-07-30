@@ -20,9 +20,24 @@ interface CreditCard3DProps {
   tagline?: string;
   network?: string;
   variant?: CardVariant;
+  /** The card's own brand colour (hex) from the data. Depicts the physical
+   *  product, so it renders identically in every theme. Falls back to the
+   *  `variant` gradient when omitted. */
+  color?: string;
   number?: string;
   small?: boolean;
   interactive?: boolean;
+}
+
+// Perceived luminance of a #rrggbb hex, 0 (black) .. 1 (white).
+function hexLuma(hex: string): number {
+  const m = /^#?([0-9a-f]{6})$/i.exec(hex.trim());
+  if (!m) return 0;
+  const n = parseInt(m[1], 16);
+  const r = (n >> 16) & 255;
+  const g = (n >> 8) & 255;
+  const b = n & 255;
+  return (0.299 * r + 0.587 * g + 0.114 * b) / 255;
 }
 
 export function CreditCard3D({
@@ -31,6 +46,7 @@ export function CreditCard3D({
   tagline = 'RESERVE METAL',
   network = 'VISA',
   variant = 'obsidian',
+  color,
   number,
   small = false,
   interactive = true,
@@ -55,7 +71,10 @@ export function CreditCard3D({
     }
   };
 
-  const isLight = variant === 'cream';
+  // A real brand colour depicts the physical card, so it drives the surface
+  // in both themes; only fall back to the variant gradient when absent.
+  const surface = color ?? (CARD_SURFACES[variant] || CARD_SURFACES.obsidian);
+  const isLight = color ? hexLuma(color) > 0.6 : variant === 'cream';
   const textColor = isLight ? '#1A1612' : '#FFF';
   const subColor = isLight ? 'rgba(26,22,18,0.6)' : 'rgba(255,255,255,0.6)';
   const lowColor = isLight ? 'rgba(26,22,18,0.4)' : 'rgba(255,255,255,0.45)';
@@ -70,7 +89,7 @@ export function CreditCard3D({
       <div
         ref={cardRef}
         className="card3d"
-        style={{ background: CARD_SURFACES[variant] || CARD_SURFACES.obsidian }}
+        style={{ background: surface }}
       >
         <div className="card3d-holo" />
         <div className="card3d-shine" />

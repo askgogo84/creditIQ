@@ -90,6 +90,7 @@ export function CardDetailClient({ card }: { card: CreditCard }) {
             <Reveal style={{ display: 'flex', justifyContent: 'center' }}>
               <CreditCard3D
                 variant={cardVariant}
+                color={card.color}
                 name={(card.name || 'CARD').toUpperCase()}
                 bank={(card.bank || 'BANK').toUpperCase()}
                 tagline={card.tier || ''}
