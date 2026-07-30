@@ -132,7 +132,7 @@ export function FaresBoard() {
               {INR(result.price)}
             </div>
             <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 12, marginTop: 14 }}>
-              <span style={{ display: 'inline-flex', alignItems: 'center', gap: 7, padding: '6px 11px', borderRadius: 999, background: 'rgba(185,139,31,.14)', border: '1px solid rgba(185,139,31,.42)', fontFamily: IN, fontSize: 10.5, fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: '#8a6a12' }}>
+              <span style={{ display: 'inline-flex', alignItems: 'center', gap: 7, padding: '6px 11px', borderRadius: 999, background: 'rgba(185,139,31,.14)', border: '1px solid rgba(185,139,31,.42)', fontFamily: IN, fontSize: 10.5, fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: '#7a5c0f' }}>
                 <span style={{ width: 6, height: 6, borderRadius: 999, background: '#B98B1F' }} />
                 Cached
               </span>

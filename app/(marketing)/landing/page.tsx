@@ -10,6 +10,7 @@ import { FaresBoard } from '@/components/marketing/landing/FaresBoard';
 import { CardRankings } from '@/components/marketing/landing/CardRankings';
 import { SEED_CARDS } from '@/lib/data/seed-cards';
 import { getRedemptionOptions } from '@/lib/redemption';
+import { latestPosts } from '@/lib/blog/featured-posts';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // CreditIQ landing — built to the Tokens file ("CreditIQ Tokens.dc.html"), Type A.
@@ -64,7 +65,7 @@ function Eyebrow({ a, b, dark = false }: { a: string; b: string; dark?: boolean 
 // Provenance pill (semantic-only colours).
 const PROV = {
   verified: { bg: 'rgba(18,183,106,.12)', bd: 'rgba(18,183,106,.38)', fg: '#0b7a47', dot: '#12B76A' },
-  cached: { bg: 'rgba(185,139,31,.14)', bd: 'rgba(185,139,31,.42)', fg: '#8a6a12', dot: '#B98B1F' },
+  cached: { bg: 'rgba(185,139,31,.14)', bd: 'rgba(185,139,31,.42)', fg: '#7a5c0f', dot: '#B98B1F' },
   estimated: { bg: 'rgba(107,107,109,.1)', bd: 'rgba(107,107,109,.3)', fg: '#5b6169', dot: '#9aa2ad' },
 } as const;
 
@@ -143,6 +144,10 @@ function computeBreakFigures() {
 
 const BREAK = computeBreakFigures();
 
+// Latest real posts for the "From the blog" grid — one source with /blog, newest
+// first. None carry a cover image, so each renders as a typographic card.
+const LATEST_POSTS = latestPosts(6);
+
 const h2Cream: React.CSSProperties = { fontFamily: FR, fontWeight: 300, fontSize: 'clamp(30px,4vw,54px)', lineHeight: 1.08, letterSpacing: '-0.015em', color: '#142335', margin: '16px 0 0', maxWidth: '22ch', textWrap: 'pretty' };
 const h2Dark: React.CSSProperties = { fontFamily: FR, fontWeight: 300, fontSize: 'clamp(32px,4.6vw,62px)', lineHeight: 1.06, letterSpacing: '-0.015em', color: '#f7f4ef', margin: '18px 0 0', maxWidth: '19ch', textWrap: 'pretty' };
 const leadCream: React.CSSProperties = { fontFamily: IN, fontSize: 17, lineHeight: 1.6, color: '#2b385c', maxWidth: '56ch', margin: '14px 0 0' };
@@ -154,7 +159,7 @@ const ctaGhost: React.CSSProperties = { minHeight: 48, display: 'inline-flex', a
 
 export default function LandingPage() {
   return (
-    <main style={{ background: '#fbf8f3', color: '#142335', fontFamily: IN }}>
+    <main style={{ background: '#ffffff', color: '#142335', fontFamily: IN }}>
       {/* Type A fonts — Fraunces (display + italic), Inter (body), JetBrains Mono (figures) */}
       <link rel="preconnect" href="https://fonts.googleapis.com" />
       <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
@@ -200,9 +205,9 @@ export default function LandingPage() {
             alignItems: 'center',
             paddingTop: ASPIRE_TOP,
             paddingBottom: 'clamp(72px,9vw,110px)',
-            // AmbientHero's bottom dissolve melts into the NEXT section's sand ground
-            // (#f1ece4). This page is fixed-palette, so point the dissolve token at it.
-            ['--page-bg-rgb' as any]: '241, 236, 228',
+            // AmbientHero's bottom dissolve melts into the NEXT section's faint tint
+            // (#f7f5f2). This page is fixed-palette, so point the dissolve token at it.
+            ['--page-bg-rgb' as any]: '247, 245, 242',
           }}
         >
           {/* Full-bleed licensed footage (cabin window) + the scrim tuned against the
@@ -231,7 +236,7 @@ export default function LandingPage() {
         </section>
 
       {/* ── 02 · LIVE FARES (sand band) ── */}
-      <section id="fares" style={{ background: '#f1ece4', borderTop: HAIRLINE, padding: WORK_PAD }}>
+      <section id="fares" style={{ background: '#f7f5f2', borderTop: HAIRLINE, padding: WORK_PAD }}>
         <div style={inner}>
           <Eyebrow a="Live fares" b="Cached" />
           <h2 style={h2Cream}>
@@ -330,7 +335,7 @@ export default function LandingPage() {
       </section>
 
       {/* ── 04 · WHAT YOU GET TODAY (cream) ── */}
-      <section id="today" style={{ background: '#fbf8f3', borderTop: HAIRLINE, padding: WORK_PAD }}>
+      <section id="today" style={{ background: '#ffffff', borderTop: HAIRLINE, padding: WORK_PAD }}>
         <div style={inner}>
           <Eyebrow a="What you get" b="Today" />
           <h2 style={h2Cream}>
@@ -347,7 +352,7 @@ export default function LandingPage() {
                 <span style={{ fontFamily: MO, fontSize: 12, fontWeight: 500, color: '#D89B2A', letterSpacing: '0.06em' }}>{p.no}</span>
                 <h3 style={{ fontFamily: FR, fontWeight: 400, fontSize: 22, lineHeight: 1.2, color: '#142335', margin: 0 }}>{p.title}</h3>
                 <p style={{ fontFamily: IN, fontSize: 14.5, lineHeight: 1.6, color: '#2b385c', margin: 0 }}>{p.body}</p>
-                <div style={{ marginTop: 'auto', paddingTop: 14, display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: 10, borderTop: '1px solid #f1ece4' }}>
+                <div style={{ marginTop: 'auto', paddingTop: 14, display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: 10, borderTop: '1px solid #f0ece5' }}>
                   <span style={{ fontFamily: MO, fontSize: 15, color: '#142335' }}>{p.figure}</span>
                   <Pill kind={p.pill} label={p.pill.charAt(0).toUpperCase() + p.pill.slice(1)} />
                 </div>
@@ -356,7 +361,7 @@ export default function LandingPage() {
           </div>
 
           {/* Coming, with no dates promised — statement upload deliberately excluded */}
-          <div style={{ marginTop: 22, border: '1px dashed #ddd0c0', borderRadius: 16, padding: 'clamp(22px,3vw,30px)', background: '#f1ece4' }}>
+          <div style={{ marginTop: 22, border: '1px dashed #ddd0c0', borderRadius: 16, padding: 'clamp(22px,3vw,30px)', background: '#f7f5f2' }}>
             <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'baseline', justifyContent: 'space-between', gap: 10 }}>
               <h3 style={{ fontFamily: FR, fontWeight: 400, fontSize: 21, color: '#142335', margin: 0 }}>Coming, with no dates promised</h3>
               <span style={{ fontFamily: IN, fontSize: 12, color: '#6b6b6d' }}>we don&rsquo;t ship roadmaps as features</span>
@@ -374,14 +379,60 @@ export default function LandingPage() {
       </section>
 
       {/* ── 05 · CARD RANKINGS (cream) — computed live from the engine ── */}
-      <section id="rankings" style={{ background: '#fbf8f3', borderTop: HAIRLINE, padding: WORK_PAD }}>
+      <section id="rankings" style={{ background: '#f7f5f2', borderTop: HAIRLINE, padding: WORK_PAD }}>
         <div style={inner}>
           <Eyebrow a="Card" b="Rankings" />
           <CardRankings />
         </div>
       </section>
 
-      {/* ── 06 · CLOSING (dark, aspiration padding) ── */}
+      {/* ── 06 · FROM THE BLOG (white ground) — real posts, typographic cards ──
+          No post carries a cover image, so each card leads with a typographic
+          category band instead of a stock placeholder. Latest six, newest first,
+          from the shared source that also feeds /blog. */}
+      <section id="blog" style={{ background: '#ffffff', borderTop: HAIRLINE, padding: WORK_PAD }}>
+        <div style={inner}>
+          <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'flex-end', justifyContent: 'space-between', gap: 16 }}>
+            <div>
+              <Eyebrow a="From the blog" b="Latest" />
+              <h2 style={h2Cream}>
+                Written like we <em style={emCream}>compute</em> — no bank money.
+              </h2>
+            </div>
+            <Link href="/blog" style={{ fontFamily: IN, fontSize: 14, fontWeight: 600, color: '#c2871f', textDecoration: 'none', whiteSpace: 'nowrap', paddingBottom: 6 }}>
+              Read the blog <span style={{ fontFamily: MO }}>&rarr;</span>
+            </Link>
+          </div>
+
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(300px,1fr))', gap: 16, marginTop: 34 }}>
+            {LATEST_POSTS.map((post) => (
+              <Link
+                key={post.slug}
+                href={`/blog/${post.slug}`}
+                style={{ display: 'flex', flexDirection: 'column', border: '1px solid #e5d9cc', borderRadius: 16, overflow: 'hidden', textDecoration: 'none', color: 'inherit', background: '#ffffff' }}
+              >
+                {/* Typographic cover — category set large, no image */}
+                <div style={{ padding: '22px 22px 18px', background: '#faf8f4', borderBottom: '1px solid #f0ece5', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
+                  <span style={{ fontFamily: FR, fontWeight: 400, fontStyle: 'italic', fontSize: 'clamp(22px,2.4vw,28px)', lineHeight: 1, color: post.tagColor }}>
+                    {post.tag}
+                  </span>
+                  <span style={{ fontFamily: MO, fontSize: 11, color: '#8a857b', whiteSpace: 'nowrap' }}>{post.readTime} read</span>
+                </div>
+                <div style={{ padding: 22, display: 'flex', flexDirection: 'column', gap: 12, flex: 1 }}>
+                  <h3 style={{ fontFamily: FR, fontWeight: 400, fontSize: 20, lineHeight: 1.22, color: '#142335', margin: 0 }}>{post.title}</h3>
+                  <p style={{ fontFamily: IN, fontSize: 14, lineHeight: 1.55, color: '#2b385c', margin: 0 }}>{post.excerpt}</p>
+                  <div style={{ marginTop: 'auto', paddingTop: 12, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10, borderTop: '1px solid #f0ece5' }}>
+                    <span style={{ fontFamily: MO, fontSize: 11.5, color: '#8a857b' }}>{post.date}</span>
+                    <span style={{ fontFamily: MO, fontSize: 12, color: '#c2871f', fontWeight: 600 }}>Read &rarr;</span>
+                  </div>
+                </div>
+              </Link>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ── 07 · CLOSING (dark, aspiration padding) ── */}
       <section id="close" style={{ background: '#0f1620', borderTop: HAIRLINE, paddingTop: ASPIRE_TOP }}>
         <div style={{ ...inner }}>
           <h2 style={h2Dark}>
