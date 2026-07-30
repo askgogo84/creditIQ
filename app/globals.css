@@ -68,6 +68,13 @@
   --bg-deep:        #0E1420;
   --muted:          #6B7280;
 
+  /* Header/nav badge chips — brand-stable across BOTH themes (white text sits
+     on these fills, so they are deliberately NOT re-tuned per theme). The Header
+     reads these instead of inlining raw hex, so nothing in the header is hardcoded. */
+  --badge-gold:     #C9972E;   /* default / popular / "HOT" */
+  --badge-new:      #2E7D32;   /* NEW */
+  --badge-beta:     #1565C0;   /* BETA */
+
   /* ── Provenance — ONE semantic value per theme (dark set lives in the
      [data-theme="dark"] block). <Figure> and the landing pills read ONLY these
      three; one hue = one meaning. Each is measured ≥4.5:1 on that theme's ground.
