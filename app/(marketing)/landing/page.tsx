@@ -4,6 +4,7 @@ import { SiteNav } from '@/components/marketing/landing/SiteNav';
 import { SpendProvider } from '@/components/marketing/landing/SpendContext';
 import { HeroCompute } from '@/components/marketing/landing/HeroCompute';
 import { HeroProof } from '@/components/marketing/landing/HeroProof';
+import { AmbientHero } from '@/components/marketing/AmbientHero';
 import { FaresBoard } from '@/components/marketing/landing/FaresBoard';
 import { CardRankings } from '@/components/marketing/landing/CardRankings';
 
@@ -117,8 +118,25 @@ export default function LandingPage() {
         <section
           id="top"
           className="cinematic"
-          style={{ position: 'relative', background: '#0f1620', overflow: 'hidden', paddingTop: ASPIRE_TOP, paddingBottom: 'clamp(72px,9vw,110px)' }}
+          style={{
+            position: 'relative',
+            background: '#0f1620',
+            overflow: 'hidden',
+            // Fill the first screen (nav is a 64px sticky row above it) so the footage
+            // reads as the hero, not a band.
+            minHeight: 'calc(100vh - 64px)',
+            display: 'flex',
+            alignItems: 'center',
+            paddingTop: ASPIRE_TOP,
+            paddingBottom: 'clamp(72px,9vw,110px)',
+            // AmbientHero's bottom dissolve melts into the NEXT section's sand ground
+            // (#f1ece4). This page is fixed-palette, so point the dissolve token at it.
+            ['--page-bg-rgb' as any]: '241, 236, 228',
+          }}
         >
+          {/* Full-bleed licensed footage (cabin window) + the scrim tuned against the
+              real frames. Sits at z-index 0; all copy is z-index 1 above it. */}
+          <AmbientHero />
           <div style={{ ...inner, position: 'relative', zIndex: 1, display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(330px,1fr))', gap: 48, alignItems: 'center' }}>
             <div style={{ minWidth: 0 }}>
               <Eyebrow a="Live" b="India" dark />

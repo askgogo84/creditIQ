@@ -76,8 +76,21 @@ export function AmbientHero() {
 
   return (
     <div style={{ position: 'absolute', inset: 0, overflow: 'hidden', zIndex: 0 }} aria-hidden="true">
-      {/* Dark poster stand-in — always present, decodes instantly, never blocks. */}
-      <div style={{ position: 'absolute', inset: 0, background: POSTER_GRADIENT }} />
+      {/* Real poster frame (the licensed cabin window) laid over a dark cabin radial
+          fallback — always present, decodes instantly, never blocks. On mobile AND
+          reduced-motion the video never mounts, so THIS is the footage: the hero reads
+          photographic at 375px, not a flat radial. */}
+      <div
+        style={{
+          position: 'absolute',
+          inset: 0,
+          backgroundColor: '#0B0E13',
+          backgroundImage: `url('${POSTER_SRC}'), ${POSTER_GRADIENT}`,
+          backgroundSize: 'cover, cover',
+          backgroundPosition: 'center, center',
+          backgroundRepeat: 'no-repeat, no-repeat',
+        }}
+      />
 
       {/* Progressive-enhancement video (gated; fetches nothing until VIDEO_READY). */}
       {VIDEO_READY && showVideo && (

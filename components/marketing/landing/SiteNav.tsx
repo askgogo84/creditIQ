@@ -37,6 +37,30 @@ const CSS = `
   .ciqL-badge { font-family: ${IN}; font-size: 8.5px; font-weight: 700; letter-spacing: 0.04em; padding: 1px 5px; border-radius: 999px; background: rgba(216,155,42,.18); border: 1px solid rgba(216,155,42,.4); color: #e8b45c; margin-left: 6px; vertical-align: middle; }
   .ciqL-cta { min-height: 44px; display: inline-flex; align-items: center; padding: 0 22px; border-radius: 999px; background: #D89B2A; color: #12203a; font-family: ${IN}; font-size: 14px; font-weight: 600; white-space: nowrap; text-decoration: none; transition: background 150ms; }
   .ciqL-cta:hover { background: #c2871f; }
+
+  /* ── Mobile hamburger + sheet (below 900px) ── */
+  .ciqL-ham { display: none; flex-direction: column; justify-content: center; align-items: center; gap: 5px; width: 44px; height: 44px; padding: 0; background: none; border: none; cursor: pointer; flex-shrink: 0; }
+  .ciqL-ham span { display: block; width: 22px; height: 2px; background: #f4f1ec; border-radius: 2px; transition: transform 200ms ease, opacity 200ms ease; }
+  .ciqL-ham.open span:nth-child(1) { transform: translateY(7px) rotate(45deg); }
+  .ciqL-ham.open span:nth-child(2) { opacity: 0; }
+  .ciqL-ham.open span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
+  .ciqL-sheet { position: absolute; top: 100%; left: 0; right: 0; background: rgba(15,22,32,.98); -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px); border-top: 1px solid rgba(216,155,42,.5); border-bottom: 1px solid rgba(255,255,255,.12); padding: 8px 20px 24px; max-height: calc(100vh - 64px); overflow-y: auto; }
+  .ciqL-sheet-title { font-family: ${IN}; font-size: 11px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; color: #e8b45c; padding: 18px 4px 6px; }
+  .ciqL-sheet-link { display: flex; align-items: center; gap: 12px; padding: 12px 4px; text-decoration: none; border-bottom: 1px solid rgba(255,255,255,.08); }
+  .ciqL-sheet-ico { width: 30px; height: 30px; border-radius: 8px; background: rgba(255,255,255,.06); display: flex; align-items: center; justify-content: center; font-size: 15px; flex-shrink: 0; color: #e8b45c; }
+  .ciqL-sheet-label { font-family: ${IN}; font-size: 15px; font-weight: 600; color: #f4f1ec; }
+  .ciqL-sheet-desc { font-family: ${IN}; font-size: 12px; color: rgba(247,244,239,.55); margin-top: 1px; }
+
+  @media (max-width: 899px) {
+    .ciqL-links { display: none !important; }
+    .ciqL-ham { display: flex !important; }
+    .ciqL-nav-inner { flex-wrap: nowrap; }
+    .ciqL-right { gap: 10px; }
+  }
+  @media (min-width: 900px) {
+    .ciqL-ham { display: none !important; }
+    .ciqL-sheet { display: none !important; }
+  }
 `;
 
 const Chevron = () => (
@@ -48,7 +72,8 @@ const Chevron = () => (
 export function SiteNav() {
   const [scrolled, setScrolled] = useState(false);
   const [open, setOpen] = useState<string | null>(null);
-  const rootRef = useRef<HTMLDivElement | null>(null);
+  const [mobileOpen, setMobileOpen] = useState(false);
+  const rootRef = useRef<HTMLElement | null>(null);
   const closeTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
@@ -58,14 +83,18 @@ export function SiteNav() {
     return () => window.removeEventListener('scroll', onScroll);
   }, []);
 
-  // Close on outside click and on Escape.
+  // Close dropdowns AND the mobile sheet on outside click / Escape.
   useEffect(() => {
-    if (!open) return;
+    if (!open && !mobileOpen) return;
+    const close = () => {
+      setOpen(null);
+      setMobileOpen(false);
+    };
     const onDown = (e: PointerEvent) => {
-      if (rootRef.current && !rootRef.current.contains(e.target as Node)) setOpen(null);
+      if (rootRef.current && !rootRef.current.contains(e.target as Node)) close();
     };
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') setOpen(null);
+      if (e.key === 'Escape') close();
     };
     document.addEventListener('pointerdown', onDown, true);
     document.addEventListener('keydown', onKey, true);
@@ -73,7 +102,7 @@ export function SiteNav() {
       document.removeEventListener('pointerdown', onDown, true);
       document.removeEventListener('keydown', onKey, true);
     };
-  }, [open]);
+  }, [open, mobileOpen]);
 
   const cancelClose = () => {
     if (closeTimer.current) clearTimeout(closeTimer.current);
@@ -84,9 +113,9 @@ export function SiteNav() {
   };
 
   return (
-    <nav className={`ciqL-nav${scrolled ? ' scrolled' : ''}`}>
+    <nav className={`ciqL-nav${scrolled ? ' scrolled' : ''}`} ref={rootRef}>
       <style>{CSS}</style>
-      <div className="ciqL-nav-inner" ref={rootRef}>
+      <div className="ciqL-nav-inner">
         <Link href="#top" className="ciqL-wordmark">
           Credit<span>IQ</span>
         </Link>
@@ -139,8 +168,56 @@ export function SiteNav() {
           <Link href="/login" className="ciqL-cta">
             Compute my cards
           </Link>
+          <button
+            type="button"
+            className={`ciqL-ham${mobileOpen ? ' open' : ''}`}
+            aria-label="Menu"
+            aria-expanded={mobileOpen}
+            onClick={() => {
+              setMobileOpen((v) => !v);
+              setOpen(null);
+            }}
+          >
+            <span />
+            <span />
+            <span />
+          </button>
         </div>
       </div>
+
+      {/* Mobile sheet — the full MORE_GROUPS list + Pricing, opened by the hamburger.
+          Hidden ≥900px by CSS; the inline dropdowns take over there. */}
+      {mobileOpen && (
+        <div className="ciqL-sheet">
+          {MORE_GROUPS.map((g) => (
+            <div key={g.title}>
+              <div className="ciqL-sheet-title">{g.title}</div>
+              {g.links.map((l) => (
+                <Link
+                  key={`${g.title}-${l.href}`}
+                  href={l.href}
+                  className="ciqL-sheet-link"
+                  onClick={() => setMobileOpen(false)}
+                >
+                  <span className="ciqL-sheet-ico">{l.icon}</span>
+                  <span style={{ flex: 1, minWidth: 0 }}>
+                    <span className="ciqL-sheet-label">
+                      {l.label}
+                      {l.badge && <span className="ciqL-badge">{l.badge}</span>}
+                    </span>
+                    {l.desc && <span className="ciqL-sheet-desc" style={{ display: 'block' }}>{l.desc}</span>}
+                  </span>
+                </Link>
+              ))}
+            </div>
+          ))}
+          <div className="ciqL-sheet-title">More</div>
+          <Link href="/plans" className="ciqL-sheet-link" onClick={() => setMobileOpen(false)}>
+            <span className="ciqL-sheet-ico">₹</span>
+            <span className="ciqL-sheet-label">Pricing</span>
+          </Link>
+        </div>
+      )}
     </nav>
   );
 }
