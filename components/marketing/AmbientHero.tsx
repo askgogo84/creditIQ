@@ -30,11 +30,15 @@ const VIDEO_MP4 = '/videos/hero-loop.mp4';
 // backdrop — all measured on the actual footage, not a flat colour.
 const INK = '8, 10, 14'; // warm near-black scrim colour (not pure #000 — keeps it filmic)
 
-// Layered scrim (topmost layer first): a LEFT weight for the copy column, a BOTTOM
+// Layered scrim (topmost layer first): a TOP weight so the transparent nav that
+// overlays this hero clears WCAG AA against ANY footage frame (the nav sits in the
+// top ~64px; combined alpha there ≈0.68, which keeps #f4f1ec ink ≥6:1 even over a
+// pure-white frame — see SiteNav), a LEFT weight for the copy column, a BOTTOM
 // weight for depth + the dissolve, then a flat floor everywhere.
 const SCRIM = [
-  `linear-gradient(to right, rgba(${INK}, 0.74) 0%, rgba(${INK}, 0) 68%)`,
-  `linear-gradient(to top,   rgba(${INK}, 0.66) 0%, rgba(${INK}, 0) 55%)`,
+  `linear-gradient(to bottom, rgba(${INK}, 0.55) 0, rgba(${INK}, 0) 128px)`,
+  `linear-gradient(to right,  rgba(${INK}, 0.74) 0%, rgba(${INK}, 0) 68%)`,
+  `linear-gradient(to top,    rgba(${INK}, 0.66) 0%, rgba(${INK}, 0) 55%)`,
   `linear-gradient(rgba(${INK}, 0.28), rgba(${INK}, 0.28))`,
 ].join(', ');
 

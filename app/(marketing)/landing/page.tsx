@@ -198,9 +198,10 @@ export default function LandingPage() {
             position: 'relative',
             background: '#0f1620',
             overflow: 'hidden',
-            // Fill the first screen (nav is a 64px sticky row above it) so the footage
-            // reads as the hero, not a band.
-            minHeight: 'calc(100vh - 64px)',
+            // Fill the first screen. The nav is a fixed 64px overlay (not an in-flow
+            // row), so the hero starts at y=0 and fills the whole fold — the footage
+            // reads as the hero, not a band. paddingTop below clears the nav.
+            minHeight: '100vh',
             display: 'flex',
             alignItems: 'center',
             paddingTop: ASPIRE_TOP,

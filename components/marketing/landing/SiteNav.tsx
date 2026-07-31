@@ -40,7 +40,14 @@ const FLAT_LINKS = [
 ];
 
 const CSS = `
-  .ciqL-nav { position: sticky; top: 0; z-index: 50; width: 100%; transition: background 300ms cubic-bezier(.2,.8,.2,1), border-color 300ms cubic-bezier(.2,.8,.2,1); background: transparent; border-bottom: 1px solid transparent; }
+  /* Overlay, not a band — and FIXED, not sticky. The comp uses position:sticky, but
+     this app sets overflow-x:hidden on <html>/<body> (to kill horizontal scroll),
+     which makes <body> the sticky scroll-context while the real scroll is on <html>
+     — so a sticky nav detaches and scrolls away. position:fixed is immune to that and
+     is out of flow, so the hero starts at y=0 and this 64px bar overlays its top. At
+     rest the transparent bar shows the DARK hero footage behind it (never the white
+     <main> ground); the hero's own paddingTop (clamp(88,150) ≥ 64) clears the copy. */
+  .ciqL-nav { position: fixed; top: 0; left: 0; right: 0; z-index: 50; width: 100%; transition: background 300ms cubic-bezier(.2,.8,.2,1), border-color 300ms cubic-bezier(.2,.8,.2,1); background: transparent; border-bottom: 1px solid transparent; }
   .ciqL-nav.scrolled { background: rgba(15,22,32,.94); -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); border-bottom: 1px solid rgba(216,155,42,.5); }
   .ciqL-nav-inner { width: 100%; max-width: 1200px; margin: 0 auto; padding: 10px 20px; min-height: 64px; display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
   .ciqL-wordmark { font-family: ${FR}; font-weight: 400; font-size: 19px; letter-spacing: -0.01em; color: #f4f1ec; display: inline-flex; align-items: baseline; gap: 2px; text-decoration: none; }
