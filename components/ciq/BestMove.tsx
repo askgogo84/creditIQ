@@ -26,7 +26,8 @@ export function BestMove({
         </div>
         <div style={{ fontSize: 12, color: 'var(--ciq-ink-3)', marginTop: 6, lineHeight: 1.45 }}>{detail}</div>
         <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', marginTop: 16 }}>
-          <div className="ciq-display" style={{ fontWeight: 700, fontSize: 30, lineHeight: 1, color: 'var(--ciq-verified)' }}>{unlockedValue}</div>
+          {/* Gold, not verified-green: this is an estimate, and green is reserved for verified-from-statement. */}
+          <div className="ciq-display" style={{ fontWeight: 700, fontSize: 30, lineHeight: 1, color: 'var(--ciq-gold-2)' }}>{unlockedValue}</div>
           <div className="ciq-mono" style={{ fontSize: 10, color: 'var(--ciq-ink-3)', textAlign: 'right', lineHeight: 1.4 }}>{vsLabel}</div>
         </div>
         <Link href={href} style={{

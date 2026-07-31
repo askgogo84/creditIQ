@@ -13,20 +13,24 @@ type Card = {
 };
 
 export function WalletView({
-  displayName, email, cards, totalPoints, bestValue, primaryBank,
+  displayName, email, cards, totalPoints, primaryBank,
   onAddCard, onRefresh, refreshing,
 }: {
   displayName: string; email?: string; cards: Card[];
-  totalPoints: number; bestValue: number; primaryBank: string;
+  totalPoints: number; primaryBank: string;
   onAddCard: () => void; onRefresh: () => void; refreshing?: boolean;
 }) {
-  // verified/estimated split from real source tags — flat rate for now (upgrade to per-program next)
-  const RATE = 1.8;
+  // Verified vs estimated split on REAL POINT COUNTS (statement vs manual).
+  // Rupee figures are only ever an ESTIMATE RANGE, never a stated value:
+  //  - low  = cashback floor (~0.25/pt)
+  //  - high = travel ceiling (~1.8/pt)
+  // See docs/dashboard-data-audit.md §1 — the point count is real; the ₹ is not.
+  const LOW_RATE = 0.25;
+  const HIGH_RATE = 1.8;
   const vPoints = cards.filter(c => c.source === 'statement').reduce((s, c) => s + (c.points_balance || 0), 0);
   const ePoints = cards.filter(c => c.source === 'manual').reduce((s, c) => s + (c.points_balance || 0), 0);
-  const verified = Math.round(vPoints * RATE);
-  const estimated = Math.round(ePoints * RATE);
-  const totalValue = verified + estimated;
+  const estLow = Math.round(totalPoints * LOW_RATE);
+  const estHigh = Math.round(totalPoints * HIGH_RATE);
   const hasVerified = vPoints > 0;
 
   return (
@@ -56,8 +60,8 @@ export function WalletView({
             </div>
 
             {/* HERO GAUGE — the signature */}
-            <HeroGauge total={totalValue} verified={verified} estimated={estimated}
-              bestValue={bestValue} points={totalPoints} cardCount={cards.length} />
+            <HeroGauge points={totalPoints} verifiedPoints={vPoints} estimatedPoints={ePoints}
+              estLow={estLow} estHigh={estHigh} cardCount={cards.length} />
 
             {/* honesty credo */}
             <div className="ciq-rise d2" style={{
@@ -86,9 +90,9 @@ export function WalletView({
                 <BestMove
                   flag="Best value"
                   title={`Redeem your ${totalPoints.toLocaleString('en-IN')} points for travel`}
-                  detail="Travel redemption unlocks far more than statement credit. Plan a trip to see live award options."
-                  unlockedValue={`₹${bestValue.toLocaleString('en-IN')}`}
-                  vsLabel={`vs ₹${Math.round(totalPoints * 0.25).toLocaleString('en-IN')} cashback`}
+                  detail="Travel redemption typically unlocks far more than statement credit. Plan a trip to see live award options."
+                  unlockedValue={`≈ ₹${estHigh.toLocaleString('en-IN')}`}
+                  vsLabel={`estimate · vs ≈ ₹${estLow.toLocaleString('en-IN')} cashback`}
                   href={`/trip-planner?points=${totalPoints}&bank=${primaryBank}`}
                 />
               </>

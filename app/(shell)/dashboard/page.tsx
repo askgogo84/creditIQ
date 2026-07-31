@@ -216,8 +216,6 @@ export default function DashboardPage() {
   };
 
   const totalPoints = cards.reduce((s, c) => s + (c.points_balance || 0), 0);
-  const bestValue = Math.round(totalPoints * 1.8);
-  const conservativeValue = Math.round(totalPoints * 0.25);
   const firstName = user?.user_metadata?.full_name?.split(' ')[0] || user?.email?.split('@')[0] || 'there';
   const primaryBank = cards[0]?.bank || 'HDFC';
 
@@ -237,7 +235,6 @@ export default function DashboardPage() {
         email={user?.email}
         cards={cards as any}
         totalPoints={totalPoints}
-        bestValue={bestValue}
         primaryBank={primaryBank}
         onAddCard={() => setShowAddModal(true)}
         onRefresh={() => { setRefreshing(true); loadCards(user.id).then(() => setRefreshing(false)); }}

@@ -1,12 +1,18 @@
-﻿// components/ciq/HeroGauge.tsx
+// components/ciq/HeroGauge.tsx
 'use client';
 import { useEffect, useRef, useState } from 'react';
 
-// Count-up that RE-RUNS whenever the target changes (fixes ₹0 when data loads after mount)
+// Count-up that RE-RUNS whenever the target changes (fixes 0 when data loads
+// after mount). Honours prefers-reduced-motion by jumping straight to target.
 function useCountUp(target: number, ms = 1400) {
   const [val, setVal] = useState(0);
   const fromRef = useRef(0);
   useEffect(() => {
+    const reduce =
+      typeof window !== 'undefined' &&
+      typeof window.matchMedia === 'function' &&
+      window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (reduce) { setVal(target); fromRef.current = target; return; }
     const from = fromRef.current;
     const to = target;
     if (from === to) { setVal(to); return; }
@@ -26,13 +32,21 @@ function useCountUp(target: number, ms = 1400) {
   return val;
 }
 
+/**
+ * HeroGauge — the signature verified-vs-estimated gauge.
+ *
+ * HONESTY: the headline is the user's REAL point count (verified points come
+ * from statements, estimated from manual entry). The rupee figure is only ever
+ * shown as a clearly-labelled ESTIMATE RANGE, never as the hero number and
+ * never in verified-green. See docs/dashboard-data-audit.md §1.
+ */
 export function HeroGauge({
-  total, verified, estimated, bestValue, points, cardCount,
+  points, verifiedPoints, estimatedPoints, estLow, estHigh, cardCount,
 }: {
-  total: number; verified: number; estimated: number;
-  bestValue: number; points: number; cardCount: number;
+  points: number; verifiedPoints: number; estimatedPoints: number;
+  estLow: number; estHigh: number; cardCount: number;
 }) {
-  const counted = useCountUp(total);
+  const counted = useCountUp(points);
   const [fill, setFill] = useState(false);
 
   // re-trigger the gauge fill whenever the split changes (data arrives after mount)
@@ -40,11 +54,11 @@ export function HeroGauge({
     setFill(false);
     const id = requestAnimationFrame(() => requestAnimationFrame(() => setFill(true)));
     return () => cancelAnimationFrame(id);
-  }, [verified, estimated]);
+  }, [verifiedPoints, estimatedPoints]);
 
-  const denom = verified + estimated || 1;
-  const vPct = (verified / denom) * 100;
-  const ePct = (estimated / denom) * 100;
+  const denom = verifiedPoints + estimatedPoints || 1;
+  const vPct = (verifiedPoints / denom) * 100;
+  const ePct = (estimatedPoints / denom) * 100;
 
   return (
     <section className="ciq-rise d2" style={{
@@ -59,11 +73,11 @@ export function HeroGauge({
 
       <div style={{ position: 'relative' }}>
         <div className="ciq-mono" style={{ fontSize: 10.5, letterSpacing: '.1em', textTransform: 'uppercase', color: 'var(--ciq-ink-3)' }}>
-          Total reward value
+          Total reward points
         </div>
         <div className="ciq-display" style={{ fontWeight: 600, fontSize: 54, lineHeight: 1, letterSpacing: '-.03em', marginTop: 10, fontVariantNumeric: 'tabular-nums' }}>
-          <span style={{ fontSize: 28, color: 'var(--ciq-gold-2)', verticalAlign: 'top' }}>₹</span>
           {counted.toLocaleString('en-IN')}
+          <span style={{ fontSize: 22, color: 'var(--ciq-gold-2)', marginLeft: 8 }}>pts</span>
         </div>
 
         <div style={{ marginTop: 20 }}>
@@ -79,8 +93,8 @@ export function HeroGauge({
                 <span style={{ width: 9, height: 9, borderRadius: 3, background: 'var(--ciq-verified)' }} />
                 <span className="ciq-mono" style={{ fontSize: 9.5, letterSpacing: '.05em', textTransform: 'uppercase', color: 'var(--ciq-ink-3)' }}>Verified</span>
               </div>
-              <div className="ciq-display" style={{ fontWeight: 600, fontSize: 20, marginTop: 5, color: 'var(--ciq-verified)' }}>
-                ₹{verified.toLocaleString('en-IN')}
+              <div className="ciq-display" style={{ fontWeight: 600, fontSize: 20, marginTop: 5, color: 'var(--ciq-verified)', fontVariantNumeric: 'tabular-nums' }}>
+                {verifiedPoints.toLocaleString('en-IN')} <span style={{ fontSize: 12 }}>pts</span>
               </div>
             </div>
             <div>
@@ -88,19 +102,25 @@ export function HeroGauge({
                 <span style={{ width: 9, height: 9, borderRadius: 3, background: 'var(--ciq-estimated)', opacity: .55 }} />
                 <span className="ciq-mono" style={{ fontSize: 9.5, letterSpacing: '.05em', textTransform: 'uppercase', color: 'var(--ciq-ink-3)' }}>Estimated</span>
               </div>
-              <div className="ciq-display" style={{ fontWeight: 600, fontSize: 20, marginTop: 5, color: 'var(--ciq-ink-2)' }}>
-                ₹{estimated.toLocaleString('en-IN')}
+              <div className="ciq-display" style={{ fontWeight: 600, fontSize: 20, marginTop: 5, color: 'var(--ciq-ink-2)', fontVariantNumeric: 'tabular-nums' }}>
+                {estimatedPoints.toLocaleString('en-IN')} <span style={{ fontSize: 12 }}>pts</span>
               </div>
             </div>
           </div>
         </div>
 
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: 18, paddingTop: 15, borderTop: '1px solid var(--ciq-line)' }}>
-          <div>
-            <div style={{ fontSize: 11, color: 'var(--ciq-ink-3)' }}>{points.toLocaleString('en-IN')} pts · {cardCount} cards</div>
-            <div style={{ fontSize: 14, fontWeight: 600, marginTop: 2 }}>
-              Best value <span style={{ color: 'var(--ciq-gold-2)' }}>₹{bestValue.toLocaleString('en-IN')}</span>
+          <div style={{ fontSize: 11, color: 'var(--ciq-ink-3)' }}>{cardCount} {cardCount === 1 ? 'card' : 'cards'}</div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--ciq-ink-2)' }}>
+              ≈ ₹{estLow.toLocaleString('en-IN')}–₹{estHigh.toLocaleString('en-IN')}
             </div>
+            <span className="ciq-mono" title="Point values vary by how you redeem. We never state a value as fact."
+              style={{ fontSize: 8.5, fontWeight: 700, letterSpacing: '.05em', textTransform: 'uppercase',
+                color: 'var(--ciq-estimated)', background: 'var(--ciq-line)', border: '1px solid var(--ciq-line-2)',
+                padding: '2px 6px', borderRadius: 5 }}>
+              estimate
+            </span>
           </div>
         </div>
       </div>
