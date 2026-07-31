@@ -1,5 +1,6 @@
 ﻿'use client';
 import { useState, useRef, useEffect } from 'react';
+import { usePathname } from 'next/navigation';
 import { authedFetch } from '@/lib/authed-fetch';
 
 interface Message {
@@ -33,6 +34,7 @@ export function CreditIQAssistant() {
   const [loading, setLoading] = useState(false);
   const [pulse, setPulse] = useState(true);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const pathname = usePathname();
 
   useEffect(() => {
     const timer = setTimeout(() => setPulse(false), 5000);
@@ -72,6 +74,10 @@ export function CreditIQAssistant() {
     }
     setLoading(false);
   };
+
+  // Hide the floating assistant on the auth screen — /login is a focused,
+  // full-bleed surface and the widget would crowd the mode toggle.
+  if (pathname === '/login') return null;
 
   return (
     <>
