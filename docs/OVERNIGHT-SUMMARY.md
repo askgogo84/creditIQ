@@ -1,5 +1,7 @@
 # Overnight run — summary
 
+> **UPDATE (follow-on session, 2026-07-31):** Gogo approved Q1–Q3 from mobile and asked for all three follow-ups. Built on `design/tours`: (C) points-first honesty fix `aab0e8f4`, (A) editorial "Cards to know" strip `f8c0539b`, (B) tour wired onto the wallet `bd46fbfb`. tsc 0 and 33 tests pass. Still nothing pushed. Details at the bottom under "Follow-on build".
+
 **Branch:** `design/tours` (created off `design/shell`, as instructed — not off main).
 **Pushed:** **nothing.** Deploy stays gated on your review. All work is local commits on `design/tours`.
 **Gates honoured:** `npx tsc --noEmit` = 0 before every commit; scoped `git add` by path (never `git add .`); no new libraries.
@@ -89,3 +91,56 @@ npx vitest run components/ciq/Tour.test.tsx     # 13 passing
 git log --oneline design/shell..design/tours    # exactly 4 commits: audit, docs, tour, summary
 git status                                       # clean; nothing pushed
 ```
+
+---
+
+## Follow-on build (after your Q1–Q3 answers)
+
+You answered from mobile: Q1 → editorial strip, Q2/Q3 → "pick the best," and asked me to do all three follow-ups. My picks for Q2/Q3: **CSS card faces** (no external CDN — availability + right-to-use risk avoided) and **omit the optimisation rate**. Then built:
+
+### C — Points-first honesty fix · `aab0e8f4`
+The signature `HeroGauge` was showing **"Total reward value ₹X"** where X = points × 1.8, split into verified/estimated *rupees*, with a green "Verified ₹" — an assumption presented as verified fact. Fixed:
+- Gauge headline is now the **real point count**; verified/estimated split is on points.
+- Rupees demoted to a labelled **"≈ ₹low–₹high · estimate"** range, never the hero, never in verified-green.
+- `BestMove` value recoloured gold (was verified-green).
+- count-up now respects `prefers-reduced-motion`.
+- Files: `HeroGauge.tsx` (+test), `WalletView.tsx`, `BestMove.tsx`, `dashboard/page.tsx`.
+
+### A — Editorial "Cards to know" strip · `f8c0539b`
+- `components/ciq/EditorialCards.tsx` (+test) — hand-picked `SEED_CARDS` as **CSS card faces** (reuses `CardMockup`, `card.color`), real `best_for` one-liners, links to `/card/[slug]`.
+- Labelled "Editorial · not ranked by anyone's spending" — never "Trending".
+- Mounted full-width in `WalletView`.
+
+### B — Tour wired onto the wallet · `bd46fbfb`
+- Anchored the reusable `<Tour>` (unchanged) to `#wallet-gauge`, `#wallet-add`, `#wallet-editorial`.
+- Auto-opens **once** for first-time users (localStorage `ciq_wallet_tour_v1`), always dismissable, re-openable via a "Take a tour" link under the greeting.
+- File: `WalletView.tsx`.
+
+### Files touched in the follow-on
+```
+components/ciq/HeroGauge.tsx          (points-first)
+components/ciq/HeroGauge.test.tsx     (new — honesty invariants)
+components/ciq/WalletView.tsx         (points props, editorial strip, tour)
+components/ciq/BestMove.tsx           (estimate no longer green)
+components/ciq/EditorialCards.tsx     (new)
+components/ciq/EditorialCards.test.tsx(new)
+app/(shell)/dashboard/page.tsx        (drop dead bestValue plumbing)
+docs/OVERNIGHT-QUESTIONS.md           (marked resolved)
+docs/OVERNIGHT-SUMMARY.md             (this update)
+```
+
+### What I did NOT verify
+- **Visual/manual check on a running app.** You're on mobile and I can't eyeball for you; I leaned on `tsc = 0` and 33 passing tests. **Before this ships, run it and look:** `npm run dev` → `/dashboard` (needs a signed-in session) and `/dev/tour-preview` for the tour. Note: a full `npm run build` still fails locally only on `/icon` (next/og on Windows) — that's the known pre-existing issue, unrelated to this work, and deploys fine on Vercel.
+- The **first-run auto-open tour** changes real signed-in UX. It's gated (unpushed) — decide if auto-open is what you want, or whether it should be trigger-only.
+
+### design/tours now has 9 commits
+```
+bd46fbfb  feat(dashboard): wire the reusable Tour onto the wallet surface
+f8c0539b  feat(dashboard): editorial 'Cards to know' strip (CSS card faces)
+aab0e8f4  fix(dashboard): points-first wallet — stop stating an assumed ₹ value as fact
+7f60d93b  feat(tour): reusable anchored guided-tour component + isolated preview
+dd8db6fe  docs(dashboard): Phase 2 — six product docs
+98a784bd  docs(dashboard): Phase 1 data audit
+   + docs commits (summary/questions updates)
+```
+Still **nothing pushed** — deploy stays gated on your review.
