@@ -4,23 +4,39 @@ import { createBrowserClient } from '@supabase/ssr';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 
-// Combined Sign in / Sign up screen — full-bleed licensed photo, dark scrim,
-// one translucent glass card. Modelled on realise.club/signup. Google is the
-// ONLY path because that's the only provider the auth actually uses; we do not
-// render email/password fields we can't honor. The Sign up / Sign in toggle is
-// copy-only (both run the same Google OAuth) — honest, not a fake second flow.
+// Combined Sign in / Sign up screen. Google is the ONLY path because that's the
+// only provider the auth actually uses; we do not render email/password fields we
+// can't honor. The Sign up / Sign in toggle is copy-only (both run the same Google
+// OAuth) — honest, not a fake second flow.
+//
+// LAYOUT — two forms keyed off 748px:
+//   >=748px: full-bleed licensed photo behind one translucent glass card, dark
+//            scrim over the whole viewport (unchanged from the prior build).
+//   <748px : the loop is NOT a background. It's a 36dvh panel pinned to the top
+//            of the viewport (its own 5:4 mobile crop, cover). Below it the
+//            wordmark, eyebrow, glass card and toggle sit on the flat #080807
+//            base, vertically centred in the remaining space. The panel carries a
+//            light top-down scrim plus a bottom fade into the base (no hard seam).
+//
+// The structural geometry lives in the scoped <style> block below rather than in
+// Tailwind `max-[]:` variants: React can hoist a <style> tag anywhere in the head,
+// so to stay immune to cascade order the block OWNS these properties outright (no
+// Tailwind utility competes for the same one). It also lets the panel height use
+// the `height:36vh; height:36dvh;` fallback — mobile browsers resolve vh against
+// the LARGEST viewport, so with the address bar showing, 36vh renders taller than
+// 36% of the visible area; 36dvh is correct where supported, 36vh covers the rest.
 
-// Text sits over a photograph, not the themed page ground, so colour is fixed
-// (this screen ignores the light/dark toggle). The near-white inks below are the
-// codebase's established "type over media" values, lifted from `.cinematic` in
-// globals.css. The scrim base is the locked design-language true-black #080807.
+// Text sits over media (mobile panel + desktop full-bleed), not the themed page
+// ground, so colour is fixed (this screen ignores the light/dark toggle). The
+// near-white inks are the codebase's established "type over media" values, lifted
+// from `.cinematic` in globals.css. The base is the design-language true-black.
 //
 // --copper-4 is pinned here for the same reason .cinematic locally pins --copper-3:
-// this is a full-bleed DARK surface in both themes, so it must not inherit the theme
-// token. Left to inherit, --copper-4 flips from the light value #F2C658 (bright gold)
-// to #6B4A2A (dark brown) under [data-theme="dark"] — which is what dark-theme users
+// this is a DARK surface in both themes, so it must not inherit the theme token.
+// Left to inherit, --copper-4 flips from the light value #F2C658 (bright gold) to
+// #6B4A2A (dark brown) under [data-theme="dark"] — which is what dark-theme users
 // were actually getting on the eyebrow / toggle (~2.5:1, an AA fail). Pinned to the
-// bright gold, both render #F2C658 (the value the 9.7:1 measurement assumed) always.
+// bright gold, both render #F2C658 always.
 const AUTH_VARS = {
   '--auth-ink': '#FDFBF7',   // headline / wordmark
   '--auth-ink-2': '#F1EDE4', // body copy
@@ -37,9 +53,9 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false)
   const [checking, setChecking] = useState(true)
   const [mode, setMode] = useState<'signup' | 'signin'>('signup')
-  // Under prefers-reduced-motion we render the poster still alone and never
-  // mount the <video>. Defaults to false so SSR and first client paint agree
-  // (matchMedia is client-only); the effect corrects it after mount.
+  // Under prefers-reduced-motion we render the poster still alone and never mount
+  // the <video>. Defaults to false so SSR and first client paint agree (matchMedia
+  // is client-only); the effect corrects it after mount.
   const [reduceMotion, setReduceMotion] = useState(false)
   useEffect(() => {
     const mq = window.matchMedia('(prefers-reduced-motion: reduce)')
@@ -49,8 +65,28 @@ export default function LoginPage() {
     return () => mq.removeEventListener('change', onChange)
   }, [])
 
-  // Where to land after login. Read ?next=/flights (etc) at runtime and only
-  // ever honor same-origin relative paths, so this can't become an open redirect.
+  // Mobile (<748px) vs desktop is resolved in JS, same pattern as reduceMotion, so
+  // we render only ONE set of <source> tags and the browser fetches only that clip
+  // (no `media` attribute on <source>, which fetches unpredictably). `ready` gates
+  // the <source> children: on first paint the <video> has NO sources, so a phone
+  // never starts downloading the ~503KB desktop mp4 before the effect swaps it —
+  // the poster covers the gap. Once `ready` flips, the video is re-keyed so it
+  // remounts with the correct sources present and autoplays. Boundary is 747.98px:
+  // CSS max-width is inclusive, so this keeps exactly 748px on the desktop form and
+  // keeps the JS and the <style> media query in agreement.
+  const [isMobile, setIsMobile] = useState(false)
+  const [ready, setReady] = useState(false)
+  useEffect(() => {
+    const mq = window.matchMedia('(max-width: 747.98px)')
+    setIsMobile(mq.matches)
+    setReady(true)
+    const onChange = (e: MediaQueryListEvent) => setIsMobile(e.matches)
+    mq.addEventListener('change', onChange)
+    return () => mq.removeEventListener('change', onChange)
+  }, [])
+
+  // Where to land after login. Read ?next=/flights (etc) at runtime and only ever
+  // honor same-origin relative paths, so this can't become an open redirect.
   const nextPath = () => {
     const raw = new URLSearchParams(window.location.search).get('next')
     return raw && raw.startsWith('/') && !raw.startsWith('//') ? raw : '/dashboard'
@@ -90,45 +126,146 @@ export default function LoginPage() {
   if (checking) return null
 
   const isSignup = mode === 'signup'
+  const posterSrc = isMobile ? '/images/auth-bg-mobile-poster.jpg' : '/images/auth-bg-poster.jpg'
 
   return (
-    <main
-      style={AUTH_VARS}
-      className="relative min-h-[100dvh] w-full overflow-hidden flex items-center justify-center px-5 py-10"
-    >
-      {/* Full-bleed background loop — the pagoda clip, webm then mp4, over a
-          poster still for first paint / slow networks. The loop is deliberately
-          the brightest part of the source; the scrim below carries the contrast.
-          Below 748px the frame shifts to 35% so a centred portrait crop doesn't
-          bisect the pagoda (it sits 22-45% across). Under prefers-reduced-motion
-          we never mount the <video> and show the poster alone. */}
-      {reduceMotion ? (
-        <img
+    <main style={AUTH_VARS} className="auth-root">
+      {/* Scoped structural CSS — see the header comment for why geometry lives here
+          and not in Tailwind variants. Desktop values are encoded identically to
+          the prior build; the @media block is the only place the mobile form
+          diverges, so >=748px is unchanged. */}
+      <style>{`
+        .auth-root {
+          position: relative;
+          min-height: 100dvh;
+          width: 100%;
+          overflow: hidden;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          padding: 2.5rem 1.25rem;
+        }
+        .auth-media { position: absolute; inset: 0; z-index: 0; }
+        .auth-scrim-desktop { position: absolute; inset: 0; z-index: 0; }
+        .auth-panel-scrim, .auth-panel-fade { display: none; }
+        .auth-content {
+          position: relative;
+          z-index: 10;
+          width: 100%;
+          max-width: 400px;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          text-align: center;
+        }
+        @media (max-width: 747.98px) {
+          .auth-root {
+            flex-direction: column;
+            justify-content: flex-start;
+            padding: 0;
+            overflow: visible; /* content taller than the viewport scrolls, never clips */
+            /* The base is the design-language true-black, set EXPLICITLY: this page
+               defaults to the light theme and its body is warm ivory. On desktop the
+               full-bleed media hides the body, but the mobile form exposes it below
+               the panel, so the base must be pinned here or the near-white type lands
+               on ivory (and the panel fade would hit a hard seam). */
+            background: #080807;
+          }
+          .auth-media {
+            position: relative;
+            inset: auto;
+            width: 100%;
+            height: 36vh;
+            height: 36dvh;
+            flex-shrink: 0;
+          }
+          .auth-scrim-desktop { display: none; }
+          .auth-panel-scrim {
+            display: block;
+            position: absolute;
+            inset: 0;
+          }
+          .auth-panel-fade {
+            display: block;
+            position: absolute;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            height: 15%;
+          }
+          .auth-content {
+            flex: 1 1 auto;
+            justify-content: center;
+            padding: 2rem 1.25rem;
+            box-sizing: border-box;
+          }
+        }
+      `}</style>
+
+      {/* Media — desktop: full-bleed background. Mobile: the 36dvh top panel.
+          Under prefers-reduced-motion we never mount the <video> and show the
+          poster alone (mobile poster below 748px, desktop poster above). */}
+      <div className="auth-media">
+        {reduceMotion ? (
+          <img
+            aria-hidden
+            alt=""
+            src={posterSrc}
+            className="absolute inset-0 h-full w-full object-cover"
+          />
+        ) : (
+          <video
+            key={`${ready}-${isMobile}`}
+            aria-hidden
+            autoPlay
+            muted
+            loop
+            playsInline
+            poster={posterSrc}
+            className="absolute inset-0 h-full w-full object-cover"
+          >
+            {ready &&
+              (isMobile ? (
+                <>
+                  <source src="/videos/auth-bg-mobile.webm" type="video/webm" />
+                  <source src="/videos/auth-bg-mobile.mp4" type="video/mp4" />
+                </>
+              ) : (
+                <>
+                  <source src="/videos/auth-bg.webm" type="video/webm" />
+                  <source src="/videos/auth-bg.mp4" type="video/mp4" />
+                </>
+              ))}
+          </video>
+        )}
+
+        {/* Mobile-only: light top-down scrim over the panel (its own values, NOT
+            the desktop scrim) keeps the wordmark region and the fade clean. */}
+        <div
           aria-hidden
-          alt=""
-          src="/images/auth-bg-poster.jpg"
-          className="absolute inset-0 z-0 h-full w-full object-cover max-[748px]:[object-position:35%_center]"
+          className="auth-panel-scrim"
+          style={{
+            background:
+              'linear-gradient(180deg, rgba(8,8,7,0.30) 0%, rgba(8,8,7,0.75) 100%)',
+          }}
         />
-      ) : (
-        <video
+        {/* Mobile-only: dissolve the bottom ~15% of the panel into #080807 so
+            there's no hard horizontal seam between panel and base. */}
+        <div
           aria-hidden
-          autoPlay
-          muted
-          loop
-          playsInline
-          poster="/images/auth-bg-poster.jpg"
-          className="absolute inset-0 z-0 h-full w-full object-cover max-[748px]:[object-position:35%_center]"
-        >
-          <source src="/videos/auth-bg.webm" type="video/webm" />
-          <source src="/videos/auth-bg.mp4" type="video/mp4" />
-        </video>
-      )}
-      {/* Dark scrim — flat base carries white type over the photo's brightest
-          patch; the vertical gradient sinks the top wordmark and bottom toggle
-          a touch deeper. Base colour is the design-language true-black #080807. */}
+          className="auth-panel-fade"
+          style={{
+            background: 'linear-gradient(180deg, rgba(8,8,7,0) 0%, #080807 100%)',
+          }}
+        />
+      </div>
+
+      {/* Desktop-only full-bleed scrim — carries white type over the photo's
+          brightest patch; hidden below 748px where type sits on the flat base.
+          Base colour is the design-language true-black #080807. */}
       <div
         aria-hidden
-        className="absolute inset-0"
+        className="auth-scrim-desktop"
         style={{
           background:
             'linear-gradient(180deg, rgba(8,8,7,0.82) 0%, rgba(8,8,7,0.72) 34%, rgba(8,8,7,0.76) 66%, rgba(8,8,7,0.88) 100%)',
@@ -136,7 +273,7 @@ export default function LoginPage() {
       />
 
       {/* Content column — 375px-first. */}
-      <div className="relative z-10 w-full max-w-[400px] flex flex-col items-center text-center">
+      <div className="auth-content">
         {/* Wordmark */}
         <Link
           href="/"
