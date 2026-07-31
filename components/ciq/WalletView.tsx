@@ -1,11 +1,33 @@
 // components/ciq/WalletView.tsx
 'use client';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { CiqTheme } from './ThemeProvider';
 import { HeroGauge } from './HeroGauge';
 import { CardRow } from './CardRow';
 import { BestMove } from './BestMove';
 import { EditorialCards } from './EditorialCards';
+import { Tour, type TourStep } from './Tour';
+
+// Wallet walkthrough — the reusable <Tour> anchored to this surface's elements.
+const WALLET_TOUR: TourStep[] = [
+  {
+    title: 'Your points, verified vs estimated',
+    body: 'The green slice is read straight from your statements. Grey is your own estimate. We never dress one up as the other.',
+    anchor: '#wallet-gauge',
+  },
+  {
+    title: 'Add a card anytime',
+    body: 'Enter a card by hand to keep an estimate in view, or upload a statement to add a verified one.',
+    anchor: '#wallet-add',
+  },
+  {
+    title: 'Cards to know',
+    body: 'A hand-picked shortlist from our team — editorial, not ranked by anyone’s spending.',
+    anchor: '#wallet-editorial',
+  },
+];
+const TOUR_SEEN_KEY = 'ciq_wallet_tour_v1';
 
 type Card = {
   id: string; bank: string; card_name?: string; cardName?: string;
@@ -34,6 +56,19 @@ export function WalletView({
   const estHigh = Math.round(totalPoints * HIGH_RATE);
   const hasVerified = vPoints > 0;
 
+  // First-run walkthrough: auto-open once, remembered in localStorage. Always
+  // dismissable, and re-openable via the "Take a tour" affordance.
+  const [tourOpen, setTourOpen] = useState(false);
+  useEffect(() => {
+    try {
+      if (!localStorage.getItem(TOUR_SEEN_KEY)) setTourOpen(true);
+    } catch {}
+  }, []);
+  const closeTour = () => {
+    setTourOpen(false);
+    try { localStorage.setItem(TOUR_SEEN_KEY, '1'); } catch {}
+  };
+
   return (
     <CiqTheme>
       <div className="max-w-[420px] md:max-w-[1100px] mx-auto pt-4 pb-[104px] md:pb-16" style={{ position: 'relative' }}>
@@ -58,11 +93,18 @@ export function WalletView({
                 Hi, {displayName || 'there'}.
               </h1>
               {email && <div style={{ fontSize: 12.5, color: 'var(--ciq-ink-3)', marginTop: 4 }}>{email}</div>}
+              <button onClick={() => setTourOpen(true)} className="ciq-mono" style={{
+                marginTop: 8, fontSize: 10.5, letterSpacing: '.06em', textTransform: 'uppercase',
+                color: 'var(--ciq-ink-3)', background: 'none', border: 'none', padding: 0, cursor: 'pointer',
+                textDecoration: 'underline', textUnderlineOffset: 3,
+              }}>Take a tour</button>
             </div>
 
             {/* HERO GAUGE — the signature */}
-            <HeroGauge points={totalPoints} verifiedPoints={vPoints} estimatedPoints={ePoints}
-              estLow={estLow} estHigh={estHigh} cardCount={cards.length} />
+            <div id="wallet-gauge">
+              <HeroGauge points={totalPoints} verifiedPoints={vPoints} estimatedPoints={ePoints}
+                estLow={estLow} estHigh={estHigh} cardCount={cards.length} />
+            </div>
 
             {/* honesty credo */}
             <div className="ciq-rise d2" style={{
@@ -136,7 +178,7 @@ export function WalletView({
                   last4={c.card_last4} points={c.points_balance} currency={c.points_currency}
                   source={c.source} />
               ))}
-              <button onClick={onAddCard} style={{
+              <button id="wallet-add" onClick={onAddCard} style={{
                 border: '1.5px dashed var(--ciq-gold-line)', borderRadius: 18, padding: 15, display: 'flex',
                 alignItems: 'center', justifyContent: 'center', gap: 8, color: 'var(--ciq-gold-2)',
                 fontWeight: 600, fontSize: 13.5, background: 'transparent', cursor: 'pointer',
@@ -156,7 +198,10 @@ export function WalletView({
         </div>
 
         {/* Editorial "Cards to know" — hand-picked, never "trending". Full-width below the grid. */}
-        <EditorialCards />
+        <div id="wallet-editorial"><EditorialCards /></div>
+
+        {/* First-run walkthrough, anchored to the surface above. */}
+        <Tour steps={WALLET_TOUR} open={tourOpen} onClose={closeTour} labelPrefix="WALLET" />
       </div>
     </CiqTheme>
   );
