@@ -6,6 +6,7 @@ import { usePathname, useRouter } from 'next/navigation'
 import { createBrowserClient } from '@supabase/ssr'
 import { TabBar } from '@/components/ciq/TabBar'
 import { MORE_GROUPS } from '@/components/ciq/moreNav'
+import { APP_NAV, appActive as isAppActive } from '@/components/ciq/appNav'
 
 const NAV_LINKS = [
   { label: 'Discover', href: '/' },
@@ -32,27 +33,8 @@ const BROWSE_LINKS = [
   { label: 'UAE Cards', href: '/uae', icon: '🇦🇪' },
 ]
 
-// App nav — shown to LOGGED-IN users on every page. Mirrors the wallet's nav
-// (ciq TabBar / WalletView) so nav identity never changes across app + marketing
-// pages. Auth state — not the route — decides which nav renders.
-const APP_NAV = [
-  { label: 'Wallet',   href: '/dashboard' },
-  { label: 'Cards',    href: '/my-cards' },
-  { label: 'Feed',     href: '/feed' },
-  { label: 'Travel',   href: '/trip-planner' },
-  { label: 'Optimize', href: '/optimize' },
-  { label: 'You',      href: '/profile' },
-]
-// Which app tab owns a given path (marketing routes like /flights, /travel,
-// /points-optimizer fold into their app-nav parent so the tab stays lit).
-const APP_ACTIVE: Record<string, (p: string) => boolean> = {
-  '/dashboard':    p => p.startsWith('/dashboard'),
-  '/my-cards':     p => p.startsWith('/my-cards') || p.startsWith('/cards') || p.startsWith('/card/') || p.startsWith('/compare'),
-  '/feed':         p => p.startsWith('/feed') || p.startsWith('/intelligence'),
-  '/trip-planner': p => p.startsWith('/trip-planner') || p.startsWith('/flights') || p.startsWith('/travel') || p.startsWith('/lounge-tracker'),
-  '/optimize':     p => p.startsWith('/optimize') || p.startsWith('/points-optimizer') || p.startsWith('/spend-optimizer') || p.startsWith('/smart-match') || p.startsWith('/statement-truth') || p.startsWith('/card-switch') || p.startsWith('/card-roast'),
-  '/profile':      p => p.startsWith('/profile'),
-}
+// App nav (APP_NAV) + its active-state matchers now live in
+// components/ciq/appNav.tsx so the rail, TabBar and this Header can't drift.
 
 // Header CSS — a single static, module-level constant. It is byte-identical on
 // every server and client render (nothing is interpolated from state, props or
@@ -231,11 +213,7 @@ export function Header() {
   }
 
   // App-nav active state (logged-in). Folds marketing routes into their app tab.
-  const appActive = (href: string) => {
-    if (!pathname) return false
-    const m = APP_ACTIVE[href]
-    return m ? m(pathname) : pathname.startsWith(href)
-  }
+  const appActive = (href: string) => isAppActive(href, pathname)
 
   const isTabActive = (tab: { href: string; label: string }) => {
     if (user) return appActive(tab.href)

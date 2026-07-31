@@ -4,15 +4,13 @@ import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { createBrowserClient } from '@supabase/ssr';
+import { APP_NAV } from '@/components/ciq/appNav';
 
 // Logged-in bottom bar: exactly 4 destinations + a "More" sheet (5 items total).
-// Cards + Profile (You) moved into the More sheet's account list.
-const TABS = [
-  { label: 'Wallet',   href: '/dashboard',    icon: (a: boolean) => <path d="m3 10 9-7 9 7v9a2 2 0 0 1-2 2h-4v-6H9v6H5a2 2 0 0 1-2-2v-9Z" stroke={a ? 'var(--ciq-gold-2)' : 'currentColor'} strokeWidth="1.7" strokeLinejoin="round" /> },
-  { label: 'Optimize', href: '/optimize',     icon: (a: boolean) => <path d="M18.5 2.5a2.12 2.12 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5Z" stroke={a ? 'var(--ciq-gold-2)' : 'currentColor'} strokeWidth="1.7" strokeLinejoin="round" /> },
-  { label: 'Travel',   href: '/trip-planner', icon: (a: boolean) => <path d="m3 11 19-9-9 19-2-8-8-2Z" stroke={a ? 'var(--ciq-gold-2)' : 'currentColor'} strokeWidth="1.7" strokeLinejoin="round" /> },
-  { label: 'Feed',     href: '/feed',         icon: (a: boolean) => <path d="M4 6h16M4 12h16M4 18h10" stroke={a ? 'var(--ciq-gold-2)' : 'currentColor'} strokeWidth="1.7" strokeLinecap="round" /> },
-];
+// Cards + Profile (You) moved into the More sheet's account list. The four tabs
+// are pulled by key from APP_NAV (the shared app-nav source) so their route,
+// label, icon and active-matcher stay in lockstep with the rail and Header.
+const TABS = ['wallet', 'optimize', 'travel', 'feed'].map(k => APP_NAV.find(i => i.key === k)!);
 
 // "More" sheet — account destinations (all confirmed routes). Settings is a
 // section inside the sheet (theme toggle), not a separate page.
@@ -107,10 +105,10 @@ export function TabBar() {
         padding: '9px 4px calc(9px + env(safe-area-inset-bottom))', zIndex: 40,
       }}>
         {TABS.map(t => {
-          const active = path === t.href || (t.href !== '/dashboard' && path.startsWith(t.href));
+          const active = t.match(path);
           return (
             <Link key={t.href} href={t.href} style={tabItem(active)}>
-              <svg width="21" height="21" viewBox="0 0 24 24" fill="none">{t.icon(active)}</svg>
+              <svg width="21" height="21" viewBox="0 0 24 24" fill="none">{t.icon(active ? 'var(--ciq-gold-2)' : 'currentColor')}</svg>
               {t.label}
               {/* active marker — gold dot, matching the logged-out Home tab */}
               {active && <span style={{ width: 4, height: 4, borderRadius: '50%', background: 'var(--ciq-gold-2)' }} />}
