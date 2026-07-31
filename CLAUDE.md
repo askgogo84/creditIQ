@@ -45,7 +45,7 @@
 |---|---|---|---|---|
 | CreditIQ Consumer | creditiq.app | `yazpphublutdodahfwvr` | askgogo84/creditIQ | `C:\Users\gover\creditIQ\creditIQ` |
 | CreditIQ Business | business.creditiq.app | `chdtwadvkstmluraebrl` | askgogo84/creditiq-business | `C:\Users\gover\creditiq-business` |
-| AskGogo | app.askgogo.in | `yazpphublutdodahfwvr` (WhatsApp Bot proj) | askgogo84/gogo-memory-os | `C:\Users\gover\gogo-memory-os` |
+| AskGogo | app.askgogo.in | `qenhjcooyecmatwducpu` (bot runtime DB — verified from gogo-memory-os `.env.local`, NOT `yazpphublutdodahfwvr`) | askgogo84/gogo-memory-os | `C:\Users\gover\gogo-memory-os` |
 | FolioKey | foliokey.app | `hvuqwfpcumooegflfrth` | askgogo84/FolioIQ | — |
 | Saralsetu | saralsetu.com | — | askgogo84/saralsetu | — |
 | Rasoi Capital | rasoi.capital | `zpvmdcyhkboklvxkqzjx` | askgogo84/RasoiCapital | — |

@@ -184,6 +184,15 @@ export default function LandingPage() {
           .where-media-video { display: none; }
           .where-media-poster { display: block; }
         }
+
+        /* Hero grid — single column on mobile (DOM order: copy, then proof card),
+           asymmetric two columns from 748px up so the headline copy column carries
+           more width than the proof card and holds to four lines (the comp), instead
+           of the proof card squeezing the copy to a five-line "You just / haven't". */
+        .ciqL-hero-grid { display: grid; grid-template-columns: 1fr; }
+        @media (min-width: 748px) {
+          .ciqL-hero-grid { grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr); }
+        }
       ` }} />
 
       <SiteNav />
@@ -214,7 +223,7 @@ export default function LandingPage() {
           {/* Full-bleed licensed footage (cabin window) + the scrim tuned against the
               real frames. Sits at z-index 0; all copy is z-index 1 above it. */}
           <AmbientHero />
-          <div style={{ ...inner, position: 'relative', zIndex: 1, display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(330px,1fr))', gap: 48, alignItems: 'center' }}>
+          <div className="ciqL-hero-grid" style={{ ...inner, position: 'relative', zIndex: 1, gap: 48, alignItems: 'center' }}>
             <div style={{ minWidth: 0 }}>
               <Eyebrow a="Live" b="India" dark />
               <HeroCompute />

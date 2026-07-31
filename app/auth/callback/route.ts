@@ -40,22 +40,7 @@ export async function GET(request: NextRequest) {
           },
         }
       )
-      // TEMP DEBUG (remove after diagnosis): log cookie NAMES only (never
-      // values/tokens) + the Supabase auth error message/code, to see whether
-      // the PKCE verifier cookie is present and why the exchange fails.
-      const cookieNames = cookieStore.getAll().map((c) => c.name)
-      const hasVerifier = cookieNames.some((n) => n.includes('code-verifier'))
-      const { data, error } = await supabase.auth.exchangeCodeForSession(code)
-      console.error(
-        '[auth-callback] host=%s fwdHost=%s next=%s cookieNames=%j hasVerifier=%s exchangeError=%j session=%s',
-        origin,
-        forwardedHost,
-        next,
-        cookieNames,
-        hasVerifier,
-        error ? { name: error.name, message: error.message, status: error.status, code: (error as any).code } : null,
-        !!data?.session
-      )
+      const { error } = await supabase.auth.exchangeCodeForSession(code)
       if (!error) {
         return NextResponse.redirect(`${base}${next}`)
       }

@@ -66,6 +66,15 @@ export function HeroCompute() {
           width: 18px; height: 18px; border-radius: 999px;
           background: #E4C97E; border: 2px solid #12203a; cursor: pointer;
         }
+        /* Single-column (mobile) the panel spans the viewport, so its bottom-right
+           "₹5,00,000" label sits under the fixed CIRA chat FAB (56px at right:16 →
+           its left edge is 72px from the viewport edge, the label's right edge only
+           40px). Inset the label row's right side here so the max label clears the
+           FAB. Above 748px the hero is two columns, the panel is left-of-centre and
+           nowhere near the FAB, so the label goes flush to the track again. */
+        @media (max-width: 747.98px) {
+          .ciqL-hero-labels { padding-right: 48px; }
+        }
       `}</style>
 
       <h1 style={{ fontFamily: FR, fontWeight: 300, fontSize: 'clamp(40px,6.4vw,84px)', lineHeight: 1.02, letterSpacing: '-0.015em', color: '#f7f4ef', margin: '20px 0 0', textWrap: 'pretty' }}>
@@ -116,7 +125,7 @@ export function HeroCompute() {
           aria-label="Monthly spend"
           style={{ width: '100%', height: 44, marginTop: 4, cursor: 'pointer', background: 'transparent', ['--pct' as any]: `${pct}%` }}
         />
-        <div style={{ display: 'flex', justifyContent: 'space-between', fontFamily: MO, fontSize: 11, color: 'rgba(255,255,255,.45)' }}>
+        <div className="ciqL-hero-labels" style={{ display: 'flex', justifyContent: 'space-between', fontFamily: MO, fontSize: 11, color: 'rgba(255,255,255,.45)' }}>
           <span>₹5,000</span>
           <span>₹5,00,000</span>
         </div>

@@ -62,3 +62,7 @@ fix-*.ps1
 body.json
 *.bak
 nul
+
+input.mp4
+
+design-src/
