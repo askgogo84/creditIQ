@@ -29,6 +29,17 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false)
   const [checking, setChecking] = useState(true)
   const [mode, setMode] = useState<'signup' | 'signin'>('signup')
+  // Under prefers-reduced-motion we render the poster still alone and never
+  // mount the <video>. Defaults to false so SSR and first client paint agree
+  // (matchMedia is client-only); the effect corrects it after mount.
+  const [reduceMotion, setReduceMotion] = useState(false)
+  useEffect(() => {
+    const mq = window.matchMedia('(prefers-reduced-motion: reduce)')
+    setReduceMotion(mq.matches)
+    const onChange = (e: MediaQueryListEvent) => setReduceMotion(e.matches)
+    mq.addEventListener('change', onChange)
+    return () => mq.removeEventListener('change', onChange)
+  }, [])
 
   // Where to land after login. Read ?next=/flights (etc) at runtime and only
   // ever honor same-origin relative paths, so this can't become an open redirect.
@@ -77,12 +88,33 @@ export default function LoginPage() {
       style={AUTH_VARS}
       className="relative min-h-[100dvh] w-full overflow-hidden flex items-center justify-center px-5 py-10"
     >
-      {/* Full-bleed photograph (swap /images/where-points.jpg for a dedicated shot). */}
-      <div
-        aria-hidden
-        className="absolute inset-0 bg-cover bg-center"
-        style={{ backgroundImage: "url('/images/where-points.jpg')" }}
-      />
+      {/* Full-bleed background loop — the pagoda clip, webm then mp4, over a
+          poster still for first paint / slow networks. The loop is deliberately
+          the brightest part of the source; the scrim below carries the contrast.
+          Below 748px the frame shifts to 35% so a centred portrait crop doesn't
+          bisect the pagoda (it sits 22-45% across). Under prefers-reduced-motion
+          we never mount the <video> and show the poster alone. */}
+      {reduceMotion ? (
+        <img
+          aria-hidden
+          alt=""
+          src="/images/auth-bg-poster.jpg"
+          className="absolute inset-0 z-0 h-full w-full object-cover max-[748px]:[object-position:35%_center]"
+        />
+      ) : (
+        <video
+          aria-hidden
+          autoPlay
+          muted
+          loop
+          playsInline
+          poster="/images/auth-bg-poster.jpg"
+          className="absolute inset-0 z-0 h-full w-full object-cover max-[748px]:[object-position:35%_center]"
+        >
+          <source src="/videos/auth-bg.webm" type="video/webm" />
+          <source src="/videos/auth-bg.mp4" type="video/mp4" />
+        </video>
+      )}
       {/* Dark scrim — flat base carries white type over the photo's brightest
           patch; the vertical gradient sinks the top wordmark and bottom toggle
           a touch deeper. Base colour is the design-language true-black #080807. */}
