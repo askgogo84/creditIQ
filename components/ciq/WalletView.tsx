@@ -5,6 +5,7 @@ import { CiqTheme } from './ThemeProvider';
 import { HeroGauge } from './HeroGauge';
 import { CardRow } from './CardRow';
 import { BestMove } from './BestMove';
+import { EditorialCards } from './EditorialCards';
 
 type Card = {
   id: string; bank: string; card_name?: string; cardName?: string;
@@ -153,6 +154,9 @@ export function WalletView({
           </div>
 
         </div>
+
+        {/* Editorial "Cards to know" — hand-picked, never "trending". Full-width below the grid. */}
+        <EditorialCards />
       </div>
     </CiqTheme>
   );
