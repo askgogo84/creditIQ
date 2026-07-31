@@ -7,6 +7,7 @@ import { HeroCompute } from '@/components/marketing/landing/HeroCompute';
 import { HeroProof } from '@/components/marketing/landing/HeroProof';
 import { AmbientHero } from '@/components/marketing/AmbientHero';
 import { FaresBoard } from '@/components/marketing/landing/FaresBoard';
+import { ProductTabs } from '@/components/marketing/landing/ProductTabs';
 import { CardRankings } from '@/components/marketing/landing/CardRankings';
 import { SEED_CARDS } from '@/lib/data/seed-cards';
 import { getRedemptionOptions } from '@/lib/redemption';
@@ -79,19 +80,6 @@ function Pill({ kind, label }: { kind: keyof typeof PROV; label: string }) {
   );
 }
 
-// Real "what's shipped" figures — no placeholders. Devaluation watch and award-seat
-// availability are LIVE (Devaluation Tracker at /blog, real-time award seats via the
-// trip-planner's LiveAwardRow), so they belong here, not in coming-soon.
-const PRODUCTS = [
-  { no: '01', title: 'Value engine', body: 'Every card scored from its published earn rules — category caps, milestones, exclusions, all of it.', figure: '162 cards · 36 banks · 49 with computed values', pill: 'estimated' as const, href: '/cards' },
-  { no: '02', title: 'Cached fare index', body: 'Lowest cash fare on the corridors Indian points actually pay for, refreshed daily and stamped with its age.', figure: '5 corridors', pill: 'cached' as const, href: '/flights' },
-  { no: '03', title: 'Statement Truth', body: 'Upload a statement and your real category mix replaces our model. Figures switch from estimated to verified — live today.', figure: 'your spend', pill: 'verified' as const, href: '/statement-truth' },
-  { no: '04', title: 'Redemption paths', body: 'Transfer ratios and award charts, shown as maths you can check line by line.', figure: '₹ / point', pill: 'estimated' as const, href: '/points-optimizer' },
-  { no: '05', title: 'Devaluation watch', body: 'Every 2026 benefit cut and transfer-partner nerf, tracked and dated so you see the trend before it costs you.', figure: 'transfer partners', pill: 'estimated' as const, href: '/blog/credit-card-devaluations-india-2026' },
-  { no: '06', title: 'Award-seat availability', body: 'Real-time award seats on your routes, priced against the same cached cash fares — booked with the points you already hold.', figure: 'real-time seats', pill: 'cached' as const, href: '/trip-planner' },
-  { no: '07', title: 'Spend optimiser', body: 'Enter what you actually spend by category; it scans every Indian card and ranks them by net annual value — earnings minus the fee — then names the one card to add and why. No affiliate bias.', figure: 'net ₹/year, ranked', pill: 'estimated' as const, href: '/spend-optimizer' },
-];
-
 // Coming, with no dates promised. Statement upload, devaluation watch, award-seat
 // availability and the spend optimiser are deliberately NOT here — they all ship
 // today. What remains is genuinely unbuilt: hotel points wait on citable rates.
@@ -104,7 +92,7 @@ const SOON = [
 // from the card's OWN redemption_options (computed here, no hand-typed rupees). Any
 // figure whose path is missing from the card is dropped, never faked.
 const BREAK_CARD = SEED_CARDS.find((c) => c.id === 'hdfc-infinia');
-const BREAK_BALANCE = 250000; // stated reward-point balance for the example
+const BREAK_BALANCE = 150000; // stated reward-point balance for the example
 const inr = (n: number) => `₹${Math.round(n).toLocaleString('en-IN')}`;
 
 type BreakFigure = { value: string; pill: keyof typeof PROV; caption: string; hero: boolean };
@@ -139,7 +127,15 @@ function computeBreakFigures() {
   }
 
   if (!figures.length) return null;
-  return { card: BREAK_CARD.name, balance: BREAK_BALANCE.toLocaleString('en-IN'), figures };
+  const heroFig = figures.find((f) => f.hero);   // transfer path (high)
+  const floorFig = figures.find((f) => !f.hero); // catalogue path (low)
+  return {
+    card: BREAK_CARD.name,
+    balance: BREAK_BALANCE.toLocaleString('en-IN'),
+    heroValue: heroFig?.value,   // e.g. ₹2,70,000 — same maths as the pill below
+    floorValue: floorFig?.value, // e.g. ₹75,000
+    figures,
+  };
 }
 
 const BREAK = computeBreakFigures();
@@ -282,12 +278,10 @@ export default function LandingPage() {
         <div style={{ padding: 'clamp(72px,9vw,124px) clamp(20px,5vw,56px) clamp(72px,9vw,124px) max(20px, calc((100vw - 1200px) / 2 + 20px))' }}>
           <Eyebrow a="Where points" b="Can go" dark />
           <h2 style={h2Dark}>
-            The same balance is a <em style={emDark}>lie-flat</em> seat, or a ₹4,000 voucher.
+            {BREAK?.balance ?? '1,50,000'} points is a <em style={emDark}>business seat to Singapore</em>, or {BREAK?.floorValue ?? '₹75,000'} in catalogue vouchers.
           </h2>
           <p style={{ fontFamily: IN, fontSize: 18, lineHeight: 1.65, color: 'rgba(247,244,239,.76)', maxWidth: '52ch', margin: '22px 0 0' }}>
-            Where your points land decides what they&rsquo;re worth — a premium-cabin transfer or a catalogue
-            voucher can differ by an order of magnitude. We show the redemption paths and where each rate came
-            from, so you compare real numbers instead of a single blended guess.
+            The same balance is worth {BREAK?.heroValue ?? '₹2,70,000'} or {BREAK?.floorValue ?? '₹75,000'} depending on where it goes. We show both numbers, and where each one came from.
           </p>
 
           {/* Two figures, both COMPUTED from one real card's redemption_options on the
@@ -349,26 +343,16 @@ export default function LandingPage() {
         <div style={inner}>
           <Eyebrow a="What you get" b="Today" />
           <h2 style={h2Cream}>
-            Shipped, and <em style={emCream}>labelled</em>.
+            Shipped, and <em style={emCream}>yours</em> to try.
           </h2>
+          <p style={leadCream}>
+            Four of the live tools, running on real card data before you even sign in. Every figure is computed —
+            cached fares, published earn rules, floor valuations. Nothing is Verified here; that needs your statement.
+          </p>
 
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(255px,1fr))', gap: 16, marginTop: 34 }}>
-            {PRODUCTS.map((p) => (
-              <Link
-                key={p.no}
-                href={p.href}
-                style={{ background: '#ffffff', border: '1px solid #e5d9cc', borderRadius: 16, padding: 26, display: 'flex', flexDirection: 'column', gap: 12, textDecoration: 'none', color: 'inherit' }}
-              >
-                <span style={{ fontFamily: MO, fontSize: 12, fontWeight: 500, color: '#D89B2A', letterSpacing: '0.06em' }}>{p.no}</span>
-                <h3 style={{ fontFamily: FR, fontWeight: 400, fontSize: 22, lineHeight: 1.2, color: '#142335', margin: 0 }}>{p.title}</h3>
-                <p style={{ fontFamily: IN, fontSize: 14.5, lineHeight: 1.6, color: '#2b385c', margin: 0 }}>{p.body}</p>
-                <div style={{ marginTop: 'auto', paddingTop: 14, display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: 10, borderTop: '1px solid #f0ece5' }}>
-                  <span style={{ fontFamily: MO, fontSize: 15, color: '#142335' }}>{p.figure}</span>
-                  <Pill kind={p.pill} label={p.pill.charAt(0).toUpperCase() + p.pill.slice(1)} />
-                </div>
-              </Link>
-            ))}
-          </div>
+          {/* Interactive §04 — replaces the old static product grid. LIVE badge,
+              numbered tabs, one panel open at a time. See ProductTabs. */}
+          <ProductTabs />
 
           {/* Coming, with no dates promised — statement upload deliberately excluded */}
           <div style={{ marginTop: 22, border: '1px dashed #ddd0c0', borderRadius: 16, padding: 'clamp(22px,3vw,30px)', background: '#f7f5f2' }}>
