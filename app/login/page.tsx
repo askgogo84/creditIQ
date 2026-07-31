@@ -14,10 +14,18 @@ import Link from 'next/link';
 // (this screen ignores the light/dark toggle). The near-white inks below are the
 // codebase's established "type over media" values, lifted from `.cinematic` in
 // globals.css. The scrim base is the locked design-language true-black #080807.
+//
+// --copper-4 is pinned here for the same reason .cinematic locally pins --copper-3:
+// this is a full-bleed DARK surface in both themes, so it must not inherit the theme
+// token. Left to inherit, --copper-4 flips from the light value #F2C658 (bright gold)
+// to #6B4A2A (dark brown) under [data-theme="dark"] — which is what dark-theme users
+// were actually getting on the eyebrow / toggle (~2.5:1, an AA fail). Pinned to the
+// bright gold, both render #F2C658 (the value the 9.7:1 measurement assumed) always.
 const AUTH_VARS = {
   '--auth-ink': '#FDFBF7',   // headline / wordmark
   '--auth-ink-2': '#F1EDE4', // body copy
   '--auth-dim': '#CFC9BC',   // captions / terms
+  '--copper-4': '#F2C658',   // dark-ground gold accent — eyebrow + mode toggle
 } as React.CSSProperties;
 
 export default function LoginPage() {
