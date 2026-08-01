@@ -12,21 +12,23 @@ import Link from 'next/link';
 // LAYOUT — two forms keyed off 748px:
 //   >=748px: full-bleed licensed photo behind one translucent glass card, dark
 //            scrim over the whole viewport (unchanged from the prior build).
-//   <748px : the loop is NOT a background. It's a 36dvh panel pinned to the top
-//            of the viewport (its own 5:4 mobile crop, cover). Below it the
-//            wordmark, eyebrow, glass card and toggle sit on the flat #080807
-//            base, vertically centred in the remaining space. The panel carries a
-//            light top-down scrim plus a bottom fade into the base (no hard seam).
+//   <748px : SAME full-bleed loop behind the whole page (realise.club pattern) —
+//            no separate panel. The wordmark, eyebrow and glass card sit centred
+//            over the moving photo; the pagoda reads around and through the
+//            translucent card. The toggle ("Already have an account? Sign in")
+//            lives INSIDE the card as its last element so it can never fall below
+//            the fold. A localised mobile scrim darkens only the central vertical
+//            band behind the near-full-width card (top sky + lower foreground stay
+//            vivid) so all five inks clear WCAG AA against the loop's brightest
+//            lit-timber frame. The stack (~450px) fits every target height centred
+//            with no scroll (375x650 → ~121px spare).
 //
 // The structural geometry lives in the scoped <style> block below rather than in
 // Tailwind `max-[]:` variants: React can hoist a <style> tag anywhere in the head,
 // so to stay immune to cascade order the block OWNS these properties outright (no
-// Tailwind utility competes for the same one). It also lets the panel height use
-// the `height:36vh; height:36dvh;` fallback — mobile browsers resolve vh against
-// the LARGEST viewport, so with the address bar showing, 36vh renders taller than
-// 36% of the visible area; 36dvh is correct where supported, 36vh covers the rest.
+// Tailwind utility competes for the same one).
 
-// Text sits over media (mobile panel + desktop full-bleed), not the themed page
+// Text sits over the full-bleed media at both breakpoints, not the themed page
 // ground, so colour is fixed (this screen ignores the light/dark toggle). The
 // near-white inks are the codebase's established "type over media" values, lifted
 // from `.cinematic` in globals.css. The base is the design-language true-black.
@@ -147,7 +149,7 @@ export default function LoginPage() {
         }
         .auth-media { position: absolute; inset: 0; z-index: 0; }
         .auth-scrim-desktop { position: absolute; inset: 0; z-index: 0; }
-        .auth-panel-scrim, .auth-panel-fade { display: none; }
+        .auth-scrim-mobile { display: none; position: absolute; inset: 0; z-index: 0; }
         .auth-content {
           position: relative;
           z-index: 10;
@@ -159,52 +161,36 @@ export default function LoginPage() {
           text-align: center;
         }
         @media (max-width: 747.98px) {
-          .auth-root {
-            flex-direction: column;
-            justify-content: flex-start;
-            padding: 0;
-            overflow: visible; /* content taller than the viewport scrolls, never clips */
-            /* The base is the design-language true-black, set EXPLICITLY: this page
-               defaults to the light theme and its body is warm ivory. On desktop the
-               full-bleed media hides the body, but the mobile form exposes it below
-               the panel, so the base must be pinned here or the near-white type lands
-               on ivory (and the panel fade would hit a hard seam). */
-            background: #080807;
-          }
-          .auth-media {
-            position: relative;
-            inset: auto;
-            width: 100%;
-            height: 36vh;
-            height: 36dvh;
-            flex-shrink: 0;
-          }
+          /* Full-bleed loop behind the WHOLE page (realise.club pattern) — no
+             separate panel. .auth-media keeps the default position:absolute /
+             inset:0 so it fills the viewport; the translucent card floats over
+             it centred, and the pagoda reads around and through it. The panel,
+             its top-down scrim and its bottom fade are all gone. The whole
+             wordmark→sign-in stack is ~450px, so it fits every target height
+             (375x650 → 121px spare) centred with no scroll. The desktop scrim
+             is swapped out for .auth-scrim-mobile, which darkens only a central
+             vertical band behind the near-full-width card (top sky + lower
+             foreground stay unscrimmed and vivid) so the five inks clear AA
+             against the loop's brightest lit-timber frame. Card padding and the
+             >=748px rules are untouched. */
           .auth-scrim-desktop { display: none; }
-          .auth-panel-scrim {
-            display: block;
-            position: absolute;
-            inset: 0;
-          }
-          .auth-panel-fade {
-            display: block;
-            position: absolute;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            height: 15%;
-          }
-          .auth-content {
-            flex: 1 1 auto;
-            justify-content: center;
-            padding: 2rem 1.25rem;
-            box-sizing: border-box;
-          }
+          .auth-scrim-mobile { display: block; }
+          /* /login has no bottom tab bar, but a global (<=768px) rule forces
+             padding-bottom:80px !important on body & main for tab-bar clearance.
+             On this full-height, no-scroll screen that only injects ~80px of
+             phantom scroll (body wraps the 100dvh main + its own 80px) and skews
+             the vertical centring. Neutralise it for this route only — the rule
+             lives in a <style> that mounts solely on /login, so nothing else is
+             affected. Symmetric padding keeps the stack optically centred. */
+          .auth-root { padding: 2.5rem 1.25rem !important; }
+          body { padding-bottom: 0 !important; }
         }
       `}</style>
 
-      {/* Media — desktop: full-bleed background. Mobile: the 36dvh top panel.
-          Under prefers-reduced-motion we never mount the <video> and show the
-          poster alone (mobile poster below 748px, desktop poster above). */}
+      {/* Media — full-bleed background at every breakpoint now (desktop and
+          mobile). Under prefers-reduced-motion we never mount the <video> and
+          show the poster alone (mobile poster below 748px, desktop poster
+          above). */}
       <div className="auth-media">
         {reduceMotion ? (
           <img
@@ -238,26 +224,6 @@ export default function LoginPage() {
               ))}
           </video>
         )}
-
-        {/* Mobile-only: light top-down scrim over the panel (its own values, NOT
-            the desktop scrim) keeps the wordmark region and the fade clean. */}
-        <div
-          aria-hidden
-          className="auth-panel-scrim"
-          style={{
-            background:
-              'linear-gradient(180deg, rgba(8,8,7,0.30) 0%, rgba(8,8,7,0.75) 100%)',
-          }}
-        />
-        {/* Mobile-only: dissolve the bottom ~15% of the panel into #080807 so
-            there's no hard horizontal seam between panel and base. */}
-        <div
-          aria-hidden
-          className="auth-panel-fade"
-          style={{
-            background: 'linear-gradient(180deg, rgba(8,8,7,0) 0%, #080807 100%)',
-          }}
-        />
       </div>
 
       {/* Desktop-only full-bleed scrim — carries white type over the photo's
@@ -269,6 +235,20 @@ export default function LoginPage() {
         style={{
           background:
             'linear-gradient(180deg, rgba(8,8,7,0.82) 0%, rgba(8,8,7,0.72) 34%, rgba(8,8,7,0.76) 66%, rgba(8,8,7,0.88) 100%)',
+        }}
+      />
+
+      {/* Mobile-only scrim (<748px) — a localised vertical band, darkest through
+          the centre where the near-full-width card sits, fading to near-clear at
+          the top (sky) and bottom (foreground) so the pagoda stays vivid around
+          the card. Values tuned by measuring WCAG contrast for all five inks
+          against the loop's BRIGHTEST lit-timber frame, not the poster. */}
+      <div
+        aria-hidden
+        className="auth-scrim-mobile"
+        style={{
+          background:
+            'linear-gradient(180deg, rgba(8,8,7,0.18) 0%, rgba(8,8,7,0.612) 20%, rgba(8,8,7,0.72) 32%, rgba(8,8,7,0.72) 84%, rgba(8,8,7,0.18) 100%)',
         }}
       />
 
@@ -336,20 +316,26 @@ export default function LoginPage() {
             {' '}and{' '}
             <a href="/privacy" className="underline underline-offset-2" style={{ color: 'var(--auth-ink-2)' }}>Privacy Policy</a>.
           </p>
-        </div>
 
-        {/* Mode toggle */}
-        <p className="mt-6 text-sm" style={{ color: 'var(--auth-dim)' }}>
-          {isSignup ? 'Already have an account?' : 'New to CreditIQ?'}{' '}
-          <button
-            type="button"
-            onClick={() => setMode(isSignup ? 'signin' : 'signup')}
-            className="font-medium underline underline-offset-4"
-            style={{ color: 'var(--copper-4)' }}
+          {/* Mode toggle — now the LAST element INSIDE the card (was a sibling
+              below it). A 1px hairline (the card's own border colour) separates
+              it from the terms line. Living inside the card guarantees the
+              returning-user path can never fall below the fold. */}
+          <div
+            className="mt-5 pt-5 text-sm"
+            style={{ borderTop: '1px solid rgba(255,255,255,0.16)', color: 'var(--auth-dim)' }}
           >
-            {isSignup ? 'Sign in' : 'Create an account'}
-          </button>
-        </p>
+            {isSignup ? 'Already have an account?' : 'New to CreditIQ?'}{' '}
+            <button
+              type="button"
+              onClick={() => setMode(isSignup ? 'signin' : 'signup')}
+              className="font-medium underline underline-offset-4"
+              style={{ color: 'var(--copper-4)' }}
+            >
+              {isSignup ? 'Sign in' : 'Create an account'}
+            </button>
+          </div>
+        </div>
       </div>
     </main>
   )
