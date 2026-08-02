@@ -125,8 +125,11 @@ export default function ProfilePage() {
             <ThemeToggle />
           </div>
 
-          {/* Link WhatsApp */}
-          <LinkWhatsAppButton sb={sb} />
+          {/* Link WhatsApp — anchor target for the You section's "WhatsApp" tab
+              (/profile#whatsapp). scroll-margin keeps it clear of the section bar. */}
+          <div id="whatsapp" style={{ scrollMarginTop: 72 }}>
+            <LinkWhatsAppButton sb={sb} />
+          </div>
 
           {/* Referral */}
           <div style={{

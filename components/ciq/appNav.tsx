@@ -48,10 +48,13 @@ export const APP_NAV: AppNavItem[] = [
     match: p => p.startsWith('/dashboard') || p.startsWith('/my-cards') || p.startsWith('/statement-truth') || p.startsWith('/feed') || p.startsWith('/intelligence'),
   },
   {
-    key: 'spend', label: 'Spend', href: '/optimize',
+    key: 'spend', label: 'Spend', href: '/spend-optimizer',
     icon: c => <path d="M13 2 3 14h7l-1 8 10-12h-7l1-8Z" stroke={c} strokeWidth="1.7" strokeLinejoin="round" />,
-    // Spend Optimizer IS the surface; Points Optimizer + smart-match are modes within (IA §3).
-    match: p => p.startsWith('/optimize') || p.startsWith('/spend-optimizer') || p.startsWith('/points-optimizer') || p.startsWith('/smart-match'),
+    // Lands on the Spend Optimizer (the "which card for this purchase" surface),
+    // which is the default section tab. Points Optimizer is the other tab; /optimize
+    // (a redemption tool) and /smart-match still light Spend but are orphaned tools
+    // pending the Spend rebuild (IA §3).
+    match: p => p.startsWith('/spend-optimizer') || p.startsWith('/points-optimizer') || p.startsWith('/optimize') || p.startsWith('/smart-match'),
   },
   {
     key: 'travel', label: 'Travel', href: '/trip-planner',
@@ -75,6 +78,57 @@ export const APP_NAV: AppNavItem[] = [
     match: p => p.startsWith('/profile') || p.startsWith('/pro'),
   },
 ]
+
+export type SectionTab = { label: string; href: string }
+
+// In-page ("section") navigation — the tabs rendered INSIDE each destination so the
+// features folded into it (IA §3) stay one click away. This is the entry point that
+// replaces the deleted MORE_GROUPS directory; a nav cut is not done until these exist.
+//
+// HARD RULE: every href here is a SHELL-NATIVE route (under app/(shell)/). A tab must
+// never point at a page that renders its own marketing <Header> — that drops the user
+// out of the app shell (no rail, no tab bar, no way back), which is worse than no tab.
+// Deliberately excluded for this reason (still reachable by URL, tracked as orphans
+// until the per-surface rebuilds migrate them into (shell)):
+//   /flights, /best-cards/*, /uae, /smart-match  — render the marketing Header.
+//   /optimize                                     — superseded redemption tool.
+// Best Travel / Best Cashback are already reachable in-shell via the category chips
+// on /cards, so they need no tab. Keyed by APP_NAV.key.
+export const SECTION_TABS: Record<string, SectionTab[]> = {
+  wallet: [
+    { label: 'Your cards', href: '/dashboard' },
+    { label: 'Statement Truth', href: '/statement-truth' },
+  ],
+  spend: [
+    { label: 'Spend Optimizer', href: '/spend-optimizer' },
+    { label: 'Points Optimizer', href: '/points-optimizer' },
+  ],
+  travel: [
+    { label: 'Trip Planner', href: '/trip-planner' },
+    { label: 'Ask AI', href: '/travel' },
+    { label: 'Sweet Spots', href: '/sweet-spots' },
+    { label: 'Transfer Partners', href: '/transfer-partners' },
+    { label: 'Lounges', href: '/lounge-tracker' },
+  ],
+  cards: [
+    { label: 'All Cards', href: '/cards' },
+    { label: 'Compare', href: '/compare' },
+    { label: 'Switch Wizard', href: '/card-switch' },
+    { label: 'Card Roast', href: '/card-roast' },
+  ],
+  you: [
+    { label: 'Profile', href: '/profile' },
+    { label: 'Plan & searches', href: '/pro' },
+    { label: 'WhatsApp', href: '/profile#whatsapp' },
+  ],
+}
+
+// Section tabs for a pathname, or null if the route belongs to no destination.
+export function sectionTabsFor(pathname: string | null): SectionTab[] | null {
+  if (!pathname) return null
+  const item = APP_NAV.find(i => i.match(pathname))
+  return item ? SECTION_TABS[item.key] ?? null : null
+}
 
 // Legacy shape kept for Header: href -> matcher. Same keys the Header used before
 // the lift, so its call sites are unchanged.

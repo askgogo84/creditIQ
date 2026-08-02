@@ -61,6 +61,24 @@ Nothing is deleted. Seventeen things stop being *destinations* and become tabs, 
 
 ---
 
+## 3a. In-page navigation map — *how* folded features are reached
+
+§3 says *where* each feature goes; this says *how a user gets to it*. When a feature stops being a top-level nav item it must gain an in-page entry point on its destination, or it is orphaned (reachable only by typing a URL) — which is strictly worse than the long sidebar. Each destination therefore carries a **section tab bar** rendered inside the shell (`components/ciq/SectionTabs.tsx`, fed by `SECTION_TABS` in `appNav.tsx`).
+
+**The shell rule (hard):** a section tab may only point at a **shell-native route** (under `app/(shell)/`). A tab that lands on a page rendering its own marketing `<Header>` drops the user out of the app shell — no rail, no tab bar, no way back. That strands people; a stranding tab is worse than no tab. Such routes stay reachable by URL and are tracked as orphans until a rebuild migrates them into `(shell)`.
+
+| Destination | Section tabs (all shell-native) | Reached in-page but not a tab | Orphaned — URL only (until rebuild) |
+|---|---|---|---|
+| **Wallet** (`/dashboard`) | Your cards `/dashboard` · Statement Truth `/statement-truth` | — | `/my-cards` (legacy dup), `/feed` + `/intelligence` (Home-bound, Home deferred) |
+| **Spend** (`/spend-optimizer`) | Spend Optimizer `/spend-optimizer` · Points Optimizer `/points-optimizer` | — | `/optimize` (superseded redemption tool), `/smart-match` (renders own Header) |
+| **Travel** (`/trip-planner`) | Trip Planner `/trip-planner` · Ask AI `/travel` · Sweet Spots `/sweet-spots` · Transfer Partners `/transfer-partners` · Lounges `/lounge-tracker` | — | `/flights` (renders own Header) |
+| **Cards** (`/cards`) | All Cards `/cards` · Compare `/compare` · Switch Wizard `/card-switch` · Card Roast `/card-roast` | Best Travel / Best Cashback = existing category chips on `/cards` (in-shell) | `/best-cards/travel`, `/best-cards/cashback`, `/uae` (all render own Header) |
+| **You** (`/profile`) | Profile `/profile` · Plan & searches `/pro` · WhatsApp `/profile#whatsapp` (in-page anchor) | — | — |
+
+The orphan column is the debt the per-surface rebuilds pay down: migrating those pages into `(shell)` lets them become real tabs. Until then they must not be linked from a tab, only left reachable.
+
+---
+
 ## 4. Surface by surface
 
 ### Home
@@ -202,6 +220,7 @@ The gap to close is purely layout discipline. Six destinations, clean white surf
 4. **White / realise-clean.** The gold `[data-ciq]` system is retired; the five gold surfaces migrate. **CLAUDE.md still says the opposite and must be updated before any build session** — otherwise every agent will helpfully migrate things back toward gold.
 5. **375px is primary.** Tested on a real phone, address bar visible.
 6. **Tours are additive.** No surface may depend on its tour to be understandable.
+7. **Cutting a destination from the nav requires building its replacement entry point in the same change.** Removing a nav item without giving its features a new home (a tab, filter, mode, or entry card that actually links to them) orphans those pages — reachable only by URL — which is worse than the nav you cut. The route resolving is not enough; a human must be able to *click* to it. This rule would have caught the orphaning that §3a's section tabs now fix.
 
 ---
 
