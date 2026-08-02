@@ -3,6 +3,15 @@
 **Rule:** incremental, scoped, existing patterns only, no new libraries. `npx tsc --noEmit` = 0 before each commit. Full-file replacement on code files (project rule 6/8). Scope `git add` to named files, never `git add .`. **Deploy is gated** — nothing pushes without Gogo's explicit OK (rule 11).
 **Shape:** the wallet already exists (`app/(shell)/dashboard/page.tsx` → `components/ciq/WalletView.tsx`). v1 is **tighten → migrate → retour → picker → test → subtract**, not a rebuild.
 
+## STATUS (as of this session)
+- ✅ **Step 1** done — `c97e5a2d`
+- ✅ **Step 2** done — `405b935f` (+ contract fix, interim ciq-theme dual-write)
+- ✅ **Step 3** done — `9a7fae9e`
+- ✅ **Step 4** done — `274f2a7d`
+- ✅ **Step 5** done — `303ac8a0` (40 tests pass; two removal-dependent assertions deferred to Step 6)
+- ⛔ **Step 6 BLOCKED** — gated on Home. **Gate condition:** a Home surface must `import` **both** `BestMove` and `EditorialCards` first. Today only `WalletView` imports them, so removing them now would orphan both (dead code) — the invariant forbids it. Unblocks the moment Home consumes both.
+- Follow-ons (separate, gated): delete `ciq-theme` entirely; unify `--font-*` onto Fraunces/Inter/JetBrains Mono. See sections below.
+
 ## 0. Preconditions
 - Data audit accepted (COMPUTABLE list is the contract).
 - CLAUDE.md correction in effect: migrate **toward white/copper, never toward `[data-ciq]`**.
@@ -49,9 +58,15 @@
 - The **"no BestMove / no EditorialCards renders"** assertion is **not** here — it can only pass after Step 6 removal, so it ships with Step 6.
 - ✅ tsc + `npm run test` → commit `test(wallet): split total, EstimateRange-only, 2-step tour opens Add Card, picker`.
 
-## Step 6 — Subtract: remove BestMove + EditorialCards from the wallet render (FINAL — gated on Home)
-**Files:** `components/ciq/WalletView.tsx`; the "no-render" tests.
-- **Gate:** do not start until Home imports **both** `BestMove` and `EditorialCards`, so neither becomes dead code on `main`.
+## Step 6 — Subtract: remove BestMove + EditorialCards from the wallet render (FINAL — ⛔ BLOCKED, gated on Home)
+**Files:** `components/ciq/WalletView.tsx`, `components/ciq/WalletView.test.tsx`.
+- **⛔ GATE (not yet met):** do not start until a **Home surface imports BOTH `BestMove` and `EditorialCards`.** Verify with:
+  `grep -rn "BestMove\|EditorialCards" app/ components/ --include=*.tsx` — a Home file (not `WalletView`, not a test) must import each. As of this session only `WalletView` imports them, so the gate is **open/unmet** and Step 6 must not run (removing them would orphan both = dead code, violating the Preconditions invariant).
+- **When unblocked, this is a ~10-line change:**
+  1. Delete the `{totalPoints > 0 && (…BestMove…)}` block **and its `<div data-ciq data-theme="light">` island** from `WalletView`.
+  2. Delete the `<div data-ciq data-theme="light" id="wallet-editorial"><EditorialCards /></div>` island from `WalletView`.
+  3. Delete the two `import { BestMove }` / `import { EditorialCards }` lines.
+  4. Add the deferred tests to `WalletView.test.tsx`: **no BestMove renders** (`queryByText('Your best move')` null), **no EditorialCards renders**, and **no `[data-ciq]` remains on the wallet** (`container.querySelector('[data-ciq]')` null — both transitional islands are gone).
 - Remove the **"Your best move"** block (the `totalPoints > 0` → `<BestMove … />` section) and its import.
 - Remove the **`<EditorialCards />`** block (the `#wallet-editorial` div) and its import.
 - **Delete the Step 2 transitional `[data-ciq]` island** — with both gold blocks gone there is nothing left to bridge.
