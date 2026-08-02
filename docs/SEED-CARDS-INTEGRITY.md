@@ -3,6 +3,8 @@
 *Created during the card-art / SEED_CARDS cleanup pass. Source of truth for what
 the runtime catalogue actually is, and where the data-quality landmines are.*
 
+**Open follow-ups from this doc are tracked in [issue #5](https://github.com/askgogo84/creditIQ/issues/5)** — §7 (triage the `NEW_CARDS` corrections) and §8 (build the per-field verification state that retires the hardcoded map). Keep this doc and that issue pointing at each other: a stale pointer is exactly how the `NEW_CARDS` landmine survived a caps-lock "DEAD CODE" banner and still confused two people the day this doc was written.
+
 ---
 
 ## 1. The file is three arrays, only two of which ship
@@ -124,6 +126,8 @@ genuinely-better data (per §2). Three options, needs a human call:
   (e.g. moneyback-plus 2% → 0.67%).
 
 ## 7. Does dead `NEW_CARDS` hold corrections the live 49 are missing?
+
+> **Tracked in [issue #5](https://github.com/askgogo84/creditIQ/issues/5), item 1** — per-card triage & promotion, nothing moves without a human call.
 
 Short answer: **mostly no, and the block is not uniformly "better."** This section
 is the per-card triage of the 12 live↔dead collisions. No code was changed to
@@ -309,6 +313,8 @@ calls. This list is exhaustive as of this pass — if a 9th surface is found, it
 here.
 
 ### This treatment is a MAP-BASED PATCH — do NOT extend the list to 40 slugs
+
+> **Tracked in [issue #5](https://github.com/askgogo84/creditIQ/issues/5), item 2** — build the per-field verification state that retires this map.
 
 The whole treatment works because **four slugs happen to sit in a hardcoded set**
 (`UNVERIFIED_CARD_FIELDS` in `lib/data/unverified-cards.ts`). That is fine for four
