@@ -17,10 +17,11 @@
 export function EstimateRange({ low, high, variant = 'gold' }: { low: number; high: number; variant?: 'light' | 'gold' }) {
   const light = variant === 'light';
   const ink2 = light ? 'var(--ink-2)' : 'var(--ciq-ink-2)';
-  // Badge text: --ink-2, matching CardRow's "Estimated" badge and clearing AA on
-  // the badge's translucent wash in BOTH themes. (--prov-estimated is tuned for the
-  // page --bg, not the lighter surface panel + wash — it drops to ~3.6:1 in dark.)
-  const est = light ? 'var(--ink-2)' : 'var(--ciq-estimated)';
+  // Badge text: ink-2 (light) / --ciq-ink-2 (gold), matching CardRow's "Estimated"
+  // badge and clearing AA on the badge's translucent wash in BOTH variants. The
+  // understated greys (--prov-estimated / --ciq-estimated) drop to ~2.9–3.6:1 on
+  // the panel + wash — too low for this honesty label.
+  const est = light ? 'var(--ink-2)' : 'var(--ciq-ink-2)';
   const line = light ? 'var(--line)' : 'var(--ciq-line)';
   const line2 = light ? 'var(--line-strong)' : 'var(--ciq-line-2)';
   const monoCls = light ? 'mono' : 'ciq-mono';

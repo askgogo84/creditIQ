@@ -10,9 +10,24 @@ interface CardMockupProps {
   interactive?: boolean;
 }
 
+// Face text base colour by card-colour luminance: light cards (e.g. #ff9900,
+// #c8a25a) get near-black text, dark cards keep white — so labels are legible on
+// ANY card colour (the face text was previously hardcoded white and vanished on
+// light cards). Theme-independent; the face colour is card.color, not a token.
+function faceInk(hex: string): '0,0,0' | '255,255,255' {
+  const h = (hex || '').replace('#', '');
+  const n = h.length === 3 ? h.split('').map((c) => c + c).join('') : h;
+  if (n.length < 6) return '255,255,255';
+  const ch = (i: number) => parseInt(n.slice(i, i + 2), 16) / 255;
+  const lin = (c: number) => (c <= 0.03928 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4));
+  const L = 0.2126 * lin(ch(0)) + 0.7152 * lin(ch(2)) + 0.0722 * lin(ch(4));
+  return L > 0.3 ? '0,0,0' : '255,255,255';
+}
+
 export function CardMockup({ card, size = 'md', className, interactive = true }: CardMockupProps) {
   const isSmall = size === 'sm';
   const isLarge = size === 'lg';
+  const ink = faceInk(card.color);
 
   return (
     <div
@@ -25,7 +40,7 @@ export function CardMockup({ card, size = 'md', className, interactive = true }:
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
           <div style={{
             fontFamily: 'var(--font-geist), system-ui, sans-serif',
-            color: 'rgba(255,255,255,0.9)',
+            color: `rgba(${ink},0.92)`,
             fontSize: isSmall ? '8px' : '11px',
             fontWeight: 600,
             letterSpacing: '0.1em',
@@ -35,7 +50,7 @@ export function CardMockup({ card, size = 'md', className, interactive = true }:
           </div>
           <div style={{
             fontFamily: 'var(--font-geist), system-ui, sans-serif',
-            color: 'rgba(255,255,255,0.5)',
+            color: `rgba(${ink},0.72)`,
             fontSize: isSmall ? '7px' : '9px',
             letterSpacing: '0.15em',
             textTransform: 'uppercase',
@@ -58,7 +73,7 @@ export function CardMockup({ card, size = 'md', className, interactive = true }:
         <div style={{
           marginTop: isSmall ? '6px' : '10px',
           fontFamily: 'monospace',
-          color: 'rgba(255,255,255,0.7)',
+          color: `rgba(${ink},0.7)`,
           fontSize: isSmall ? '7px' : '11px',
           letterSpacing: isSmall ? '0.08em' : '0.15em',
         }}>
@@ -77,7 +92,7 @@ export function CardMockup({ card, size = 'md', className, interactive = true }:
         }}>
           <div>
             <div style={{
-              color: 'rgba(255,255,255,0.4)',
+              color: `rgba(${ink},0.55)`,
               fontSize: isSmall ? '5px' : '8px',
               textTransform: 'uppercase',
               letterSpacing: '0.1em',
@@ -86,7 +101,7 @@ export function CardMockup({ card, size = 'md', className, interactive = true }:
               {isSmall ? '' : 'CARDHOLDER'}
             </div>
             <div style={{
-              color: 'rgba(255,255,255,0.85)',
+              color: `rgba(${ink},0.9)`,
               fontSize: isSmall ? '6px' : '9px',
               fontWeight: 500,
               letterSpacing: '0.05em',
@@ -96,7 +111,7 @@ export function CardMockup({ card, size = 'md', className, interactive = true }:
           </div>
           <div style={{
             fontFamily: "'Fraunces', Georgia, serif",
-            color: 'rgba(255,255,255,0.95)',
+            color: `rgba(${ink},0.98)`,
             fontSize: isSmall ? '7px' : '11px',
             fontWeight: 600,
             textAlign: 'right',

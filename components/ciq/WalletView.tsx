@@ -68,6 +68,21 @@ export function WalletView({
     if (reason === 'done') onAddCard();
   };
 
+  // The transitional gold islands (BestMove + editorial) must FOLLOW the site
+  // theme. If frozen to one theme they render pale-on-pale (dark mode) or
+  // dark-on-dark, because the migrated wallet around them flips with the site
+  // theme while [data-ciq] tokens would not. Track <html data-theme> live —
+  // Header / AppRail / TabBar all set that attribute. Remove with the islands in
+  // Step 6. (Default 'light' pre-hydration matches the site's default.)
+  const [siteTheme, setSiteTheme] = useState<'light' | 'dark'>('light');
+  useEffect(() => {
+    const read = () => setSiteTheme(document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'light');
+    read();
+    const mo = new MutationObserver(read);
+    mo.observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
+    return () => mo.disconnect();
+  }, []);
+
   // WHITE/COPPER LIGHT SYSTEM. The wallet no longer wraps itself in <CiqTheme>
   // (the retired second theme key) — it renders on the single site theme
   // (creditiq-theme / data-theme on <html>). See docs/wallet/02-TRD §4.1.
@@ -131,9 +146,11 @@ export function WalletView({
 
         {/* RIGHT column: action — best move + cards */}
         <div>
-          {/* best move — TRANSITIONAL gold island (moves to Home in Step 6). */}
+          {/* best move — TRANSITIONAL gold island (moves to Home in Step 6).
+              Follows the site theme + resets inherited ink to --ciq-ink so its
+              text is legible in both themes. */}
           {totalPoints > 0 && (
-            <div data-ciq data-theme="light">
+            <div data-ciq data-theme={siteTheme} style={{ color: 'var(--ciq-ink)' }}>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '26px 20px 12px' }}>
                 <h2 className="ciq-display" style={{ fontSize: 18, fontWeight: 600, letterSpacing: '-.01em' }}>Your best move</h2>
               </div>
@@ -206,8 +223,9 @@ export function WalletView({
       </div>
 
       {/* Editorial "Cards to know" — hand-picked, never "trending". Full-width below
-          the grid. TRANSITIONAL gold island (moves to Home in Step 6). */}
-      <div data-ciq data-theme="light" id="wallet-editorial"><EditorialCards /></div>
+          the grid. TRANSITIONAL gold island (moves to Home in Step 6); follows the
+          site theme + resets inherited ink so headings/labels stay legible. */}
+      <div data-ciq data-theme={siteTheme} id="wallet-editorial" style={{ color: 'var(--ciq-ink)' }}><EditorialCards /></div>
 
       {/* First-run walkthrough, anchored to the surface above. White/copper light
           variant; the final button reads "Add a card" and opens the modal. */}
