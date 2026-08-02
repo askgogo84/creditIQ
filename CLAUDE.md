@@ -53,16 +53,18 @@
 - **FolioKey:** rebranded from FolioIQ (use FolioKey everywhere). Auth = Supabase ONLY (Firebase/Clerk are legacy to remove).
 - **Consumer↔Business bridge:** Join Code lets employees get CreditIQ consumer app at ₹99/mo + add corporate card.
 
-## CREDITIQ DESIGN LANGUAGE (LOCKED — consumer redesign, Jul 2026)
-**"Amex-Platinum grade" — gold-on-true-black, premium, expressive-but-classy.**
-- Base: true near-black `#080807` (warm) / light mode warm-ivory `#F4F1E9`. **Light+dark toggle.**
-- Gold `#C9A24B` (champagne, lifts to `#E4C97E`) — used **"like jewelry, not paint"**: accents, hairlines, monograms, one CTA. Never a fill everywhere.
-- Verified green `#4FBF87` — RESERVED for the moat (verified-from-statement). Estimated = neutral grey `#8A857B` (understated = honest).
+## CREDITIQ DESIGN LANGUAGE (LOCKED — white/copper light system)
+**RETIRED: the gold-on-true-black "Amex-Platinum" `[data-ciq]` system.** The gold/`[data-ciq]` direction is no longer the target. All signed-in surfaces are the **white/copper light system**.
+- **Migration direction is toward the white/copper system. Do not migrate any surface toward `[data-ciq]`.**
+- **In-flight migration (gold → white/copper):** dashboard/WalletView, feed, profile, my-cards, pro — plus onboarding, `Tour.tsx`, the Add-card modal, and Header's mobile menu. These are the last surfaces still on gold; move them to white, never the reverse.
+- Base: **white/light**, copper accents. (The old true-near-black `#080807` / warm-ivory `#F4F1E9` gold base is retired.)
+- Copper — used sparingly for accents/CTAs, not as a fill everywhere.
+- Verified green `#4FBF87` — RESERVED for the moat (verified-from-statement). Estimated = neutral grey `#8A857B` (understated = honest). *(Carried over — not gold-specific.)*
 - Fonts: **Clash Display** (headlines), **Instrument Serif** italic (accent), **Space Grotesk** (UI), **Space Mono** (data labels).
-- Motion kept: count-up value, gauge fill, staggered rise-in, gold-glint hero, bobbing CIRA button.
+- Motion kept: count-up value, gauge fill, staggered rise-in, bobbing CIRA button. *(Drop the gold-glint hero.)*
 - **Signature = verified-vs-estimated animated gauge bar** — the brand thesis, no competitor has it. Keep central.
 - Tabs: Wallet · Cards · Travel · Optimize · You.
-- Reference file: `creditiq-gold.html`.
+- Reference file: `creditiq-gold.html` is **legacy/retired** — do not treat it as the target; build to the white/copper light system.
 - **Moat vs competitors (PointsCasa etc.):** they self-report/guess values; CreditIQ reads REAL statements (verified) + honestly flags estimates. "We don't guess your money."
 
 ## WELLBEING / SAFETY GUARDRAILS I WANT CLAUDE TO KEEP
@@ -75,4 +77,4 @@
 - Pitch thesis: "Winners won't have the best AI — quickest distribution wins." Build inside tools people already use (WhatsApp-first for India). Distribution over features.
 
 ---
-*Last updated: 06 Jul 2026. Update the Project Map / Design Language sections as they evolve.*
+*Last updated: 01 Aug 2026 — Design Language reversed: gold `[data-ciq]` "Amex-Platinum" system RETIRED; white/copper light system is now the locked target. Update the Project Map / Design Language sections as they evolve.*
