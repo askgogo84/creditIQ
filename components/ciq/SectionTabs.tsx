@@ -4,17 +4,27 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { sectionTabsFor } from '@/components/ciq/appNav'
 
-// In-page navigation for each signed-in destination. NavShell renders this once at
-// the top of the shell content, so every destination — and every shell sub-page
-// folded into it — surfaces its sibling features as tabs (see the "In-page
-// navigation map" in docs/00-SIGNED-IN-IA.md). Presentational only: each tab is a
-// Link to an existing page, no surface is merged or rewritten. Renders nothing on
-// routes that belong to no destination.
+// In-page navigation for each signed-in destination. Quiet, integrated tab strip:
+// left-aligned text tabs on a hairline, active = ink text + a 2px underline (no
+// filled pill). It belongs INSIDE the page content column, beneath the page's
+// identity — <PageHeader> places it there. See docs/00-SIGNED-IN-IA.md §3a.
+// Presentational only: each tab is a Link to an existing shell-native page.
+// Renders nothing on routes that belong to no destination.
+//
+// `tone` lets the gold [data-ciq] pages (profile / pro) render the same strip on
+// their gold ground without migrating to white in this pass.
 //
 // NOT sticky on purpose: html/body set overflow-x:hidden here, which silently
-// breaks position:sticky (it scrolls away). A plain in-flow bar at the top of the
-// content is the reliable choice — the user lands at the top, where the tabs are.
-export function SectionTabs() {
+// breaks position:sticky (it scrolls away).
+
+type Tone = 'light' | 'gold'
+
+const TOKENS: Record<Tone, { text: string; textActive: string; underline: string; border: string }> = {
+  light: { text: 'var(--ink-3)', textActive: 'var(--ink)', underline: 'var(--ink)', border: 'var(--line)' },
+  gold: { text: 'var(--ciq-ink-3)', textActive: 'var(--ciq-ink)', underline: 'var(--ciq-gold-2)', border: 'var(--ciq-line)' },
+}
+
+export function SectionTabs({ tone = 'light' }: { tone?: Tone }) {
   const pathname = usePathname()
   const tabs = sectionTabsFor(pathname)
   if (!tabs || tabs.length === 0) return null
@@ -33,13 +43,14 @@ export function SectionTabs() {
     }
   }
 
+  const c = TOKENS[tone]
+
   return (
     <nav
       aria-label="Section navigation"
       style={{
-        display: 'flex', gap: 6, overflowX: 'auto', padding: '12px 16px',
-        borderBottom: '1px solid var(--line)', background: 'var(--surface)',
-        WebkitOverflowScrolling: 'touch',
+        display: 'flex', gap: 22, overflowX: 'auto', marginTop: 20,
+        borderBottom: `1px solid ${c.border}`, WebkitOverflowScrolling: 'touch',
       }}
     >
       {tabs.map(t => {
@@ -50,12 +61,11 @@ export function SectionTabs() {
             href={t.href}
             aria-current={active ? 'page' : undefined}
             style={{
-              flexShrink: 0, padding: '7px 14px', borderRadius: 100, fontSize: 13.5,
-              fontWeight: 600, textDecoration: 'none', whiteSpace: 'nowrap', fontFamily: 'inherit',
-              transition: 'background 0.12s, color 0.12s, border-color 0.12s',
-              color: active ? 'var(--surface)' : 'var(--ink-2)',
-              background: active ? 'var(--copper)' : 'var(--bg-2)',
-              border: '1px solid ' + (active ? 'var(--copper)' : 'var(--line)'),
+              flexShrink: 0, padding: '9px 1px', marginBottom: -1, fontSize: 14,
+              fontWeight: active ? 700 : 500, textDecoration: 'none', whiteSpace: 'nowrap',
+              fontFamily: 'inherit', color: active ? c.textActive : c.text,
+              borderBottom: `2px solid ${active ? c.underline : 'transparent'}`,
+              transition: 'color 0.12s, border-color 0.12s',
             }}
           >
             {t.label}

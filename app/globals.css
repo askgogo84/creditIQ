@@ -83,7 +83,8 @@
   /* ── Provenance — ONE semantic value per theme (dark set lives in the
      [data-theme="dark"] block). <Figure> and the landing pills read ONLY these
      three; one hue = one meaning. Each is measured ≥4.5:1 on that theme's ground.
-     LIGHT ground --bg #F5EFE6: verified 5.7:1 · cached 5.8:1 · estimated 5.8:1. */
+     LIGHT ground is now --bg #FFFFFF (was cream): verified 6.5:1 · cached 6.7:1 ·
+     estimated 6.6:1 — all improved with the whiter ground. */
   --prov-verified:  #1B6B42;
   --prov-cached:    #7D5410;
   --prov-estimated: #635C51;
