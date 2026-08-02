@@ -6,6 +6,7 @@ import { Header } from '@/components/Header';
 import { DesignFooter } from '@/components/design/Footer';
 import { SEED_CARDS } from '@/lib/data/seed-cards';
 import { getApplyUrl } from '@/lib/affiliate';
+import { EstimatedValue, UnverifiedRowBadge } from '@/components/cards/Unverified';
 
 interface OddsResult {
   cardId: string;
@@ -249,11 +250,12 @@ export default function ApprovalOddsPage() {
                             display: 'flex', alignItems: 'center', justifyContent: 'center',
                             fontSize: 11, fontWeight: 800, color: card.gradeColor,
                           }}>
-                            {card.approvalProbability}%
+                            <EstimatedValue slug={card.cardId} baseColor={card.gradeColor} mark={false}>{card.approvalProbability}%</EstimatedValue>
                           </div>
                           <div>
                             <div style={{ fontSize: 14, fontWeight: 700, color: 'var(--text, #0f172a)' }}>{card.cardName}</div>
                             <div style={{ fontSize: 12, color: 'var(--text-muted, #8888AA)' }}>{card.bank} . {card.annualFee === 0 ? 'Free' : `Rs.${card.annualFee.toLocaleString('en-IN')}/yr`}</div>
+                            <UnverifiedRowBadge slug={card.cardId} style={{ marginTop: 5 }} />
                           </div>
                         </div>
                         {card.reasons.slice(0, 2).map((r, j) => (

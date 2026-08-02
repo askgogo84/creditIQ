@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { Reveal } from './Reveal';
 import { CreditCard3D, type CardVariant } from './CreditCard3D';
 import { CardArt } from '../cards/CardArt';
+import { UnverifiedRowBadge } from '../cards/Unverified';
 import { RankBadge } from './RankBadge';
 
 export interface TileCard {
@@ -65,7 +66,10 @@ export function CardTile({ card, href, rank }: CardTileProps) {
           </CardArt>
         </div>
 
-        <div className="label" style={{ marginBottom: 6 }}>{card.bank}</div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6, flexWrap: 'wrap' }}>
+          <span className="label">{card.bank}</span>
+          {rank != null && <UnverifiedRowBadge slug={card.slug} />}
+        </div>
         <h3 style={{ fontSize: 26, marginBottom: 8 }}>{card.name}</h3>
         <div style={{ display: 'flex', gap: 6, alignItems: 'center', marginBottom: 18, flexWrap: 'wrap' }}>
           {card.tags?.slice(0, 2).map(t => (

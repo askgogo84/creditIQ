@@ -5,6 +5,7 @@ import { ReportValue } from '@/components/ReportValue';
 import { CreditCard3D } from '@/components/design/CreditCard3D';
 import { CardArt } from '@/components/cards/CardArt';
 import { isCardUnverified, isFieldUnverified } from '@/lib/data/unverified-cards';
+import { EstimatedValue } from '@/components/cards/Unverified';
 import { useCompare } from '@/lib/store';
 import { calculateAnnualValue } from '@/lib/engine';
 import { formatINR, formatINRFull } from '@/lib/utils';
@@ -152,12 +153,14 @@ export function CardDetailClient({ card }: { card: CreditCard }) {
                   ))}
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', paddingTop: 12, borderTop: '1px solid var(--line,rgba(20,41,80,0.08))' }}>
                     <span style={{ fontSize: 14, fontWeight: 600, color: 'var(--ink,#142950)' }}>Net annual value</span>
-                    <span
-                      title={isCardUnverified(card.slug) ? 'Being re-verified — computed from figures our sources disagree on' : undefined}
-                      style={{ fontSize: 28, fontWeight: 800, color: isCardUnverified(card.slug) ? 'var(--prov-estimated)' : annualCalc.net_value_inr > 0 ? '#2d7a56' : '#B84230', fontVariantNumeric: 'tabular-nums' }}
+                    <EstimatedValue
+                      slug={card.slug}
+                      baseColor={annualCalc.net_value_inr > 0 ? '#2d7a56' : '#B84230'}
+                      mark={false}
+                      style={{ fontSize: 28, fontWeight: 800, fontVariantNumeric: 'tabular-nums' }}
                     >
                       {annualCalc.net_value_inr > 0 ? '+' : ''}{formatINRFull(annualCalc.net_value_inr)}
-                    </span>
+                    </EstimatedValue>
                   </div>
                   {isCardUnverified(card.slug) && (
                     <p style={{ margin: '10px 0 0', fontSize: 11.5, lineHeight: 1.45, color: 'var(--prov-estimated)' }}>

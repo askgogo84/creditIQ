@@ -247,5 +247,28 @@ This maps cleanly onto the CLAUDE.md hiring thesis (advisors = ex-UPSC aspirants
 teachers, journalists): reading a primary document and extracting the true number is
 exactly their skill, and exactly what should not be faked by a bulk date-stamp.
 
+### Contested inputs poison RANKINGS in a way the UI cannot mark — the strongest case for the process
+
+We can grey a contested *number* and badge a contested *row* (the `--prov-estimated`
+treatment now does both, from a single component). **We cannot grey a *rank
+position*.** A contested `base_reward_rate` / fee / `reward_currency` flows through
+`calculateAnnualValue` → `matchCards`, which **sorts the whole catalogue by that
+value** (`lib/engine.ts` L279–304). So a single wrong input does not just mislabel
+one card — it can **reorder the list**, and every card above and below the contested
+one inherits a position that is partly a function of a disputed number, with **no
+visible mark on them**. The row badge can say "this row's slot is uncertain"; it
+cannot say "row 3 might really be row 6," and it cannot mark the innocent rows whose
+rank shifted because a contested card was mis-valued.
+
+Approval odds have the same property: `approvalProbability` consumes the contested
+`min_income_inr_monthly` / `credit_score_min`, and the results are **sorted** by it.
+
+Ranking is therefore the one surface where honesty is **impossible without correct
+inputs** — no provenance styling can rescue it. That makes the verification process
+(§8 above) a **prerequisite for trustworthy ranking, not a nice-to-have.** It is the
+strongest argument in this document for actually doing the work: every ranked surface
+the product leans on to help people *compare and choose* is silently degraded for as
+long as the inputs are unverified, and the degradation cannot be shown to the user.
+
 **Do not blind-promote `NEW_CARDS` into runtime** — its values are unverified
 (§3) and would overwrite shipped financial facts.
