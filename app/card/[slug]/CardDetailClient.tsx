@@ -4,6 +4,7 @@ import { ReportValue } from '@/components/ReportValue';
 
 import { CreditCard3D } from '@/components/design/CreditCard3D';
 import { CardArt } from '@/components/cards/CardArt';
+import { isCardUnverified } from '@/lib/data/unverified-cards';
 import { useCompare } from '@/lib/store';
 import { calculateAnnualValue } from '@/lib/engine';
 import { formatINR, formatINRFull } from '@/lib/utils';
@@ -77,6 +78,15 @@ export function CardDetailClient({ card }: { card: CreditCard }) {
                 <Metric label="Base Rate" value={`${card.base_reward_rate}%`} highlight />
                 <Metric label="CreditIQ Score" value={`${card.expert_rating?.toFixed(1) ?? '--'}/10`} highlight />
               </div>
+
+              {isCardUnverified(card.slug) && (
+                <div style={{ display: 'flex', gap: 10, alignItems: 'flex-start', padding: '12px 14px', borderRadius: 12, marginBottom: 24, background: 'color-mix(in srgb, var(--copper-3,#D89B2A) 8%, transparent)', border: '1px solid color-mix(in srgb, var(--copper-3,#D89B2A) 28%, transparent)' }}>
+                  <span aria-hidden="true" style={{ fontSize: 14, lineHeight: 1.5 }}>&#9888;</span>
+                  <p style={{ margin: 0, fontSize: 12.5, lineHeight: 1.5, color: 'var(--ink-2,#2A3F6B)' }}>
+                    <b style={{ color: 'var(--ink,#142950)' }}>Some details on this card are being re-verified.</b> Our sources disagree on a few figures, so we&apos;d rather flag it than show a number we&apos;re not sure of. Please confirm fees and rewards on the issuer&apos;s site before applying.
+                  </p>
+                </div>
+              )}
 
               <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
                 <a href={`/api/apply/${card.id}`} target="_blank" rel="noopener noreferrer">
