@@ -5,7 +5,6 @@ import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import { createBrowserClient } from '@supabase/ssr'
 import { APP_NAV, appActive } from '@/components/ciq/appNav'
-import { MORE_GROUPS } from '@/components/ciq/moreNav'
 
 // AppRail — the fixed left sidebar shown to SIGNED-IN users at >=900px. Below
 // that, NavShell hides it and shows the existing ciq TabBar instead. Plain white
@@ -27,16 +26,6 @@ const navRow = (active: boolean): React.CSSProperties => ({
   color: active ? 'var(--copper)' : 'var(--ink-2)',
   background: active ? 'var(--bg-2)' : 'transparent',
   border: '1px solid ' + (active ? 'var(--line)' : 'transparent'),
-  transition: 'background 0.12s, color 0.12s',
-})
-
-// A secondary tool link inside a grouped section.
-const toolRow = (active: boolean): React.CSSProperties => ({
-  display: 'flex', alignItems: 'center', gap: 10, width: '100%',
-  padding: '7px 12px', borderRadius: 10, textDecoration: 'none',
-  fontSize: 13, fontWeight: 500, fontFamily: 'inherit',
-  color: active ? 'var(--ink)' : 'var(--ink-3)',
-  background: active ? 'var(--surface-2)' : 'transparent',
   transition: 'background 0.12s, color 0.12s',
 })
 
@@ -125,25 +114,6 @@ export function AppRail() {
             </Link>
           )
         })}
-
-        {/* Grouped secondary tools — the remaining destinations from MORE_GROUPS. */}
-        {MORE_GROUPS.map(group => (
-          <div key={group.title} style={{ marginTop: 16 }}>
-            <div style={{ ...eyebrow, padding: '4px 12px 6px' }}>{group.title}</div>
-            {group.links.map(link => {
-              const active = !!path && path.startsWith(link.href) && link.href !== '/'
-              return (
-                <Link key={`${group.title}-${link.href}`} href={link.href} style={toolRow(active)}>
-                  <span style={{ width: 18, textAlign: 'center', fontSize: 14, flexShrink: 0 }}>{link.icon}</span>
-                  <span style={{ flex: 1, minWidth: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{link.label}</span>
-                  {link.badge && (
-                    <span style={{ fontSize: 8.5, fontWeight: 700, letterSpacing: '0.4px', padding: '2px 5px', borderRadius: 100, background: 'var(--bg-2)', color: 'var(--copper)', flexShrink: 0 }}>{link.badge}</span>
-                  )}
-                </Link>
-              )
-            })}
-          </div>
-        ))}
       </nav>
 
       {/* Pinned footer: identity, theme toggle, sign out */}

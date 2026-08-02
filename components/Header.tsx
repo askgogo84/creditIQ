@@ -5,7 +5,6 @@ import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import { createBrowserClient } from '@supabase/ssr'
 import { TabBar } from '@/components/ciq/TabBar'
-import { MORE_GROUPS } from '@/components/ciq/moreNav'
 import { APP_NAV, appActive as isAppActive } from '@/components/ciq/appNav'
 
 const NAV_LINKS = [
@@ -111,7 +110,6 @@ export function Header() {
   const [cardsOpen, setCardsOpen] = useState(false)
   const [travelOpen, setTravelOpen] = useState(false)
   const [discoverOpen, setDiscoverOpen] = useState(false)
-  const [moreOpen, setMoreOpen] = useState(false)
   const [mobileOpen, setMobileOpen] = useState(false)
   const [scrolled, setScrolled] = useState(false)
   // Mirror the wallet's theme choice so the injected gold ciq TabBar looks
@@ -124,7 +122,6 @@ export function Header() {
     cards:    { ref: null as any },
     ai:       { ref: null as any },
     travel:   { ref: null as any },
-    more:     { ref: null as any },
   }
 
   const delayClose = (setter: (v: boolean) => void, timerRef: { ref: any }) => {
@@ -168,7 +165,7 @@ export function Header() {
     } catch {}
   }, [])
 
-  useEffect(() => { setMobileOpen(false); setAiOpen(false); setDiscoverOpen(false); setCardsOpen(false); setTravelOpen(false); setMoreOpen(false) }, [pathname])
+  useEffect(() => { setMobileOpen(false); setAiOpen(false); setDiscoverOpen(false); setCardsOpen(false); setTravelOpen(false) }, [pathname])
 
   useEffect(() => {
     try {
@@ -252,37 +249,6 @@ export function Header() {
                 {APP_NAV.map(n => (
                   <Link key={n.href} href={n.href} className={`ciq-nav-item${appActive(n.href) ? ' active' : ''}`}>{n.label}</Link>
                 ))}
-                {/* More — recreates the old marketing dropdowns for signed-in users,
-                    without bringing back a second header. Same links as the mobile sheet. */}
-                <div style={{ position: 'relative' }} onMouseEnter={() => { cancelClose(closeTimers.more); setMoreOpen(true) }} onMouseLeave={() => delayClose(setMoreOpen, closeTimers.more)}>
-                  <button type="button" className="ciq-nav-item" onClick={() => setMoreOpen(v => !v)} style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-                    More
-                    <svg width="10" height="10" viewBox="0 0 10 10" fill="none" style={{ opacity: 0.5, transform: moreOpen ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s' }}>
-                      <path d="M2 3.5l3 3 3-3" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
-                    </svg>
-                  </button>
-                  {moreOpen && (
-                    <div className="ciq-more-mega">
-                      {MORE_GROUPS.map(group => (
-                        <div key={group.title}>
-                          <div className="ciq-more-title">{group.title}</div>
-                          {group.links.map(link => (
-                            <Link key={`${group.title}-${link.href}`} href={link.href} className="ciq-ai-item">
-                              <div className="ciq-ai-icon">{link.icon}</div>
-                              <div style={{ flex: 1 }}>
-                                <div className="ciq-ai-label">
-                                  {link.label}
-                                  {link.badge && <span className={`ciq-badge ${link.badge.toLowerCase()}`}>{link.badge}</span>}
-                                </div>
-                                {link.desc && <div style={{ fontSize: 11, color: 'var(--ink-3)', marginTop: 1 }}>{link.desc}</div>}
-                              </div>
-                            </Link>
-                          ))}
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
               </>
             ) : (
             <>
@@ -452,7 +418,7 @@ export function Header() {
           <div className="ciq-mobile-menu">
             {user ? (
               <>
-                <div className="ciq-mobile-section">Your wallet</div>
+                <div className="ciq-mobile-section">Menu</div>
                 {APP_NAV.map(i => (
                   <Link key={i.href} href={i.href} className={`ciq-mobile-link${appActive(i.href) ? ' active' : ''}`}>
                     {i.label}

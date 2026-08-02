@@ -6,19 +6,17 @@ import { useEffect, useState } from 'react';
 import { createBrowserClient } from '@supabase/ssr';
 import { APP_NAV } from '@/components/ciq/appNav';
 
-// Logged-in bottom bar: exactly 4 destinations + a "More" sheet (5 items total).
-// Cards + Profile (You) moved into the More sheet's account list. The four tabs
-// are pulled by key from APP_NAV (the shared app-nav source) so their route,
-// label, icon and active-matcher stay in lockstep with the rail and Header.
-const TABS = ['wallet', 'optimize', 'travel', 'feed'].map(k => APP_NAV.find(i => i.key === k)!);
+// Logged-in bottom bar: 4 primary destinations + a "More" sheet that is the "You"
+// account surface (Profile, Pro, theme, sign out). The four tabs are pulled by key
+// from APP_NAV (the shared app-nav source, IA §2) so their route, label, icon and
+// active-matcher stay in lockstep with the rail and Header. Cards is now a primary
+// tab (was in the More sheet). The 6th IA slot, Home, is deferred until its surface
+// ships — it becomes the 5th tab then (see appNav.tsx).
+const TABS = ['wallet', 'spend', 'travel', 'cards'].map(k => APP_NAV.find(i => i.key === k)!);
 
-// "More" sheet — account destinations (all confirmed routes). Settings is a
-// section inside the sheet (theme toggle), not a separate page.
+// "More" sheet = the "You" surface — account destinations (all confirmed routes).
+// Settings is a section inside the sheet (theme toggle), not a separate page.
 const ACCOUNT_LINKS = [
-  {
-    label: 'Cards', href: '/my-cards', desc: 'Your saved cards & points',
-    icon: <><rect x="2" y="5" width="20" height="14" rx="2.5" stroke="currentColor" strokeWidth="1.7" /><path d="M2 10h20" stroke="currentColor" strokeWidth="1.7" /></>,
-  },
   {
     label: 'Profile', href: '/profile', desc: 'Your account & details',
     icon: <><circle cx="12" cy="8" r="4" stroke="currentColor" strokeWidth="1.7" /><path d="M4 21a8 8 0 0 1 16 0" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" /></>,

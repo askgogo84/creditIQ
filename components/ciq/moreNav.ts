@@ -1,6 +1,14 @@
 // components/ciq/moreNav.ts
-// Single source of truth for the "More" navigation groups. Both nav surfaces
-// import this data but render it with platform-appropriate UI:
+// DEAD (as of the signed-in IA cut, docs/00-SIGNED-IN-IA.md §2/§3): no signed-in
+// surface renders these groups any more. The AppRail "More" section and the
+// Header signed-in "More" dropdown were removed; the ~20 destinations here now
+// fold into the five primary app-nav matchers in appNav.tsx, and Blog/Glossary
+// move to the public footer. Kept in place (not deleted) only because this data
+// still mirrors the old marketing Header dropdowns and may be repurposed. Safe to
+// delete once nothing references it.
+//
+// (Historical) Single source of truth for the "More" navigation groups. Both nav
+// surfaces imported this data but rendered it with platform-appropriate UI:
 //   - MOBILE  -> components/ciq/TabBar.tsx renders a full-screen sheet.
 //   - DESKTOP -> components/Header.tsx renders a hover/click dropdown.
 // The groups mirror the old marketing Header dropdowns (Header.tsx @ 2cbc6fe8)
