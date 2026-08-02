@@ -123,5 +123,129 @@ genuinely-better data (per §2). Three options, needs a human call:
   Most correct, most work; this is the only option that fixes known-wrong live data
   (e.g. moneyback-plus 2% → 0.67%).
 
+## 7. Does dead `NEW_CARDS` hold corrections the live 49 are missing?
+
+Short answer: **mostly no, and the block is not uniformly "better."** This section
+is the per-card triage of the 12 live↔dead collisions. No code was changed to
+produce it; nothing is promoted without a per-card human call.
+
+### ⚠ "Newer date = better" is BACKWARDS on this file — do not trust dates
+
+The dead `NEW_CARDS` entries are stamped `last_verified: '2026-05-15'`; most live
+entries `'2026-05-01'`. That looks like the dead copy is newer. **It is not a safe
+signal.** Both dates were bulk back-filled (§3), *and* **6 of the 12 live entries
+carry an explicit `CORRECTED` / `RESTORED` / `VERIFIED` comment dated 2026-07-27** —
+i.e. a human verified the LIVE card *after* the dead copy was typed on 05-15. For
+those six, **the dead copy is stale, not a correction.** The clearest proof:
+`indusind-pinnacle`'s live entry is annotated `RESTORED` because commit `157b2512`
+once shipped the dead copy's values (joining ₹0 vs the real ₹15,000; forex 1.8% vs
+0%) and it had to be reverted — **the dead copy already caused a production
+regression.** Treat every date on this file as "typed on," never "checked on."
+
+### 🔴 Live is already ahead — dead is stale, do NOT promote its financials
+
+| id | Why live wins | Only possibly-salvageable from dead |
+|---|---|---|
+| `hdfc-moneyback-plus` | live `CORRECTED` 07-27 (base 2%→0.67%; the fix already landed) | `credit_score_min: 680`, `forex 3.5%` (missing fields) |
+| `icici-rubyx` | live `CORRECTED` 07-27; dead base 0.5 vs live 1.5 | `credit_score_min: 720` |
+| `axis-vistara-infinite` | live `CORRECTED` 07-27; dead base 1.5 vs live 2 | `credit_score_min: 740` |
+| `amex-mrcc` | live `CORRECTED` 07-27 (fees/tier/income) | dead colour `#006FCF` (real Amex blue) vs live `#92400e`; `credit_score_min: 720` |
+| `indusind-pinnacle` | live `RESTORED` 07-27, paisabazaar-sourced; dead = the regression copy | nothing — live is authoritative |
+| `idfc-first-classic` | live `CORRECTED`/verified; dead base 0.75 vs live 1 | `credit_score_min` if sourced |
+
+### 🟡 Genuine conflict, live NOT yet corrected — needs a source, no safe call
+
+| id | Disagreement (live → dead) |
+|---|---|
+| `rbl-shoprite` | **fee ₹500 → ₹0 lifetime-free**, reward-points → **cashback**, base 1% → 0.5%. Fundamentally different product. |
+| `yes-marquee` | tier super-premium → premium, **forex 0% → 1.75%**, base 1.65 → 2.0. Live's "0% forex" is a bold claim. |
+| `au-altura-plus` | reward-points ↔ **cashback**, tier entry → mid. |
+| `icici-sapphiro` | **base 2% → 1.0%** (live's 2% base looks high), income 120k → 150k, credit 750 → 730. |
+| `axis-ace` | **base 1% → 1.5%** (dead's 1.5 may be the real base), income 15k → 30k. |
+| `axis-flipkart` | fee-waiver 350k → 200k, income 25k → 20k, rating 8.6 → 8.2. (Colour resolved: live blue `#2874f0` is correct.) |
+
+### 🟢 Cross-cutting enrichments dead adds that live lacks (plausible, unverified)
+
+- **`credit_score_min`** — live omits it on ~10 of these 12; dead supplies 670–750.
+- **`forex_markup_percent: 3.5`** — the standard Indian-card forex; live omits it on
+  several. A reasonable default, still per-card unconfirmed.
+
+### Bottom line
+
+Dead `NEW_CARDS` is **not** a trove of corrections. For 6/12 the live copy is the
+verified one and dead is outdated. Its real value is **two missing fields**
+(`credit_score_min`, `forex_markup_percent`) and maybe **two genuine base-rate fixes**
+(`axis-ace`, `icici-sapphiro`) — all still unverified. **4 collisions are real
+product-fact conflicts** (`rbl-shoprite`, `yes-marquee`, `au-altura-plus`,
+`icici-sapphiro`) that only a bank-T&C / paisabazaar check can settle. Those 4 are
+surfaced to users as "being re-verified" in the UI (see the `UNVERIFIED_CARDS` set in
+`lib/data/unverified-cards.ts`) — an honest flag beats a confident wrong number.
+
+## 8. What a real verification process would look like (no research done — shape only)
+
+Hand-fixing 4 cards does not fix the catalogue: 49 cards, `last_verified`
+bulk-backfilled once and meaning nothing (§3), no process. Before spending research
+time on instances, here is the shape of the problem.
+
+### Where authoritative data comes from (in trust order)
+1. **Issuer MITC / T&C PDF** — the legal source of truth for fees, rates, caps,
+   forex, waivers. Authoritative but unstructured (PDF) and changes without notice.
+2. **Issuer product page** — current welcome offers / benefits; marketing tone, so
+   soft on caps and exclusions.
+3. **Aggregators** (paisabazaar, cardinsider, technofino, Live From A Lounge) — good
+   for cross-checks and devaluation news; secondary, sometimes wrong.
+4. **RBI notifications** — regulatory caps (forex, interest ceilings).
+
+### Fields are not all equally volatile → re-check cadence must differ
+- **High churn (re-check ~quarterly / on-alert):** reward rates, welcome benefits,
+  milestone thresholds, lounge counts, fees, devaluations. These move when issuers
+  reprice.
+- **Low churn (rarely):** name, network, tier, colour, `credit_score_min`, income
+  eligibility.
+- Implication: a single card-level `last_verified` is the wrong model. Provenance
+  should be **per volatile field**, with a volatility class driving cadence.
+
+### Automatable vs needs-a-human
+- **Automate — detection, not truth:** snapshot each issuer source page on a
+  schedule and diff it; when the page changes, open a "re-verify X" task. Also:
+  cross-source consistency checks (does our rate match paisabazaar within tolerance?)
+  and staleness reports (what hasn't been re-checked in N days). The devaluation feed
+  already does a slice of this.
+- **Human sign-off required — extraction and judgement:** reading a T&C PDF and
+  pulling the correctly-*capped* rate (the in-file Infinia note shows a naive number
+  running ~13× too high), resolving live-vs-source conflicts, and mapping a marketing
+  "up to X%" onto our `base_reward_rate`. An LLM can *draft* the extraction with
+  citations; a human approves, because users act on these as financial facts.
+
+### Proposed process shape
+1. **Per-field provenance:** replace the single `last_verified` with
+   `{ value, source_url, verified_at, verified_by }` on volatile fields (at minimum a
+   real per-card `verified_at` + `sources[]`). Until then, `last_verified` should be
+   **null**, not bulk-set — "unknown" must not masquerade as "checked."
+2. **Snapshot + diff bot:** store a hash/snapshot per issuer source; a scheduled job
+   diffs and files re-verify tasks. Automates *when to look*, never *what to write*.
+3. **LLM-drafted extraction + human approval:** the re-verify task ships a draft with
+   citations; a human approves; approval stamps provenance.
+4. **Consistency gate:** flag cards whose values disagree with a secondary source
+   beyond tolerance — the same NEW_CARDS-vs-live class, but against the outside world.
+5. **Public honesty:** cards not verified under this process render an
+   "unverified / estimated" flag — same principle as the verified-vs-estimated points
+   moat. "We don't guess your money" should extend to "we don't guess your card's
+   terms."
+
+### Rough cost (labour hours, honest estimate — not researched)
+- **Initial pass:** ~15–30 min/card for a trained non-expert (read MITC + product
+  page, fill ~15 fields, cite) → **≈12–25 h one-time** for 49 cards. LLM-drafting
+  could cut it to ~10 min/card of human review → **≈8–12 h**.
+- **Ongoing WITH change-detection:** re-verify fires only on real changes, ~20–40% of
+  cards/quarter → **≈3–8 h/quarter**.
+- **Ongoing WITHOUT detection:** a blind quarterly re-check of all 49 ≈ the full
+  initial cost *every quarter* — unsustainable, which is precisely why detection (not
+  hand-fixing) is the thing worth building first.
+
+This maps cleanly onto the CLAUDE.md hiring thesis (advisors = ex-UPSC aspirants,
+teachers, journalists): reading a primary document and extracting the true number is
+exactly their skill, and exactly what should not be faked by a bulk date-stamp.
+
 **Do not blind-promote `NEW_CARDS` into runtime** — its values are unverified
 (§3) and would overwrite shipped financial facts.
