@@ -57,6 +57,19 @@ The `source` flag is the single provenance switch (reference: `lib/fusion-core.t
 | `EditorialCards.tsx` | **Remove import/usage from wallet** | **Do NOT delete** — Home imports it |
 | `Tour.tsx` | **Keep + retheme** | Generic; wallet passes 2 steps + `theme="light"`; wire final→Add Card |
 
+## 4.1 Theme system (ciq-theme) — what happens (amendment 4)
+The light-mode bug's root cause is **two theme systems on separate localStorage keys that never sync**:
+- `creditiq-theme` — the site-wide theme, pre-painted onto `<html>` in `app/layout.tsx`, toggled by the Header desktop button and `AppRail`. Sets `data-theme` + `.dark`/`.light` on `<html>`.
+- `ciq-theme` — a **second** key with its own `ciq-theme-change` event, read by `NavShell`, `Header`, `TabBar`, and written/consumed by `CiqTheme` (`components/ciq/ThemeProvider.tsx`). `CiqTheme` wraps every gold surface in `<div data-ciq data-theme={theme}>`.
+
+**`ciq-theme` is NOT wallet-only.** `CiqTheme` currently wraps six surfaces: `dashboard` (wallet), `onboarding`, `my-cards`, `feed`, `profile`, `pro` — exactly the in-flight gold-migration list in CLAUDE.md. Therefore:
+
+- **What the wallet does (Step 2):** `WalletView` drops its `<CiqTheme>` wrapper entirely and renders on the single site theme (`creditiq-theme` / `data-theme` on `<html>`). The wallet is thereby removed *from* the second theme system — this is the real fix, not a repaint.
+- **`ciq-theme` the key, the `ciq-theme-change` event, and `CiqTheme`/`ThemeProvider.tsx`:** **kept for now.** Deleting them would break the five surfaces still wrapped in `CiqTheme`. They are deleted in a **final, separate cleanup gated on the last gold surface migrating** — out of scope for the wallet work (see Implementation Plan "Explicitly NOT in this plan"). `NavShell`'s `ciqTheme` mirror stays for the same reason (it themes the shared TabBar chrome).
+- **The TabBar's Appearance toggle:** it is shared shell chrome shown on the wallet too, and today it writes `ciq-theme` + broadcasts `ciq-theme-change`. Once the wallet no longer reads `ciq-theme`, that toggle would be a **no-op on the wallet** (a dead control) while still driving the five gold surfaces. **Decision (to confirm before Step 2):** unify the toggle to write **both** `creditiq-theme` and `ciq-theme` and broadcast both change events, so the two keys can no longer desync — this kills the "never sync" trap for the whole shell immediately, without deleting `ciq-theme` prematurely. The dual-write and `ciq-theme` are then removed together in the final gold-cleanup.
+
+> ⚠ **Flagged:** amendment 4 as written ("remove ciq-theme, not leave it alongside") cannot be literal at wallet scope without breaking `onboarding`/`my-cards`/`feed`/`profile`/`pro`. The above is the honest interim; expanding to migrate all six surfaces off `ciq-theme` in this work is a materially larger scope — confirm which you want before Step 2.
+
 ## 5. Tour behaviour (2 steps, first-visit, final = Open Add Card)
 - The wallet passes a **2-step** `TourStep[]` to the generic `Tour` (down from 3 — the editorial step is gone with the strip).
   1. **What verification buys you** — anchored to `#wallet-gauge` (verified vs estimated).
@@ -82,6 +95,13 @@ The `source` flag is the single provenance switch (reference: `lib/fusion-core.t
 The exact white/copper token names are a design-system decision (05-Backend-Schema §0 note + 04-UIUX-Brief §1). The **semantics above are fixed**: green = verified only, grey = estimated, copper = accent only.
 
 Reduced motion: gauge fill + count-up must respect `prefers-reduced-motion` — reduced-motion users get the final state instantly.
+
+### 7.1 Light-mode heading fix — fix the contract, not per-element (amendment 3)
+The base rule at `app/globals.css:231` is `h1,h2,h3,h4,h5 { color: var(--ink) }`. Because it is unscoped, it **overrides** the `[data-ciq]` gold context and forces `--ink` onto every heading inside a gold surface — which is why WalletView 92/131/171 and EditorialCards 35 render broken, and why WalletView 155 and Tour 264 only survive by an accidental inline colour. The fix is a **contract scope**, applied once, not per-element patches:
+- Scope headings inside `[data-ciq]` to default to `--ciq-ink` (add `[data-ciq] h1,[data-ciq] h2,[data-ciq] h3,[data-ciq] h4,[data-ciq] h5 { color: var(--ciq-ink) }`, or restrict the base rule to `:root:not([data-ciq])`).
+- This fixes all four broken headings at once, makes the two accidental-inline-colour headings correct-by-contract, and prevents the class recurring on the five other `[data-ciq]` surfaces still on gold.
+
+**⚠ Do not "clean up" the display numbers into heading tags.** `HeroGauge`, `BestMove`, and `CardRow` render their big display numbers as `<div className="ciq-display">`. They are safe **only because `div`s escape the `h1..h5` rule** — the `.ciq-display` class sets the font, not a colour, so the number inherits the correct contextual ink. Changing any of these to an `<h1>`–`<h5>` tag would re-trigger the exact bug this fix removes. Keep them as `div`s.
 
 ## 8. Performance / SSR notes
 - Client component; wallet fetched after auth. Show a skeleton, not a fake number, while loading (existing spinner acceptable).

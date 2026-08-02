@@ -78,7 +78,7 @@ After these move off, the wallet is **correct at its current size** — it stops
 - `SEED_CARDS` as the canonical catalogue **for the Add-a-card picker** (not for any on-wallet editorial strip).
 - The white/copper light token set (target design system per CLAUDE.md).
 
-## 10. Open decisions
-- **Add-card picker source:** the modal today is free-text bank/name; v1 should move to a `SEED_CARDS`-backed searchable picker (no card numbers, ever — IA §4). Confirm scope: keep free-text fallback or picker-only.
+## 10. Decisions
+- **Add-card picker source — RESOLVED (amendment 2): `SEED_CARDS`-backed searchable picker, picker-only, NO free-text fallback.** Free-text produces "Amex" / "American Express" / "amex plat" for one and the same card and breaks every downstream match — the same class of bug already visible in the WhatsApp portfolio's "Amex Amex" rendering. The picker is backed by `SEED_CARDS` (bank + card name); **no card numbers ever** (last4 optional only). Implemented in Implementation-Plan Step 4.
 - **Where the search/quota meter shows** (Home? You?) is out of scope for the wallet (IA §9).
 - The wallet does **not** need tabs (IA §4) — confirmed, not an open question.
