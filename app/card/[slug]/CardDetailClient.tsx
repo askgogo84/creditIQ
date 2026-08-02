@@ -4,7 +4,7 @@ import { ReportValue } from '@/components/ReportValue';
 
 import { CreditCard3D } from '@/components/design/CreditCard3D';
 import { CardArt } from '@/components/cards/CardArt';
-import { isCardUnverified } from '@/lib/data/unverified-cards';
+import { isCardUnverified, isFieldUnverified } from '@/lib/data/unverified-cards';
 import { useCompare } from '@/lib/store';
 import { calculateAnnualValue } from '@/lib/engine';
 import { formatINR, formatINRFull } from '@/lib/utils';
@@ -62,7 +62,13 @@ export function CardDetailClient({ card }: { card: CreditCard }) {
           <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0,1fr) minmax(0,1fr)', gap: 'clamp(32px,5vw,64px)', alignItems: 'start' }} className="grid-1-mobile">
             <Reveal>
               <div style={{ fontFamily: 'var(--font-mono,monospace)', fontSize: 10, letterSpacing: '0.18em', textTransform: 'uppercase', color: 'var(--copper,#8C5F12)', marginBottom: 12 }}>
-                {card.bank} &bull; {card.tier?.replace('-', ' ')}
+                {card.bank} &bull;{' '}
+                <span
+                  title={isFieldUnverified(card.slug, 'tier') ? 'Being re-verified — our sources disagree on this card’s tier' : undefined}
+                  style={isFieldUnverified(card.slug, 'tier') ? { color: 'var(--prov-estimated)' } : undefined}
+                >
+                  {card.tier?.replace('-', ' ')}{isFieldUnverified(card.slug, 'tier') && <span aria-hidden="true"> · est</span>}
+                </span>
               </div>
               <h1 style={{ fontSize: 'clamp(32px,5vw,64px)', fontWeight: 800, color: 'var(--ink,#142950)', lineHeight: 1.0, letterSpacing: '-0.03em', margin: '0 0 12px' }}>
                 {card.name}
@@ -73,9 +79,9 @@ export function CardDetailClient({ card }: { card: CreditCard }) {
 
               {/* Metric grid */}
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2,1fr)', gap: 12, marginBottom: 32 }}>
-                <Metric label="Annual Fee" value={card.annual_fee_inr === 0 ? 'FREE' : formatINR(card.annual_fee_inr)} />
-                <Metric label="Joining Fee" value={card.joining_fee_inr === 0 ? 'FREE' : formatINR(card.joining_fee_inr)} />
-                <Metric label="Base Rate" value={`${card.base_reward_rate}%`} highlight />
+                <Metric label="Annual Fee" value={card.annual_fee_inr === 0 ? 'FREE' : formatINR(card.annual_fee_inr)} estimated={isFieldUnverified(card.slug, 'annual_fee_inr')} />
+                <Metric label="Joining Fee" value={card.joining_fee_inr === 0 ? 'FREE' : formatINR(card.joining_fee_inr)} estimated={isFieldUnverified(card.slug, 'joining_fee_inr')} />
+                <Metric label="Base Rate" value={`${card.base_reward_rate}%`} highlight estimated={isFieldUnverified(card.slug, 'base_reward_rate')} />
                 <Metric label="CreditIQ Score" value={`${card.expert_rating?.toFixed(1) ?? '--'}/10`} highlight />
               </div>
 
@@ -146,10 +152,18 @@ export function CardDetailClient({ card }: { card: CreditCard }) {
                   ))}
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', paddingTop: 12, borderTop: '1px solid var(--line,rgba(20,41,80,0.08))' }}>
                     <span style={{ fontSize: 14, fontWeight: 600, color: 'var(--ink,#142950)' }}>Net annual value</span>
-                    <span style={{ fontSize: 28, fontWeight: 800, color: annualCalc.net_value_inr > 0 ? '#2d7a56' : '#B84230', fontVariantNumeric: 'tabular-nums' }}>
+                    <span
+                      title={isCardUnverified(card.slug) ? 'Being re-verified — computed from figures our sources disagree on' : undefined}
+                      style={{ fontSize: 28, fontWeight: 800, color: isCardUnverified(card.slug) ? 'var(--prov-estimated)' : annualCalc.net_value_inr > 0 ? '#2d7a56' : '#B84230', fontVariantNumeric: 'tabular-nums' }}
+                    >
                       {annualCalc.net_value_inr > 0 ? '+' : ''}{formatINRFull(annualCalc.net_value_inr)}
                     </span>
                   </div>
+                  {isCardUnverified(card.slug) && (
+                    <p style={{ margin: '10px 0 0', fontSize: 11.5, lineHeight: 1.45, color: 'var(--prov-estimated)' }}>
+                      Estimated — computed from figures on this card that are being re-verified.
+                    </p>
+                  )}
                 </div>
                 <ReportValue
                   cardSlug={card.slug}
@@ -390,11 +404,19 @@ export function CardDetailClient({ card }: { card: CreditCard }) {
   );
 }
 
-function Metric({ label, value, highlight }: { label: string; value: string; highlight?: boolean }) {
+function Metric({ label, value, highlight, estimated }: { label: string; value: string; highlight?: boolean; estimated?: boolean }) {
+  // `estimated` = this figure is being re-verified (our sources disagree). Render
+  // it in the estimated-provenance grey, never verified-green/copper, and expose
+  // the reason on hover. We show the number, not a blank — the user can still judge.
   return (
     <div style={{ background: 'var(--surface,#fff)', border: '1px solid var(--line,rgba(20,41,80,0.08))', borderRadius: 12, padding: '14px 16px' }}>
       <div style={{ fontFamily: 'var(--font-mono,monospace)', fontSize: 9, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.14em', color: 'var(--ink-3,#5A6A8A)', marginBottom: 6 }}>{label}</div>
-      <div style={{ fontSize: 22, fontWeight: 800, color: highlight ? 'var(--copper-3,#D89B2A)' : 'var(--ink,#142950)', fontVariantNumeric: 'tabular-nums' }}>{value}</div>
+      <div
+        title={estimated ? 'Being re-verified — our sources disagree on this figure' : undefined}
+        style={{ fontSize: 22, fontWeight: 800, color: estimated ? 'var(--prov-estimated)' : highlight ? 'var(--copper-3,#D89B2A)' : 'var(--ink,#142950)', fontVariantNumeric: 'tabular-nums' }}
+      >
+        {value}{estimated && <span aria-hidden="true" style={{ fontSize: 12, fontWeight: 700, marginLeft: 4, color: 'var(--prov-estimated)' }}>·&nbsp;est</span>}
+      </div>
     </div>
   );
 }
