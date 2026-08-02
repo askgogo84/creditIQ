@@ -9,6 +9,8 @@ import { EditorialCards } from './EditorialCards';
 import { Tour, type TourStep } from './Tour';
 
 // Wallet walkthrough — the reusable <Tour> anchored to this surface's elements.
+// Two steps: what verification buys you, then adding a card. (The editorial strip
+// is not toured; it moves to Home in Implementation-Plan Step 6.)
 const WALLET_TOUR: TourStep[] = [
   {
     title: 'Your points, verified vs estimated',
@@ -16,14 +18,9 @@ const WALLET_TOUR: TourStep[] = [
     anchor: '#wallet-gauge',
   },
   {
-    title: 'Add a card anytime',
+    title: 'Add a card',
     body: 'Enter a card by hand to keep an estimate in view, or upload a statement to add a verified one.',
     anchor: '#wallet-add',
-  },
-  {
-    title: 'Cards to know',
-    body: 'A hand-picked shortlist from our team — editorial, not ranked by anyone’s spending.',
-    anchor: '#wallet-editorial',
   },
 ];
 const TOUR_SEEN_KEY = 'ciq_wallet_tour_v1';
@@ -63,9 +60,12 @@ export function WalletView({
       if (!localStorage.getItem(TOUR_SEEN_KEY)) setTourOpen(true);
     } catch {}
   }, []);
-  const closeTour = () => {
+  // Final step's button is "Add a card" and OPENS the modal (IA §6): on 'done'
+  // set the seen-flag AND fire onAddCard; on 'skip' just remember it was seen.
+  const closeTour = (reason: 'skip' | 'done') => {
     setTourOpen(false);
     try { localStorage.setItem(TOUR_SEEN_KEY, '1'); } catch {}
+    if (reason === 'done') onAddCard();
   };
 
   // WHITE/COPPER LIGHT SYSTEM. The wallet no longer wraps itself in <CiqTheme>
@@ -209,10 +209,10 @@ export function WalletView({
           the grid. TRANSITIONAL gold island (moves to Home in Step 6). */}
       <div data-ciq data-theme="light" id="wallet-editorial"><EditorialCards /></div>
 
-      {/* First-run walkthrough, anchored to the surface above. Tour is self-contained
-          (renders its own [data-ciq] wrapper); its gold→copper retheme + 2-step
-          reduction land in Implementation-Plan Step 3. */}
-      <Tour steps={WALLET_TOUR} open={tourOpen} onClose={closeTour} labelPrefix="WALLET" />
+      {/* First-run walkthrough, anchored to the surface above. White/copper light
+          variant; the final button reads "Add a card" and opens the modal. */}
+      <Tour steps={WALLET_TOUR} open={tourOpen} onClose={closeTour} labelPrefix="WALLET"
+        variant="light" finalLabel="Add a card" />
     </div>
   );
 }

@@ -8,9 +8,11 @@
  * anchor) and it positions itself beside the current step's target, dims the
  * rest, and lets the user step through with Continue / Skip / keyboard.
  *
- * Deliberately NOT wired into any surface — see app/dev/tour-preview for the
- * isolated harness. Uses only existing --ciq-* tokens (no new colours), traps
- * focus while open, is keyboard-navigable, and respects prefers-reduced-motion.
+ * `variant`: 'light' = white/copper light system (the migrated wallet); the card
+ * renders with no [data-ciq] wrapper and follows the site theme. 'gold' (default)
+ * = the retired [data-ciq] gold system, kept UNCHANGED so the dev preview and the
+ * existing token tests are unaffected. Remove the 'gold' branch with the gold
+ * cleanup (docs/wallet/06-Implementation-Plan Follow-on task).
  */
 
 import { useEffect, useLayoutEffect, useRef, useState, useId } from 'react';
@@ -36,8 +38,12 @@ export interface TourProps {
   labelPrefix?: string;
   /** Step to open on. */
   startIndex?: number;
-  /** CIQ theme for the card. Defaults to dark (the gold-on-black surface). */
+  /** CIQ theme for the card (gold variant only). Defaults to dark. */
   theme?: 'dark' | 'light';
+  /** Design system. 'gold' (default, retired) or 'light' (white/copper). */
+  variant?: 'gold' | 'light';
+  /** Label for the final Continue button. Defaults to "Done". */
+  finalLabel?: string;
 }
 
 const GAP = 12;
@@ -51,6 +57,8 @@ export function Tour({
   labelPrefix = 'TOUR',
   startIndex = 0,
   theme = 'dark',
+  variant = 'gold',
+  finalLabel,
 }: TourProps) {
   const [index, setIndex] = useState(startIndex);
   const [pos, setPos] = useState<{ top: number; left: number } | null>(null);
@@ -185,6 +193,24 @@ export function Tour({
   const step = steps[Math.min(index, total - 1)];
   const eyebrow = `${labelPrefix} · STEP ${index + 1} OF ${total}`;
 
+  // Token set per variant. 'gold' reproduces the pre-migration values exactly
+  // (dev preview + Tour.test rely on --ciq-panel / --ciq-gold*).
+  const light = variant === 'light';
+  const c = light
+    ? {
+        panel: 'var(--surface)', ink: 'var(--ink)', ink2: 'var(--ink-2)', ink3: 'var(--ink-3)',
+        cardLine: 'var(--line-strong)', ringLine: 'color-mix(in srgb,var(--copper-3) 55%, transparent)',
+        dotOn: 'var(--copper)', dotOff: 'var(--line-strong)',
+        btnBg: 'var(--copper)', btnInk: 'var(--surface)', monoCls: 'mono', displayCls: 'w-display',
+      }
+    : {
+        panel: 'var(--ciq-panel)', ink: 'var(--ciq-ink)', ink2: 'var(--ciq-ink-2)', ink3: 'var(--ciq-ink-3)',
+        cardLine: 'var(--ciq-gold-line)', ringLine: 'var(--ciq-gold-line)',
+        dotOn: 'var(--ciq-gold)', dotOff: 'var(--ciq-line-2)',
+        btnBg: 'linear-gradient(135deg, var(--ciq-gold-2), var(--ciq-gold))', btnInk: '#1A1710',
+        monoCls: 'ciq-mono', displayCls: 'ciq-display',
+      };
+
   // Anchored -> fixed at computed top/left. No anchor -> centred via the
   // overlay's flex box (NOT a transform, so the entry animation can't wipe it).
   const cardStyle: React.CSSProperties = pos
@@ -193,8 +219,8 @@ export function Tour({
 
   return (
     <div
-      data-ciq
-      data-theme={theme}
+      // gold variant scopes itself to [data-ciq]; light follows the site theme.
+      {...(light ? {} : { 'data-ciq': true, 'data-theme': theme })}
       aria-hidden={false}
       style={{
         position: 'fixed',
@@ -219,7 +245,7 @@ export function Tour({
             left: ring.left - 6,
             width: ring.width + 12,
             height: ring.height + 12,
-            border: '1.5px solid var(--ciq-gold-line)',
+            border: `1.5px solid ${c.ringLine}`,
             borderRadius: 'var(--r-md)',
             boxShadow: '0 0 0 9999px rgba(0,0,0,0.0)',
             pointerEvents: 'none',
@@ -239,9 +265,9 @@ export function Tour({
         style={{
           ...cardStyle,
           width: 'min(320px, calc(100vw - 32px))',
-          background: 'var(--ciq-panel)',
-          color: 'var(--ciq-ink)',
-          border: '1px solid var(--ciq-gold-line)',
+          background: c.panel,
+          color: c.ink,
+          border: `1px solid ${c.cardLine}`,
           borderRadius: 'var(--r-lg)',
           boxShadow: 'var(--shadow-xl)',
           padding: '18px',
@@ -249,12 +275,12 @@ export function Tour({
         }}
       >
         <p
-          className="ciq-mono"
+          className={c.monoCls}
           style={{
             margin: 0,
             fontSize: 11,
             letterSpacing: '0.12em',
-            color: 'var(--ciq-ink-3)',
+            color: c.ink3,
             textTransform: 'uppercase',
           }}
         >
@@ -263,13 +289,13 @@ export function Tour({
 
         <h2
           id={titleId}
-          className="ciq-display"
-          style={{ margin: '8px 0 6px', fontSize: 18, fontWeight: 600, color: 'var(--ciq-ink)' }}
+          className={c.displayCls}
+          style={{ margin: '8px 0 6px', fontSize: 18, fontWeight: 600, color: c.ink }}
         >
           {step.title}
         </h2>
 
-        <p id={bodyId} style={{ margin: 0, fontSize: 14, lineHeight: 1.5, color: 'var(--ciq-ink-2)' }}>
+        <p id={bodyId} style={{ margin: 0, fontSize: 14, lineHeight: 1.5, color: c.ink2 }}>
           {step.body}
         </p>
 
@@ -291,7 +317,7 @@ export function Tour({
               border: 'none',
               padding: '6px 4px',
               fontSize: 13,
-              color: 'var(--ciq-ink-3)',
+              color: c.ink3,
               cursor: 'pointer',
             }}
           >
@@ -308,28 +334,28 @@ export function Tour({
                   width: i === index ? 18 : 6,
                   height: 6,
                   borderRadius: 100,
-                  background: i === index ? 'var(--ciq-gold)' : 'var(--ciq-line-2)',
+                  background: i === index ? c.dotOn : c.dotOff,
                 }}
               />
             ))}
           </div>
 
-          {/* Continue / Done — right */}
+          {/* Continue / final — right. Final label defaults to "Done". */}
           <button
             type="button"
             onClick={() => (isLast ? onClose('done') : setIndex((i) => Math.min(i + 1, total - 1)))}
             style={{
-              background: 'linear-gradient(135deg, var(--ciq-gold-2), var(--ciq-gold))',
+              background: c.btnBg,
               border: 'none',
               borderRadius: 'var(--r-sm)',
               padding: '8px 16px',
               fontSize: 13,
               fontWeight: 600,
-              color: '#1A1710',
+              color: c.btnInk,
               cursor: 'pointer',
             }}
           >
-            {isLast ? 'Done' : 'Continue'}
+            {isLast ? (finalLabel ?? 'Done') : 'Continue'}
           </button>
         </div>
       </div>
