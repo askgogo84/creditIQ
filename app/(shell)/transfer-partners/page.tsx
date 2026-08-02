@@ -2,6 +2,7 @@ import { DesignFooter } from '@/components/design/Footer';
 import { Reveal } from '@/components/design/Reveal';
 import Link from 'next/link';
 import type { Metadata } from 'next';
+import { SectionTabs } from '@/components/ciq/SectionTabs';
 
 export const metadata: Metadata = {
   title: 'Credit Card Transfer Partners India 2026 | CreditIQ',
@@ -89,6 +90,7 @@ export default function TransferPartnersPage() {
                 Every airline and hotel transfer partner for Indian credit cards — with actual ratios, timelines, and where to get the best value.
               </p>
             </Reveal>
+            <SectionTabs />
           </div>
         </section>
 

@@ -11,6 +11,7 @@ import { authedFetch } from '@/lib/authed-fetch';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Sparkles, Loader2, Plane, ShoppingBag, CreditCard, Hotel, Package, ArrowDownRight } from 'lucide-react';
 import { formatINR } from '@/lib/utils';
+import { SectionTabs } from '@/components/ciq/SectionTabs';
 
 const TYPE_ICONS: Record<string, any> = {
   flight: Plane, hotel: Hotel, transfer: ArrowDownRight,
@@ -94,6 +95,7 @@ function OptimizeContent() {
 
       <section className="pb-16 px-4" style={{ maxWidth: '100vw', overflow: 'hidden' }}>
         <div className="max-w-7xl mx-auto">
+          <SectionTabs />
           <div className="flex flex-col lg:grid lg:grid-cols-[400px,1fr] gap-6">
 
             {/* CONFIGURATOR */}

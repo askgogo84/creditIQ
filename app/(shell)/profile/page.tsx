@@ -5,6 +5,7 @@ import { createBrowserClient } from '@supabase/ssr';
 import { useRouter } from 'next/navigation';
 import { CiqTheme, ThemeToggle } from '@/components/ciq/ThemeProvider';
 import { LinkWhatsAppButton } from './LinkWhatsAppButton';
+import { SectionTabs } from '@/components/ciq/SectionTabs';
 
 const JOIN_CODE = 'CIQ-2850AF';
 
@@ -76,6 +77,7 @@ export default function ProfilePage() {
         {/* Page title */}
         <div style={{ padding: '10px 20px 0' }}>
           <h1 className="ciq-display" style={{ fontWeight: 600, fontSize: 28, letterSpacing: '-.02em' }}>You</h1>
+          <SectionTabs tone="gold" />
         </div>
 
         {/* Account header */}

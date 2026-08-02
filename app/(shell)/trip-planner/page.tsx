@@ -14,6 +14,7 @@ import { ProGate } from '@/components/design/ProGate';
 import { createBrowserClient } from '@supabase/ssr';
 import { authedFetch } from '@/lib/authed-fetch';
 import { cardPageExists } from '@/lib/data/seed-cards';
+import { SectionTabs } from '@/components/ciq/SectionTabs';
 
 interface TripResult {
   destination: string;
@@ -243,6 +244,8 @@ function TripPlannerPageInner() {
             Tell us your trip. We&rsquo;ll find the smartest way to pay with your credit&#8209;card points &mdash; flights, hotels, everything.
           </p>
         </div>
+
+        <SectionTabs />
 
         {/* Input card */}
         <div style={{ background: 'var(--bg-card, #fff)', border: '1px solid var(--border, #e2e8f0)', borderRadius: 20, padding: 24, marginBottom: 20, boxShadow: '0 4px 24px rgba(15,23,42,0.06)' }}>

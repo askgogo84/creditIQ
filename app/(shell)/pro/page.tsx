@@ -4,6 +4,7 @@ import { createBrowserClient } from '@supabase/ssr';
 import { useRouter } from 'next/navigation';
 import { CiqTheme } from '@/components/ciq/ThemeProvider';
 import { authedFetch } from '@/lib/authed-fetch';
+import { SectionTabs } from '@/components/ciq/SectionTabs';
 
 // ---- Pricing (single source of truth) ----
 // Amounts shown in rupees; actual charge amounts live in Razorpay Plans (server allowlist).
@@ -157,6 +158,7 @@ export default function ProPage() {
           <p style={{ fontSize: 14, color: 'var(--ciq-ink-2)', marginTop: 8, lineHeight: 1.5 }}>
             The verified-from-statement analysis no one else has. Real math on your real spend.
           </p>
+          <SectionTabs tone="gold" />
         </div>
 
         {/* Plan toggle — 3 tiers, 12-month pre-selected */}

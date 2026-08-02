@@ -7,6 +7,7 @@ import { CardRow } from './CardRow';
 import { BestMove } from './BestMove';
 import { EditorialCards } from './EditorialCards';
 import { Tour, type TourStep } from './Tour';
+import { SectionTabs } from './SectionTabs';
 
 // Wallet walkthrough — the reusable <Tour> anchored to this surface's elements.
 // Two steps: what verification buys you, then adding a card. (The editorial strip
@@ -97,30 +98,34 @@ export function WalletView({
       {/* Theme toggle + sign out live in the TabBar "More" sheet (Settings +
           Sign out). The shell Header supplies the logo/top chrome. */}
 
+      {/* Identity — lifted above the grid so the section tabs sit directly under it
+          and span the full content width (docs/00-SIGNED-IN-IA.md §3a). */}
+      <div style={{ padding: '10px 20px 0' }}>
+        <div className="w-rise" style={{
+          display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: 10, letterSpacing: '.06em',
+          textTransform: 'uppercase', color: 'var(--ink-2)', background: 'var(--line)',
+          border: '1px solid var(--line-strong)', padding: '5px 10px', borderRadius: 999, fontFamily: 'var(--font-mono)',
+        }}>
+          <span style={{ width: 6, height: 6, borderRadius: '50%', background: 'var(--prov-verified)', animation: 'ciq-pulse 2s infinite' }} />
+          Live · verified wallet
+        </div>
+        <h1 className="w-display w-rise d1" style={{ fontWeight: 600, fontSize: 30, letterSpacing: '-.02em', marginTop: 12, lineHeight: 1.02 }}>
+          Hi, {displayName || 'there'}.
+        </h1>
+        {email && <div style={{ fontSize: 12.5, color: 'var(--ink-3)', marginTop: 4 }}>{email}</div>}
+        <button onClick={() => setTourOpen(true)} className="mono" style={{
+          marginTop: 8, fontSize: 10.5, letterSpacing: '.06em', textTransform: 'uppercase',
+          color: 'var(--ink-3)', background: 'none', border: 'none', padding: 0, cursor: 'pointer',
+          textDecoration: 'underline', textUnderlineOffset: 3,
+        }}>Take a tour</button>
+        <SectionTabs />
+      </div>
+
       {/* responsive body: single column on mobile, two columns >=768px */}
       <div className="md:grid md:grid-cols-[minmax(0,5fr)_minmax(0,6fr)] md:gap-6 md:items-start md:px-2 md:pt-4">
 
-        {/* LEFT column: identity — greeting + gauge + credo */}
+        {/* LEFT column: gauge + credo (greeting lifted out, above) */}
         <div>
-          <div style={{ padding: '10px 20px 0' }}>
-            <div className="w-rise" style={{
-              display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: 10, letterSpacing: '.06em',
-              textTransform: 'uppercase', color: 'var(--ink-2)', background: 'var(--line)',
-              border: '1px solid var(--line-strong)', padding: '5px 10px', borderRadius: 999, fontFamily: 'var(--font-mono)',
-            }}>
-              <span style={{ width: 6, height: 6, borderRadius: '50%', background: 'var(--prov-verified)', animation: 'ciq-pulse 2s infinite' }} />
-              Live · verified wallet
-            </div>
-            <h1 className="w-display w-rise d1" style={{ fontWeight: 600, fontSize: 30, letterSpacing: '-.02em', marginTop: 12, lineHeight: 1.02 }}>
-              Hi, {displayName || 'there'}.
-            </h1>
-            {email && <div style={{ fontSize: 12.5, color: 'var(--ink-3)', marginTop: 4 }}>{email}</div>}
-            <button onClick={() => setTourOpen(true)} className="mono" style={{
-              marginTop: 8, fontSize: 10.5, letterSpacing: '.06em', textTransform: 'uppercase',
-              color: 'var(--ink-3)', background: 'none', border: 'none', padding: 0, cursor: 'pointer',
-              textDecoration: 'underline', textUnderlineOffset: 3,
-            }}>Take a tour</button>
-          </div>
 
           {/* HERO GAUGE — the signature */}
           <div id="wallet-gauge">

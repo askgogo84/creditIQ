@@ -7,6 +7,7 @@ import { Reveal } from '@/components/design/Reveal';
 import { SEED_CARDS } from '@/lib/data/seed-cards';
 import { getApplyUrl } from '@/lib/affiliate';
 import { X, Plus } from 'lucide-react';
+import { SectionTabs } from '@/components/ciq/SectionTabs';
 
 const ALL_CARDS = SEED_CARDS as any[];
 
@@ -57,6 +58,7 @@ export default function ComparePage() {
                 Add up to 4 cards. See fees, rewards, and lounge access side by side.
               </p>
             </Reveal>
+            <SectionTabs />
           </div>
         </section>
 

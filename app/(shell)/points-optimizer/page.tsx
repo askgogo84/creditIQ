@@ -2,6 +2,7 @@
 
 import { authedFetch } from '@/lib/authed-fetch';
 import { useState } from 'react';
+import { SectionTabs } from '@/components/ciq/SectionTabs';
 
 const CARDS_WITH_POINTS = [
   { value: 'hdfc-infinia', label: 'HDFC Infinia', bank: 'HDFC Bank', pointName: 'Reward Points', ratio: '1 pt = Rs.1 (SmartBuy) / 0.5 base' },
@@ -183,6 +184,8 @@ Respond ONLY with valid JSON (no markdown, no code fences):
             Pick a card, tell me your goal &mdash; I&apos;ll rank every redemption path by actual value.
           </p>
         </div>
+
+        <SectionTabs />
 
         {/* Two-column grid */}
         <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0,1fr) minmax(0,1.4fr)', gap: 20 }}

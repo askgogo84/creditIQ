@@ -3,6 +3,7 @@
 import { useState, useRef, useEffect, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { authedFetch } from '@/lib/authed-fetch';
+import { SectionTabs } from '@/components/ciq/SectionTabs';
 
 interface Message {
   role: 'user' | 'assistant';
@@ -85,6 +86,8 @@ function TravelPageInner() {
 
       {/* Main content */}
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column', maxWidth: 720, width: '100%', margin: '0 auto', padding: '0 clamp(16px,4vw,24px)', paddingTop: 'clamp(80px,12vw,100px)', paddingBottom: 120, position: 'relative', zIndex: 1 }}>
+
+        <SectionTabs />
 
         {/* Hero - only when empty */}
         {empty && (

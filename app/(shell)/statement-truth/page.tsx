@@ -4,6 +4,7 @@ import { authedFetch } from '@/lib/authed-fetch';
 import { useState, useRef } from 'react';
 import { DesignFooter } from '@/components/design/Footer';
 import { Reveal } from '@/components/design/Reveal';
+import { SectionTabs } from '@/components/ciq/SectionTabs';
 
 import Link from 'next/link';
 
@@ -84,6 +85,7 @@ export default function StatementTruthPage() {
                 Upload your credit card statement. We show you what you actually earned vs what the bank advertised — category by category.
               </p>
             </Reveal>
+            <SectionTabs />
           </div>
         </section>
 

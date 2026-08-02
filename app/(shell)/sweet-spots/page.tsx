@@ -1,6 +1,7 @@
 import { createClient } from '@supabase/supabase-js'
 import { DesignFooter } from '@/components/design/Footer'
 import Link from 'next/link'
+import { PageHeader } from '@/components/ciq/PageHeader'
 
 export const revalidate = 3600
 
@@ -34,13 +35,12 @@ export default async function SweetSpotsPage() {
         <div style={{ maxWidth: 900, margin: '0 auto', padding: '0 clamp(16px,4vw,24px)' }}>
 
           <div style={{ marginBottom: 36 }}>
-            <div style={{ fontFamily: 'var(--font-mono,monospace)', fontSize: 10, fontWeight: 700, letterSpacing: '0.18em', textTransform: 'uppercase', color: 'var(--copper,#8C5F12)', marginBottom: 10 }}>Community discovered</div>
-            <h1 style={{ fontSize: 'clamp(28px,4vw,44px)', fontWeight: 800, color: 'var(--ink,#142950)', margin: '0 0 8px', letterSpacing: '-0.03em' }}>
-              Redemption Sweet Spots
-            </h1>
-            <p style={{ fontSize: 15, color: 'var(--ink-3,#5A6A8A)', margin: 0 }}>
-              The best redemptions found by top Indian CC creators — updated nightly from Instagram, YouTube and Reddit.
-            </p>
+            <PageHeader
+              eyebrow="Community discovered"
+              title="Redemption Sweet Spots"
+              subtitle="The best redemptions found by top Indian CC creators — updated nightly from Instagram, YouTube and Reddit."
+              maxWidth={900}
+            />
           </div>
 
           {/* Transfer Hacks */}

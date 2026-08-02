@@ -5,7 +5,6 @@ import { createBrowserClient } from '@supabase/ssr'
 import { Header } from '@/components/Header'
 import { AppRail } from '@/components/ciq/AppRail'
 import { TabBar } from '@/components/ciq/TabBar'
-import { SectionTabs } from '@/components/ciq/SectionTabs'
 
 // NavShell — the nav chrome for the (shell) route group, gated on AUTH STATE
 // (never on route):
@@ -77,10 +76,7 @@ export function NavShell({ children }: { children: React.ReactNode }) {
       <div data-ciq data-theme={ciqTheme} className="ciq-shell-tabbar">
         <TabBar />
       </div>
-      <div className="ciq-shell-main">
-        <SectionTabs />
-        {children}
-      </div>
+      <div className="ciq-shell-main">{children}</div>
     </>
   )
 }

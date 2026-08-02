@@ -2,6 +2,7 @@
 import { useState } from 'react'
 import { DesignFooter } from '@/components/design/Footer'
 import { Reveal } from '@/components/design/Reveal'
+import { SectionTabs } from '@/components/ciq/SectionTabs'
 
 const MY_CARDS = [
   { name: 'HDFC Infinia', bank: 'HDFC', domestic: 'Unlimited', international: 'Unlimited', network: 'Priority Pass', used: 2, total: 999, color: '#142950' },
@@ -40,6 +41,8 @@ export default function LoungeTrackerPage() {
                 Track free visits across every card you carry. Know before you go.
               </p>
             </Reveal>
+
+            <SectionTabs />
 
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1.4fr', gap: 32, alignItems: 'flex-start' }} className="grid-1-mobile">
               <div>

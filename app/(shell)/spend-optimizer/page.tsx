@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { authedFetch } from '@/lib/authed-fetch';
+import { SectionTabs } from '@/components/ciq/SectionTabs';
 
 const CATEGORIES = [
   { id: 'dining', label: 'Dining & Restaurants', color: '#e11d48', placeholder: '5000', icon: '🍽️' },
@@ -134,6 +135,8 @@ Respond ONLY with valid JSON (no markdown, no backticks, no explanation outside 
             Enter your monthly spends. Our AI scans 93+ Indian credit cards and shows exactly how much each card earns you — with zero bank bias.
           </p>
         </div>
+
+        <SectionTabs />
 
         {step === 'input' && (
           <>

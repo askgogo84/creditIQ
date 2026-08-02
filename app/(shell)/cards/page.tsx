@@ -3,6 +3,7 @@ import { SectionHeader } from '@/components/design/SectionHeader';
 import { CopperCTA, GhostCTA } from '@/components/design/CTAs';
 import { DesignFooter } from '@/components/design/Footer';
 import { CardsClient } from './CardsClient';
+import { SectionTabs } from '@/components/ciq/SectionTabs';
 import { createClient } from '@supabase/supabase-js';
 
 export const revalidate = 300; // revalidate every 5 mins
@@ -59,6 +60,7 @@ export default async function CardsIndexPage() {
               <CopperCTA href="/smart-match">Find my perfect card</CopperCTA>
               <GhostCTA href="/compare">Compare side by side</GhostCTA>
             </div>
+            <SectionTabs />
           </div>
         </section>
 

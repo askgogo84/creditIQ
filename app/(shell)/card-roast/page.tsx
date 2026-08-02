@@ -10,6 +10,7 @@ import { CopperCTA } from '@/components/design/CTAs'
 import { CreditCard3D, type CardVariant } from '@/components/design/CreditCard3D'
 import { SEED_CARDS, cardPageExists } from '@/lib/data/seed-cards'
 import { authedFetch } from '@/lib/authed-fetch'
+import { SectionTabs } from '@/components/ciq/SectionTabs'
 
 // Presets prefill an editable monthly-spend field (user can override).
 const PRESETS = {
@@ -135,6 +136,8 @@ export default function CardRoastPage() {
                 <span style={{ fontFamily: 'var(--font-serif,Georgia,serif)', color: 'var(--ink,#142950)' }}>what you are losing</span>.
               </p>
             </Reveal>
+
+            <SectionTabs />
 
             {step === 'input' && (
               <Reveal>
