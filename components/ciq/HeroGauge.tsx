@@ -110,6 +110,15 @@ export function HeroGauge({
           </div>
         </div>
 
+        {/* All-estimated state: no verified points yet. Say so plainly and
+            understated (grey, never dressed up) — the actionable upload CTA
+            lives just below in WalletView. See PRD §7. */}
+        {verifiedPoints === 0 && estimatedPoints > 0 && (
+          <div className="ciq-mono" style={{ marginTop: 14, fontSize: 11, lineHeight: 1.45, color: 'var(--ciq-estimated)' }}>
+            All estimated — upload a statement to verify.
+          </div>
+        )}
+
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: 18, paddingTop: 15, borderTop: '1px solid var(--ciq-line)' }}>
           <div style={{ fontSize: 11, color: 'var(--ciq-ink-3)' }}>{cardCount} {cardCount === 1 ? 'card' : 'cards'}</div>
           <EstimateRange low={estLow} high={estHigh} />
