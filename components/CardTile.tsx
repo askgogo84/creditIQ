@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { CardMockup } from './cards/CardMockup';
+import { CardArt } from './cards/CardArt';
 import { useCompare } from '@/lib/store';
 import { StarRating } from './StarRating';
 import { getApplyUrl } from '@/lib/affiliate';
@@ -64,7 +65,9 @@ export function CardTile({ card, annualValue, reasoning, rank }: Props) {
       <Link href={`/card/${card.slug}`} className="block">
         <div className="px-6 pt-8 pb-4 flex justify-center" style={{ background: `linear-gradient(135deg, ${card.color}20 0%, transparent 100%)` }}>
           <div style={{ width: '75%', maxWidth: 220 }}>
-            <CardMockup card={card} size="sm" />
+            <CardArt card={card}>
+              <CardMockup card={card} size="sm" />
+            </CardArt>
           </div>
         </div>
       </Link>

@@ -3,15 +3,21 @@
 import Link from 'next/link';
 import { Reveal } from './Reveal';
 import { CreditCard3D, type CardVariant } from './CreditCard3D';
+import { CardArt } from '../cards/CardArt';
 import { RankBadge } from './RankBadge';
 
 export interface TileCard {
+  slug: string;
   bank: string;
   name: string;
   tagline?: string;
   tier?: string;
   network: string;
   variant: CardVariant;
+  /** Real brand colour (hex) from SEED_CARDS. Passed to CreditCard3D so the
+   *  fallback face matches every other surface, instead of the generic
+   *  `variant` gradient. */
+  color?: string;
   tags?: string[];
   fee: number;
   iqScore: number;
@@ -45,15 +51,18 @@ export function CardTile({ card, href, rank }: CardTileProps) {
         )}
 
         <div style={{ marginBottom: 22, maxWidth: 280 }}>
-          <CreditCard3D
-            name={card.name.toUpperCase()}
-            bank={card.bank}
-            tagline={card.tagline || card.tier}
-            network={card.network}
-            variant={card.variant}
-            small
-            interactive={false}
-          />
+          <CardArt card={{ slug: card.slug, name: card.name }}>
+            <CreditCard3D
+              name={card.name.toUpperCase()}
+              bank={card.bank}
+              tagline={card.tagline || card.tier}
+              network={card.network}
+              variant={card.variant}
+              color={card.color}
+              small
+              interactive={false}
+            />
+          </CardArt>
         </div>
 
         <div className="label" style={{ marginBottom: 6 }}>{card.bank}</div>

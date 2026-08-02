@@ -3,6 +3,7 @@ import { WhatCreatorsSay } from '@/components/WhatCreatorsSay';
 import { ReportValue } from '@/components/ReportValue';
 
 import { CreditCard3D } from '@/components/design/CreditCard3D';
+import { CardArt } from '@/components/cards/CardArt';
 import { useCompare } from '@/lib/store';
 import { calculateAnnualValue } from '@/lib/engine';
 import { formatINR, formatINRFull } from '@/lib/utils';
@@ -88,14 +89,16 @@ export function CardDetailClient({ card }: { card: CreditCard }) {
             </Reveal>
 
             <Reveal style={{ display: 'flex', justifyContent: 'center' }}>
-              <CreditCard3D
-                variant={cardVariant}
-                color={card.color}
-                name={(card.name || 'CARD').toUpperCase()}
-                bank={(card.bank || 'BANK').toUpperCase()}
-                tagline={card.tier || ''}
-                network="VISA"
-              />
+              <CardArt card={card}>
+                <CreditCard3D
+                  variant={cardVariant}
+                  color={card.color}
+                  name={(card.name || 'CARD').toUpperCase()}
+                  bank={(card.bank || 'BANK').toUpperCase()}
+                  tagline={card.tier || ''}
+                  network="VISA"
+                />
+              </CardArt>
             </Reveal>
           </div>
         </div>
