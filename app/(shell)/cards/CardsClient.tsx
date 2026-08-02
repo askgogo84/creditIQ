@@ -25,6 +25,7 @@ function toTileCard(c: any, idx: number): TileCard {
   const highlights = Array.isArray(c.highlights) ? c.highlights : [];
   const category = Array.isArray(c.category) ? c.category : [];
   return {
+    slug: c.slug || c.id,
     name: c.name,
     bank: c.bank,
     tier: tagline(c.tier),
@@ -33,6 +34,7 @@ function toTileCard(c: any, idx: number): TileCard {
     tags: category.slice(0, 2).map((t: string) => t.replace(/-/g, ' ').replace(/\b\w/g, (l: string) => l.toUpperCase())),
     tagline: highlights[0] || c.best_for || '',
     variant: VARIANT_ROTATION[idx % VARIANT_ROTATION.length],
+    color: c.color,
     network: (c.network || NETWORK_BY_BANK[bankKey] || 'VISA').toUpperCase() as any,
   };
 };

@@ -6,6 +6,7 @@ import type { CreditCard } from '@/lib/types';
 import { SEED_CARDS } from '@/lib/data/seed-cards';
 import { getFloorValuation, getRedemptionOptions } from '@/lib/redemption';
 import { matchCards } from '@/lib/engine';
+import { EstimatedValue, UnverifiedRowBadge } from '@/components/cards/Unverified';
 import { useSpend, rupeeShort } from './SpendContext';
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -428,8 +429,9 @@ function DiscoverCardsPanel() {
               <div style={{ fontFamily: MO, fontSize: 11.5, color: '#8a857b', marginTop: 2, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                 {r.card.bank} · {r.card.annual_fee_inr > 0 ? `fee ${INR(r.card.annual_fee_inr)}` : 'no annual fee'}
               </div>
+              <UnverifiedRowBadge slug={r.card.slug} style={{ marginTop: 5 }} />
             </div>
-            <div style={{ fontFamily: MO, fontSize: 15, color: '#142335', whiteSpace: 'nowrap', textAlign: 'right', fontVariantNumeric: 'tabular-nums' }}>{INR(r.annual_value_inr)}</div>
+            <div style={{ fontFamily: MO, fontSize: 15, whiteSpace: 'nowrap', textAlign: 'right', fontVariantNumeric: 'tabular-nums' }}><EstimatedValue slug={r.card.slug} baseColor="#142335" mark={false}>{INR(r.annual_value_inr)}</EstimatedValue></div>
             <div style={{ display: 'flex', justifyContent: 'flex-end' }}><Pill kind="estimated" /></div>
           </div>
         ))}

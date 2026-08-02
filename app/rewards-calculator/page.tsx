@@ -4,6 +4,7 @@ import { useSearchParams } from 'next/navigation';
 import { Header } from '@/components/Header';
 import { DesignFooter } from '@/components/design/Footer';
 import { SavePromptBanner } from '@/components/design/SavePromptBanner';
+import { EstimatedValue } from '@/components/cards/Unverified';
 
 const CATEGORIES = [
   { key: 'online',    label: 'Online Shopping',  default: 10000 },
@@ -173,7 +174,9 @@ function RewardsCalculatorInner() {
                 <div style={{ background: 'white', borderRadius: 16, padding: 22, boxShadow: '0 2px 16px rgba(20,41,80,0.08)', border: '1.5px solid #E8EDF5' }}>
                   <div style={{ fontSize: 10, fontWeight: 800, color: '#5A6A8A', letterSpacing: '0.14em', marginBottom: 10 }}>YOUR CARD</div>
                   <div style={{ fontSize: 13, fontWeight: 700, color: '#142950', marginBottom: 8, lineHeight: 1.3 }}>{result.current_card.name}</div>
-                  <div style={{ fontSize: 34, fontWeight: 900, color: '#2A3F6B' }}>{fmt(result.current_card.rewards_monthly)}</div>
+                  <div style={{ fontSize: 34, fontWeight: 900 }}>
+                    <EstimatedValue slug={selectedCard} baseColor="#2A3F6B">{fmt(result.current_card.rewards_monthly)}</EstimatedValue>
+                  </div>
                   <div style={{ fontSize: 11, color: '#5A6A8A', marginTop: 3 }}>per month</div>
                 </div>
                 <div style={{ background: 'linear-gradient(145deg,#1B3A5C,#0D2240)', borderRadius: 16, padding: 22, boxShadow: '0 4px 24px rgba(27,58,92,0.18)', position: 'relative', overflow: 'hidden' }}>

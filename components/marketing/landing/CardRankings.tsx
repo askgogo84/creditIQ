@@ -3,6 +3,7 @@
 import { useMemo } from 'react';
 import { SEED_CARDS } from '@/lib/data/seed-cards';
 import { matchCards } from '@/lib/engine';
+import { EstimatedValue, UnverifiedRowBadge } from '@/components/cards/Unverified';
 import { useSpend, rupeeShort } from './SpendContext';
 
 // Card rankings, computed live from the engine (matchCards over SEED_CARDS) — never
@@ -67,9 +68,10 @@ export function CardRankings() {
               <div style={{ fontFamily: IN, fontSize: 13, color: '#6b6b6d', marginTop: 3, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                 {ruleLine(r.card)}
               </div>
+              <UnverifiedRowBadge slug={r.card.slug} style={{ marginTop: 6 }} />
             </div>
-            <div style={{ fontFamily: MO, fontSize: 19, color: '#142335', whiteSpace: 'nowrap', textAlign: 'right', fontVariantNumeric: 'tabular-nums' }}>
-              {INR(r.annual_value_inr)}
+            <div style={{ fontFamily: MO, fontSize: 19, whiteSpace: 'nowrap', textAlign: 'right', fontVariantNumeric: 'tabular-nums' }}>
+              <EstimatedValue slug={r.card.slug} baseColor="#142335" mark={false}>{INR(r.annual_value_inr)}</EstimatedValue>
             </div>
             <div style={{ display: 'flex', justifyContent: 'flex-end' }}>{estPill}</div>
           </div>

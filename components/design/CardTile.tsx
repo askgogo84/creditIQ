@@ -3,15 +3,22 @@
 import Link from 'next/link';
 import { Reveal } from './Reveal';
 import { CreditCard3D, type CardVariant } from './CreditCard3D';
+import { CardArt } from '../cards/CardArt';
+import { EstimatedValue, UnverifiedRowBadge } from '../cards/Unverified';
 import { RankBadge } from './RankBadge';
 
 export interface TileCard {
+  slug: string;
   bank: string;
   name: string;
   tagline?: string;
   tier?: string;
   network: string;
   variant: CardVariant;
+  /** Real brand colour (hex) from SEED_CARDS. Passed to CreditCard3D so the
+   *  fallback face matches every other surface, instead of the generic
+   *  `variant` gradient. */
+  color?: string;
   tags?: string[];
   fee: number;
   iqScore: number;
@@ -45,18 +52,24 @@ export function CardTile({ card, href, rank }: CardTileProps) {
         )}
 
         <div style={{ marginBottom: 22, maxWidth: 280 }}>
-          <CreditCard3D
-            name={card.name.toUpperCase()}
-            bank={card.bank}
-            tagline={card.tagline || card.tier}
-            network={card.network}
-            variant={card.variant}
-            small
-            interactive={false}
-          />
+          <CardArt card={{ slug: card.slug, name: card.name }}>
+            <CreditCard3D
+              name={card.name.toUpperCase()}
+              bank={card.bank}
+              tagline={card.tagline || card.tier}
+              network={card.network}
+              variant={card.variant}
+              color={card.color}
+              small
+              interactive={false}
+            />
+          </CardArt>
         </div>
 
-        <div className="label" style={{ marginBottom: 6 }}>{card.bank}</div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6, flexWrap: 'wrap' }}>
+          <span className="label">{card.bank}</span>
+          {rank != null && <UnverifiedRowBadge slug={card.slug} />}
+        </div>
         <h3 style={{ fontSize: 26, marginBottom: 8 }}>{card.name}</h3>
         <div style={{ display: 'flex', gap: 6, alignItems: 'center', marginBottom: 18, flexWrap: 'wrap' }}>
           {card.tags?.slice(0, 2).map(t => (
@@ -81,8 +94,8 @@ export function CardTile({ card, href, rank }: CardTileProps) {
         >
           <div>
             <div className="label" style={{ fontSize: 9 }}>Annual fee</div>
-            <div className="mono" style={{ fontSize: 18, marginTop: 4, color: 'var(--ink)' }}>
-              Rs.{card.fee.toLocaleString('en-IN')}
+            <div className="mono" style={{ fontSize: 18, marginTop: 4 }}>
+              <EstimatedValue slug={card.slug} field="annual_fee_inr" baseColor="var(--ink)">Rs.{card.fee.toLocaleString('en-IN')}</EstimatedValue>
             </div>
           </div>
           <div style={{ textAlign: 'right' }}>

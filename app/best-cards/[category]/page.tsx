@@ -40,6 +40,8 @@ const NETWORK_BY_BANK: Record<string, string> = { HDFC: 'VISA', AXIS: 'MASTERCAR
 function toTileCard(c: CreditCard, i: number): TileCard {
   const bank = c.bank.toUpperCase()
   return {
+    slug: c.slug,
+    color: c.color,
     bank,
     name: c.name.replace(/^HDFC\s+|^AXIS\s+|^ICICI\s+|^SBI\s+|^AMEX\s+/i, '').replace(/ Credit Card$/i, ''),
     tagline: c.tier || 'Standard',

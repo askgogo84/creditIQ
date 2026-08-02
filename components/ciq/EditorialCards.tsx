@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { SEED_CARDS } from '@/lib/data/seed-cards';
 import { CardMockup } from '@/components/cards/CardMockup';
+import { CardArt } from '@/components/cards/CardArt';
 
 /**
  * EditorialCards — a hand-picked "Cards to know" strip.
@@ -55,7 +56,9 @@ export function EditorialCards() {
             href={`/card/${card.slug}`}
             style={{ flex: '0 0 auto', width: 150, scrollSnapAlign: 'start', textDecoration: 'none' }}
           >
-            <CardMockup card={card} size="sm" interactive={false} />
+            <CardArt card={card}>
+              <CardMockup card={card} size="sm" interactive={false} />
+            </CardArt>
             <div style={{ marginTop: 10 }}>
               <div style={{ fontSize: 12.5, fontWeight: 600, color: 'var(--ciq-ink)', lineHeight: 1.2, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                 {card.name}

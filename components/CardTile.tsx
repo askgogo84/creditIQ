@@ -2,6 +2,8 @@
 
 import Link from 'next/link';
 import { CardMockup } from './cards/CardMockup';
+import { CardArt } from './cards/CardArt';
+import { EstimatedValue, UnverifiedRowBadge } from './cards/Unverified';
 import { useCompare } from '@/lib/store';
 import { StarRating } from './StarRating';
 import { getApplyUrl } from '@/lib/affiliate';
@@ -64,14 +66,17 @@ export function CardTile({ card, annualValue, reasoning, rank }: Props) {
       <Link href={`/card/${card.slug}`} className="block">
         <div className="px-6 pt-8 pb-4 flex justify-center" style={{ background: `linear-gradient(135deg, ${card.color}20 0%, transparent 100%)` }}>
           <div style={{ width: '75%', maxWidth: 220 }}>
-            <CardMockup card={card} size="sm" />
+            <CardArt card={card}>
+              <CardMockup card={card} size="sm" />
+            </CardArt>
           </div>
         </div>
       </Link>
 
       <div className="flex flex-col flex-1 p-4 space-y-3">
-        <div className="text-[10px] font-mono uppercase tracking-widest text-ink-400">
-          {card.bank} . {card.tier.replace('-', ' ')}
+        <div className="flex items-center gap-2 flex-wrap text-[10px] font-mono uppercase tracking-widest text-ink-400">
+          <span>{card.bank} . {card.tier.replace('-', ' ')}</span>
+          {rank != null && <UnverifiedRowBadge slug={card.slug} />}
         </div>
 
         <Link href={`/card/${card.slug}`}>
@@ -107,7 +112,9 @@ export function CardTile({ card, annualValue, reasoning, rank }: Props) {
         {annualValue !== undefined && (
           <div className="rounded-lg p-2.5" style={{ background: 'color-mix(in srgb, var(--emerald) 8%, transparent)', border: '1px solid color-mix(in srgb, var(--emerald) 20%, transparent)' }}>
             <div className="text-[9px] font-mono uppercase tracking-wider" style={{ color: 'var(--emerald)' }}>Est. annual value</div>
-            <div className="font-display text-lg tabular" style={{ color: 'var(--emerald)' }}>Rs.{annualValue.toLocaleString('en-IN')}</div>
+            <div className="font-display text-lg tabular">
+              <EstimatedValue slug={card.slug} baseColor="var(--emerald)">Rs.{annualValue.toLocaleString('en-IN')}</EstimatedValue>
+            </div>
             {reasoning && <div className="text-[10px] text-ink-400 mt-1 line-clamp-1">{reasoning}</div>}
           </div>
         )}

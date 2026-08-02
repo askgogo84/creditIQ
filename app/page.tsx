@@ -39,7 +39,7 @@ function tagline(tier?: string) {
 
 function toTileCard(c: CreditCard, i: number): TileCard {
   const bank = c.bank.toUpperCase();
-  return { bank, name: c.name.replace(/^HDFC\s+|^AXIS\s+|^ICICI\s+|^SBI\s+|^AMEX\s+/i, '').replace(/ Credit Card$/i, ''), tagline: tagline(c.tier), tier: c.tier ? c.tier.toUpperCase().replace(/-/g, ' ') : 'CARD', network: NETWORK_BY_BANK[bank.split(' ')[0]] || 'VISA', variant: VARIANT_ROTATION[i % VARIANT_ROTATION.length], tags: (c.category || []).slice(0, 2).map(s => s.replace(/-/g, ' ')), fee: c.annual_fee_inr, iqScore: Math.round((c.expert_rating ?? 8) * 10) };
+  return { slug: c.slug, color: c.color, bank, name: c.name.replace(/^HDFC\s+|^AXIS\s+|^ICICI\s+|^SBI\s+|^AMEX\s+/i, '').replace(/ Credit Card$/i, ''), tagline: tagline(c.tier), tier: c.tier ? c.tier.toUpperCase().replace(/-/g, ' ') : 'CARD', network: NETWORK_BY_BANK[bank.split(' ')[0]] || 'VISA', variant: VARIANT_ROTATION[i % VARIANT_ROTATION.length], tags: (c.category || []).slice(0, 2).map(s => s.replace(/-/g, ' ')), fee: c.annual_fee_inr, iqScore: Math.round((c.expert_rating ?? 8) * 10) };
 }
 
 const CARDS = SEED_CARDS.filter(c => c.active !== false);

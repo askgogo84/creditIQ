@@ -29,6 +29,8 @@ const VARIANT_ROTATION = ['obsidian', 'navy', 'plum', 'gold', 'iris', 'mint'] as
 function toTileCard(c: any, i: number) {
   const bank = (c.bank || '').toUpperCase();
   return {
+    slug: c.slug,
+    color: c.color,
     bank, name: (c.name || '').replace(/^HDFC\s+|^AXIS\s+|^ICICI\s+|^SBI\s+/i, '').replace(/ Credit Card$/i, ''),
     tagline: c.tier || 'Standard', tier: (c.tier || 'CARD').toUpperCase().replace(/-/g, ' '),
     network: 'VISA', variant: VARIANT_ROTATION[i % VARIANT_ROTATION.length],

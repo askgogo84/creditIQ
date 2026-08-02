@@ -10,6 +10,7 @@
     "seed": "tsx scripts/seed.ts",
     "scrape": "tsx scripts/scrape-all.ts",
     "check:card-links": "tsx scripts/validate-card-links.ts",
+    "gen:card-art": "tsx scripts/gen-card-art-manifest.ts",
     "test": "vitest run"
   },
   "dependencies": {

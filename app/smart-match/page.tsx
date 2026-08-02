@@ -7,6 +7,7 @@ import { Reveal } from '@/components/design/Reveal';
 import { CardTile } from '@/components/design/CardTile';
 import { SEED_CARDS } from '@/lib/data/seed-cards';
 import { matchCards, approvalProbability } from '@/lib/engine';
+import { EstimatedValue } from '@/components/cards/Unverified';
 import { motion } from 'framer-motion';
 import { Sliders } from 'lucide-react';
 import type { UserSpendProfile } from '@/lib/types';
@@ -18,6 +19,8 @@ const NETWORK_BY_BANK: Record<string, string> = { HDFC: 'VISA', AXIS: 'MASTERCAR
 function toTileCard(c: any, i: number) {
   const bank = (c.bank || '').toUpperCase();
   return {
+    slug: c.slug,
+    color: c.color,
     bank,
     name: (c.name || '').replace(/^HDFC\s+|^AXIS\s+|^ICICI\s+|^SBI\s+/i, '').replace(/ Credit Card$/i, ''),
     tagline: c.tier || 'Standard',
@@ -165,9 +168,9 @@ export default function SmartMatchPage() {
                     {r.approval_prob > 0 && (
                       <div style={{ position: 'absolute', top: 10, right: 10, zIndex: 10, background: 'var(--paper,#FAF5EB)', border: '1px solid var(--line,rgba(20,41,80,0.12))', borderRadius: 8, padding: '3px 8px' }}>
                         <span style={{ fontFamily: 'var(--font-mono,monospace)', fontSize: 9, color: 'var(--ink-3,#5A6A8A)' }}>approval </span>
-                        <span style={{ fontFamily: 'var(--font-mono,monospace)', fontSize: 10, fontWeight: 700, color: r.approval_prob >= 70 ? '#2d7a56' : r.approval_prob >= 40 ? 'var(--copper,#8C5F12)' : '#B84230' }}>
+                        <EstimatedValue slug={r.card.slug} baseColor={r.approval_prob >= 70 ? '#2d7a56' : r.approval_prob >= 40 ? 'var(--copper,#8C5F12)' : '#B84230'} mark={false} style={{ fontFamily: 'var(--font-mono,monospace)', fontSize: 10, fontWeight: 700 }}>
                           {r.approval_prob}%
-                        </span>
+                        </EstimatedValue>
                       </div>
                     )}
                   </motion.div>
