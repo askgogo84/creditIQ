@@ -79,7 +79,10 @@ export const APP_NAV: AppNavItem[] = [
   },
 ]
 
-export type SectionTab = { label: string; href: string }
+// icon: drawn in a 24x24 viewBox, same inline-path convention APP_NAV uses so the
+// section strip pulls from the exact same "library" as the rail (no new dependency).
+// `color` is applied to the stroke so the strip can tint active vs inactive itself.
+export type SectionTab = { label: string; href: string; icon: (color: string) => ReactNode }
 
 // In-page ("section") navigation — the tabs rendered INSIDE each destination so the
 // features folded into it (IA §3) stay one click away. This is the entry point that
@@ -96,30 +99,46 @@ export type SectionTab = { label: string; href: string }
 // on /cards, so they need no tab. Keyed by APP_NAV.key.
 export const SECTION_TABS: Record<string, SectionTab[]> = {
   wallet: [
-    { label: 'Your cards', href: '/dashboard' },
-    { label: 'Statement Truth', href: '/statement-truth' },
+    { label: 'Your cards', href: '/dashboard',
+      icon: c => <><rect x="2" y="5" width="20" height="14" rx="2.5" stroke={c} strokeWidth="1.7" /><path d="M2 10h20" stroke={c} strokeWidth="1.7" /></> },
+    { label: 'Statement Truth', href: '/statement-truth',
+      icon: c => <><path d="M6 3h7l5 5v12a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1Z" stroke={c} strokeWidth="1.7" strokeLinejoin="round" /><path d="m8.5 13 2 2 4-4" stroke={c} strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" /></> },
   ],
   spend: [
-    { label: 'Spend Optimizer', href: '/spend-optimizer' },
-    { label: 'Points Optimizer', href: '/points-optimizer' },
+    { label: 'Spend Optimizer', href: '/spend-optimizer',
+      icon: c => <path d="M13 2 3 14h7l-1 8 10-12h-7l1-8Z" stroke={c} strokeWidth="1.7" strokeLinejoin="round" /> },
+    { label: 'Points Optimizer', href: '/points-optimizer',
+      icon: c => <path d="m12 3 2.6 5.3 5.8.9-4.2 4.1 1 5.8L12 16.9 6.8 19.6l1-5.8-4.2-4.1 5.8-.9L12 3Z" stroke={c} strokeWidth="1.7" strokeLinejoin="round" /> },
   ],
   travel: [
-    { label: 'Trip Planner', href: '/trip-planner' },
-    { label: 'Ask AI', href: '/travel' },
-    { label: 'Sweet Spots', href: '/sweet-spots' },
-    { label: 'Transfer Partners', href: '/transfer-partners' },
-    { label: 'Lounges', href: '/lounge-tracker' },
+    { label: 'Trip Planner', href: '/trip-planner',
+      icon: c => <><path d="m9 4-6 2v14l6-2 6 2 6-2V4l-6 2-6-2Z" stroke={c} strokeWidth="1.7" strokeLinejoin="round" /><path d="M9 4v14M15 6v14" stroke={c} strokeWidth="1.7" /></> },
+    { label: 'Ask AI', href: '/travel',
+      icon: c => <><path d="M12 3.5 13.5 8 18 9.5 13.5 11 12 15.5 10.5 11 6 9.5 10.5 8 12 3.5Z" stroke={c} strokeWidth="1.7" strokeLinejoin="round" /><path d="m18 14 .8 2.2 2.2.8-2.2.8L18 20l-.8-2.2-2.2-.8 2.2-.8L18 14Z" stroke={c} strokeWidth="1.4" strokeLinejoin="round" /></> },
+    { label: 'Sweet Spots', href: '/sweet-spots',
+      icon: c => <><circle cx="12" cy="12" r="8.5" stroke={c} strokeWidth="1.7" /><circle cx="12" cy="12" r="3.2" stroke={c} strokeWidth="1.7" /></> },
+    { label: 'Transfer Partners', href: '/transfer-partners',
+      icon: c => <><path d="M4 8.5h13m-3-3 3 3-3 3" stroke={c} strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" /><path d="M20 15.5H7m3 3-3-3 3-3" stroke={c} strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" /></> },
+    { label: 'Lounges', href: '/lounge-tracker',
+      icon: c => <><rect x="3" y="10.5" width="18" height="6.5" rx="1.5" stroke={c} strokeWidth="1.7" /><path d="M6 10.5V8a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v2.5M6 17v2M18 17v2" stroke={c} strokeWidth="1.7" strokeLinecap="round" /></> },
   ],
   cards: [
-    { label: 'All Cards', href: '/cards' },
-    { label: 'Compare', href: '/compare' },
-    { label: 'Switch Wizard', href: '/card-switch' },
-    { label: 'Card Roast', href: '/card-roast' },
+    { label: 'All Cards', href: '/cards',
+      icon: c => <><rect x="3" y="4" width="7.5" height="7.5" rx="1.6" stroke={c} strokeWidth="1.7" /><rect x="13.5" y="4" width="7.5" height="7.5" rx="1.6" stroke={c} strokeWidth="1.7" /><rect x="3" y="13.5" width="7.5" height="7.5" rx="1.6" stroke={c} strokeWidth="1.7" /><rect x="13.5" y="13.5" width="7.5" height="7.5" rx="1.6" stroke={c} strokeWidth="1.7" /></> },
+    { label: 'Compare', href: '/compare',
+      icon: c => <><rect x="4" y="9" width="6" height="11" rx="1.2" stroke={c} strokeWidth="1.7" /><rect x="14" y="4" width="6" height="16" rx="1.2" stroke={c} strokeWidth="1.7" /></> },
+    { label: 'Switch Wizard', href: '/card-switch',
+      icon: c => <><path d="m5 21 9-9 2 2-9 9-2-2Z" stroke={c} strokeWidth="1.7" strokeLinejoin="round" /><path d="M16 4v4M14 6h4" stroke={c} strokeWidth="1.7" strokeLinecap="round" /></> },
+    { label: 'Card Roast', href: '/card-roast',
+      icon: c => <path d="M12 3s4.5 3.5 4.5 8.5A4.5 4.5 0 0 1 7.5 12c0-1.8 1-3 1-3s.2 1.8 1.8 1.8c1.4 0 1.4-1.8 1.2-3.6C11.2 5.4 12 3 12 3Z" stroke={c} strokeWidth="1.7" strokeLinejoin="round" /> },
   ],
   you: [
-    { label: 'Profile', href: '/profile' },
-    { label: 'Plan & searches', href: '/pro' },
-    { label: 'WhatsApp', href: '/profile#whatsapp' },
+    { label: 'Profile', href: '/profile',
+      icon: c => <><circle cx="12" cy="8" r="4" stroke={c} strokeWidth="1.7" /><path d="M4 21a8 8 0 0 1 16 0" stroke={c} strokeWidth="1.7" strokeLinecap="round" /></> },
+    { label: 'Plan & searches', href: '/pro',
+      icon: c => <path d="M12 3 5 6v5.5c0 4.3 3 7 7 9 4-2 7-4.7 7-9V6l-7-3Z" stroke={c} strokeWidth="1.7" strokeLinejoin="round" /> },
+    { label: 'WhatsApp', href: '/profile#whatsapp',
+      icon: c => <path d="M4 5.5A1.5 1.5 0 0 1 5.5 4h13A1.5 1.5 0 0 1 20 5.5v8a1.5 1.5 0 0 1-1.5 1.5H9l-5 4V5.5Z" stroke={c} strokeWidth="1.7" strokeLinejoin="round" /> },
   ],
 }
 
