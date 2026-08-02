@@ -10,10 +10,10 @@ interface CardMockupProps {
   interactive?: boolean;
 }
 
-// Face text base colour by card-colour luminance: light cards (e.g. #ff9900,
-// #c8a25a) get near-black text, dark cards keep white — so labels are legible on
-// ANY card colour (the face text was previously hardcoded white and vanished on
-// light cards). Theme-independent; the face colour is card.color, not a token.
+// Face text base colour by card-colour luminance. Threshold is the exact
+// black/white crossover (L≈0.179): above it black wins, below it white wins, so
+// the picked ink at full opacity clears ≥4.58:1 on ANY card colour. (Face text
+// was previously hardcoded white and vanished on light cards.)
 function faceInk(hex: string): '0,0,0' | '255,255,255' {
   const h = (hex || '').replace('#', '');
   const n = h.length === 3 ? h.split('').map((c) => c + c).join('') : h;
@@ -21,13 +21,19 @@ function faceInk(hex: string): '0,0,0' | '255,255,255' {
   const ch = (i: number) => parseInt(n.slice(i, i + 2), 16) / 255;
   const lin = (c: number) => (c <= 0.03928 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4));
   const L = 0.2126 * lin(ch(0)) + 0.7152 * lin(ch(2)) + 0.0722 * lin(ch(4));
-  return L > 0.3 ? '0,0,0' : '255,255,255';
+  return L > 0.1791 ? '0,0,0' : '255,255,255';
 }
 
 export function CardMockup({ card, size = 'md', className, interactive = true }: CardMockupProps) {
   const isSmall = size === 'sm';
   const isLarge = size === 'lg';
+  // Meaningful face labels (bank, tier, name) must clear AA on any card colour.
+  // Plain labels use full-opacity ink; the tier — dimmer by design for hierarchy —
+  // sits on a scrim CHIP (opposite-ink fill) so its dimmed text still clears AA
+  // without matching the bank's weight. Purely decorative skeuomorphism (fake card
+  // number, "CARDHOLDER"/member line) stays low-contrast on purpose.
   const ink = faceInk(card.color);
+  const opp = ink === '0,0,0' ? '255,255,255' : '0,0,0';
 
   return (
     <div
@@ -37,10 +43,10 @@ export function CardMockup({ card, size = 'md', className, interactive = true }:
       <div className="card-mockup-inner metallic" style={{ padding: isSmall ? '10px' : '16px' }}>
 
         {/* Top row: bank + tier */}
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 6 }}>
           <div style={{
             fontFamily: 'var(--font-geist), system-ui, sans-serif',
-            color: `rgba(${ink},0.92)`,
+            color: `rgb(${ink})`,
             fontSize: isSmall ? '8px' : '11px',
             fontWeight: 600,
             letterSpacing: '0.1em',
@@ -48,12 +54,17 @@ export function CardMockup({ card, size = 'md', className, interactive = true }:
           }}>
             {card.bank}
           </div>
+          {/* tier CHIP — scrim fill keeps the dimmed tier text legible on any colour */}
           <div style={{
             fontFamily: 'var(--font-geist), system-ui, sans-serif',
-            color: `rgba(${ink},0.72)`,
+            color: `rgba(${ink},0.95)`,
+            background: `rgba(${opp},0.5)`,
+            padding: isSmall ? '1px 4px' : '2px 6px',
+            borderRadius: 4,
             fontSize: isSmall ? '7px' : '9px',
-            letterSpacing: '0.15em',
+            letterSpacing: '0.12em',
             textTransform: 'uppercase',
+            whiteSpace: 'nowrap',
           }}>
             {card.tier === 'super-premium' ? 'PRIVATE' : card.tier === 'premium' ? 'INFINITE' : card.tier === 'mid' ? 'SIGNATURE' : 'CLASSIC'}
           </div>
@@ -69,7 +80,7 @@ export function CardMockup({ card, size = 'md', className, interactive = true }:
           opacity: 0.9,
         }} />
 
-        {/* Card number dots */}
+        {/* Card number dots — decorative skeuomorphism (fake), intentionally faint */}
         <div style={{
           marginTop: isSmall ? '6px' : '10px',
           fontFamily: 'monospace',
@@ -80,7 +91,7 @@ export function CardMockup({ card, size = 'md', className, interactive = true }:
           .... .... .... {card.id.slice(-4).toUpperCase()}
         </div>
 
-        {/* Bottom: cardholder + card name */}
+        {/* Bottom: cardholder (decorative) + card name (meaningful) */}
         <div style={{
           position: 'absolute',
           bottom: isSmall ? '8px' : '14px',
@@ -111,7 +122,7 @@ export function CardMockup({ card, size = 'md', className, interactive = true }:
           </div>
           <div style={{
             fontFamily: "'Fraunces', Georgia, serif",
-            color: `rgba(${ink},0.98)`,
+            color: `rgb(${ink})`,
             fontSize: isSmall ? '7px' : '11px',
             fontWeight: 600,
             textAlign: 'right',
