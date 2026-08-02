@@ -1,6 +1,7 @@
 // components/ciq/HeroGauge.tsx
 'use client';
 import { useEffect, useRef, useState } from 'react';
+import { EstimateRange } from './EstimateRange';
 
 // Count-up that RE-RUNS whenever the target changes (fixes 0 when data loads
 // after mount). Honours prefers-reduced-motion by jumping straight to target.
@@ -111,17 +112,7 @@ export function HeroGauge({
 
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: 18, paddingTop: 15, borderTop: '1px solid var(--ciq-line)' }}>
           <div style={{ fontSize: 11, color: 'var(--ciq-ink-3)' }}>{cardCount} {cardCount === 1 ? 'card' : 'cards'}</div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-            <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--ciq-ink-2)' }}>
-              ≈ ₹{estLow.toLocaleString('en-IN')}–₹{estHigh.toLocaleString('en-IN')}
-            </div>
-            <span className="ciq-mono" title="Point values vary by how you redeem. We never state a value as fact."
-              style={{ fontSize: 8.5, fontWeight: 700, letterSpacing: '.05em', textTransform: 'uppercase',
-                color: 'var(--ciq-estimated)', background: 'var(--ciq-line)', border: '1px solid var(--ciq-line-2)',
-                padding: '2px 6px', borderRadius: 5 }}>
-              estimate
-            </span>
-          </div>
+          <EstimateRange low={estLow} high={estHigh} />
         </div>
       </div>
     </section>

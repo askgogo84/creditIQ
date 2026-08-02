@@ -1,11 +1,12 @@
 ﻿// components/ciq/BestMove.tsx
 'use client';
 import Link from 'next/link';
+import { EstimateRange } from './EstimateRange';
 
 export function BestMove({
-  title, detail, unlockedValue, vsLabel, href, flag,
+  title, detail, points, estLow, estHigh, href, flag,
 }: {
-  title: string; detail: string; unlockedValue: string; vsLabel: string; href: string; flag?: string;
+  title: string; detail: string; points: number; estLow: number; estHigh: number; href: string; flag?: string;
 }) {
   return (
     <div className="ciq-rise d3" style={{
@@ -25,10 +26,17 @@ export function BestMove({
           {title}
         </div>
         <div style={{ fontSize: 12, color: 'var(--ciq-ink-3)', marginTop: 6, lineHeight: 1.45 }}>{detail}</div>
-        <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', marginTop: 16 }}>
-          {/* Gold, not verified-green: this is an estimate, and green is reserved for verified-from-statement. */}
-          <div className="ciq-display" style={{ fontWeight: 700, fontSize: 30, lineHeight: 1, color: 'var(--ciq-gold-2)' }}>{unlockedValue}</div>
-          <div className="ciq-mono" style={{ fontSize: 10, color: 'var(--ciq-ink-3)', textAlign: 'right', lineHeight: 1.4 }}>{vsLabel}</div>
+        {/* Lead with the REAL point count (points-first, consistent with the HeroGauge
+            headline). The rupee value is only ever the labelled ESTIMATE RANGE below,
+            shared with the gauge — never a single figure asserted as fact. */}
+        <div style={{ marginTop: 16 }}>
+          <div className="ciq-display" style={{ fontWeight: 700, fontSize: 30, lineHeight: 1, fontVariantNumeric: 'tabular-nums' }}>
+            {points.toLocaleString('en-IN')}
+            <span style={{ fontSize: 15, color: 'var(--ciq-gold-2)', marginLeft: 6 }}>pts</span>
+          </div>
+          <div style={{ marginTop: 10 }}>
+            <EstimateRange low={estLow} high={estHigh} />
+          </div>
         </div>
         <Link href={href} style={{
           display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, marginTop: 16, padding: 13,

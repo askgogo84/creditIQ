@@ -134,8 +134,9 @@ export function WalletView({
                   flag="Best value"
                   title={`Redeem your ${totalPoints.toLocaleString('en-IN')} points for travel`}
                   detail="Travel redemption typically unlocks far more than statement credit. Plan a trip to see live award options."
-                  unlockedValue={`≈ ₹${estHigh.toLocaleString('en-IN')}`}
-                  vsLabel={`estimate · vs ≈ ₹${estLow.toLocaleString('en-IN')} cashback`}
+                  points={totalPoints}
+                  estLow={estLow}
+                  estHigh={estHigh}
                   href={`/trip-planner?points=${totalPoints}&bank=${primaryBank}`}
                 />
               </>
