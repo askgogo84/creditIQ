@@ -53,6 +53,15 @@ export function HeroGauge({
 }) {
   const counted = useCountUp(points);
   const [fill, setFill] = useState(false);
+  // prefers-reduced-motion: the wallet no longer sits under the [data-ciq] rule
+  // that used to kill transitions, so the gauge fill honours it itself — reduced
+  // users get the final split instantly, no width animation.
+  const [reduce, setReduce] = useState(false);
+  useEffect(() => {
+    if (typeof window !== 'undefined' && typeof window.matchMedia === 'function') {
+      setReduce(window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+    }
+  }, []);
 
   // re-trigger the gauge fill whenever the split changes (data arrives after mount)
   useEffect(() => {
@@ -87,10 +96,10 @@ export function HeroGauge({
 
         <div style={{ marginTop: 20 }}>
           <div style={{ height: 12, borderRadius: 99, background: 'color-mix(in srgb,var(--ink) 8%,transparent)', border: '1px solid var(--line)', overflow: 'hidden', display: 'flex' }}>
-            <div style={{ width: fill ? `${vPct}%` : 0, background: 'var(--prov-verified)',
-              transition: 'width 1.3s cubic-bezier(.22,1,.36,1) .3s', boxShadow: '0 0 12px color-mix(in srgb,var(--prov-verified) 50%,transparent)' }} />
-            <div style={{ width: fill ? `${ePct}%` : 0, background: 'var(--prov-estimated)', opacity: .5,
-              transition: 'width 1.3s cubic-bezier(.22,1,.36,1) .5s' }} />
+            <div style={{ width: (fill || reduce) ? `${vPct}%` : 0, background: 'var(--prov-verified)',
+              transition: reduce ? 'none' : 'width 1.3s cubic-bezier(.22,1,.36,1) .3s', boxShadow: '0 0 12px color-mix(in srgb,var(--prov-verified) 50%,transparent)' }} />
+            <div style={{ width: (fill || reduce) ? `${ePct}%` : 0, background: 'var(--prov-estimated)', opacity: .5,
+              transition: reduce ? 'none' : 'width 1.3s cubic-bezier(.22,1,.36,1) .5s' }} />
           </div>
           <div style={{ display: 'flex', gap: 22, marginTop: 14 }}>
             <div>

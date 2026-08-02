@@ -8,6 +8,7 @@ import { DesignFooter } from '@/components/design/Footer';
 import { Plus, TrendingUp, ArrowRight, Zap, RefreshCw, FileText, MessageSquare, LogOut, CreditCard, Upload, Trash2, X, Check, Building2, ChevronDown } from 'lucide-react';
 import Link from 'next/link';
 import { WalletView } from '@/components/ciq/WalletView';
+import { SEED_CARDS } from '@/lib/data/seed-cards';
 const BANK_COLORS: Record<string, string> = {
   HDFC: '#004C8F', Axis: '#97144D', AmEx: '#006FCF', ICICI: '#F58220',
   SBI: '#2C4C9C', Kotak: '#EF3E23', IDFC: '#9B0C2C', Yes: '#0C2461',
@@ -50,6 +51,9 @@ export default function DashboardPage() {
   });
   const [addLoading, setAddLoading] = useState(false);
   const [addSuccess, setAddSuccess] = useState(false);
+  // Add-card picker (SEED_CARDS-backed, no free-text, no card numbers).
+  const [cardQuery, setCardQuery] = useState('');
+  const [selectedCardId, setSelectedCardId] = useState<string | null>(null);
   const [editingCardId, setEditingCardId] = useState<string | null>(null);
   const [editPoints, setEditPoints] = useState('');
   const [editSaving, setEditSaving] = useState(false);
@@ -177,13 +181,31 @@ export default function DashboardPage() {
         setAddSuccess(true);
         await loadCards(user.id);
         setTimeout(() => {
-          setShowAddModal(false);
+          closeAddModal();
           setAddSuccess(false);
-          setAddForm({ bank: 'HDFC', cardName: '', cardLast4: '', pointsBalance: '', pointsCurrency: 'Points' });
         }, 1000);
       }
     } catch {}
     setAddLoading(false);
+  };
+
+  // Close + fully reset the add-card modal (picker query, selection, form).
+  const closeAddModal = () => {
+    setShowAddModal(false);
+    setCardQuery('');
+    setSelectedCardId(null);
+    setAddForm({ bank: 'HDFC', cardName: '', cardLast4: '', pointsBalance: '', pointsCurrency: 'Points' });
+  };
+
+  // Pick a card from the catalogue — this is the ONLY way bank + name get set,
+  // so they always match SEED_CARDS (no "Amex" vs "American Express" drift). No
+  // card number is ever collected (last4 optional only).
+  const selectCard = (c: (typeof SEED_CARDS)[number]) => {
+    setSelectedCardId(c.id);
+    const currency = c.reward_currency
+      ? c.reward_currency.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ')
+      : 'Points';
+    setAddForm(f => ({ ...f, bank: c.bank, cardName: c.name, pointsCurrency: currency }));
   };
 
   const handleDeleteCard = async (cardId: string, source: string) => {
@@ -219,6 +241,11 @@ export default function DashboardPage() {
   const firstName = user?.user_metadata?.full_name?.split(' ')[0] || user?.email?.split('@')[0] || 'there';
   const primaryBank = cards[0]?.bank || 'HDFC';
 
+  // Add-card picker matches (bank + name, case-insensitive). Empty query = all.
+  const q = cardQuery.trim().toLowerCase();
+  const cardMatches = (q ? SEED_CARDS.filter(c => `${c.bank} ${c.name}`.toLowerCase().includes(q)) : SEED_CARDS).slice(0, 60);
+  const selectedCard = selectedCardId ? SEED_CARDS.find(c => c.id === selectedCardId) ?? null : null;
+
   if (loading) return (
     <main className="min-h-screen flex items-center justify-center">
       <div className="text-center space-y-3">
@@ -242,42 +269,86 @@ export default function DashboardPage() {
       />
 
       {showAddModal && (
-        <div data-ciq data-theme="dark" className="fixed inset-0 z-50 flex items-center justify-center p-4"
-             style={{ background: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(6px)' }}>
-          <div className="w-full max-w-md rounded-2xl p-6"
-               style={{ background: 'var(--ciq-panel)', border: '1px solid var(--ciq-gold-line)', color: 'var(--ciq-ink)' }}>
-            <div className="flex items-center justify-between mb-5">
-              <h3 className="ciq-display font-semibold text-lg">Add card manually</h3>
-              <button onClick={() => setShowAddModal(false)} style={{ color: 'var(--ciq-ink-3)', fontSize: 22, lineHeight: 1 }}>×</button>
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4"
+             style={{ background: 'rgba(10,18,38,0.55)', backdropFilter: 'blur(6px)' }}
+             onClick={closeAddModal}>
+          <div className="w-full max-w-md rounded-2xl p-6" onClick={e => e.stopPropagation()}
+               style={{ background: 'var(--surface)', border: '1px solid var(--line-strong)', color: 'var(--ink)', boxShadow: 'var(--shadow-xl)' }}>
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="w-display" style={{ fontWeight: 600, fontSize: 18 }}>Add a card</h3>
+              <button onClick={closeAddModal} aria-label="Close"
+                style={{ color: 'var(--ink-3)', fontSize: 22, lineHeight: 1, background: 'none', border: 'none', cursor: 'pointer' }}>×</button>
             </div>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-              <input placeholder="Bank (e.g. HDFC)" value={addForm.bank}
-                onChange={e => setAddForm({ ...addForm, bank: e.target.value })}
-                style={{ padding: '12px 14px', borderRadius: 12, background: 'var(--ciq-panel-2)', border: '1px solid var(--ciq-line-2)', color: 'var(--ciq-ink)' }} />
-              <input placeholder="Card name (e.g. Regalia Gold)" value={addForm.cardName}
-                onChange={e => setAddForm({ ...addForm, cardName: e.target.value })}
-                style={{ padding: '12px 14px', borderRadius: 12, background: 'var(--ciq-panel-2)', border: '1px solid var(--ciq-line-2)', color: 'var(--ciq-ink)' }} />
-              <input placeholder="Last 4 digits (optional)" value={addForm.cardLast4}
-                onChange={e => setAddForm({ ...addForm, cardLast4: e.target.value })}
-                style={{ padding: '12px 14px', borderRadius: 12, background: 'var(--ciq-panel-2)', border: '1px solid var(--ciq-line-2)', color: 'var(--ciq-ink)' }} />
-              <input placeholder="Points balance (optional)" type="number" value={addForm.pointsBalance}
-                onChange={e => setAddForm({ ...addForm, pointsBalance: e.target.value })}
-                style={{ padding: '12px 14px', borderRadius: 12, background: 'var(--ciq-panel-2)', border: '1px solid var(--ciq-line-2)', color: 'var(--ciq-ink)' }} />
-              <p style={{ fontSize: 11.5, lineHeight: 1.45, color: 'var(--ciq-ink-3)', margin: '-4px 2px 0' }}>
-                Don't know your balance?{' '}
-                <Link href="/upload-statement" style={{ color: 'var(--ciq-gold-2)', fontWeight: 600, textDecoration: 'none' }}>
-                  Upload a statement
-                </Link>{' '}
-                and we'll verify it.
-              </p>
-              <input placeholder="Currency (e.g. Points, EDGE Miles)" value={addForm.pointsCurrency}
-                onChange={e => setAddForm({ ...addForm, pointsCurrency: e.target.value })}
-                style={{ padding: '12px 14px', borderRadius: 12, background: 'var(--ciq-panel-2)', border: '1px solid var(--ciq-line-2)', color: 'var(--ciq-ink)' }} />
-              <button onClick={handleAddCard} disabled={addLoading}
-                style={{ padding: 13, borderRadius: 12, background: 'linear-gradient(135deg,var(--ciq-gold-2),var(--ciq-gold))', color: '#1a1710', fontWeight: 700, border: 'none', cursor: 'pointer', marginTop: 4 }}>
-                {addLoading ? 'Adding…' : 'Add card'}
-              </button>
-            </div>
+
+            {addSuccess ? (
+              <div style={{ padding: '28px 8px', textAlign: 'center' }}>
+                <div style={{ width: 46, height: 46, borderRadius: '50%', margin: '0 auto 12px', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  background: 'color-mix(in srgb,var(--prov-verified) 15%,transparent)', color: 'var(--prov-verified)', fontSize: 22 }}>✓</div>
+                <p style={{ color: 'var(--ink-2)', fontSize: 14 }}>Card added.</p>
+              </div>
+            ) : !selectedCard ? (
+              <>
+                <input autoFocus placeholder="Search your card — bank or name" value={cardQuery}
+                  onChange={e => setCardQuery(e.target.value)}
+                  style={{ width: '100%', padding: '12px 14px', borderRadius: 12, background: 'var(--surface-2)', border: '1px solid var(--line-strong)', color: 'var(--ink)', fontSize: 14 }} />
+                <p className="mono" style={{ fontSize: 11, color: 'var(--ink-3)', margin: '8px 2px 0' }}>
+                  Pick from our catalogue — we never ask for your card number.
+                </p>
+                <div style={{ marginTop: 12, maxHeight: '46vh', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: 8 }}>
+                  {cardMatches.length === 0 ? (
+                    <p style={{ fontSize: 13, color: 'var(--ink-3)', padding: '12px 2px' }}>No match. Try the bank name (e.g. “HDFC”).</p>
+                  ) : cardMatches.map(c => (
+                    <button key={c.id} type="button" onClick={() => selectCard(c)}
+                      style={{ display: 'flex', alignItems: 'center', gap: 12, textAlign: 'left', padding: '11px 12px', borderRadius: 12,
+                        background: 'var(--surface-2)', border: '1px solid var(--line)', color: 'var(--ink)', cursor: 'pointer' }}>
+                      <span style={{ width: 36, height: 36, borderRadius: 10, flex: '0 0 auto', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        fontWeight: 700, fontSize: 11, color: 'var(--copper)', background: 'color-mix(in srgb,var(--copper-3) 9%, var(--surface))', border: '1px solid color-mix(in srgb,var(--copper-3) 28%, transparent)' }}>
+                        {c.bank.slice(0, 2).toUpperCase()}
+                      </span>
+                      <span style={{ minWidth: 0 }}>
+                        <span style={{ display: 'block', fontWeight: 600, fontSize: 14, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{c.name}</span>
+                        <span className="mono" style={{ display: 'block', fontSize: 10.5, color: 'var(--ink-3)', marginTop: 1 }}>{c.bank}</span>
+                      </span>
+                    </button>
+                  ))}
+                </div>
+              </>
+            ) : (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                {/* selected card */}
+                <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '11px 12px', borderRadius: 12,
+                  background: 'var(--surface-2)', border: '1px solid color-mix(in srgb,var(--copper-3) 28%, transparent)' }}>
+                  <span style={{ width: 36, height: 36, borderRadius: 10, flex: '0 0 auto', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    fontWeight: 700, fontSize: 11, color: 'var(--copper)', background: 'color-mix(in srgb,var(--copper-3) 9%, var(--surface))', border: '1px solid color-mix(in srgb,var(--copper-3) 28%, transparent)' }}>
+                    {selectedCard.bank.slice(0, 2).toUpperCase()}
+                  </span>
+                  <span style={{ flex: 1, minWidth: 0 }}>
+                    <span style={{ display: 'block', fontWeight: 600, fontSize: 14, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{selectedCard.name}</span>
+                    <span className="mono" style={{ display: 'block', fontSize: 10.5, color: 'var(--ink-3)', marginTop: 1 }}>{selectedCard.bank}</span>
+                  </span>
+                  <button type="button" onClick={() => setSelectedCardId(null)} className="mono"
+                    style={{ fontSize: 11, color: 'var(--copper)', background: 'none', border: 'none', cursor: 'pointer', flex: '0 0 auto' }}>Change</button>
+                </div>
+
+                <input placeholder="Last 4 digits (optional)" inputMode="numeric" maxLength={4} value={addForm.cardLast4}
+                  onChange={e => setAddForm({ ...addForm, cardLast4: e.target.value.replace(/\D/g, '').slice(0, 4) })}
+                  style={{ padding: '12px 14px', borderRadius: 12, background: 'var(--surface-2)', border: '1px solid var(--line-strong)', color: 'var(--ink)' }} />
+                <input placeholder="Points balance (optional)" inputMode="numeric" value={addForm.pointsBalance}
+                  onChange={e => setAddForm({ ...addForm, pointsBalance: e.target.value.replace(/\D/g, '') })}
+                  style={{ padding: '12px 14px', borderRadius: 12, background: 'var(--surface-2)', border: '1px solid var(--line-strong)', color: 'var(--ink)' }} />
+                <p style={{ fontSize: 11.5, lineHeight: 1.45, color: 'var(--ink-3)', margin: '-4px 2px 0' }}>
+                  Don't know your balance?{' '}
+                  <Link href="/upload-statement" style={{ color: 'var(--copper)', fontWeight: 600, textDecoration: 'none' }}>
+                    Upload a statement
+                  </Link>{' '}
+                  and we'll verify it.
+                </p>
+                <button onClick={handleAddCard} disabled={addLoading}
+                  style={{ padding: 13, borderRadius: 12, background: 'var(--copper)', color: 'var(--surface)', fontWeight: 700, border: 'none', cursor: 'pointer', marginTop: 4 }}>
+                  {addLoading ? 'Adding…' : 'Add card'}
+                </button>
+              </div>
+            )}
           </div>
         </div>
       )}
