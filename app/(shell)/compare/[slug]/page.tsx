@@ -2,6 +2,8 @@ import { notFound } from 'next/navigation'
 import { createClient } from '@supabase/supabase-js'
 import { DesignFooter } from '@/components/design/Footer'
 import Link from 'next/link'
+import { EstimatedValue } from '@/components/cards/Unverified'
+import { isFieldUnverified } from '@/lib/data/unverified-cards'
 
 export const revalidate = 86400
 
@@ -44,12 +46,12 @@ export default async function ComparePage({ params }: { params: { slug: string }
   const [c1, c2] = await Promise.all([getCard(slug1), getCard(slug2)])
   if (!c1 || !c2) notFound()
 
-  const rows = [
-    { label: 'Annual Fee', v1: 'Rs.' + c1.annual_fee_inr, v2: 'Rs.' + c2.annual_fee_inr, winner: c1.annual_fee_inr <= c2.annual_fee_inr ? 1 : 2 },
-    { label: 'Base Reward Rate', v1: c1.base_reward_rate + '%', v2: c2.base_reward_rate + '%', winner: c1.base_reward_rate >= c2.base_reward_rate ? 1 : 2 },
-    { label: 'Forex Markup', v1: (c1.forex_markup_percent ?? 3.5) + '%', v2: (c2.forex_markup_percent ?? 3.5) + '%', winner: (c1.forex_markup_percent ?? 3.5) <= (c2.forex_markup_percent ?? 3.5) ? 1 : 2 },
+  const rows: { label: string; field?: string; v1: string; v2: string; winner: number }[] = [
+    { label: 'Annual Fee', field: 'annual_fee_inr', v1: 'Rs.' + c1.annual_fee_inr, v2: 'Rs.' + c2.annual_fee_inr, winner: c1.annual_fee_inr <= c2.annual_fee_inr ? 1 : 2 },
+    { label: 'Base Reward Rate', field: 'base_reward_rate', v1: c1.base_reward_rate + '%', v2: c2.base_reward_rate + '%', winner: c1.base_reward_rate >= c2.base_reward_rate ? 1 : 2 },
+    { label: 'Forex Markup', field: 'forex_markup_percent', v1: (c1.forex_markup_percent ?? 3.5) + '%', v2: (c2.forex_markup_percent ?? 3.5) + '%', winner: (c1.forex_markup_percent ?? 3.5) <= (c2.forex_markup_percent ?? 3.5) ? 1 : 2 },
     { label: 'Network', v1: c1.network || '—', v2: c2.network || '—', winner: 0 },
-    { label: 'Tier', v1: c1.tier || '—', v2: c2.tier || '—', winner: 0 },
+    { label: 'Tier', field: 'tier', v1: c1.tier || '—', v2: c2.tier || '—', winner: 0 },
   ]
 
   const l1 = parseField(c1.lounges); const l2 = parseField(c2.lounges)
@@ -97,16 +99,31 @@ export default async function ComparePage({ params }: { params: { slug: string }
 
           {/* Comparison table */}
           <div style={{ border: '1px solid ' + line, borderRadius: '0 0 16px 16px', overflow: 'hidden' }}>
-            {rows.map((row, i) => (
+            {rows.map((row, i) => {
+              // Suppress the WINNER verdict entirely when EITHER side's value for this
+              // row is contested — a qualified verdict is still a verdict, and people
+              // read the highlight, not the caveat. No winner, with a plain reason.
+              const f1 = row.field ? isFieldUnverified(slug1, row.field) : false
+              const f2 = row.field ? isFieldUnverified(slug2, row.field) : false
+              const suppressed = f1 || f2
+              const effWinner = suppressed ? 0 : row.winner
+              return (
               <div key={i} style={{ display: 'grid', gridTemplateColumns: '200px 1fr 1fr', background: i % 2 === 0 ? 'var(--surface,#fff)' : paper, borderBottom: i < rows.length - 1 ? '1px solid ' + line : 'none' }}>
-                <div style={{ padding: '14px 16px', fontSize: 12, fontWeight: 700, color: 'var(--ink-3,#5A6A8A)', display: 'flex', alignItems: 'center', fontFamily: 'var(--font-mono,monospace)', textTransform: 'uppercase' as const, letterSpacing: '0.06em' }}>{row.label}</div>
-                {[{ v: row.v1, w: row.winner === 1 }, { v: row.v2, w: row.winner === 2 }].map((cell, j) => (
+                <div style={{ padding: '14px 16px', fontSize: 12, fontWeight: 700, color: 'var(--ink-3,#5A6A8A)', display: 'flex', flexDirection: 'column', justifyContent: 'center', fontFamily: 'var(--font-mono,monospace)', textTransform: 'uppercase' as const, letterSpacing: '0.06em' }}>
+                  {row.label}
+                  {suppressed && <span style={{ marginTop: 5, fontSize: 10, fontWeight: 600, color: 'var(--prov-estimated)', textTransform: 'none' as const, letterSpacing: 0, lineHeight: 1.4 }}>not compared — one of these values is being re-verified</span>}
+                </div>
+                {[{ v: row.v1, w: effWinner === 1, flag: f1, slug: slug1 }, { v: row.v2, w: effWinner === 2, flag: f2, slug: slug2 }].map((cell, j) => (
                   <div key={j} style={{ padding: '14px 16px', fontSize: 14, fontWeight: 600, color: cell.w ? '#065f46' : ink, display: 'flex', alignItems: 'center', justifyContent: 'center', background: cell.w ? 'rgba(6,95,70,0.04)' : 'transparent' }}>
-                    {cell.v}{cell.w && row.winner !== 0 && <Winner label="" />}
+                    {row.field
+                      ? <EstimatedValue slug={cell.slug} field={row.field} baseColor={cell.w ? '#065f46' : ink}>{cell.v}</EstimatedValue>
+                      : cell.v}
+                    {cell.w && effWinner !== 0 && <Winner label="" />}
                   </div>
                 ))}
               </div>
-            ))}
+              )
+            })}
           </div>
 
           {/* Highlights */}

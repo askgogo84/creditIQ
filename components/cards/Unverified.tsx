@@ -1,6 +1,6 @@
 'use client';
 
-import { isCardUnverified } from '@/lib/data/unverified-cards';
+import { isCardUnverified, isFieldUnverified } from '@/lib/data/unverified-cards';
 
 // SINGLE SOURCE of the "this card's data is being re-verified" UI treatment.
 // Every surface that shows a contested card's value or ranked row must go through
@@ -20,19 +20,27 @@ const RANK_TITLE = 'This card’s ranking is uncertain — its position is compu
  */
 export function EstimatedValue({
   slug,
+  field,
   children,
   baseColor,
   mark = true,
   style,
 }: {
   slug: string | undefined;
+  /**
+   * When given, treat the value as estimated only if THIS specific field is
+   * contested (isFieldUnverified) — so a card's uncontested cells stay confident.
+   * When omitted, any-field uncertainty (isCardUnverified) applies — right for a
+   * value COMPUTED from the card (annual value, approval odds, rank).
+   */
+  field?: string;
   children: React.ReactNode;
   /** Colour used when the card is NOT flagged (the surface's normal value colour). */
   baseColor?: string;
   mark?: boolean;
   style?: React.CSSProperties;
 }) {
-  const est = isCardUnverified(slug);
+  const est = field ? isFieldUnverified(slug, field) : isCardUnverified(slug);
   return (
     <span title={est ? REVERIFY_TITLE : undefined} style={{ color: est ? 'var(--prov-estimated)' : baseColor, ...style }}>
       {children}

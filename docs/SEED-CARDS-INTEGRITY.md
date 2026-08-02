@@ -270,5 +270,40 @@ strongest argument in this document for actually doing the work: every ranked su
 the product leans on to help people *compare and choose* is silently degraded for as
 long as the inputs are unverified, and the degradation cannot be shown to the user.
 
+### Where contested values still render UNMARKED (the complete list)
+
+The `--prov-estimated` treatment reaches every value/row routed through
+`EstimatedValue` / `UnverifiedRowBadge` (`components/cards/Unverified.tsx`). **Marked:**
+card-detail metrics + computed value; marketing & design card tiles' fee + primary
+value + ranked-row badge; the two marketing ranking tables (value + row); approval-odds
+% + row; smart-match %; both compare pages' contested cells (and the head-to-head
+suppresses its WINNER verdict when either side is contested). For completeness, the
+places a contested value can STILL render without a mark — by deliberate choice or by
+nature — are:
+
+1. **Rank / sort position itself** — a computed ordering cannot be greyed (above). The
+   row badge flags the contested row; neighbouring rows shift silently.
+2. **`/rewards-calculator` result (7th surface, NOT wired).** A single-card calculator:
+   selecting a flagged card computes a value from its contested `base_reward_rate`. The
+   computed result is rendered confidently. Cheap to wire (one `EstimatedValue` keyed on
+   the selected slug) — pending a decision.
+3. **Marketing `CardTile` feature chips** (`getKeyFeatures`: "Rs.X/year", "Y% rewards").
+   The tile carries the row badge when ranked (CardCatalog), marking the whole card; the
+   individual chip values are not greyed.
+4. **`/card/[slug]` `reward_currency` headline** — appears only as prose ("Every way to
+   spend your <currency>"), not a data metric; greying a word mid-heading reads as
+   broken. Carried instead by the greyed computed value on the same page.
+5. **approval-odds reason text** — free-text ("Income Rs.X below Rs.Y required") may cite
+   a contested income; the % and row are marked, the sentence is not.
+6. **Any slug NOT in `UNVERIFIED_CARD_FIELDS`** — the treatment is only as complete as
+   that map; a newly-discovered conflict renders confidently until it is added.
+7. **DB-sourced numbers** — `compare/[slug]` reads the `cards` table; the mark is keyed
+   on the URL slug (correct), but the displayed NUMBER is whatever the DB row holds,
+   which may differ from SEED_CARDS.
+
+Items 1 and 7 are structural (can't be fixed by styling); 2 is a pending decision; 3–6
+are deliberate scope calls. This list is exhaustive as of this pass — if an 8th surface
+is found, it belongs here.
+
 **Do not blind-promote `NEW_CARDS` into runtime** — its values are unverified
 (§3) and would overwrite shipped financial facts.

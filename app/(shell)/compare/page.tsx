@@ -6,6 +6,7 @@ import { DesignFooter } from '@/components/design/Footer';
 import { Reveal } from '@/components/design/Reveal';
 import { SEED_CARDS } from '@/lib/data/seed-cards';
 import { getApplyUrl } from '@/lib/affiliate';
+import { EstimatedValue } from '@/components/cards/Unverified';
 import { X, Plus } from 'lucide-react';
 import { SectionTabs } from '@/components/ciq/SectionTabs';
 
@@ -32,14 +33,14 @@ export default function ComparePage() {
   const addCard = (id: string) => { if (selected.length < 4 && !selected.includes(id)) setSelected([...selected, id]); setSearch(''); };
   const removeCard = (id: string) => setSelected(selected.filter(s => s !== id));
 
-  const ROWS = [
-    { label: 'Annual fee', key: (c: CompareCard) => c.annual_fee_inr === 0 ? 'Lifetime Free' : `Rs.${(c.annual_fee_inr||0).toLocaleString('en-IN')}/yr` },
-    { label: 'Base reward rate', key: (c: CompareCard) => `${c.base_reward_rate||1}%` },
-    { label: 'Forex markup', key: (c: CompareCard) => `${c.forex_markup_percent||3.5}%` },
+  const ROWS: { label: string; field?: string; key: (c: CompareCard) => string }[] = [
+    { label: 'Annual fee', field: 'annual_fee_inr', key: (c: CompareCard) => c.annual_fee_inr === 0 ? 'Lifetime Free' : `Rs.${(c.annual_fee_inr||0).toLocaleString('en-IN')}/yr` },
+    { label: 'Base reward rate', field: 'base_reward_rate', key: (c: CompareCard) => `${c.base_reward_rate||1}%` },
+    { label: 'Forex markup', field: 'forex_markup_percent', key: (c: CompareCard) => `${c.forex_markup_percent||3.5}%` },
     { label: 'Lounge access', key: (c: CompareCard) => c.lounges?.length > 0 ? (c.lounges.find((l:any) => l.notes?.includes('Unlimited')) ? 'Unlimited' : `${c.lounges.length} networks`) : 'None' },
     { label: 'Fuel surcharge waiver', key: (c: CompareCard) => c.fuel_surcharge_waiver ? 'Yes' : 'No' },
-    { label: 'Min income (monthly)', key: (c: CompareCard) => c.min_income_inr_monthly ? `Rs.${Math.round(c.min_income_inr_monthly/1000)}K` : 'Not specified' },
-    { label: 'Card tier', key: (c: CompareCard) => c.tier || 'Standard' },
+    { label: 'Min income (monthly)', field: 'min_income_inr_monthly', key: (c: CompareCard) => c.min_income_inr_monthly ? `Rs.${Math.round(c.min_income_inr_monthly/1000)}K` : 'Not specified' },
+    { label: 'Card tier', field: 'tier', key: (c: CompareCard) => c.tier || 'Standard' },
   ];
 
   return (
@@ -78,8 +79,8 @@ export default function ComparePage() {
                       <div style={{ fontSize: 15, fontWeight: 700, color: '#fff', lineHeight: 1.25 }}>{card.name}</div>
                     </div>
                     <div style={{ padding: 16 }}>
-                      <div style={{ fontSize: 22, fontWeight: 800, color: fee === 0 ? '#2d7a56' : 'var(--ink,#142950)', marginBottom: 2 }}>
-                        {fee === 0 ? 'FREE' : `Rs.${fee.toLocaleString('en-IN')}`}
+                      <div style={{ fontSize: 22, fontWeight: 800, marginBottom: 2 }}>
+                        <EstimatedValue slug={card.id} field="annual_fee_inr" baseColor={fee === 0 ? '#2d7a56' : 'var(--ink,#142950)'}>{fee === 0 ? 'FREE' : `Rs.${fee.toLocaleString('en-IN')}`}</EstimatedValue>
                       </div>
                       <div style={{ fontFamily: 'var(--font-mono,monospace)', fontSize: 9, color: 'var(--ink-3,#5A6A8A)', marginBottom: 14, textTransform: 'uppercase', letterSpacing: '0.1em' }}>annual fee</div>
                       <a href={url} target="_blank" rel="noopener noreferrer" style={{ display: 'block', textAlign: 'center', padding: '10px', background: 'var(--copper-3,#D89B2A)', color: '#fff', borderRadius: 10, fontSize: 13, fontWeight: 700, textDecoration: 'none', marginBottom: 8 }}>{label}</a>
@@ -135,7 +136,11 @@ export default function ComparePage() {
                   <div key={i} style={{ display: 'grid', gridTemplateColumns: `180px repeat(${selectedCards.length},1fr)`, borderBottom: i < ROWS.length - 1 ? '1px solid var(--line,rgba(20,41,80,0.06))' : 'none', background: i % 2 === 0 ? 'var(--paper,#FAF5EB)' : 'var(--surface,#fff)' }}>
                     <div style={{ padding: '13px 20px', fontSize: 13, color: 'var(--ink-3,#5A6A8A)', fontWeight: 500 }}>{row.label}</div>
                     {selectedCards.map((card, j) => (
-                      <div key={j} style={{ padding: '13px 16px', fontSize: 13, fontWeight: 700, textAlign: 'center', color: 'var(--ink,#142950)' }}>{row.key(card)}</div>
+                      <div key={j} style={{ padding: '13px 16px', fontSize: 13, fontWeight: 700, textAlign: 'center', color: 'var(--ink,#142950)' }}>
+                        {row.field
+                          ? <EstimatedValue slug={card.id} field={row.field} baseColor="var(--ink,#142950)">{row.key(card)}</EstimatedValue>
+                          : row.key(card)}
+                      </div>
                     ))}
                   </div>
                 ))}
