@@ -60,9 +60,17 @@
 - Keep: eyebrow, greeting, `HeroGauge`, `EstimateRange` (via gauge), credo, held-cards list, Add-a-card CTA, Upload-a-statement CTA.
 - ✅ tsc + `npm run test` → commit `refactor(wallet): holdings-only — move BestMove + editorial off to Home`.
 
+## Follow-on task (post-wallet, gated) — delete ciq-theme entirely
+**Trigger/gate:** the **last** of `onboarding`, `my-cards`, `feed`, `profile`, `pro` has migrated off `[data-ciq]`/`CiqTheme` (all five, not any one).
+**Then, in one cleanup:**
+- Delete `components/ciq/ThemeProvider.tsx` (`CiqTheme`, `ThemeToggle`, `useTheme`).
+- Delete the `ciq-theme` localStorage key usage and the `ciq-theme-change` event everywhere: `NavShell` (the `ciqTheme` mirror + listener), `Header` (the `ciq-theme` listener), and the **interim dual-write** added to the TabBar Appearance toggle in Step 2 (revert it to writing `creditiq-theme` only).
+- Delete the `[data-ciq]` token blocks and `.ciq-*` utilities in `app/globals.css` (and the `[data-ciq]` scoping added by the Step 2 contract fix, since nothing is left under `[data-ciq]`).
+- **Why this is a task, not a footnote:** Step 2 leaves a deliberate two-key write in the TabBar toggle (clearly commented INTERIM). Without this gated cleanup, the next person reads that dual-write as the intended design. `ciq-theme` is retired per CLAUDE.md; the sync exists only to stop the two keys desyncing until the gold system is gone.
+
 ## Explicitly NOT in this plan
 - Deleting `BestMove.tsx` / `EditorialCards.tsx` (they move to Home).
-- **Global deletion of `ciq-theme` / `CiqTheme` / the `ciq-theme-change` event.** Five other surfaces (`onboarding`, `my-cards`, `feed`, `profile`, `pro`) still wrap in `CiqTheme`; the system can only be deleted once the last gold surface migrates. See TRD. The wallet only *leaves* it here.
+- **Global deletion of `ciq-theme` / `CiqTheme` / the `ciq-theme-change` event** — that is the gated Follow-on task above, not this plan. The wallet only *leaves* `ciq-theme` here and adds the interim dual-write sync. See TRD §4.1.
 - Optimisation rate (needs categorized spend — unbuilt; audit §2).
 - Any "trending" computation, any new table/column/endpoint/library.
 - Tabs on the wallet (IA §4 — it doesn't need them).
