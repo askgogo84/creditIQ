@@ -62,12 +62,17 @@
   --plum:         #6E4A6E;
   --olive:        #948B5A;
 
-  /* Semantic */
-  --green:        #4F8C58;
+  /* Semantic — the text tokens are darkened so each colored badge (text on its
+     matching -soft chip) clears AA (≥4.5:1). Measured on the -soft grounds:
+     green #2E6330 4.9:1 · amber #7E5511 4.9:1 (also fixes the .deval ticker) ·
+     red #A13020 4.8:1. Hues kept in-family; --green stays distinct from the
+     reserved verified green --prov-verified (#1B6B42, a bluer teal). The -soft
+     chip grounds are unchanged. (Dark-theme values live at L152.) */
+  --green:        #2E6330;       /* was #4F8C58 (badge text 2.7:1 — failed AA) */
   --green-soft:   #C5DBC7;
-  --amber:        #B97C2C;
+  --amber:        #7E5511;       /* was #B97C2C (2.6:1) */
   --amber-soft:   #F4DCB0;
-  --red:          #B84230;
+  --red:          #A13020;       /* was #B84230 (3.7:1) */
   --red-soft:     #F0CCC4;
 
   --bg-deep:        #0E1420;
