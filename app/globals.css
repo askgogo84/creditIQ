@@ -14,21 +14,26 @@
    LIGHT (DEFAULT)
    ───────────────────────────────────── */
 :root {
-  /* Surfaces */
-  --bg:           #F5EFE6;       /* warm cream */
-  --bg-2:         #EFE7D8;       /* deeper cream */
-  --bg-3:         #E8DDC9;       /* deepest cream / band */
+  /* Surfaces — white/copper light system, matched to the shipped landing palette
+     (#ffffff ground, #f7f5f2 alt band, ink #142335). SINGLE source of --bg: the
+     appended "LIGHT MODE FIX" :root (~L960) no longer redefines it. */
+  --bg:           #FFFFFF;       /* white ground (was warm cream #F5EFE6) */
+  --bg-2:         #F7F5F2;       /* alt band, from landing (was deeper cream #EFE7D8) */
+  --bg-3:         #F7F5F2;       /* no 3rd band in the landing palette — aliased to
+                                    --bg-2. Currently unused; if a surface ever needs a
+                                    third depth, derive a deeper NEUTRAL from these two,
+                                    never reintroduce cream. */
   /* Page ground as an R,G,B triplet, per theme. Deliberately NOT overridden by
      .cinematic, so a cinematic section can fade its dissolve into the ground of the
-     (theme-following) section BELOW it — cream in light, deep navy in dark. */
-  --page-bg-rgb:  245, 239, 230;
+     (theme-following) section BELOW it — white in light, deep navy in dark. */
+  --page-bg-rgb:  255, 255, 255;
   --surface:      #FFFFFF;
-  --surface-2:    #FBF7F0;
-  --paper:        #FAF5EB;
+  --surface-2:    #F7F5F2;       /* neutral off-white (was warm #FBF7F0) */
+  --paper:        #FFFFFF;        /* was warm #FAF5EB */
   --obsidian:     #0A0E1C;       /* theme-independent dark slab for feature bands */
 
   /* Ink (text) — navy-leaning to match logo */
-  --ink:          #142950;       /* logo navy */
+  --ink:          #142335;       /* ink, from landing (was logo navy #142950) */
   --ink-2:        #2A3F6B;
   --ink-3:        #5A6A8A;
   --ink-4:        #8A95AE;
@@ -973,7 +978,10 @@ code, pre, .font-mono, [class*="mono"] {
   --emerald: #16a34a;
   --crimson-400: #dc2626;
   --accent: #C9972E;
-  --bg: #F5EFE6;
+  /* --bg intentionally NOT set here. The page ground lives in the main :root (L18),
+     white in light. This appended "LIGHT MODE FIX" block used to duplicate --bg
+     (#F5EFE6) and, being later, silently overrode L18 — making edits there look like
+     no-ops. Duplicate removed so L18 is the single source. */
   --bg-elevated: #fff;
   --bg-input: #fff;
   --text: #0f172a;
@@ -1000,7 +1008,8 @@ html[data-theme="dark"], html.dark {
   --emerald: #22c55e;
   --crimson-400: #f87171;
   --accent: #C9972E;
-  --bg: #08080E;
+  /* --bg intentionally NOT set here — dark ground lives in :root[data-theme="dark"]
+     (L119), which wins by specificity anyway. Duplicate removed to match the light block. */
   --bg-elevated: #111118;
   --bg-input: #16161F;
   --text: #f0f0ff;
