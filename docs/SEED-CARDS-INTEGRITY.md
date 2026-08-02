@@ -273,20 +273,22 @@ long as the inputs are unverified, and the degradation cannot be shown to the us
 ### Where contested values still render UNMARKED (the complete list)
 
 The `--prov-estimated` treatment reaches every value/row routed through
-`EstimatedValue` / `UnverifiedRowBadge` (`components/cards/Unverified.tsx`). **Marked:**
-card-detail metrics + computed value; marketing & design card tiles' fee + primary
-value + ranked-row badge; the two marketing ranking tables (value + row); approval-odds
-% + row; smart-match %; both compare pages' contested cells (and the head-to-head
-suppresses its WINNER verdict when either side is contested). For completeness, the
-places a contested value can STILL render without a mark — by deliberate choice or by
-nature — are:
+`EstimatedValue` / `UnverifiedRowBadge` (`components/cards/Unverified.tsx`). **Marked
+(8 surfaces):** card-detail metrics + computed value; marketing & design card tiles'
+fee + primary value + ranked-row badge; the two marketing ranking tables (value + row);
+approval-odds % + row; smart-match %; both compare pages' contested cells (and the
+head-to-head suppresses its WINNER verdict when either side is contested); and
+`/rewards-calculator`'s "your card" result (keyed on the selected slug — the surface
+where a contested base rate does the most damage, because the user enters their own
+spend so the output reads as a personal fact). For completeness, the places a contested
+value can STILL render without a mark — by deliberate choice or by nature — are:
 
 1. **Rank / sort position itself** — a computed ordering cannot be greyed (above). The
    row badge flags the contested row; neighbouring rows shift silently.
-2. **`/rewards-calculator` result (7th surface, NOT wired).** A single-card calculator:
-   selecting a flagged card computes a value from its contested `base_reward_rate`. The
-   computed result is rendered confidently. Cheap to wire (one `EstimatedValue` keyed on
-   the selected slug) — pending a decision.
+2. **`/rewards-calculator` "best for you" card** — only the user's *selected* card is
+   marked. If the engine's recommended `best_card` is itself flagged, its figure is not
+   greyed: `result.best_card` carries no slug to key on (only name / apply_url), so it is
+   not keyable without threading the slug through the result shape.
 3. **Marketing `CardTile` feature chips** (`getKeyFeatures`: "Rs.X/year", "Y% rewards").
    The tile carries the row badge when ranked (CardCatalog), marking the whole card; the
    individual chip values are not greyed.
@@ -296,14 +298,49 @@ nature — are:
 5. **approval-odds reason text** — free-text ("Income Rs.X below Rs.Y required") may cite
    a contested income; the % and row are marked, the sentence is not.
 6. **Any slug NOT in `UNVERIFIED_CARD_FIELDS`** — the treatment is only as complete as
-   that map; a newly-discovered conflict renders confidently until it is added.
+   that map (see the scaling limit below); a newly-discovered conflict renders
+   confidently until it is added.
 7. **DB-sourced numbers** — `compare/[slug]` reads the `cards` table; the mark is keyed
    on the URL slug (correct), but the displayed NUMBER is whatever the DB row holds,
    which may differ from SEED_CARDS.
 
-Items 1 and 7 are structural (can't be fixed by styling); 2 is a pending decision; 3–6
-are deliberate scope calls. This list is exhaustive as of this pass — if an 8th surface
-is found, it belongs here.
+Items 1 and 7 are structural (can't be fixed by styling); 2–6 are deliberate scope
+calls. This list is exhaustive as of this pass — if a 9th surface is found, it belongs
+here.
+
+### This treatment is a MAP-BASED PATCH — do NOT extend the list to 40 slugs
+
+The whole treatment works because **four slugs happen to sit in a hardcoded set**
+(`UNVERIFIED_CARD_FIELDS` in `lib/data/unverified-cards.ts`). That is fine for four
+known conflicts surfaced by one dead-code collision. **It does not scale.** In a
+catalogue where any card can be contested at any time — a bank reprices, a scraper
+disagrees with the stored value, a verification lapses — maintaining a parallel
+hardcoded list of "which fields on which cards are disputed" is a second source of
+truth that will silently drift from reality, exactly like `NEW_CARDS` did.
+
+**The durable version is a per-field verification STATE on the card data itself**, not a
+side-list. Each volatile field carries `verified | unverified | disputed` (plus the
+provenance from §8: `source_url`, `verified_at`, `verified_by`), and the UI reads *that
+state* — `EstimatedValue`/`UnverifiedRowBadge` switch on `field.state === 'disputed'`
+instead of `isFieldUnverified(slug, field)`. Then a newly-contested card is marked the
+instant its data is marked, with no code change and no list to extend. **If you find
+yourself adding a fifth, sixth, … slug to `UNVERIFIED_CARD_FIELDS`, stop and build the
+state field instead** — that is the signal the patch has outlived its purpose.
+
+### What this treatment does and does not achieve
+
+**Does:** it marks uncertainty *at the point a contested value renders* — greys the
+number to estimated-provenance, exposes the reason, and (on the head-to-head compare)
+withholds a verdict computed from a disputed number. A user who reads the value sees
+that it is being re-verified.
+
+**Does not:** it cannot mark uncertainty in a **rank position**, or in **any ordering
+derived from a contested value**. When a disputed input flows through
+`calculateAnnualValue` → `matchCards` and the list is sorted, the contested card's *row*
+can be badged but its *position* cannot, and the innocent cards whose position shifted
+because of it carry no mark at all. **This limit is not fixable by UI** — only correct
+inputs fix it. That is the boundary of what marking can buy, and the reason §8's
+verification process is the real fix, not this treatment.
 
 **Do not blind-promote `NEW_CARDS` into runtime** — its values are unverified
 (§3) and would overwrite shipped financial facts.
