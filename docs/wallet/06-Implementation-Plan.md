@@ -68,7 +68,15 @@
 - Delete the `[data-ciq]` token blocks and `.ciq-*` utilities in `app/globals.css` (and the `[data-ciq]` scoping added by the Step 2 contract fix, since nothing is left under `[data-ciq]`).
 - **Why this is a task, not a footnote:** Step 2 leaves a deliberate two-key write in the TabBar toggle (clearly commented INTERIM). Without this gated cleanup, the next person reads that dual-write as the intended design. `ciq-theme` is retired per CLAUDE.md; the sync exists only to stop the two keys desyncing until the gold system is gone.
 
+## Follow-on task (light-system-wide) — unify the `--font-*` tokens onto the shipped landing-page fonts
+**Not a wallet edit — a scoped task across the whole light system.** There are THREE font systems in play:
+- CLAUDE.md's old list — Clash Display / Instrument Serif / Space Grotesk / Space Mono — was the **retired gold `[data-ciq]`** system's fonts.
+- The light-system `:root` `--font-*` tokens currently resolve to **Syne / Inter / Geist Mono**.
+- The **shipped creditiq.app landing page** — the settled design language — uses **Fraunces (~300 display) / Inter (body) / JetBrains Mono (figures)**.
+**Target = the landing page.** Unify `app/globals.css` `--font-display` / `--font-body` / `--font-mono` (and the font `@import`) onto **Fraunces / Inter / JetBrains Mono**, so every light-system surface (wallet included) matches what users actually see. The wallet uses `--font-display` / `.mono` today, so it inherits the fix automatically — **do not hardcode fonts on the wallet.** CLAUDE.md's Design Language font line has been corrected to reflect this.
+
 ## Explicitly NOT in this plan
+- Changing fonts on the wallet (uses the `--font-*` tokens; fixed by the font-unification follow-on above).
 - Deleting `BestMove.tsx` / `EditorialCards.tsx` (they move to Home).
 - **Global deletion of `ciq-theme` / `CiqTheme` / the `ciq-theme-change` event** — that is the gated Follow-on task above, not this plan. The wallet only *leaves* `ciq-theme` here and adds the interim dual-write sync. See TRD §4.1.
 - Optimisation rate (needs categorized spend — unbuilt; audit §2).

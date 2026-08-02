@@ -60,7 +60,7 @@
 - Base: **white/light**, copper accents. (The old true-near-black `#080807` / warm-ivory `#F4F1E9` gold base is retired.)
 - Copper — used sparingly for accents/CTAs, not as a fill everywhere.
 - Verified green `#4FBF87` — RESERVED for the moat (verified-from-statement). Estimated = neutral grey `#8A857B` (understated = honest). *(Carried over — not gold-specific.)*
-- Fonts: **Clash Display** (headlines), **Instrument Serif** italic (accent), **Space Grotesk** (UI), **Space Mono** (data labels).
+- Fonts: **Fraunces** (display headlines, ~300 weight), **Inter** (UI/body), **JetBrains Mono** (data labels/figures) — as shipped on the creditiq.app landing page, which is the **settled** light-system language and the target. *(The **Clash Display / Instrument Serif / Space Grotesk / Space Mono** list was the RETIRED gold `[data-ciq]` system's fonts — NOT the target. NB: the light-system `:root` `--font-*` tokens currently point at Syne/Inter/Geist Mono and must be unified onto Fraunces/Inter/JetBrains Mono — tracked as a follow-on in `docs/wallet/06-Implementation-Plan.md`.)*
 - Motion kept: count-up value, gauge fill, staggered rise-in, bobbing CIRA button. *(Drop the gold-glint hero.)*
 - **Signature = verified-vs-estimated animated gauge bar** — the brand thesis, no competitor has it. Keep central.
 - Tabs: Wallet · Cards · Travel · Optimize · You.
