@@ -231,6 +231,13 @@ h1, h2, h3, h4, h5 {
   color: var(--ink);
 }
 
+/* Contract fix (docs/wallet/02-TRD §7.1): headings INSIDE a [data-ciq] surface
+   must default to the gold-system ink, not the light-system --ink — otherwise the
+   unscoped rule above paints them dark-on-dark (invisible). Specificity (0,1,1)
+   beats the base h1..h5 (0,0,1). INTERIM: [data-ciq] is retired per CLAUDE.md;
+   delete this with the gold cleanup (see 06-Implementation-Plan Follow-on task). */
+[data-ciq] :is(h1, h2, h3, h4, h5) { color: var(--ciq-ink); }
+
 p { margin: 0; text-wrap: pretty; color: var(--ink-2); }
 
 .serif {
@@ -268,6 +275,18 @@ p { margin: 0; text-wrap: pretty; color: var(--ink-2); }
 
 @media (min-width: 768px) {
   .label, .label-copper { font-size: 11px; }
+}
+
+/* ── Wallet (white/copper) utilities ──
+   Un-scoped replacements for the retired [data-ciq] .ciq-display / .ciq-rise
+   helpers, so the migrated wallet needs no gold wrapper. Reuse the global
+   @keyframes ciq-rise defined lower in this file; mono uses the existing .mono. */
+.w-display { font-family: var(--font-display); }
+.w-rise { opacity: 0; transform: translateY(16px); animation: ciq-rise .7s cubic-bezier(.22,1,.36,1) forwards; }
+.w-rise.d1 { animation-delay: .05s } .w-rise.d2 { animation-delay: .12s }
+.w-rise.d3 { animation-delay: .2s }  .w-rise.d4 { animation-delay: .28s }
+@media (prefers-reduced-motion: reduce) {
+  .w-rise { opacity: 1; transform: none; animation: none; }
 }
 
 /* ============================================

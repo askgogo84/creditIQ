@@ -66,23 +66,39 @@ export function TabBar() {
     return () => { document.body.style.overflow = prev; };
   }, [moreOpen]);
 
-  // Read the persisted ciq theme when the sheet opens so the Settings toggle
-  // shows the real current state.
+  // Read the current theme when the sheet opens so the Settings toggle shows the
+  // real current state. The migrated wallet follows the SITE theme (data-theme on
+  // <html> / creditiq-theme), so read that as the source of truth.
   useEffect(() => {
     if (!moreOpen) return;
     try {
-      const saved = window.localStorage.getItem('ciq-theme');
-      if (saved === 'light' || saved === 'dark') setTheme(saved);
+      const site = document.documentElement.getAttribute('data-theme');
+      if (site === 'light' || site === 'dark') setTheme(site);
     } catch {}
   }, [moreOpen]);
 
-  // Toggle theme from OUTSIDE any CiqTheme context: persist + broadcast a
-  // 'ciq-theme-change' event that CiqTheme (WalletView) and the Header wrapper
-  // both listen for, so the whole app re-themes live.
+  // Toggle theme from OUTSIDE any CiqTheme context.
+  //
+  // INTERIM (wallet migration, docs/wallet/02-TRD §4.1): write BOTH theme keys so
+  // the two systems can NEVER desync — that desync is the root cause of the
+  // light-mode bug. `creditiq-theme` (the site theme, on <html data-theme>) drives
+  // the migrated wallet and every white/copper surface; `ciq-theme` (RETIRED per
+  // CLAUDE.md) still drives the five not-yet-migrated gold [data-ciq] surfaces
+  // (onboarding, my-cards, feed, profile, pro). This dual-write is NOT the intended
+  // design — when the last gold surface migrates, delete `ciq-theme`, the
+  // `ciq-theme-change` broadcast, and this branch (06-Implementation-Plan Follow-on task).
   const toggleTheme = () => {
     setTheme(t => {
       const next = t === 'dark' ? 'light' : 'dark';
       try {
+        // 1) Site theme (creditiq-theme) — same contract as the Header/AppRail
+        //    toggle: data-theme drives tokens; .dark/.light drive legacy + Logo.
+        const el = document.documentElement;
+        el.setAttribute('data-theme', next);
+        el.classList.toggle('dark', next === 'dark');
+        el.classList.toggle('light', next === 'light');
+        window.localStorage.setItem('creditiq-theme', next);
+        // 2) Retired gold theme (ciq-theme) — kept in lockstep until gold is gone.
         window.localStorage.setItem('ciq-theme', next);
         window.dispatchEvent(new Event('ciq-theme-change'));
       } catch {}
