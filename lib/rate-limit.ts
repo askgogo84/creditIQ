@@ -42,6 +42,12 @@ export const LIMITS: Record<string, Limits> = {
   'card-switch':     { anon: { perMin: 5,  perDay: 60  }, user: { perMin: 25, perDay: 300  } },
   'spend-optimizer': { anon: { perMin: 5,  perDay: 40  }, user: { perMin: 25, perDay: 200  } },
   'assistant':       { anon: { perMin: 15, perDay: 200 }, user: { perMin: 75, perDay: 1000 } },
+  // travel-ai is auth-required (requireAuth runs first, so anon never reaches here —
+  // the anon tier is a type-required formality). Each call is ONE direct seats.aero
+  // availability hit with no batching, so this route is the most direct drain on that
+  // paid partner quota. Cap sits well above the eventual 5/day free FLIGHT product
+  // meter — it exists only to stop a compromised/looping account, not to shape pricing.
+  'travel-ai':       { anon: { perMin: 3,  perDay: 30  }, user: { perMin: 10, perDay: 120  } },
 };
 
 type RlOk = { ok: true };
