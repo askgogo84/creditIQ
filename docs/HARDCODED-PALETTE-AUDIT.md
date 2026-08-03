@@ -51,6 +51,7 @@ These are not unreadable, but they are visibly off-palette on white and are the 
 
 Making "the app is white/copper" true is **not** a token change — it's converting ~12 pages' hardcoded hex to tokens, page by page, and this is where the centred heroes get their left-aligned headers too. That is the same work as the gold → white surface migration and should be tracked as such. The in-page `SectionTabs` placement (this change) is deliberately *not* that migration — it drops the shared, tokenised tab strip into each page's content column and leaves each page's hardcoded body untouched until its own migration pass.
 
+<<<<<<< HEAD
 ## Font debt
 
 The same "tokens moved, the app didn't follow" story as the palette, but for type. The spec target (CLAUDE.md, IA) is **Fraunces ~300 display / Inter body / JetBrains Mono figures**. What actually ships:
@@ -123,3 +124,12 @@ The rule (formerly `app/globals.css:1031–1035`):
 **Nothing depended on it.** Every "card"-classed element either owns its background (`card-soft` → `var(--surface)`; `CardRow`/`ciq-tour-card`/the `CreditCard3D` face → inline) or is meant to be transparent/gradient. Even the surface it was named for — the Smart Match result cards (`CardTile` → `card-soft`) — is self-sufficient, so the "fix" fixed nothing and only caused collateral damage. **Deleted, not scoped**: scoping it to `.card-soft` would keep a rule nobody needs; deletion is the correct resolution.
 
 **The lesson — worse to find than double-definition:** you cannot locate this bug by grepping the victim's class name. Searching `card-mockup-inner` in the source finds three rules, none with a background — because **the rule affecting the element was not named after the element.** It only surfaced by inspecting the *computed* style at runtime and discovering a `[class*="card"]` selector matching from a distance. Same NEW_CARDS shape (the data being read was not the data being edited), one layer over into CSS.
+=======
+## Un-themed light-mode drop-in on a gold surface (RESOLVED)
+
+`app/(shell)/profile/LinkWhatsAppButton.tsx` was a hardcoded light-mode Tailwind "drop-in" (`bg-white` card, `text-slate-500/600` text, `bg-slate-50` code box) rendered inside the gold `[data-ciq]` profile surface. In dark mode its card stayed **white** while its `<h3>` title rendered **light** — invisible, white-on-white.
+
+The subtle part: the title's own `text-slate-900` was **not** the cause. The `[data-ciq] :is(h1..h5){ color: var(--ciq-ink) }` heading-contract rule (`globals.css`, specificity 0,1,1) already overrode it to the theme ink — so the title was correctly light. **The heading contract themes *text*, but nothing themes *backgrounds*.** A single hardcoded panel background is therefore enough to make an already-correct title invisible — and grepping the title's colour would never find the real defect (the `bg-white` at line 36).
+
+Fixed by theming the whole component to `var(--ciq-*)`, matching the "Invite to CreditIQ" card on the same page (`var(--ciq-panel)` card, `var(--ciq-ink)` / contract-rule titles, `var(--ciq-ink-2)` secondary). Distinct from the selector-scope collision and the double-definition entries: this is neither an over-broad selector nor a duplicated key — it is a component that opts out of the token system entirely by hardcoding utilities. Swept all five gold surfaces; this was the only instance.
+>>>>>>> fix/whatsapp-card-theme
