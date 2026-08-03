@@ -101,3 +101,26 @@ Design **out** of v1 (not placeholdered):
 - Any **"trending"** framing — replaced by editorial curation.
 
 Open decisions raised to `docs/OVERNIGHT-QUESTIONS.md`: external card-art hosting, and whether an editorial strip is an acceptable substitute for "trending" in v1.
+
+---
+
+## Addendum (3 Aug 2026): ANIMATION-GATED CORRECTNESS — the point count is honest in the data, not always on screen
+
+**This qualifies §1.** §1 concludes the wallet total is "COMPUTABLE and honest" — and it is, *as a value*. But the value is not what the user reads. The headline renders through an animation with no completed-state fallback, so an interrupted or stalled frame leaves a **wrong total on screen — not a missing one.**
+
+**The mechanism (source-verified):**
+- The headline is the only animated number. `HeroGauge` renders `counted = useCountUp(points)` (`components/ciq/HeroGauge.tsx:54`, `points = totalPoints`), and `useCountUp` seeds `useState(0)` (`:9`) then eases 0 → target over 1400ms (`:8–34`). Displayed digits are `counted`, not `points` (`:92–93`).
+- The two numbers that agree with each other are **static**: the verified/estimated split renders `verifiedPoints`/`estimatedPoints` directly (`:110–111`, `:119–120`), and the best-move panel renders `totalPoints` directly (`components/ciq/WalletView.tsx:164`). No animation gates either.
+- All three are the **same value** by construction — `totalPoints = vPoints + ePoints` (dashboard `:240`; split `WalletView.tsx:50–51`). So when the headline disagrees with the split, it is never a different aggregation; it is the *same number caught mid-fill.*
+
+**The observed incident:** signed-in production, /dashboard, dark mode — headline **3,68,844 pts** while the split (verified 56,499 + estimated 8,20,000) and best-move both read the true **8,76,499**. `3,68,844 / 8,76,499 = 0.4208` — precisely a cubic-ease-out frame (`1−(1−p)³`) ~17% into the count-up. The headline was showing **42% of the real total.** The progress bar was simultaneously empty because the bar width is gated behind a *separate* one-shot flag — `fill`, `useState(false)` set true only by a double-`requestAnimationFrame` (`:55`, `:67–71`, `:99–102`); its segments read the same real split, but the same stall that froze the count-up left `fill` false, so a wallet with 56,499 verified points drew no verified segment.
+
+**Same class as `Reveal` on /cards.** `.reveal { opacity: 0 }` → `.reveal.in { opacity: 1 }` (`app/globals.css:524–532`), and `.in` is added only when an `IntersectionObserver` fires (`components/design/Reveal.tsx:30`). If the observer never fires — never scrolled into threshold, throttled, disconnected early — correct content sits at `opacity:0` **permanently**. Both are the same defect: **correct data gated behind an animation with no completed-state fallback.** Neither `tsc` nor any test catches it — the data is right; the render path drops it.
+
+**Severity — specific to this product.** CreditIQ's entire argument is that *its numbers are true* ("We don't guess your money"; §1's honesty rule; the verified-vs-estimated gauge is the brand signature). A headline that can display **42% of the real total** under CPU throttling, a background tab, or a single dropped frame is **worse than one that renders plain** — a missing number reads as "loading," but a wrong number reads as a lie, on the one surface whose whole claim is accuracy. This is a higher-severity instance of the class precisely because the animated element *is* the honesty claim.
+
+**Proposed direction (NOT implemented — for when we fix it):** invert the default. The **final value should be the rendered default**, with the count-up applied as *progressive enhancement* on top — so any animation failure (stall, interrupt, dropped frame, reduced-motion edge) leaves the **correct number** on screen rather than an arbitrary intermediate one. Same inversion for the bar: the fill should default to its true width, with the grow-in as enhancement, so a wallet with verified points always shows its verified segment even if `fill` never flips. Do not gate a truth claim on an effect that is allowed to not run.
+
+**Noted, not resolved.** Belongs with the HeroGauge/WalletView render path, not a data change — the underlying total is already correct at 8,76,499.
+
+> Cross-refs: the render/animation-debt catalogue in `docs/HARDCODED-PALETTE-AUDIT.md` collects the sibling "data read ≠ data rendered" defects (over-broad selector, double-defined tokens, face-ink divergence); this one is the data-honesty instance of the same family and is logged here because it qualifies §1. (That file currently also carries unresolved merge-conflict markers — see the hand-off note.)
