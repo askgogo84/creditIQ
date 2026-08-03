@@ -2,6 +2,7 @@ import { requireAuth } from '@/lib/api-auth';
 import { NextRequest, NextResponse } from 'next/server'
 import { retrieveRelevantCards, buildRagSystemPrompt } from '@/lib/rag'
 import { callClaude, MODELS } from '@/lib/ai'
+import { rateLimit } from '@/lib/rate-limit'
 
 export const runtime = 'nodejs'
 export const maxDuration = 60
@@ -131,6 +132,11 @@ function formatAvailability(results: any[], origin: string, dest: string, cabin:
 export async function POST(req: NextRequest) {
   const gate = await requireAuth(req);
   if (!gate.ok) return gate.res;
+  // Abuse ceiling on the paid seats.aero passthrough — one uncapped authenticated
+  // caller could otherwise drain the partner quota. Separate from (and above) the
+  // pricing meter. Fails open (see lib/rate-limit) — availability is best-effort.
+  const rl = await rateLimit(req, 'travel-ai');
+  if (!rl.ok) return rl.res;
   try {
     const body = await req.json()
     let message: string
