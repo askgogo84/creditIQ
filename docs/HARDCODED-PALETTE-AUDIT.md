@@ -80,3 +80,46 @@ There is **no pre-paint script for `ciq-theme`.** The single inline pre-paint in
 This is **distinct from the theme desync** fixed by the single-writer collapse (all toggles now route through `lib/store.ts`; enforced by `lib/theme-single-writer.test.ts`). The desync was *which* value the gold key held; this is the gold provider having *no pre-paint at all*, so it always starts dark regardless of the stored value. Keeping `ciq-theme` in sync does not fix it — the wrapper still mounts dark then fades.
 
 **Noted, not resolved — and deliberately not fixed.** It **dies with `ciq-theme` in the gold cleanup** (`docs/wallet/06-Implementation-Plan.md` Follow-on task): when the last gold surface migrates to the white/copper system, `CiqTheme`/`ThemeProvider.tsx` is deleted and these surfaces inherit the single site pre-paint that already exists on `<html>`. Adding a second pre-paint for a key slated for deletion would spend effort hardening a system we are removing.
+
+## Card face-ink logic defined twice, diverged (CardMockup vs CreditCard3D)
+
+**Two components render a card face and each picks face-text ink from card-colour luminance with its own formula and its own threshold.** They disagree, and the `110fc889` contrast fix corrected only one.
+
+| | `CardMockup` | `CreditCard3D` |
+|---|---|---|
+| File | `components/cards/CardMockup.tsx` (`faceInk`, L17–25) | `components/design/CreditCard3D.tsx` (`hexLuma`, L33–40) |
+| Formula | **WCAG relative luminance** — sRGB-linearised, `0.2126 R + 0.7152 G + 0.0722 B` | **YIQ / Rec.601 luma** — `(0.299 R + 0.587 G + 0.114 B)`, no linearisation |
+| Threshold | **`L > 0.1791`** (the true black/white crossover) | **`luma > 0.6`** |
+| Rendered on | `/dashboard` "Cards to know" strip (`EditorialCards`) | `/card/[slug]` detail (`CardDetailClient`) |
+
+Same class as the **double-defined `--bg`** and the two `[data-font]` blocks: one concept, two implementations that silently disagree, and a fix (`110fc889`, "0.3 → 0.1791") that landed on `CardMockup` only. **`/card/[slug]` runs the uncorrected `CreditCard3D` path** — a different formula *and* a threshold >3× higher, so borderline card colours can pick the wrong ink there while the same card is correct on the dashboard strip. No `tsc` or test catches it — both are valid arithmetic.
+
+**Noted, not resolved.** The durable fix is one shared `faceInk` (the WCAG-linear 0.1791 version) consumed by both faces; picking that up belongs to the per-surface rebuilds, not recorded as a patch here.
+
+## Selector-scope collision — `[class*="card"]` (RESOLVED: rule deleted)
+
+**Distinct from the double-definition entries above.** Those are one *key* declared twice with drifting values. This is one *rule* whose selector is so broad it silently styled elements it was never written for.
+
+The rule (formerly `app/globals.css:1031–1035`):
+```css
+/* Smart Match card fix - light mode */
+[class*="card"], .card {
+  background: var(--bg-elevated, #fff);
+  color: var(--text, #0f172a);
+}
+```
+
+`[class*="card"]` is a **substring attribute selector** — it matches *every* element whose class contains the string "card". In a **credit-card app**, that is nearly everything: `card-mockup-inner`, `card3d-wrap` / `card3d` / `card3d-holo` / `card3d-shine`, `card-soft`, and even Lucide's `lucide-credit-card` icons. It was authored as a "Smart Match card fix" but behaved as an **app-wide background + text-colour override masquerading as a component fix**.
+
+**What it broke (all confirmed by runtime computed-style audit across `/`, `/cards`, `/smart-match`, `/card/[slug]`):**
+- **`card-mockup-inner`** (the dashboard "Cards to know" strip) — painted **opaque white** over the correct dark card tile in light mode → bank/tier labels invisible. This was the reported bug; its root cause is *this rule*, not `CardMockup`.
+- **`card3d-shine` / `card3d-holo`** — their radial/linear **gradient** effects were overwritten by the solid `background` shorthand; the 3D holographic/shine layers were wiped.
+- **`card3d-wrap` / `card3d`** — transparent 3D-transform containers, forced opaque.
+- **`card-soft`** — has its own `background: var(--surface)`; the rule overrode it in dark mode (navy → `#111118`).
+- **`lucide-credit-card`** icons — given a stray background.
+
+**Why only light mode read as broken:** the rule is unconditional, but its value `var(--bg-elevated)` is theme-flipped — `#fff` in light (`:root`), `#111118` in dark. It painted in *both* themes; it was only *visible as damage* against the light ground. Dark mode hid it.
+
+**Nothing depended on it.** Every "card"-classed element either owns its background (`card-soft` → `var(--surface)`; `CardRow`/`ciq-tour-card`/the `CreditCard3D` face → inline) or is meant to be transparent/gradient. Even the surface it was named for — the Smart Match result cards (`CardTile` → `card-soft`) — is self-sufficient, so the "fix" fixed nothing and only caused collateral damage. **Deleted, not scoped**: scoping it to `.card-soft` would keep a rule nobody needs; deletion is the correct resolution.
+
+**The lesson — worse to find than double-definition:** you cannot locate this bug by grepping the victim's class name. Searching `card-mockup-inner` in the source finds three rules, none with a background — because **the rule affecting the element was not named after the element.** It only surfaced by inspecting the *computed* style at runtime and discovering a `[class*="card"]` selector matching from a distance. Same NEW_CARDS shape (the data being read was not the data being edited), one layer over into CSS.
