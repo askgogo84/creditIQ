@@ -5,7 +5,7 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { createBrowserClient } from '@supabase/ssr';
 import { authedFetch } from '@/lib/authed-fetch';
-import { CiqTheme, ThemeToggle } from '@/components/ciq/ThemeProvider';
+import { CiqTheme } from '@/components/ciq/ThemeProvider';
 
 type FeedItem = {
   id: string;
@@ -78,7 +78,6 @@ export default function FeedPage() {
       <div className="ciq-display" style={{ fontWeight: 700, fontSize: 20, letterSpacing: '-.02em' }}>
         Credit<span style={{ color: 'var(--ciq-gold-2)' }}>IQ</span>
       </div>
-      <ThemeToggle />
     </div>
   );
 

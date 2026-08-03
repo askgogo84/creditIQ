@@ -5,7 +5,7 @@ import { createBrowserClient } from '@supabase/ssr';
 import { authedFetch } from '@/lib/authed-fetch';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { CiqTheme, ThemeToggle } from '@/components/ciq/ThemeProvider';
+import { CiqTheme } from '@/components/ciq/ThemeProvider';
 import { CardRow } from '@/components/ciq/CardRow';
 import { getSmartRedemptions } from '@/lib/redemptions';
 
@@ -48,7 +48,6 @@ export default function MyCardsPage() {
           <div className="ciq-display" style={{ fontWeight: 700, fontSize: 20, letterSpacing: '-.02em' }}>
             Credit<span style={{ color: 'var(--ciq-gold-2)' }}>IQ</span>
           </div>
-          <ThemeToggle />
         </div>
 
         <div style={{ padding: '10px 20px 0' }}>
