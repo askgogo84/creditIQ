@@ -6,6 +6,7 @@ import { usePathname, useRouter } from 'next/navigation'
 import { createBrowserClient } from '@supabase/ssr'
 import { TabBar } from '@/components/ciq/TabBar'
 import { APP_NAV, appActive as isAppActive } from '@/components/ciq/appNav'
+import { useTheme } from '@/lib/store'
 
 const NAV_LINKS = [
   { label: 'Discover', href: '/' },
@@ -116,6 +117,9 @@ export function Header() {
   // identical here to what /dashboard shows (CiqTheme persists 'ciq-theme',
   // defaults dark).
   const [ciqTheme, setCiqTheme] = useState<'light' | 'dark'>('dark')
+  // Theme flips route through the single writer in lib/store.ts (applyTheme),
+  // never inline here — see lib/theme-single-writer.test.ts.
+  const toggleTheme = useTheme((s) => s.toggle)
 
   const closeTimers = {
     discover: { ref: null as any },
@@ -366,16 +370,7 @@ export function Header() {
 
           {/* Right side */}
           <div className="ciq-right">
-            <button className="ciq-theme-btn ciq-theme-desktop" aria-label="Toggle light or dark theme" onClick={() => {
-              const el = document.documentElement
-              const next = el.getAttribute('data-theme') === 'dark' ? 'light' : 'dark'
-              // data-theme drives the tokens; the .dark/.light classes drive the
-              // legacy html.dark CSS overrides and Logo — keep all three in sync.
-              el.setAttribute('data-theme', next)
-              el.classList.toggle('dark', next === 'dark')
-              el.classList.toggle('light', next === 'light')
-              try { localStorage.setItem('creditiq-theme', next) } catch {}
-            }}>
+            <button className="ciq-theme-btn ciq-theme-desktop" aria-label="Toggle light or dark theme" onClick={toggleTheme}>
               {/* Both icons are rendered on server AND client; CSS shows one based on
                   [data-theme] (set pre-paint in layout), so there is no hydration mismatch. */}
               <svg className="ciq-ico-sun" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">

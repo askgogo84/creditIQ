@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { createBrowserClient } from '@supabase/ssr';
 import { authedFetch } from '@/lib/authed-fetch';
 import { useRouter } from 'next/navigation';
-import { CiqTheme, ThemeToggle } from '@/components/ciq/ThemeProvider';
+import { CiqTheme } from '@/components/ciq/ThemeProvider';
 
 type CatalogCard = { id: string; name: string; bank: string; reward_currency: string | null };
 type WalletPick = { id: string; name: string; bank: string; currency: string; points: number };
@@ -127,7 +127,6 @@ export default function OnboardingPage() {
           <div className="ciq-display" style={{ fontWeight: 700, fontSize: 19, letterSpacing: '-.02em' }}>
             Credit<span style={{ color: 'var(--ciq-gold-2)' }}>IQ</span>
           </div>
-          <ThemeToggle />
         </div>
 
         {/* progress dots */}

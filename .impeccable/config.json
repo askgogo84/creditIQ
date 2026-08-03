@@ -1,0 +1,20 @@
+{
+  "detector": {
+    "ignoreRules": [],
+    "ignoreFiles": [],
+    "ignoreValues": [
+      {
+        "rule": "overused-font",
+        "value": "inter",
+        "createdAt": "2026-08-03T05:45:16.947Z",
+        "reason": "Body face under Fraunces 300 display; settled Jul 2026"
+      },
+      {
+        "rule": "overused-font",
+        "value": "fraunces",
+        "createdAt": "2026-08-03T07:20:17.303Z",
+        "reason": "Locked display face per DESIGN.md"
+      }
+    ]
+  }
+}

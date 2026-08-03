@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import { createBrowserClient } from '@supabase/ssr'
 import { APP_NAV, appActive } from '@/components/ciq/appNav'
+import { useTheme } from '@/lib/store'
 
 // AppRail — the fixed left sidebar shown to SIGNED-IN users at >=900px. Below
 // that, NavShell hides it and shows the existing ciq TabBar instead. Plain white
@@ -33,7 +34,11 @@ export function AppRail() {
   const path = usePathname()
   const router = useRouter()
   const [user, setUser] = useState<any>(null)
-  const [theme, setTheme] = useState<'light' | 'dark'>('light')
+  // Theme is owned by the single store writer (lib/store.ts) — read it, never
+  // mirror it into local state, so this toggle's icon can never disagree with the
+  // actual site theme. See lib/theme-single-writer.test.ts.
+  const theme = useTheme((s) => s.theme)
+  const toggleTheme = useTheme((s) => s.toggle)
 
   useEffect(() => {
     const sb = createBrowserClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!)
@@ -41,28 +46,6 @@ export function AppRail() {
     const { data: { subscription } } = sb.auth.onAuthStateChange((_e, session) => setUser(session?.user ?? null))
     return () => subscription.unsubscribe()
   }, [])
-
-  // Reflect the persisted app theme so the toggle shows the real current state.
-  useEffect(() => {
-    try {
-      const el = document.documentElement
-      const t = el.getAttribute('data-theme')
-      if (t === 'light' || t === 'dark') setTheme(t)
-    } catch {}
-  }, [])
-
-  // Toggle the APP theme (creditiq-theme) — same contract as the Header desktop
-  // toggle this rail replaces: data-theme drives the tokens, the .dark/.light
-  // classes drive the legacy overrides + Logo. Keep all three in sync.
-  const toggleTheme = () => {
-    const el = document.documentElement
-    const next = el.getAttribute('data-theme') === 'dark' ? 'light' : 'dark'
-    el.setAttribute('data-theme', next)
-    el.classList.toggle('dark', next === 'dark')
-    el.classList.toggle('light', next === 'light')
-    try { localStorage.setItem('creditiq-theme', next) } catch {}
-    setTheme(next)
-  }
 
   const signOut = async () => {
     const sb = createBrowserClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!)

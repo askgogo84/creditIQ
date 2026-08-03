@@ -2,7 +2,7 @@
 @tailwind components;
 @tailwind utilities;
 
-@import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;0,9..144,700;1,9..144,400;1,9..144,500;1,9..144,600;1,9..144,700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,500;0,9..144,600;0,9..144,700;1,9..144,300;1,9..144,400;1,9..144,500;1,9..144,600;1,9..144,700&display=swap');
 
 /* ============================================
    CREDITIQ — Light-default + Dark theme
@@ -882,53 +882,6 @@ input[type="range"]::-webkit-slider-thumb {
 
 @media (max-width: 600px) {
   .grid-1-mobile-sm { grid-template-columns: 1fr !important; }
-}
-
-/* ============================================
-   Font pairings (driven by tweak)
-   Each pairing swaps BOTH display + body.
-   ============================================ */
-:root[data-font="clash"] {
-  --font-display: "Clash Grotesk", "Inter", sans-serif;
-  --font-body:    "DM Sans", -apple-system, sans-serif;
-}
-:root[data-font="general"] {
-  --font-display: "General Sans", "Inter", sans-serif;
-  --font-body:    "General Sans", "Inter", sans-serif;
-}
-:root[data-font="satoshi"] {
-  --font-display: "Satoshi", "Inter", sans-serif;
-  --font-body:    "Satoshi", "Inter", sans-serif;
-}
-:root[data-font="fraunces"] {
-  --font-display: "Fraunces", Georgia, serif;
-  --font-body:    "Onest", -apple-system, sans-serif;
-  --font-serif:   "Fraunces", Georgia, serif;
-}
-:root[data-font="instrument"] {
-  --font-display: "Instrument Serif", "Times New Roman", serif;
-  --font-body:    "Onest", -apple-system, sans-serif;
-  --font-serif:   "Instrument Serif", "Times New Roman", serif;
-}
-:root[data-font="anybody"] {
-  --font-display: "Anybody", "Inter", sans-serif;
-  --font-body:    "Inter", -apple-system, sans-serif;
-}
-:root[data-font="bricolage"] {
-  --font-display: "Bricolage Grotesque", "Inter", sans-serif;
-  --font-body:    "Inter", -apple-system, sans-serif;
-}
-:root[data-font="boldonse"] {
-  --font-display: "Boldonse", "Inter", sans-serif;
-  --font-body:    "Inter", -apple-system, sans-serif;
-}
-:root[data-font="editorial"] {
-  --font-display: "Newsreader", Georgia, serif;
-  --font-body:    "Inter", -apple-system, sans-serif;
-}
-:root[data-font="modern"] {
-  --font-display: "Space Grotesk", "Inter", sans-serif;
-  --font-body:    "Inter", -apple-system, sans-serif;
 }
 
 /* ============================================

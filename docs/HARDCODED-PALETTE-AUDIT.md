@@ -50,3 +50,33 @@ These are not unreadable, but they are visibly off-palette on white and are the 
 ## What this means for scope
 
 Making "the app is white/copper" true is **not** a token change — it's converting ~12 pages' hardcoded hex to tokens, page by page, and this is where the centred heroes get their left-aligned headers too. That is the same work as the gold → white surface migration and should be tracked as such. The in-page `SectionTabs` placement (this change) is deliberately *not* that migration — it drops the shared, tokenised tab strip into each page's content column and leaves each page's hardcoded body untouched until its own migration pass.
+
+## Font debt
+
+The same "tokens moved, the app didn't follow" story as the palette, but for type. The spec target (CLAUDE.md, IA) is **Fraunces ~300 display / Inter body / JetBrains Mono figures**. What actually ships:
+
+- **Body renders Geist, not Inter.** `<body>` sets `font-family: var(--font-geist-sans)` directly (`app/layout.tsx:59`). The `--font-body` token *is* Inter (`globals.css:99`) but the body ignores it, and `--font-inter` is never defined by `next/font` (`layout.tsx:40` loads Geist, Clash, Satoshi, JetBrains — not Inter). So body = Geist everywhere.
+- **Display token is Syne, and Syne isn't even loaded.** `--font-display: "Syne"…` (`globals.css:98`); Tailwind's `display` face is `var(--font-syne)` first (`tailwind.config.ts:11`). Neither `--font-syne` nor Syne is loaded by `next/font`, so `h1–h5` fall through Syne → Inter → system. Nothing renders the intended Fraunces display face outside the landing page and a couple of inline uses.
+- **Fraunces weight 300 — FIXED (3 Aug 2026).** The app-wide `@import` (`globals.css:5`) previously omitted weight 300, so the spec's Fraunces-300 headline snapped to 400 on any token-driven surface (only the landing page loaded 300, via its own `<link>` at `app/(marketing)/landing/page.tsx:163`). `300` (roman + italic) has now been added to the `globals.css:5` axis. This loads the weight only — nothing yet requests it, so there is no visual change today. It unblocks the display-face unification below.
+- **JetBrains Mono is wired into `<Figure>` only.** `--font-jbmono` loads a single static 400 weight (`app/fonts.ts:38`, deliberate — no variable `.woff2` ships) and only `<Figure>` consumes it. The general mono token `--font-mono` is still `"Geist Mono"` (`globals.css:101`), so every other mono surface renders Geist Mono, not JetBrains Mono.
+- **10-way `[data-font]` pairing switcher removed 3 Aug 2026** — orphaned CSS, no writer, latently overrode `--font-display`/`--font-body` at `:root`.
+
+Net: the type system that actually ships is **Geist body / Syne-token→system display / Geist Mono** — three faces off-spec — with Fraunces and JetBrains Mono reaching only the landing page and `<Figure>` respectively. Unifying `--font-*` onto Fraunces/Inter/JetBrains Mono is the tracked follow-on (`docs/wallet/06-Implementation-Plan.md`); the Fraunces-300 axis fix above is its prerequisite.
+
+**Display-face unification (Syne token → Fraunces 300) is deferred to the per-surface rebuilds — NOT a global token flip.** It will be introduced **first on Home, as greenfield** (Home is unbuilt, so it can be authored on Fraunces 300 from the start with no regression surface), then **propagated surface by surface** as each is rebuilt. The reason it can't be a single `--font-display` swap: `h1–h5` carry **no shared size scale** — every heading is sized inline per component (`h1–h5` set no `font-size`; see § Typography in `DESIGN.md`). Flipping the token globally would change the face under hundreds of inline-sized headings at once, with no size ramp holding them together — an unbounded visual blast radius. Doing it per surface, starting greenfield on Home, keeps each change reviewable at 375px.
+
+## Radius drift
+
+**Card border-radius appears at six values across the codebase: `12` / `14` / `16` / `20` / `22` / `24`px.** A card-like surface picks a hardcoded number per file; the `--r-*` token scale (`--r-sm 8 · --r-md 14 · --r-lg 22 · --r-xl 32 · --r-2xl 44`, `globals.css:108`) is referenced only a handful of times in components, so nothing pulls these six back to one value.
+
+This is the **same class of defect as the double-defined `--bg` token** (a value defined in two places that silently disagree): drift that **no type check catches** — `tsc` sees valid numbers and valid CSS either way. It only shows up by eye, card next to card. **Noted, not resolved** — the fix (route every card onto one radius token) belongs to the per-surface rebuilds, same as the font and palette debt above; picking the value is a design decision, not recorded here.
+
+## Gold-surface dark flash (no pre-paint for `ciq-theme`)
+
+**Every surface still wrapped in `CiqTheme` (`onboarding`, `my-cards`, `feed`, `profile`, `pro`) flashes DARK on load before correcting to the resolved theme.** `CiqThemeProvider` (`components/ciq/ThemeProvider.tsx`) initialises `useState<Theme>('dark')` — a blind default — and only reads the persisted `ciq-theme` key in a mount `useEffect`. So the wrapper paints **dark on SSR and on the first client paint**, then switches once the effect runs.
+
+There is **no pre-paint script for `ciq-theme`.** The single inline pre-paint in `app/layout.tsx` resolves only the site key `creditiq-theme` onto `<html data-theme>` before first paint; nothing does the equivalent for the gold wrapper's own key. And because the wrapper carries `transition: background .3s, color .3s`, the correction is not instant — it renders as a **visible animated fade from dark to the real (usually light) theme** on every gold surface load.
+
+This is **distinct from the theme desync** fixed by the single-writer collapse (all toggles now route through `lib/store.ts`; enforced by `lib/theme-single-writer.test.ts`). The desync was *which* value the gold key held; this is the gold provider having *no pre-paint at all*, so it always starts dark regardless of the stored value. Keeping `ciq-theme` in sync does not fix it — the wrapper still mounts dark then fades.
+
+**Noted, not resolved — and deliberately not fixed.** It **dies with `ciq-theme` in the gold cleanup** (`docs/wallet/06-Implementation-Plan.md` Follow-on task): when the last gold surface migrates to the white/copper system, `CiqTheme`/`ThemeProvider.tsx` is deleted and these surfaces inherit the single site pre-paint that already exists on `<html>`. Adding a second pre-paint for a key slated for deletion would spend effort hardening a system we are removing.

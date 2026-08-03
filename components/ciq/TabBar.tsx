@@ -5,6 +5,7 @@ import { usePathname, useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { createBrowserClient } from '@supabase/ssr';
 import { APP_NAV } from '@/components/ciq/appNav';
+import { useTheme } from '@/lib/store';
 
 // Logged-in bottom bar: 4 primary destinations + a "More" sheet that is the "You"
 // account surface (Profile, Pro, theme, sign out). The four tabs are pulled by key
@@ -51,7 +52,11 @@ export function TabBar() {
   const path = usePathname();
   const router = useRouter();
   const [moreOpen, setMoreOpen] = useState(false);
-  const [theme, setTheme] = useState<'light' | 'dark'>('dark');
+  // Theme is owned by the single store writer (lib/store.ts); read it here so the
+  // Settings toggle always reflects the real site theme. See
+  // lib/theme-single-writer.test.ts.
+  const theme = useTheme((s) => s.theme);
+  const toggleTheme = useTheme((s) => s.toggle);
 
   // Close the sheet whenever the route changes (a link inside it was tapped).
   useEffect(() => { setMoreOpen(false); }, [path]);
@@ -63,46 +68,6 @@ export function TabBar() {
     document.body.style.overflow = 'hidden';
     return () => { document.body.style.overflow = prev; };
   }, [moreOpen]);
-
-  // Read the current theme when the sheet opens so the Settings toggle shows the
-  // real current state. The migrated wallet follows the SITE theme (data-theme on
-  // <html> / creditiq-theme), so read that as the source of truth.
-  useEffect(() => {
-    if (!moreOpen) return;
-    try {
-      const site = document.documentElement.getAttribute('data-theme');
-      if (site === 'light' || site === 'dark') setTheme(site);
-    } catch {}
-  }, [moreOpen]);
-
-  // Toggle theme from OUTSIDE any CiqTheme context.
-  //
-  // INTERIM (wallet migration, docs/wallet/02-TRD §4.1): write BOTH theme keys so
-  // the two systems can NEVER desync — that desync is the root cause of the
-  // light-mode bug. `creditiq-theme` (the site theme, on <html data-theme>) drives
-  // the migrated wallet and every white/copper surface; `ciq-theme` (RETIRED per
-  // CLAUDE.md) still drives the five not-yet-migrated gold [data-ciq] surfaces
-  // (onboarding, my-cards, feed, profile, pro). This dual-write is NOT the intended
-  // design — when the last gold surface migrates, delete `ciq-theme`, the
-  // `ciq-theme-change` broadcast, and this branch (06-Implementation-Plan Follow-on task).
-  const toggleTheme = () => {
-    setTheme(t => {
-      const next = t === 'dark' ? 'light' : 'dark';
-      try {
-        // 1) Site theme (creditiq-theme) — same contract as the Header/AppRail
-        //    toggle: data-theme drives tokens; .dark/.light drive legacy + Logo.
-        const el = document.documentElement;
-        el.setAttribute('data-theme', next);
-        el.classList.toggle('dark', next === 'dark');
-        el.classList.toggle('light', next === 'light');
-        window.localStorage.setItem('creditiq-theme', next);
-        // 2) Retired gold theme (ciq-theme) — kept in lockstep until gold is gone.
-        window.localStorage.setItem('ciq-theme', next);
-        window.dispatchEvent(new Event('ciq-theme-change'));
-      } catch {}
-      return next;
-    });
-  };
 
   const signOut = async () => {
     const sb = createBrowserClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!);

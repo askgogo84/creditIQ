@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { createBrowserClient } from '@supabase/ssr';
 import { useRouter } from 'next/navigation';
-import { CiqTheme, ThemeToggle } from '@/components/ciq/ThemeProvider';
+import { CiqTheme } from '@/components/ciq/ThemeProvider';
 import { LinkWhatsAppButton } from './LinkWhatsAppButton';
 import { SectionTabs } from '@/components/ciq/SectionTabs';
 
@@ -114,18 +114,6 @@ export default function ProfilePage() {
 
         {/* Settings list */}
         <div style={{ padding: '22px 20px 0', display: 'flex', flexDirection: 'column', gap: 12 }}>
-
-          {/* Appearance */}
-          <div style={{
-            display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-            padding: '14px 16px', background: 'var(--ciq-panel)', border: '1px solid var(--ciq-line-2)', borderRadius: 14,
-          }}>
-            <div>
-              <div style={{ fontSize: 15, color: 'var(--ciq-ink)', fontWeight: 500 }}>Appearance</div>
-              <div style={{ fontSize: 12, color: 'var(--ciq-ink-3)', marginTop: 2 }}>Switch between dark and light</div>
-            </div>
-            <ThemeToggle />
-          </div>
 
           {/* Link WhatsApp — anchor target for the You section's "WhatsApp" tab
               (/profile#whatsapp). scroll-margin keeps it clear of the section bar. */}

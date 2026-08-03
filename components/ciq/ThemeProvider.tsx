@@ -1,14 +1,22 @@
-﻿// components/ciq/ThemeProvider.tsx
+// components/ciq/ThemeProvider.tsx
 'use client';
 import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
 
 type Theme = 'light' | 'dark';
-const ThemeCtx = createContext<{ theme: Theme; toggle: () => void }>({ theme: 'dark', toggle: () => {} });
+const ThemeCtx = createContext<{ theme: Theme }>({ theme: 'dark' });
 export const useTheme = () => useContext(ThemeCtx);
 
 /**
- * Wrap the app (or a screen) in this. It sets data-ciq + data-theme on the wrapper div,
- * so the design tokens apply. Persists choice in localStorage; defaults to dark.
+ * Wrap a gold [data-ciq] surface in this. It sets data-ciq + data-theme on the
+ * wrapper div so the retired gold design tokens apply, and keeps that attribute in
+ * sync with the persisted 'ciq-theme' key.
+ *
+ * READ-ONLY: this provider never WRITES the theme. Every signed-in toggle
+ * (Header, AppRail, TabBar) routes through the single writer in lib/store.ts,
+ * which writes 'ciq-theme' and broadcasts 'ciq-theme-change' — enforced by
+ * lib/theme-single-writer.test.ts. The old in-wrapper ThemeToggle pill was
+ * removed for that reason. This whole file dies with the gold system in the ciq
+ * cleanup (docs/wallet/06-Implementation-Plan Follow-on task).
  */
 export function CiqTheme({ children, className = '' }: { children: ReactNode; className?: string }) {
   const [theme, setTheme] = useState<Theme>('dark');
@@ -20,9 +28,9 @@ export function CiqTheme({ children, className = '' }: { children: ReactNode; cl
     } catch {}
   }, []);
 
-  // Re-read the persisted theme whenever another surface flips it (e.g. the
-  // Settings toggle inside the TabBar "More" sheet, which lives outside this
-  // context and broadcasts 'ciq-theme-change').
+  // Re-read the persisted theme whenever another surface flips it. The site
+  // toggles all route through lib/store.ts, which writes 'ciq-theme' and
+  // dispatches 'ciq-theme-change'; the 'storage' event covers other tabs.
   useEffect(() => {
     const sync = () => {
       try {
@@ -38,42 +46,12 @@ export function CiqTheme({ children, className = '' }: { children: ReactNode; cl
     };
   }, []);
 
-  const toggle = () => {
-    setTheme(t => {
-      const next = t === 'dark' ? 'light' : 'dark';
-      try {
-        window.localStorage.setItem('ciq-theme', next);
-        window.dispatchEvent(new Event('ciq-theme-change'));
-      } catch {}
-      return next;
-    });
-  };
-
   return (
-    <ThemeCtx.Provider value={{ theme, toggle }}>
+    <ThemeCtx.Provider value={{ theme }}>
       <div data-ciq data-theme={theme} className={className}
            style={{ background: 'var(--ciq-bg)', color: 'var(--ciq-ink)', minHeight: '100vh', transition: 'background .3s, color .3s' }}>
         {children}
       </div>
     </ThemeCtx.Provider>
-  );
-}
-
-/** Small pill toggle. Place in a header. */
-export function ThemeToggle() {
-  const { theme, toggle } = useTheme();
-  return (
-    <button onClick={toggle} aria-label="Toggle theme"
-      style={{
-        width: 48, height: 27, borderRadius: 999, position: 'relative', cursor: 'pointer',
-        border: '1.5px solid var(--ciq-line-2)', background: 'var(--ciq-panel)', flex: '0 0 auto',
-      }}>
-      <span style={{
-        position: 'absolute', top: 2, left: 2, width: 20, height: 20, borderRadius: '50%',
-        background: 'linear-gradient(135deg,var(--ciq-gold-2),var(--ciq-gold))',
-        transform: theme === 'light' ? 'translateX(21px)' : 'none',
-        transition: 'transform .3s cubic-bezier(.34,1.56,.64,1)',
-      }} />
-    </button>
   );
 }
