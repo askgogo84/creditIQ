@@ -3,15 +3,12 @@ import { SEED_CARDS } from '@/lib/data/seed-cards';
 
 const BASE = 'https://creditiq.app';
 
-const BLOG_SLUGS = [
-  'hdfc-infinia-review-2026',
-  'axis-magnus-vs-hdfc-infinia',
-  'zero-fee-portfolio-beats-premium',
-  'hdfc-smartbuy-complete-guide',
-  'credit-card-devaluations-india-2026',
-  'best-credit-card-international-travel-india',
-  'best-credit-card-dining-swiggy-zomato',
-];
+// Emptied 3 Aug 2026: these 7 /blog/[slug] URLs 404 on production — the posts
+// were card metadata only, no article bodies were ever written (see the note in
+// lib/blog/featured-posts.ts). Declaring 404 URLs to search engines is the same
+// "nothing invented ships" violation. Re-add slugs here ONLY when the posts are
+// real (published rows with populated `sections`).
+const BLOG_SLUGS: string[] = [];
 
 const BANKS = ['HDFC', 'SBI', 'ICICI', 'Axis', 'Kotak', 'AmEx', 'IDFC', 'RBL', 'Yes', 'IndusInd', 'SC', 'AU'];
 
