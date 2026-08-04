@@ -73,6 +73,28 @@ function currentTheme(): 'dark' | 'light' {
   return 'light';
 }
 
+// Re-assert the persisted theme after hydration. On server-rendered routes (e.g.
+// /card/[slug]) React strips the pre-paint `data-theme` off <html> while hydrating
+// RootLayout, leaving the page on the light default even when the user saved dark.
+// The pre-paint script in app/layout.tsx can't help post-hydration, so a mount
+// effect at shell/root level (NavShell) and on the marketing Header calls this.
+// It routes through applyTheme — the ONE writer — so there is no second copy of the
+// logic and the single-writer gate stays green. Guarded: if data-theme survived,
+// this is a no-op (no flash). Same resolution order as the pre-paint script.
+export function reassertTheme() {
+  if (typeof document === 'undefined') return;
+  const el = document.documentElement;
+  if (el.getAttribute('data-theme')) return;
+  let t: 'dark' | 'light' = 'light';
+  try {
+    const saved = localStorage.getItem(THEME_KEY);
+    t = saved === 'dark' || saved === 'light'
+      ? saved
+      : (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+  } catch {}
+  applyTheme(t);
+}
+
 export const useTheme = create<ThemeStore>((set) => ({
   // Seeded from the attribute the pre-paint script already set — never a blind default.
   theme: currentTheme(),

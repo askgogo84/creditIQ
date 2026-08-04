@@ -6,7 +6,7 @@ import { usePathname, useRouter } from 'next/navigation'
 import { createBrowserClient } from '@supabase/ssr'
 import { TabBar } from '@/components/ciq/TabBar'
 import { APP_NAV, appActive as isAppActive } from '@/components/ciq/appNav'
-import { useTheme } from '@/lib/store'
+import { useTheme, reassertTheme } from '@/lib/store'
 
 const NAV_LINKS = [
   { label: 'Discover', href: '/' },
@@ -148,26 +148,12 @@ export function Header() {
     return () => window.removeEventListener('scroll', onScroll)
   }, [])
 
-  // Re-assert the persisted theme on mount. The pre-paint script in layout.tsx
-  // sets data-theme on <html> before hydration, but on server-rendered routes
-  // (e.g. /card/[slug]) React drops that attribute while hydrating the RootLayout
-  // <html>, leaving the page stuck on the light default even when the user saved
-  // dark. Fully-client routes (the landing page) keep it, which is why only card
-  // detail looked broken. The Header renders on every route, so restoring it here
-  // fixes them all. Guarded: if data-theme survived, this is a no-op (no flash).
-  useEffect(() => {
-    try {
-      const el = document.documentElement
-      if (el.getAttribute('data-theme')) return
-      const saved = window.localStorage.getItem('creditiq-theme')
-      const t = saved === 'dark' || saved === 'light'
-        ? saved
-        : (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light')
-      el.setAttribute('data-theme', t)
-      el.classList.toggle('dark', t === 'dark')
-      el.classList.toggle('light', t === 'light')
-    } catch {}
-  }, [])
+  // Re-assert the persisted theme on mount for the routes the Header still owns
+  // (marketing, non-(shell) app pages). React drops the pre-paint data-theme while
+  // hydrating server-rendered routes; this restores it. Single implementation lives
+  // in lib/store (reassertTheme -> applyTheme), so there is no second copy and the
+  // theme single-writer gate stays green. Guarded: no-op if the attr survived.
+  useEffect(() => { reassertTheme() }, [])
 
   useEffect(() => { setMobileOpen(false); setAiOpen(false); setDiscoverOpen(false); setCardsOpen(false); setTravelOpen(false) }, [pathname])
 

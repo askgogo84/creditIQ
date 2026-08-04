@@ -5,6 +5,7 @@ import { createBrowserClient } from '@supabase/ssr'
 import { Header } from '@/components/Header'
 import { AppRail } from '@/components/ciq/AppRail'
 import { TabBar } from '@/components/ciq/TabBar'
+import { reassertTheme } from '@/lib/store'
 
 // NavShell — the nav chrome for the (shell) route group, gated on AUTH STATE
 // (never on route):
@@ -24,6 +25,15 @@ const SHELL_CSS = `
   @media (max-width: 899px) {
     .ciq-shell-rail { display: none !important; }
     .ciq-shell-tabbar { display: block; }
+    /* TabBar clearance for EVERY shell page, whatever its root element. Kept at
+       the wrapper (not the page root) so div-root pages (/trip-planner, /profile)
+       clear too — they get no element-level padding from globals.css:1417, which
+       only targets body/main/.page-fade. NOTE: on main/.page-fade pages this
+       STACKS with that globals 80px (~156px bottom whitespace, cosmetic). An
+       attempt to scope this to the 769-899 band and lean on globals for <=768px
+       was reverted: it left div-root pages depending on the body rule, whose
+       computed value did not match its source and could not be verified on-device.
+       Optimise only with real-session phone testing. */
     .ciq-shell-main { padding-bottom: 76px; }
   }
 `
@@ -34,6 +44,12 @@ export function NavShell({ children }: { children: React.ReactNode }) {
   // Mirror the wallet's ciq theme so the injected gold TabBar looks identical to
   // what /dashboard shows (same pattern the Header uses for its mobile TabBar).
   const [ciqTheme, setCiqTheme] = useState<'light' | 'dark'>('dark')
+
+  // Re-assert the saved theme after hydration for every (shell) route. Signed-in
+  // /card/[slug] no longer renders <Header>, so this — not the Header — is what
+  // restores data-theme when React strips it on server-rendered routes. Routes
+  // through lib/store's single writer (applyTheme); no-op if the attr survived.
+  useEffect(() => { reassertTheme() }, [])
 
   useEffect(() => {
     const sb = createBrowserClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!)
