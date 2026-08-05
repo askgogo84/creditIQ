@@ -9,7 +9,7 @@ import { SpendProvider } from '@/components/marketing/landing/SpendContext';
 import { HeroCompute } from '@/components/marketing/landing/HeroCompute';
 import { HeroProof } from '@/components/marketing/landing/HeroProof';
 import { FaresBoard } from '@/components/marketing/landing/FaresBoard';
-import { HeroWindow } from './HeroWindow';
+import { HomeHeroBg } from './HomeHeroBg';
 import styles from './page.module.css';
 
 // Map the readable hm-* names to their hashed CSS-module classes. Compound
@@ -34,32 +34,41 @@ const cx = (...names: string[]) => names.map((n) => styles[n]).join(' ');
 // and the (still-unsourced) Receipts / Reviews bands are later phases.
 // ─────────────────────────────────────────────────────────────────────────────
 
-// Light-skin var maps. Each key overrides a var(--x, <landing-fallback>) inside the
+// DARK-HERO skin var maps. The hero section is now full-bleed dark (the clip is its
+// background) while the rest of the page stays white/cream/teal — so the copy column
+// takes LIGHT inks here. Each key overrides a var(--x, <landing-fallback>) inside the
 // shared component, so /landing (which sets none of these) is untouched.
+//   · Copper accent is LIGHTENED to #D2924A: the page copper #9A6516 is too dark to
+//     clear AA on the dark clip. "booked" stays ROMAN (accent-style normal), in copper.
+//   · Estimated pill stays neutral grey (provenance law) — the light-grey dark variant.
+//   · Slider track fill goes copper (teal #0E3B3C would vanish on the dark ground).
+const COPPER_ON_DARK = '#D2924A';
 const HERO_COMPUTE_VARS: CSSProperties = {
-  '--hc-headline': '#10202A',
-  '--hc-accent': '#9A6516',
+  '--hc-headline': '#F4F1EC',
+  '--hc-accent': COPPER_ON_DARK,
   '--hc-accent-style': 'normal', // "booked" roman, not italic (Emphasis rule)
-  '--hc-pill-bg': 'rgba(110,123,130,0.10)',
-  '--hc-pill-bd': 'rgba(110,123,130,0.30)',
-  '--hc-pill-fg': '#5b6169', // Estimated stays neutral grey (provenance law)
-  '--hc-sub': '#48565E',
-  '--hc-range': '#10202A',
-  '--hc-panel-bg': '#F7F1E6',
-  '--hc-panel-bd': '#E2DCD0',
-  '--hc-label': '#6E7B82',
-  '--hc-value': '#0E3B3C',
-  '--hc-scale': '#6E7B82',
-  '--hc-track-fill': '#0E3B3C',
-  '--hc-track-rem': '#D3CBBB',
-  '--hc-thumb': '#0E3B3C',
-  '--hc-thumb-bd': '#F7F1E6',
+  '--hc-pill-bg': 'rgba(255,255,255,0.08)',
+  '--hc-pill-bd': 'rgba(255,255,255,0.22)',
+  '--hc-pill-fg': 'rgba(244,241,236,0.74)', // Estimated stays neutral grey (provenance law)
+  '--hc-sub': 'rgba(244,241,236,0.74)',
+  '--hc-range': '#F7F4EF',
+  '--hc-panel-bg': 'rgba(255,255,255,0.05)',
+  '--hc-panel-bd': 'rgba(255,255,255,0.16)',
+  '--hc-label': 'rgba(244,241,236,0.66)',
+  '--hc-value': '#F7F4EF',
+  '--hc-scale': 'rgba(244,241,236,0.62)', // slider end labels — kept legible over the clip
+  '--hc-track-fill': COPPER_ON_DARK,
+  '--hc-track-rem': 'rgba(255,255,255,0.18)',
+  '--hc-thumb': '#EFD9A6',
+  '--hc-thumb-bd': '#0B0E13',
 } as CSSProperties;
 
+// The Live Proof card stays a LIGHT card floating over the clip (as on /landing) — so
+// its inks stay dark. A deeper shadow lifts it off the dark footage.
 const HERO_PROOF_VARS: CSSProperties = {
   '--hp-card-bg': '#FFFFFF',
   '--hp-hair': '#E2DCD0',
-  '--hp-shadow': '0 1px 2px rgba(16,32,42,0.04)',
+  '--hp-shadow': '0 20px 54px rgba(0,0,0,0.38)',
   '--hp-muted': '#6E7B82',
   '--hp-body': '#48565E',
   '--hp-ink': '#10202A',
@@ -163,8 +172,12 @@ export default function HomePage() {
         </div>
 
         <SpendProvider>
-          {/* ── 01 · HERO (white ground) ── */}
+          {/* ── 01 · HERO (full-bleed dark; the clip is the background of the whole
+              section, copy + slider + proof card sit ON it — matches /landing). The
+              rest of the page stays white/cream/teal; dark hero above a light body is
+              intentional. HomeHeroBg carries the clip + scrim at z-index 0. ── */}
           <div className={cx('hm-hero')}>
+            <HomeHeroBg />
             <div className={cx('hm-wrap', 'hm-herogrid')}>
               <div>
                 <div className={cx('hm-kicker')}>Live<span className={cx('hm-rule')} />India</div>
@@ -182,7 +195,6 @@ export default function HomePage() {
                 </div>
               </div>
               <div className={cx('hm-heroside')}>
-                <HeroWindow />
                 <div style={HERO_PROOF_VARS}>
                   <HeroProof />
                 </div>

@@ -30,26 +30,26 @@
 .hm-tickrow b { color: #9A6516; font-weight: 600; }
 @keyframes hmSlide { from { transform: translateX(0); } to { transform: translateX(-50%); } }
 
-.hm-hero { padding: 44px 0 62px; }
-.hm-herogrid { display: grid; gap: 30px; }
-.hm-kicker { display: flex; align-items: center; gap: 12px; font-size: 11px; letter-spacing: .16em; text-transform: uppercase; color: #9A6516; margin-bottom: 14px; }
-.hm-rule { height: 1px; width: 40px; background: #D3CBBB; }
-.hm-method { color: #48565E; font-size: 15.5px; max-width: 52ch; margin: 24px 0 26px; }
-.hm-method b { color: #10202A; font-weight: 500; }
-.hm-method .hm-vf { color: #1A7A5E; font-weight: 500; }
+/* Hero is now FULL-BLEED DARK: HomeHeroBg (the clip + scrim) sits at z-index 0 filling
+   this section; the grid content rides above it at z-index 1. position:relative +
+   overflow:hidden clip the absolutely-positioned background. The dark ground shows
+   before the poster paints and behind any transparent edge. */
+.hm-hero { position: relative; overflow: hidden; background: #0B0E13; padding: 40px 0 72px; }
+.hm-herogrid { position: relative; z-index: 1; display: grid; gap: 30px; }
+.hm-kicker { display: flex; align-items: center; gap: 12px; font-size: 11px; letter-spacing: .16em; text-transform: uppercase; color: #D2924A; margin-bottom: 14px; }
+.hm-rule { height: 1px; width: 40px; background: rgba(244,241,236,.28); }
+.hm-method { color: rgba(244,241,236,.74); font-size: 15.5px; max-width: 52ch; margin: 24px 0 26px; }
+.hm-method b { color: #F4F1EC; font-weight: 500; }
+.hm-method .hm-vf { color: #6FD3A0; font-weight: 500; }
 .hm-herocta { display: flex; flex-wrap: wrap; gap: 10px; }
 .hm-heroside { display: grid; gap: 18px; }
 
-.hm-window { position: relative; border-radius: 20px; overflow: hidden; min-height: 340px; background: linear-gradient(178deg,#BFD8E8 0%,#DCE9F0 34%,#F0E7D6 70%,#E2C9A4 100%); border: 1px solid #E2DCD0; display: flex; align-items: flex-end; padding: 18px; }
-.hm-window::before { content: ""; position: absolute; left: 50%; top: 8%; transform: translateX(-50%); width: 58%; height: 84%; border-radius: 44% 44% 40% 40%/28% 28% 30% 30%; background: linear-gradient(178deg,#8FB6D2,#CFE0EA 46%,#F6EEDC); box-shadow: 0 0 0 14px rgba(255,255,255,.62), 0 0 0 20px rgba(226,220,208,.9); }
-.hm-window::after { content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 44%; background: linear-gradient(to top,rgba(255,255,255,.9),rgba(255,255,255,0)); }
-/* Hero clip (or its poster still) fills the window panel. object-fit:cover +
-   the panel's own radius/overflow clip it to the same rounded frame the gradient
-   used. z-index 1 sits it above the decorative ::before/::after (which remain as
-   an ultimate fallback if the poster itself 404s) but below the .hm-wlabel
-   caption (z-index 2). Same element/class for <video> and the poster <img>. */
-.hm-video { position: absolute; inset: 0; z-index: 1; width: 100%; height: 100%; object-fit: cover; border-radius: 20px; }
-.hm-wlabel { position: relative; z-index: 2; font-size: 11px; letter-spacing: .14em; text-transform: uppercase; color: #6E7B82; }
+/* Hero CTAs on the dark ground — scoped to .hm-herocta so the global .hm-btn (used by
+   the white header) is untouched. Secondary = light ghost; primary = copper fill. */
+.hm-herocta .hm-btn { background: transparent; color: #F4F1EC; border-color: rgba(244,241,236,.45); }
+.hm-herocta .hm-btn:hover { border-color: #F4F1EC; }
+.hm-herocta .hm-btn.hm-solid { background: #D2924A; color: #12160E; border-color: #D2924A; }
+.hm-herocta .hm-btn.hm-solid:hover { background: #C07E38; border-color: #C07E38; }
 
 .hm-section { padding: 62px 0; }
 .hm-band-cream { background: #F7F1E6; border-top: 1px solid #E2DCD0; border-bottom: 1px solid #E2DCD0; }
