@@ -159,3 +159,11 @@ Fixed by theming the whole component to `var(--ciq-*)`, matching the "Invite to 
 | `app` (other) | `login/page.tsx` · `cira/page.tsx` · `admin/page.tsx` |
 
 Same page-by-page cadence as the palette/font/radius debt above — not a global codemod, because each `<style>` block carries file-specific selectors and a couple (`SectionTabs`, `ProductTabs`) rely on runtime-computed values that need to survive as inline custom props (the `--pct` pattern HeroCompute uses), not as static module rules.
+
+## `/login` ships a heavy background video to phones (FOLLOW-UP, not fixed)
+
+**`/login` violates the mobile-first rule: it downloads a full background *video* on phones where the poster still alone would do.** `app/login/page.tsx` renders a separate mobile clip below 748px — `public/videos/auth-bg-mobile.webm` (**573 KB**) / `auth-bg-mobile.mp4` (**638 KB**) — while the mobile poster `auth-bg-mobile-poster.jpg` is only **55 KB**. So a phone on the critical sign-in path fetches ~573–638 KB of decoration before the form settles.
+
+This is **heavier than the 433 KB hero clip that was deliberately ruled out for mobile** (the hero and Home window both fall back to poster-only under 768px for exactly this reason — see `app/HeroWindow.tsx`). `/login` predates that rule and never got it.
+
+**Follow-up task:** bring `/login` in line — drop the `<768px` (or 748px) branch to poster-only, the same matchMedia pattern `HeroWindow` uses, and retire `auth-bg-mobile.*`. Net mobile saving on the auth path ≈ **>500 KB**. Left as a follow-up because the login surface is otherwise working and tuned; not bundled into the Home work.
