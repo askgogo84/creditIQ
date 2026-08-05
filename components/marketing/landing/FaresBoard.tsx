@@ -94,9 +94,9 @@ export function FaresBoard() {
                 fontSize: 13,
                 letterSpacing: '0.03em',
                 transition: '150ms',
-                border: `1px solid ${on ? '#142335' : '#ddd0c0'}`,
-                background: on ? '#142335' : 'transparent',
-                color: on ? '#fbf8f3' : '#2b385c',
+                border: `1px solid ${on ? 'var(--fb-tab-on,#142335)' : 'var(--fb-tab-bd,#ddd0c0)'}`,
+                background: on ? 'var(--fb-tab-on,#142335)' : 'transparent',
+                color: on ? 'var(--fb-tab-on-fg,#fbf8f3)' : 'var(--fb-body,#2b385c)',
               }}
             >
               {corr.label}
@@ -109,14 +109,14 @@ export function FaresBoard() {
       <div
         style={{
           marginTop: 28,
-          background: '#ffffff',
-          border: '1px solid #e5d9cc',
+          background: 'var(--fb-card-bg,#ffffff)',
+          border: '1px solid var(--fb-hair,#e5d9cc)',
           borderRadius: 20,
           padding: 'clamp(22px, 3vw, 34px)',
           minHeight: 168,
         }}
       >
-        <div style={{ fontFamily: MO, fontSize: 13, fontWeight: 500, letterSpacing: '0.04em', color: '#2b385c' }}>
+        <div style={{ fontFamily: MO, fontSize: 13, fontWeight: 500, letterSpacing: '0.04em', color: 'var(--fb-body,#2b385c)' }}>
           {c.label} · {c.cabin}
         </div>
 
@@ -128,7 +128,7 @@ export function FaresBoard() {
 
         {result.kind === 'cached' && (
           <>
-            <div style={{ fontFamily: MO, fontSize: 'clamp(40px,6vw,62px)', fontWeight: 500, letterSpacing: '-0.02em', color: '#142335', lineHeight: 1.05, marginTop: 8 }}>
+            <div style={{ fontFamily: MO, fontSize: 'clamp(40px,6vw,62px)', fontWeight: 500, letterSpacing: '-0.02em', color: 'var(--fb-ink,#142335)', lineHeight: 1.05, marginTop: 8 }}>
               {INR(result.price)}
             </div>
             <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 12, marginTop: 14 }}>
@@ -136,13 +136,13 @@ export function FaresBoard() {
                 <span style={{ width: 6, height: 6, borderRadius: 999, background: '#B98B1F' }} />
                 Cached
               </span>
-              <span style={{ fontFamily: IN, fontSize: 13, color: '#6b6b6d' }}>
+              <span style={{ fontFamily: IN, fontSize: 13, color: 'var(--fb-muted,#6b6b6d)' }}>
                 updated {ageLabel(result.foundAt)} ago
                 {result.airline ? ` · ${result.airline}` : ''}
                 {result.departDate ? ` · sample ${result.departDate}` : ''}
               </span>
             </div>
-            <p style={{ fontFamily: IN, fontSize: 12, lineHeight: 1.5, color: '#6b6b6d', margin: '16px 0 0', maxWidth: '56ch' }}>
+            <p style={{ fontFamily: IN, fontSize: 12, lineHeight: 1.5, color: 'var(--fb-muted,#6b6b6d)', margin: '16px 0 0', maxWidth: '56ch' }}>
               Cheapest cached cash fare via Travelpayouts — not a live quote for your exact dates. Age is stamped on every one.
             </p>
           </>
@@ -156,7 +156,7 @@ export function FaresBoard() {
                 Estimated
               </span>
             </div>
-            <p style={{ fontFamily: IN, fontSize: 14.5, lineHeight: 1.6, color: '#2b385c', margin: '14px 0 0', maxWidth: '56ch' }}>
+            <p style={{ fontFamily: IN, fontSize: 14.5, lineHeight: 1.6, color: 'var(--fb-body,#2b385c)', margin: '14px 0 0', maxWidth: '56ch' }}>
               No fresh fare is cached for this corridor right now. We never invent one — check another route above, or come back after the next refresh.
             </p>
           </>

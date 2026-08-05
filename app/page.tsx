@@ -1,73 +1,80 @@
-﻿'use client';
+'use client';
 
 import type { CSSProperties } from 'react';
 import Link from 'next/link';
 import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { createBrowserClient } from '@supabase/ssr';
-import { Reveal }         from '@/components/design/Reveal';
-import { StatNumber }     from '@/components/design/StatNumber';
-import { Header }         from '@/components/Header';
-import { CreditCard3D, type CardVariant } from '@/components/design/CreditCard3D';
-import { SectionHeader }  from '@/components/design/SectionHeader';
-import { CopperCTA, GhostCTA } from '@/components/design/CTAs';
-import { DevalTicker }    from '@/components/design/DevalTicker';
-import { JourneyCard }    from '@/components/design/JourneyCard';
-import { AIToolCard }     from '@/components/design/AIToolCard';
-import { CardTile, type TileCard } from '@/components/design/CardTile';
-import { Stamp }          from '@/components/design/Stamp';
-import { DesignFooter }   from '@/components/design/Footer';
-import { ScrollButton }   from '@/components/design/ScrollButton';
-import { ShowcaseStrip } from '@/components/design/ShowcaseStrip'
-import { CleoHero }       from '@/components/design/CleoHero';
-import { RewardsHeroWidget } from '@/components/design/RewardsHeroWidget';
-import { SEED_CARDS }     from '@/lib/data/seed-cards';
-import { MeetTheC, BigStatement, TestimonialStrip, BuiltForMoments, AppStoreSection, FAQSection } from '@/components/design/HomeSections';
-import type { CreditCard } from '@/lib/types';
+import { SpendProvider } from '@/components/marketing/landing/SpendContext';
+import { HeroCompute } from '@/components/marketing/landing/HeroCompute';
+import { HeroProof } from '@/components/marketing/landing/HeroProof';
+import { FaresBoard } from '@/components/marketing/landing/FaresBoard';
+import { HeroWindow } from './HeroWindow';
+import styles from './page.module.css';
 
-const VARIANT_ROTATION: CardVariant[] = ['obsidian', 'navy', 'plum', 'gold', 'iris', 'mint'];
-const NETWORK_BY_BANK: Record<string, string> = { HDFC: 'VISA', AXIS: 'MASTERCARD', ICICI: 'AMEX', SBI: 'VISA', AMEX: 'AMEX', AMERICAN: 'AMEX', IDFC: 'VISA', RBL: 'MASTERCARD', YES: 'VISA', AU: 'VISA' };
+// Map the readable hm-* names to their hashed CSS-module classes. Compound
+// classNames (e.g. hm-btn hm-sm hm-solid) pass every name. Element/pseudo
+// selectors (.hm-tickrow b, .hm-window::before) live in the module and need no
+// className here.
+const cx = (...names: string[]) => names.map((n) => styles[n]).join(' ');
 
-function tagline(tier?: string) {
-  switch (tier) {
-    case 'super-premium': return 'Reserve metal';
-    case 'premium': return 'Premium';
-    case 'mid': return 'Mid-tier';
-    case 'entry': return 'Entry';
-    default: return 'Standard';
-  }
-}
+// ─────────────────────────────────────────────────────────────────────────────
+// CreditIQ merged homepage — Phase A (shell + hero + live fares).
+// Reference: docs/design/home-merge-v4.html. Tokens: DESIGN.md § Merged homepage.
+//   · Fixed white/copper + teal palette (literal hexes), NOT the app light/dark
+//     toggle — same convention as the /landing surface.
+//   · HeroCompute / HeroProof / FaresBoard are IMPORTED from their shared home in
+//     components/marketing/landing (the same maths that powers /landing) and
+//     re-skinned to the light tokens by setting --hc-* / --hp-* / --fb-* CSS vars
+//     on the wrappers below. No second copy of that maths exists.
+//   · Header is position:fixed (NOT sticky): html/body set overflow-x:hidden in
+//     globals.css, which detaches sticky bars — see SiteNav's note and the
+//     "sticky broken by overflow-x:hidden" project memory.
+// Phase A intentionally STOPS after #fares. Method, Smart Match, tools, editorial
+// and the (still-unsourced) Receipts / Reviews bands are later phases.
+// ─────────────────────────────────────────────────────────────────────────────
 
-function toTileCard(c: CreditCard, i: number): TileCard {
-  const bank = c.bank.toUpperCase();
-  return { slug: c.slug, color: c.color, bank, name: c.name.replace(/^HDFC\s+|^AXIS\s+|^ICICI\s+|^SBI\s+|^AMEX\s+/i, '').replace(/ Credit Card$/i, ''), tagline: tagline(c.tier), tier: c.tier ? c.tier.toUpperCase().replace(/-/g, ' ') : 'CARD', network: NETWORK_BY_BANK[bank.split(' ')[0]] || 'VISA', variant: VARIANT_ROTATION[i % VARIANT_ROTATION.length], tags: (c.category || []).slice(0, 2).map(s => s.replace(/-/g, ' ')), fee: c.annual_fee_inr, iqScore: Math.round((c.expert_rating ?? 8) * 10) };
-}
+// Light-skin var maps. Each key overrides a var(--x, <landing-fallback>) inside the
+// shared component, so /landing (which sets none of these) is untouched.
+const HERO_COMPUTE_VARS: CSSProperties = {
+  '--hc-headline': '#10202A',
+  '--hc-accent': '#9A6516',
+  '--hc-accent-style': 'normal', // "booked" roman, not italic (Emphasis rule)
+  '--hc-pill-bg': 'rgba(110,123,130,0.10)',
+  '--hc-pill-bd': 'rgba(110,123,130,0.30)',
+  '--hc-pill-fg': '#5b6169', // Estimated stays neutral grey (provenance law)
+  '--hc-sub': '#48565E',
+  '--hc-range': '#10202A',
+  '--hc-panel-bg': '#F7F1E6',
+  '--hc-panel-bd': '#E2DCD0',
+  '--hc-label': '#6E7B82',
+  '--hc-value': '#0E3B3C',
+  '--hc-scale': '#6E7B82',
+  '--hc-track-fill': '#0E3B3C',
+  '--hc-track-rem': '#D3CBBB',
+  '--hc-thumb': '#0E3B3C',
+  '--hc-thumb-bd': '#F7F1E6',
+} as CSSProperties;
 
-const CARDS = SEED_CARDS.filter(c => c.active !== false);
+const HERO_PROOF_VARS: CSSProperties = {
+  '--hp-card-bg': '#FFFFFF',
+  '--hp-hair': '#E2DCD0',
+  '--hp-shadow': '0 1px 2px rgba(16,32,42,0.04)',
+  '--hp-muted': '#6E7B82',
+  '--hp-body': '#48565E',
+  '--hp-ink': '#10202A',
+  '--hp-verified': '#1A7A5E',
+} as CSSProperties;
 
-const DARK_BAND = { '--bg': '#0A1226', '--bg-2': '#101A36', '--surface': '#142950', '--ink': '#F5EFE6', '--ink-2': '#DCD2C0', '--ink-3': '#A89C8A', '--line': 'rgba(245,239,230,0.10)', '--line-strong': 'rgba(245,239,230,0.20)', '--copper': '#D89B2A', '--copper-2': '#E5AC3B', '--copper-3': '#F2C658', background: 'var(--obsidian)' } as CSSProperties;
-
-const FAQS = [
-  { q: "How do you make money if you don't take affiliate kickbacks?", a: "We charge a flat commission from the issuing bank when a user applies through us. The rate is identical across every card. Our rankings can't be bought." },
-  { q: "How often is data refreshed?", a: "Daily for fees and reward rates. Weekly for full MITC scrapes. When a bank pushes a devaluation, we catch it within 6-24 hours and alert affected users." },
-  { q: "Is my data safe? Do I need to give bank logins?", a: "No bank logins, no card numbers, no Aadhaar. Statement uploads are processed in-browser — nothing leaves your machine." },
-  { q: "Can I trust the rankings?", a: "Every ranking shows its math. The full methodology is documented. Our scoring engine is reproducible from public MITC data." },
-  { q: "Why is my favourite card ranked lower than expected?", a: "We rank by effective reward rate after fees and devaluations. If your card got nerfed, it dropped." },
-  { q: "Does this work for UAE / Singapore cards?", a: "UAE: yes, 16 cards live. Singapore on the roadmap." },
-];
-
-function FAQItem({ q, a }: { q: string; a: string }) {
-  const [open, setOpen] = useState(false);
-  return (
-    <div onClick={() => setOpen(o => !o)} style={{ padding: '20px 24px', background: 'var(--surface,#fff)', border: '1px solid var(--line,rgba(20,41,80,0.08))', borderRadius: 24, cursor: 'pointer' }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 16 }}>
-        <span style={{ fontWeight: 600, fontSize: 'clamp(15px,1.4vw,18px)', color: 'var(--ink,#142950)', letterSpacing: '-0.01em', lineHeight: 1.3 }}>{q}</span>
-        <span style={{ width: 28, height: 28, borderRadius: 999, background: 'rgba(216,155,42,0.15)', color: 'var(--copper,#8C5F12)', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', fontSize: 18, fontWeight: 600, flexShrink: 0, transform: open ? 'rotate(45deg)' : 'none', transition: 'transform 0.2s' }}>+</span>
-      </div>
-      {open && <p style={{ marginTop: 14, color: 'var(--ink-2,#2A3F6B)', fontSize: 15, lineHeight: 1.6 }}>{a}</p>}
-    </div>
-  );
-}
+const FARES_VARS: CSSProperties = {
+  '--fb-tab-on': '#0E3B3C',
+  '--fb-tab-on-fg': '#F4F0E6',
+  '--fb-tab-bd': '#D3CBBB',
+  '--fb-body': '#48565E',
+  '--fb-hair': '#E2DCD0',
+  '--fb-ink': '#10202A',
+  '--fb-muted': '#6E7B82',
+} as CSSProperties;
 
 // Where a signed-in visitor to the crawlable marketing "/" is sent. Client-side
 // only (a server redirect would kill "/" static rendering / SEO).
@@ -117,155 +124,90 @@ export default function HomePage() {
       {redirecting && (
         <div aria-hidden="true" style={{ position: 'fixed', inset: 0, zIndex: 9999, background: 'var(--bg,#fff)' }} />
       )}
-      <Header />
 
-      {/* Sticky devaluation ticker — always visible below nav */}
-      <div style={{ position: 'sticky', top: 60, zIndex: 49 }}>
-        <DevalTicker items={[
-          'AXIS Magnus devalued — Grab Vouchers capped at 1:0.4',
-          'HDFC SmartBuy halved on Cleartrip from May 2026',
-          'ICICI Sapphiro removed all spend-based renewal benefits',
-          'SBI Aurum to scrap Priority Pass guest visits',
-          'AMEX MRCC reduced point earn on utility bills to 0',
-          'New — AU Bank Zenith+ launches with 10x on fuel',
-        ]} />
-      </div>
+      {/* Type A fonts — Fraunces (display, roman only) · Inter (body) · JetBrains Mono (figures) */}
+      <link rel="preconnect" href="https://fonts.googleapis.com" />
+      <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+      <link
+        href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300;9..144,400&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap"
+        rel="stylesheet"
+      />
+      <header className={cx('hm-header')}>
+        <div className={cx('hm-wrap', 'hm-nav')}>
+          <Link href="#top" className={cx('hm-logo')}>
+            <span className={cx('hm-mark')}>C</span>CreditIQ
+          </Link>
+          <nav className={cx('hm-navlinks')}>
+            <Link href="#fares">Fares</Link>
+            <Link href="/cards">Cards</Link>
+            <Link href="/plans">Pricing</Link>
+          </nav>
+          <div className={cx('hm-navcta')}>
+            <Link className={cx('hm-btn', 'hm-sm')} href="/login">Sign in</Link>
+            <Link className={cx('hm-btn', 'hm-sm', 'hm-solid')} href="/login">Find my card</Link>
+          </div>
+        </div>
+      </header>
 
-      <div className="page-fade">
+      <main id="top" style={{ background: '#FFFFFF', color: '#10202A', fontFamily: "'Inter', system-ui, sans-serif", paddingTop: 64 }}>
+        {/* Ticker — clean copy; no internal fields leaked. Duplicated once for a seamless loop. */}
+        <div className={cx('hm-ticker')}>
+          <div className={cx('hm-tickrow')}>
+            <span><b>Sweet spot</b> — Delhi to Zurich business class for 40,000 Aeroplan points</span>
+            <span><b>Change</b> — Axis Magnus Burgundy revisions effective 28 August 2026</span>
+            <span><b>Watch</b> — HDFC BizPower adds airline and hotel transfer partners</span>
+            <span aria-hidden="true"><b>Sweet spot</b> — Delhi to Zurich business class for 40,000 Aeroplan points</span>
+            <span aria-hidden="true"><b>Change</b> — Axis Magnus Burgundy revisions effective 28 August 2026</span>
+            <span aria-hidden="true"><b>Watch</b> — HDFC BizPower adds airline and hotel transfer partners</span>
+          </div>
+        </div>
 
-        <CleoHero />
-
-        <RewardsHeroWidget />
-
-        <ShowcaseStrip />
-
-        <MeetTheC />
-
-        <section style={{ background: '#291210', padding: 'clamp(56px,8vw,96px) 0', borderTop: '1px solid rgba(255,233,199,0.12)', borderBottom: '1px solid rgba(255,233,199,0.12)', position: 'relative', overflow: 'hidden' }}>
-          <div style={{ position: 'absolute', top: '-30%', left: '40%', width: 500, height: 500, borderRadius: '50%', background: 'radial-gradient(circle,rgba(216,155,42,0.20),transparent 60%)', filter: 'blur(80px)', pointerEvents: 'none' }} />
-          <div style={{ maxWidth: 1280, margin: '0 auto', padding: '0 clamp(20px,5vw,80px)', position: 'relative' }}>
-            <Reveal style={{ textAlign: 'center', marginBottom: 'clamp(36px,5vw,56px)' }}>
-              <div style={{ display: 'inline-flex', alignItems: 'center', gap: 10, padding: '8px 16px', borderRadius: 999, background: 'rgba(255,233,199,0.08)', border: '1px solid rgba(255,233,199,0.18)', marginBottom: 20 }}>
-                <span style={{ fontFamily: 'var(--font-mono,monospace)', fontSize: 11, letterSpacing: '0.16em', color: '#FFE9C7', textTransform: 'uppercase', fontWeight: 600 }}>RECEIPTS . BY THE NUMBERS</span>
+        <SpendProvider>
+          {/* ── 01 · HERO (white ground) ── */}
+          <div className={cx('hm-hero')}>
+            <div className={cx('hm-wrap', 'hm-herogrid')}>
+              <div>
+                <div className={cx('hm-kicker')}>Live<span className={cx('hm-rule')} />India</div>
+                <div style={HERO_COMPUTE_VARS}>
+                  <HeroCompute />
+                </div>
+                <p className={cx('hm-method')}>
+                  That range is computed from each card&rsquo;s <b>published earn rules</b> — real math, not a
+                  self-reported guess. Link a statement and Statement Truth turns the estimate into your{' '}
+                  <span className={cx('hm-vf')}>verified</span> spend, today.
+                </p>
+                <div className={cx('hm-herocta')}>
+                  <Link className={cx('hm-btn', 'hm-solid')} href="/login">Compute my cards →</Link>
+                  <Link className={cx('hm-btn')} href="#fares">See the method</Link>
+                </div>
               </div>
-              <h2 style={{ fontSize: 'clamp(32px,5.5vw,68px)', letterSpacing: '-0.035em', lineHeight: 1.02, fontWeight: 800, color: '#FFE9C7', maxWidth: 800, margin: '0 auto' }}>
-                We don't{' '}
-                <span style={{ fontFamily: 'var(--font-serif,Georgia,serif)', fontStyle: 'italic', fontWeight: 400, color: '#D89B2A' }}>guess</span>. We just count.
-              </h2>
-            </Reveal>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 'clamp(20px,3vw,40px)' }} className="grid-2-mobile">
-              {[
-                { v: 1000, suffix: '', label: 'Cards roasted', sub: 'And counting daily.' },
-                { v: 52, prefix: '₹', suffix: 'L', label: 'Saved by users', sub: 'In rewards earned vs. lost.', decimals: 0 },
-                { v: 100, suffix: '+', label: 'Cards tracked', sub: 'Across 24 banks.' },
-                { v: 0, suffix: '', label: 'Affiliate bias', sub: 'Same rate on every card.' },
-              ].map((s, i) => (
-                <Reveal key={i} delay={i * 80}>
-                  <div style={{ borderLeft: '1px solid rgba(255,233,199,0.15)', paddingLeft: 20 }}>
-                    <div style={{ fontWeight: 800, fontSize: 'clamp(40px,5.5vw,88px)', letterSpacing: '-0.045em', lineHeight: 0.9, color: '#FFE9C7' }}>
-                      <StatNumber value={s.v} prefix={s.prefix || ''} suffix={s.suffix} decimals={s.decimals || 0} />
-                    </div>
-                    <div style={{ marginTop: 14, fontSize: 10, fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', color: '#D89B2A' }}>{s.label}</div>
-                    <div style={{ marginTop: 6, fontSize: 13, color: 'rgba(255,233,199,0.5)', lineHeight: 1.5 }}>{s.sub}</div>
-                  </div>
-                </Reveal>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        <BigStatement />
-
-        <TestimonialStrip />
-
-        <BuiltForMoments />
-
-        <section className="section" style={{ ...DARK_BAND, borderTop: '1px solid var(--line)' }}>
-          <div className="shell">
-            <SectionHeader label="START HERE . 03 PATHS" title={<>Three ways to <span className="serif" style={{ color: 'var(--copper)' }}>begin</span>.</>} subtitle="Most people don't know what they want until they see it. Pick the question that sounds most like you." />
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 24, marginTop: 'clamp(40px,6vw,64px)' }} className="grid-1-mobile">
-              <JourneyCard eyebrow="01 . FIND" title={<>Show me the <span className="serif" style={{ color: 'var(--copper)' }}>right</span> card for me.</>} subtitle="Tell us how you spend. Get one card recommendation backed by maths, not commissions." href="/smart-match" />
-              <JourneyCard eyebrow="02 . ROAST" title={<>Tell me if my card <span className="serif" style={{ color: 'var(--terracotta)' }}>sucks</span>.</>} subtitle="Drop your current card and a sample month of spending. We grade it brutally — A through F." href="/card-roast" />
-              <JourneyCard eyebrow="03 . EARN" title={<>How do I squeeze more from my <span className="serif" style={{ color: 'var(--sage)' }}>points</span>?</>} subtitle="Most people redeem at Rs.0.25/pt. We find paths worth 3-5x more." href="/points-optimizer" />
-            </div>
-          </div>
-        </section>
-
-
-        <section className="section" style={{ background: 'var(--bg-2,#EFE7D8)', borderTop: '1px solid var(--line)', borderBottom: '1px solid var(--line)', position: 'relative', overflow: 'hidden' }}>
-          <div className="shell" style={{ position: 'relative' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', gap: 40, marginBottom: 'clamp(40px,6vw,64px)' }} className="stack-mobile">
-              <SectionHeader label="AI TOOLBOX . 06 TOOLS" title={<>The arsenal.<br /><span className="serif" style={{ color: 'var(--copper)' }}>Built to earn you more</span>, not sell you more.</>} subtitle={null} />
-              <Reveal><Link href="/smart-match" style={{ padding: '12px 24px', borderRadius: 999, border: '1.5px solid var(--ink,#142950)', color: 'var(--ink,#142950)', textDecoration: 'none', fontSize: 14, fontWeight: 600, whiteSpace: 'nowrap' }}>Open the toolbox</Link></Reveal>
-            </div>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 20 }} className="grid-1-mobile">
-              <AIToolCard icon="◐" title="Card Match" desc="Type how you spend in plain English. We pick one card. No top-10 lists, no rankings sold to the highest bidder." badge={{ text: 'POPULAR', tone: 'badge-copper' }} href="/smart-match" />
-              <AIToolCard icon="✦" title="Card Roast" desc="Brutal A-F grade on your current card. Shareable. Probably mean. Definitely accurate." badge={{ text: 'NEW', tone: 'badge-plum' }} href="/card-roast" />
-              <AIToolCard icon="◇" title="Statement Truth" desc="Upload your statement. We tell you if your card is doing what the brochure promised." href="/statement-truth" />
-              <AIToolCard icon="↻" title="Switch Wizard" desc="Already have a card? See if there's a better one for the same spend pattern." href="/card-switch" />
-              <AIToolCard icon="✈" title="Travel AI" desc="Chat with an AI that knows every airline, hotel and transfer ratio." badge={{ text: 'BETA', tone: 'badge-amber' }} href="/travel" />
-              <AIToolCard icon="◉" title="Lounge Tracker" desc="Never get turned away at the gate. Tracks free visits across every card you carry." href="/lounge-tracker" />
-            </div>
-          </div>
-        </section>
-
-        <section className="section">
-          <div className="shell">
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', gap: 40, marginBottom: 'clamp(40px,6vw,56px)', flexWrap: 'wrap' }}>
-              <SectionHeader label="THE TOP DECK . RANKED" title={<>Cards that <span className="serif" style={{ color: 'var(--copper)' }}>actually</span> earn their fee.</>} subtitle="Ranked by effective reward rate on Rs.6L-Rs.15L annual spend, after fees." />
-            </div>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 24 }} className="grid-1-mobile">
-              {CARDS.slice(0, 6).map((c, i) => (
-                <CardTile key={c.slug} card={toTileCard(c, i)} rank={i + 1} href={`/card/${c.slug}`} />
-              ))}
-            </div>
-            <Reveal style={{ marginTop: 48, textAlign: 'center' }}>
-              <Link href="/cards" style={{ padding: '14px 32px', borderRadius: 999, border: '1.5px solid var(--ink,#142950)', color: 'var(--ink,#142950)', textDecoration: 'none', fontSize: 15, fontWeight: 600, display: 'inline-block' }}>See all 170+ cards</Link>
-            </Reveal>
-          </div>
-        </section>
-
-        <section className="section" style={{ paddingTop: 0 }}>
-          <div className="shell">
-            <Reveal>
-              <div className="label" style={{ marginBottom: 18 }}>BROWSE BY CATEGORY</div>
-              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10 }}>
-                {['International Travel', 'Domestic Travel', 'Forex 0%', 'Lounge Access', 'Cashback', 'Online Shopping', 'Fuel', 'Dining', 'First Card', 'Lifetime Free', 'Business', 'Metal'].map(c => (
-                  <Link key={c} href="/cards" className="chip" style={{ fontSize: 14, textDecoration: 'none' }}>{c}</Link>
-                ))}
+              <div className={cx('hm-heroside')}>
+                <HeroWindow />
+                <div style={HERO_PROOF_VARS}>
+                  <HeroProof />
+                </div>
               </div>
-            </Reveal>
+            </div>
           </div>
-        </section>
 
-
-        <AppStoreSection />
-
-        <FAQSection />
-
-        <section className="section" style={{ paddingBottom: 120, position: 'relative' }}>
-          <div className="shell" style={{ position: 'relative' }}>
-            <Reveal style={{ textAlign: 'center', maxWidth: 1000, margin: '0 auto' }}>
-              <div className="label-copper" style={{ marginBottom: 24 }}>YOUR MOVE</div>
-              <h2 style={{ fontSize: 'clamp(36px,5vw,64px)', letterSpacing: '-0.035em', lineHeight: 1.04, fontWeight: 800 }}>
-                The right card — and every rupee it owes you — is{' '}
-                <span className="shimmer-text">90 seconds</span> away.
-              </h2>
-              <p style={{ marginTop: 32, fontSize: 'clamp(16px,1.3vw,19px)', color: 'var(--ink-2,#2A3F6B)', maxWidth: 520, margin: '32px auto 0' }}>
-                No sign-up. No email. No commissions. Just the right card.
-              </p>
-              <div style={{ marginTop: 44, display: 'flex', gap: 14, justifyContent: 'center', flexWrap: 'wrap' }} className="stack-mobile">
-                <CopperCTA href="/smart-match">Find my perfect card</CopperCTA>
-                <GhostCTA href="/card/hdfc-infinia">See a sample card</GhostCTA>
+          {/* ── 02 · LIVE FARES (cream band) ── */}
+          <section className={cx('hm-section', 'hm-band-cream')} id="fares">
+            <div className={cx('hm-wrap')}>
+              <div className={cx('hm-sechead')}>
+                <div className={cx('hm-kicker')}>Live fares<span className={cx('hm-rule')} />Cached</div>
+                <h2 className={cx('hm-h2')}>One price, one age stamp, one <span className={cx('hm-accent')}>source</span>.</h2>
+                <p className={cx('hm-sub')}>
+                  We cache the lowest cash fare on the corridors Indian points actually pay for. Nothing here is a
+                  live quote, and we never pretend it is.
+                </p>
               </div>
-            </Reveal>
-          </div>
-        </section>
-
-        <DesignFooter />
-      </div>
+              <div style={FARES_VARS}>
+                <FaresBoard />
+              </div>
+            </div>
+          </section>
+        </SpendProvider>
+      </main>
     </>
   );
 }
-
-

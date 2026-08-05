@@ -59,9 +59,9 @@ export function HeroProof() {
 
   return (
     <div style={{ justifySelf: 'end', width: '100%', maxWidth: 404 }}>
-      <div style={{ background: '#fbf8f3', border: '1px solid #e5d9cc', borderRadius: 20, padding: 24 }}>
+      <div style={{ background: 'var(--hp-card-bg,#fbf8f3)', border: '1px solid var(--hp-hair,#e5d9cc)', borderRadius: 20, padding: 24, boxShadow: 'var(--hp-shadow,none)' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 12 }}>
-          <span style={{ fontFamily: IN, fontSize: 11, fontWeight: 600, letterSpacing: '0.12em', textTransform: 'uppercase', color: '#6b6b6d' }}>
+          <span style={{ fontFamily: IN, fontSize: 11, fontWeight: 600, letterSpacing: '0.12em', textTransform: 'uppercase', color: 'var(--hp-muted,#6b6b6d)' }}>
             Live proof
           </span>
           {cached ? (
@@ -77,7 +77,7 @@ export function HeroProof() {
           )}
         </div>
 
-        <div style={{ marginTop: 18, fontFamily: MO, fontSize: 13, fontWeight: 500, letterSpacing: '0.04em', color: '#2b385c' }}>
+        <div style={{ marginTop: 18, fontFamily: MO, fontSize: 13, fontWeight: 500, letterSpacing: '0.04em', color: 'var(--hp-body,#2b385c)' }}>
           {ROUTE} · one way · economy
         </div>
 
@@ -87,31 +87,31 @@ export function HeroProof() {
 
         {result.kind === 'cached' && (
           <>
-            <div style={{ fontFamily: MO, fontSize: 'clamp(34px,4.6vw,44px)', fontWeight: 500, letterSpacing: '-0.02em', color: '#142335', lineHeight: 1.1, marginTop: 6 }}>
+            <div style={{ fontFamily: MO, fontSize: 'clamp(34px,4.6vw,44px)', fontWeight: 500, letterSpacing: '-0.02em', color: 'var(--hp-ink,#142335)', lineHeight: 1.1, marginTop: 6 }}>
               {INR(result.price)}
             </div>
-            <div style={{ fontFamily: IN, fontSize: 13, color: '#6b6b6d', marginTop: 4 }}>
+            <div style={{ fontFamily: IN, fontSize: 13, color: 'var(--hp-muted,#6b6b6d)', marginTop: 4 }}>
               Lowest cash fare in our cache · updated {ageLabel(result.foundAt)} ago
               {result.airline ? ` · ${result.airline}` : ''}
             </div>
-            <div style={{ height: 1, background: '#e5d9cc', margin: '20px 0' }} />
-            <p style={{ fontFamily: IN, fontSize: 12, lineHeight: 1.5, color: '#6b6b6d', margin: 0 }}>
+            <div style={{ height: 1, background: 'var(--hp-hair,#e5d9cc)', margin: '20px 0' }} />
+            <p style={{ fontFamily: IN, fontSize: 12, lineHeight: 1.5, color: 'var(--hp-muted,#6b6b6d)', margin: 0 }}>
               Fares are cached, not quoted. Age is stamped on every one. Connect statements and these turn{' '}
-              <span style={{ color: '#0b7a47', fontWeight: 600 }}>verified</span>.
+              <span style={{ color: 'var(--hp-verified,#0b7a47)', fontWeight: 600 }}>verified</span>.
             </p>
           </>
         )}
 
         {result.kind === 'estimated' && (
           <>
-            <p style={{ fontFamily: IN, fontSize: 14.5, lineHeight: 1.6, color: '#2b385c', margin: '10px 0 0' }}>
+            <p style={{ fontFamily: IN, fontSize: 14.5, lineHeight: 1.6, color: 'var(--hp-body,#2b385c)', margin: '10px 0 0' }}>
               No fresh fare is cached for this corridor right now. We don&rsquo;t invent one — this stamp turns
               gold the moment the cache refreshes.
             </p>
-            <div style={{ height: 1, background: '#e5d9cc', margin: '20px 0' }} />
-            <p style={{ fontFamily: IN, fontSize: 12, lineHeight: 1.5, color: '#6b6b6d', margin: 0 }}>
+            <div style={{ height: 1, background: 'var(--hp-hair,#e5d9cc)', margin: '20px 0' }} />
+            <p style={{ fontFamily: IN, fontSize: 12, lineHeight: 1.5, color: 'var(--hp-muted,#6b6b6d)', margin: 0 }}>
               Fares are cached, not quoted. Age is stamped on every one. Connect statements and these turn{' '}
-              <span style={{ color: '#0b7a47', fontWeight: 600 }}>verified</span>.
+              <span style={{ color: 'var(--hp-verified,#0b7a47)', fontWeight: 600 }}>verified</span>.
             </p>
           </>
         )}

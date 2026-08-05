@@ -5,6 +5,7 @@ import { LeakMeter } from '@/components/marketing/LeakMeter';
 import { computeLeakRange } from '@/lib/engine';
 import { SEED_CARDS } from '@/lib/data/seed-cards';
 import { useSpend, rupeeShort, SPEND_MIN, SPEND_MAX, SPEND_STEP } from './SpendContext';
+import styles from './HeroCompute.module.css';
 
 // Hero compute column — the ONE spend slider on the page lives here, and drives
 // both the leak range above it and the card rankings far below (via SpendContext).
@@ -30,65 +31,22 @@ export function HeroCompute() {
 
   return (
     <div style={{ minWidth: 0 }}>
-      {/* Themed slider track/thumb for THIS control only, on the dark hero ground.
-          The comp wants a visible filled copper track + grey remainder, not a bare
-          thumb — so we style the track explicitly in both engines. */}
-      <style>{`
-        input.ciqL-hero-range {
-          -webkit-appearance: none;
-          appearance: none;
-          background: transparent;
-        }
-        input.ciqL-hero-range::-webkit-slider-runnable-track {
-          height: 6px;
-          border-radius: 999px;
-          background: linear-gradient(90deg,
-            #D89B2A 0, #D89B2A var(--pct,50%),
-            rgba(255,255,255,.18) var(--pct,50%), rgba(255,255,255,.18) 100%);
-        }
-        input.ciqL-hero-range::-webkit-slider-thumb {
-          -webkit-appearance: none;
-          appearance: none;
-          width: 18px; height: 18px;
-          margin-top: -6px; /* centre the 18px thumb on the 6px track */
-          border-radius: 999px;
-          background: #E4C97E;
-          border: 2px solid #12203a;
-          cursor: pointer;
-        }
-        input.ciqL-hero-range::-moz-range-track {
-          height: 6px; border-radius: 999px; background: rgba(255,255,255,.18);
-        }
-        input.ciqL-hero-range::-moz-range-progress {
-          height: 6px; border-radius: 999px; background: #D89B2A;
-        }
-        input.ciqL-hero-range::-moz-range-thumb {
-          width: 18px; height: 18px; border-radius: 999px;
-          background: #E4C97E; border: 2px solid #12203a; cursor: pointer;
-        }
-        /* Single-column (mobile) the panel spans the viewport, so its bottom-right
-           "₹5,00,000" label sits under the fixed CIRA chat FAB (56px at right:16 →
-           its left edge is 72px from the viewport edge, the label's right edge only
-           40px). Inset the label row's right side here so the max label clears the
-           FAB. Above 748px the hero is two columns, the panel is left-of-centre and
-           nowhere near the FAB, so the label goes flush to the track again. */
-        @media (max-width: 747.98px) {
-          .ciqL-hero-labels { padding-right: 48px; }
-        }
-      `}</style>
-
-      <h1 style={{ fontFamily: FR, fontWeight: 300, fontSize: 'clamp(40px,6.4vw,84px)', lineHeight: 1.02, letterSpacing: '-0.015em', color: '#f7f4ef', margin: '20px 0 0', textWrap: 'pretty' }}>
+      {/* Themed slider track/thumb for THIS control only live in HeroCompute.module.css
+          (the comp wants a visible filled copper track + grey remainder, not a bare
+          thumb — styled explicitly in both engines). --pct drives the fill; set inline
+          on the input below. */}
+      <h1 style={{ fontFamily: FR, fontWeight: 300, fontSize: 'clamp(40px,6.4vw,84px)', lineHeight: 1.02, letterSpacing: '-0.015em', color: 'var(--hc-headline,#f7f4ef)', margin: '20px 0 0', textWrap: 'pretty' }}>
         Your points are a plane ticket. You just haven&rsquo;t{' '}
-        <em style={{ fontStyle: 'italic', color: '#e8b45c' }}>booked</em> it yet.
+        <em style={{ fontStyle: 'var(--hc-accent-style,italic)', color: 'var(--hc-accent,#e8b45c)' }}>booked</em> it yet.
       </h1>
 
       {/* Provenance sits below the headline; the basis tracks the slider. */}
       <div style={{ marginTop: 22, display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 12 }}>
-        <span style={{ display: 'inline-flex', alignItems: 'center', gap: 7, padding: '6px 12px', borderRadius: 999, background: 'rgba(255,255,255,.08)', border: '1px solid rgba(255,255,255,.22)', fontFamily: IN, fontSize: 10.5, fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: 'rgba(255,255,255,.72)' }}>
+        <span style={{ display: 'inline-flex', alignItems: 'center', gap: 7, padding: '6px 12px', borderRadius: 999, background: 'var(--hc-pill-bg,rgba(255,255,255,.08))', border: '1px solid var(--hc-pill-bd,rgba(255,255,255,.22))', fontFamily: IN, fontSize: 10.5, fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--hc-pill-fg,rgba(255,255,255,.72))' }}>
           <span style={{ width: 6, height: 6, borderRadius: 999, background: '#9aa2ad' }} />
           Estimated
         </span>
-        <span style={{ fontFamily: IN, fontSize: 13.5, color: 'rgba(247,244,239,.66)' }}>
+        <span style={{ fontFamily: IN, fontSize: 13.5, color: 'var(--hc-sub,rgba(247,244,239,.66))' }}>
           at {rupeeShort(spend)}/mo · cash-only floor vs. optimised
         </span>
       </div>
@@ -96,7 +54,7 @@ export function HeroCompute() {
       {/* The leak RANGE — moved OUT of the headline (comp Type A shows the ₹ figure as
           its own billboard below the Estimated pill, not fused into a Cleo-style
           sentence). Still driven live by the shared spend slider below. */}
-      <div style={{ marginTop: 14, color: '#f7f4ef' }}>
+      <div style={{ marginTop: 14, color: 'var(--hc-range,#f7f4ef)' }}>
         <LeakMeter floor={floor} ceiling={ceiling} />
       </div>
 
@@ -104,18 +62,18 @@ export function HeroCompute() {
           marginTop 28, 18/20 padding, 1px rgba(255,255,255,.16) border, 16 radius,
           rgba(255,255,255,.05) fill, and the two end labels beneath the track. Fills
           the hero column (no width cap) so it reads as a panel, not a flat strip. */}
-      <div style={{ marginTop: 28, padding: '18px 20px', border: '1px solid rgba(255,255,255,.16)', borderRadius: 16, background: 'rgba(255,255,255,.05)' }}>
+      <div style={{ marginTop: 28, padding: '18px 20px', border: '1px solid var(--hc-panel-bd,rgba(255,255,255,.16))', borderRadius: 16, background: 'var(--hc-panel-bg,rgba(255,255,255,.05))' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', gap: 12 }}>
-          <label htmlFor="ciqL-spend" style={{ minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontFamily: IN, fontSize: 11, fontWeight: 600, letterSpacing: '0.12em', textTransform: 'uppercase', color: 'rgba(255,255,255,.6)' }}>
+          <label htmlFor="ciqL-spend" style={{ minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontFamily: IN, fontSize: 11, fontWeight: 600, letterSpacing: '0.12em', textTransform: 'uppercase', color: 'var(--hc-label,rgba(255,255,255,.6))' }}>
             Monthly spend
           </label>
-          <span style={{ flexShrink: 0, fontFamily: MO, fontSize: 15, fontWeight: 500, color: '#f7f4ef', fontVariantNumeric: 'tabular-nums' }}>
+          <span style={{ flexShrink: 0, fontFamily: MO, fontSize: 15, fontWeight: 500, color: 'var(--hc-value,#f7f4ef)', fontVariantNumeric: 'tabular-nums' }}>
             {rupeeShort(spend)}
           </span>
         </div>
         <input
           id="ciqL-spend"
-          className="ciqL-hero-range"
+          className={styles['hero-range']}
           type="range"
           min={SPEND_MIN}
           max={SPEND_MAX}
@@ -125,7 +83,7 @@ export function HeroCompute() {
           aria-label="Monthly spend"
           style={{ width: '100%', height: 44, marginTop: 4, cursor: 'pointer', background: 'transparent', ['--pct' as any]: `${pct}%` }}
         />
-        <div className="ciqL-hero-labels" style={{ display: 'flex', justifyContent: 'space-between', fontFamily: MO, fontSize: 11, color: 'rgba(255,255,255,.45)' }}>
+        <div className={styles['hero-labels']} style={{ display: 'flex', justifyContent: 'space-between', fontFamily: MO, fontSize: 11, color: 'var(--hc-scale,rgba(255,255,255,.45))' }}>
           <span>₹5,000</span>
           <span>₹5,00,000</span>
         </div>

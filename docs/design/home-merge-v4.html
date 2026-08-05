@@ -1,0 +1,537 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CreditIQ — merged homepage v4</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300;9..144,400&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --page:#FFFFFF;--cream:#F7F1E6;--cream-2:#EFE7D8;
+  --teal:#0E3B3C;--teal-2:#0A2E2F;--tealText:#F4F0E6;--tealMute:#A9C4BF;--tealSoft:#8FC9BC;
+  --ink:#10202A;--body-c:#48565E;--muted:#6E7B82;--hair:#E2DCD0;--hair-2:#D3CBBB;
+  --copper:#9A6516;--copper-2:#B87B22;--verified:#1A7A5E;
+  --display:"Fraunces",Georgia,serif;--font:"Inter",system-ui,sans-serif;--mono:"JetBrains Mono",ui-monospace,monospace;
+}
+*{box-sizing:border-box;margin:0;padding:0;font-style:normal!important}
+html{-webkit-text-size-adjust:100%;scroll-behavior:smooth}
+body{background:var(--page);color:var(--ink);font-family:var(--font);font-size:16px;line-height:1.6;-webkit-font-smoothing:antialiased}
+.wrap{max-width:1120px;margin:0 auto;padding:0 20px}
+h1,h2{font-family:var(--display);font-weight:300;letter-spacing:-.015em;line-height:1.1;color:var(--ink)}
+a{color:inherit;text-decoration:none}
+:focus-visible{outline:2px solid var(--copper);outline-offset:3px;border-radius:4px}
+.num{font-family:var(--mono);font-variant-numeric:tabular-nums;letter-spacing:-.02em}
+.pill{display:inline-flex;align-items:center;gap:6px;font-size:11px;font-weight:500;letter-spacing:.09em;text-transform:uppercase;padding:5px 10px;border-radius:999px;border:1px solid var(--hair-2);color:var(--muted);background:#fff}
+.pill.est{border-color:rgba(154,101,22,.35);color:var(--copper)}
+.dot{width:5px;height:5px;border-radius:50%;background:currentColor}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:7px;min-height:46px;padding:0 20px;border-radius:10px;font-size:14.5px;font-weight:500;border:1px solid var(--hair-2);color:var(--ink);background:#fff;cursor:pointer;transition:all .16s}
+.btn:hover{border-color:var(--ink)}
+.btn.solid{background:var(--teal);color:var(--tealText);border-color:var(--teal);font-weight:600}
+.btn.solid:hover{background:var(--teal-2);border-color:var(--teal-2)}
+.btn.sm{min-height:38px;padding:0 14px;font-size:13px}
+
+header{position:sticky;top:0;z-index:50;background:rgba(255,255,255,.92);backdrop-filter:blur(14px);border-bottom:1px solid var(--hair)}
+.nav{display:flex;align-items:center;justify-content:space-between;height:64px}
+.logo{display:flex;align-items:center;gap:9px;font-weight:600;font-size:16px}
+.mark{width:27px;height:27px;border-radius:7px;background:var(--teal);display:grid;place-items:center;color:var(--tealText);font-size:13px;font-weight:600}
+.navlinks{display:none;gap:24px;font-size:14px;color:var(--body-c)}
+.navlinks a:hover{color:var(--ink)}
+.navcta{display:flex;gap:10px}
+
+.ticker{background:var(--cream);border-bottom:1px solid var(--hair);overflow:hidden}
+.tickrow{display:flex;gap:44px;padding:9px 0;white-space:nowrap;animation:slide 42s linear infinite;font-size:11.5px;letter-spacing:.07em;text-transform:uppercase;color:var(--muted)}
+.tickrow b{color:var(--copper);font-weight:600}
+@keyframes slide{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+
+section{padding:62px 0}
+.band-cream{background:var(--cream);border-top:1px solid var(--hair);border-bottom:1px solid var(--hair)}
+.kicker{display:flex;align-items:center;gap:12px;font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--copper);margin-bottom:14px}
+.kicker .rule{height:1px;width:40px;background:var(--hair-2)}
+h2{font-size:clamp(27px,5.6vw,40px);margin-bottom:14px}
+h2 .accent{color:var(--copper)}
+.sub{color:var(--body-c);font-size:15.5px;max-width:56ch}
+.sechead{margin-bottom:36px}
+
+/* HERO */
+.hero{padding:44px 0 62px}
+.herogrid{display:grid;gap:30px}
+h1{font-size:clamp(34px,8.2vw,58px);margin-bottom:24px}
+h1 .accent{color:var(--copper)}
+.estline{display:flex;flex-wrap:wrap;align-items:center;gap:10px;margin-bottom:12px;font-size:13.5px;color:var(--body-c)}
+.range{font-size:clamp(34px,9vw,52px);margin-bottom:26px;font-family:var(--mono);letter-spacing:-.03em;color:var(--ink)}
+.slider{background:var(--cream);border:1px solid var(--hair);border-radius:14px;padding:18px;margin-bottom:24px}
+.sliderhead{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:12px}
+.sliderhead span:first-child{font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+.sliderhead span:last-child{font-size:17px;font-family:var(--mono);color:var(--teal);font-weight:500}
+input[type=range]{width:100%;-webkit-appearance:none;appearance:none;background:transparent;height:32px;cursor:pointer}
+input[type=range]::-webkit-slider-runnable-track{height:3px;background:var(--hair-2);border-radius:2px}
+input[type=range]::-moz-range-track{height:3px;background:var(--hair-2);border-radius:2px}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:22px;height:22px;border-radius:50%;background:var(--teal);margin-top:-9.5px;border:3px solid var(--cream)}
+input[type=range]::-moz-range-thumb{width:22px;height:22px;border-radius:50%;background:var(--teal);border:3px solid var(--cream)}
+.scale{display:flex;justify-content:space-between;font-size:11px;color:var(--muted);font-family:var(--mono)}
+.method{color:var(--body-c);font-size:15.5px;max-width:52ch;margin-bottom:26px}
+.method b{color:var(--ink);font-weight:500}
+.method .vf{color:var(--verified);font-weight:500}
+.herocta{display:flex;flex-wrap:wrap;gap:10px}
+
+.window{position:relative;border-radius:20px;overflow:hidden;min-height:340px;
+  background:linear-gradient(178deg,#BFD8E8 0%,#DCE9F0 34%,#F0E7D6 70%,#E2C9A4 100%);
+  border:1px solid var(--hair);display:flex;align-items:flex-end;padding:18px}
+.window::before{content:"";position:absolute;left:50%;top:8%;transform:translateX(-50%);width:58%;height:84%;border-radius:44% 44% 40% 40%/28% 28% 30% 30%;
+  background:linear-gradient(178deg,#8FB6D2,#CFE0EA 46%,#F6EEDC);box-shadow:0 0 0 14px rgba(255,255,255,.62),0 0 0 20px rgba(226,220,208,.9)}
+.window::after{content:"";position:absolute;left:0;right:0;bottom:0;height:44%;background:linear-gradient(to top,rgba(255,255,255,.9),rgba(255,255,255,0))}
+.wlabel{position:relative;z-index:2;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+
+.proof{background:#fff;border:1px solid var(--hair);border-radius:16px;padding:20px;box-shadow:0 1px 2px rgba(16,32,42,.04)}
+.proofhead{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px}
+.proofhead span:first-child{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+.route{font-size:13.5px;color:var(--body-c);margin-bottom:6px}
+.fare{font-size:38px;font-family:var(--mono);letter-spacing:-.03em;margin-bottom:6px;color:var(--ink)}
+.src{font-size:12.5px;color:var(--muted)}
+.proofnote{margin-top:15px;padding-top:14px;border-top:1px solid var(--hair);font-size:12.5px;color:var(--muted);line-height:1.55}
+.proofnote .vf{color:var(--verified);font-weight:500}
+
+.tabs{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:22px}
+.tab{min-height:40px;padding:0 15px;border-radius:999px;border:1px solid var(--hair-2);background:#fff;color:var(--body-c);font-family:var(--font);font-size:13px;font-weight:500;cursor:pointer;display:inline-flex;align-items:center;transition:all .16s}
+.tab:hover{border-color:var(--ink)}
+.tab.on{background:var(--teal);border-color:var(--teal);color:var(--tealText)}
+.farecard{background:#fff;border:1px solid var(--hair);border-radius:16px;padding:24px}
+.farecard .stamp{display:flex;flex-wrap:wrap;align-items:center;gap:10px;margin:12px 0 14px;font-size:12.5px;color:var(--muted)}
+
+.redeem{display:grid;gap:26px}
+.redeemnums{display:flex;flex-wrap:wrap;gap:28px;margin-top:22px}
+.rn .v{font-family:var(--mono);font-size:30px;letter-spacing:-.03em;color:var(--ink)}
+.rn .v.hi{color:var(--copper)}
+.rn .l{font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-top:4px}
+
+.steps{display:grid;gap:14px}
+.step{background:#fff;border:1px solid var(--hair);border-radius:14px;padding:22px}
+.step .n{font-family:var(--mono);font-size:12px;color:var(--copper);margin-bottom:10px}
+.step h3{font-size:17px;font-weight:500;margin-bottom:8px}
+.step p{font-size:14px;color:var(--body-c)}
+
+.ranks{display:grid;gap:10px}
+.rank{display:grid;grid-template-columns:auto 1fr auto;gap:14px;align-items:center;background:#fff;border:1px solid var(--hair);border-radius:12px;padding:16px}
+.rank .pos{font-family:var(--mono);font-size:12px;color:var(--muted);width:18px}
+.rank .nm{font-size:15px;font-weight:500;margin-bottom:3px}
+.rank .bank{font-size:12px;color:var(--muted)}
+.rank .val{text-align:right}
+.rank .val .v{font-family:var(--mono);font-size:17px;color:var(--copper)}
+.rank .val .l{font-size:11px;color:var(--muted);letter-spacing:.06em;text-transform:uppercase}
+.ranknote{margin-top:16px;font-size:12.5px;color:var(--muted)}
+
+/* TEAL BANDS */
+.band-teal{background:var(--teal);color:var(--tealText)}
+.band-teal h2{color:var(--tealText)}
+.band-teal .kicker{color:var(--tealSoft)}
+.band-teal .kicker .rule{background:rgba(244,240,230,.3)}
+.band-teal .sub{color:var(--tealMute)}
+
+.mgrid{display:grid;gap:18px}
+.mcard{background:var(--cream);color:var(--ink);border-radius:18px;padding:22px}
+.prog{display:flex;align-items:center;gap:14px;margin-bottom:22px}
+.progbar{flex:1;height:5px;border-radius:3px;background:var(--cream-2);overflow:hidden}
+.progfill{height:100%;background:var(--teal);width:14%;transition:width .28s}
+.progn{font-size:12px;color:var(--muted);font-family:var(--mono);flex:none}
+.back{border:0;background:transparent;color:var(--teal);font-size:20px;cursor:pointer;padding:0 4px;line-height:1;min-height:32px}
+.qh{font-size:21px;font-weight:500;line-height:1.3;margin-bottom:8px}
+.qwhy{background:var(--cream-2);border-radius:10px;padding:11px 13px;font-size:13px;color:#42545A;margin-bottom:18px}
+.opts{display:grid;gap:9px}
+.opt{display:flex;align-items:center;gap:12px;min-height:52px;padding:0 15px;border-radius:12px;border:1.5px solid var(--hair-2);background:#fff;color:var(--ink);font-family:var(--font);font-size:14.5px;font-weight:500;text-align:left;cursor:pointer;transition:all .15s;width:100%}
+.opt:hover{border-color:var(--teal)}
+.opt .box{width:20px;height:20px;border-radius:50%;border:1.5px solid var(--hair-2);flex:none;display:grid;place-items:center;font-size:11px;color:#fff}
+.opt.multi .box{border-radius:6px}
+.opt.on{border-color:var(--teal);background:#EAF3EF}
+.opt.on .box{background:var(--teal);border-color:var(--teal)}
+.mfoot{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-top:20px}
+.btn.tealout{background:transparent;color:var(--teal);border-color:var(--hair-2)}
+.btn.tealout:hover{border-color:var(--teal)}
+.mnote{font-size:12.5px;color:var(--muted)}
+.side{background:rgba(244,240,230,.07);border:1px solid rgba(244,240,230,.18);border-radius:18px;padding:22px;align-self:start}
+.side .lab{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--tealSoft);margin-bottom:14px}
+.side .mname{font-size:20px;font-weight:500;color:var(--tealText);margin-bottom:4px}
+.side .mbank{font-size:12.5px;color:var(--tealMute);margin-bottom:16px}
+.side .why{font-size:13.5px;color:#CFE0DA;line-height:1.6;margin-bottom:16px}
+.side .runner{border-top:1px solid rgba(244,240,230,.18);padding-top:14px;font-size:12.5px;color:var(--tealMute)}
+.side .runner b{color:var(--tealText);font-weight:500}
+.mstamp{display:inline-flex;align-items:center;gap:6px;font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--tealSoft);border:1px solid rgba(143,201,188,.4);border-radius:999px;padding:4px 9px;margin-top:14px}
+
+.rgrid{display:grid;grid-template-columns:repeat(2,1fr);gap:1px;background:rgba(244,240,230,.18);border:1px solid rgba(244,240,230,.18);border-radius:14px;overflow:hidden}
+.rcell{background:var(--teal);padding:24px 18px}
+.rcell .v{font-family:var(--mono);font-size:clamp(28px,7vw,42px);letter-spacing:-.03em;color:var(--tealText)}
+.rcell .l{font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--tealSoft);margin:8px 0 6px}
+.rcell .s{font-size:12px;color:var(--tealMute);line-height:1.5}
+.rcell .prov{display:inline-block;margin-top:9px;font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--tealMute);border:1px solid rgba(244,240,230,.28);border-radius:999px;padding:3px 8px}
+
+.tools{display:grid;gap:14px}
+.tool{background:#fff;border:1px solid var(--hair);border-radius:14px;padding:22px;transition:all .18s}
+.tool:hover{border-color:var(--teal);transform:translateY(-2px)}
+.tool h3{font-size:18px;font-weight:500;margin-bottom:8px}
+.tool p{font-size:14px;color:var(--body-c);margin-bottom:14px}
+.tool .go{font-size:13px;color:var(--copper);font-weight:500}
+
+.ask{background:var(--cream);border:1px solid var(--hair);border-radius:18px;padding:24px}
+.chat{background:#fff;border:1px solid var(--hair);border-radius:14px;padding:16px;margin-bottom:18px}
+.msg{margin-bottom:12px;font-size:14px}
+.msg.you{text-align:right}
+.msg.you span{display:inline-block;background:var(--teal);color:var(--tealText);padding:9px 13px;border-radius:12px 12px 3px 12px;max-width:84%}
+.msg.ai span{display:inline-block;background:var(--cream);border:1px solid var(--hair);padding:11px 13px;border-radius:12px 12px 12px 3px;max-width:92%;color:var(--body-c)}
+.msg.ai b{color:var(--ink);font-weight:600}
+.askrow{display:flex;gap:9px}
+.askrow input{flex:1;min-height:46px;background:#fff;border:1px solid var(--hair-2);border-radius:10px;padding:0 14px;color:var(--ink);font-family:var(--font);font-size:14px}
+.askrow input::placeholder{color:var(--muted)}
+.askmeta{display:flex;flex-wrap:wrap;gap:16px;margin-top:14px;font-size:12px;color:var(--muted)}
+
+.revs{display:grid;gap:12px}
+.rev{background:#fff;border:1px solid var(--hair);border-radius:14px;padding:20px}
+.stars{color:var(--copper);font-size:13px;letter-spacing:2px;margin-bottom:12px}
+.rev p{font-size:14px;color:var(--ink);line-height:1.65;margin-bottom:16px}
+.rev .who{font-size:13.5px;font-weight:500}
+.rev .role{font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-top:3px}
+
+.strip{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+.card{aspect-ratio:1.586/1;border-radius:12px;padding:13px;display:flex;flex-direction:column;justify-content:space-between;color:#fff}
+.card .bk{font-size:10px;letter-spacing:.14em;font-weight:600;opacity:.9}
+.card .tier{font-size:9px;letter-spacing:.14em;text-align:right;opacity:.75}
+.card .chip{width:26px;height:19px;border-radius:4px;background:rgba(255,255,255,.6)}
+.card .nm2{font-size:12px;font-weight:500}
+
+footer{background:var(--cream);border-top:1px solid var(--hair);padding:46px 0 60px;color:var(--muted);font-size:13.5px}
+.fgrid{display:grid;gap:30px;margin-bottom:30px}
+.fcol h4{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink);margin-bottom:13px;font-weight:600}
+.fcol a{display:block;padding:5px 0;color:var(--body-c)}
+.fcol a:hover{color:var(--ink)}
+.fbase{border-top:1px solid var(--hair-2);padding-top:22px;font-size:12.5px;line-height:1.7}
+
+@media(min-width:768px){
+  .navlinks{display:flex}
+  .hero{padding:64px 0 84px}
+  .herogrid{grid-template-columns:1.1fr .9fr;gap:48px;align-items:start}
+  .heroside{display:grid;gap:18px;position:sticky;top:92px}
+  .redeem{grid-template-columns:1fr 1fr;align-items:center}
+  .steps{grid-template-columns:repeat(3,1fr)}
+  .rgrid{grid-template-columns:repeat(4,1fr)}
+  .mgrid{grid-template-columns:1.25fr .75fr}
+  .tools{grid-template-columns:repeat(2,1fr)}
+  .revs{grid-template-columns:repeat(4,1fr)}
+  .strip{grid-template-columns:repeat(4,1fr)}
+  .fgrid{grid-template-columns:2fr 1fr 1fr 1fr}
+  section{padding:92px 0}
+}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+
+<header><div class="wrap nav">
+  <a class="logo" href="#"><span class="mark">C</span>CreditIQ</a>
+  <nav class="navlinks"><a href="#fares">Fares</a><a href="#method">How it works</a><a href="#match">Card match</a><a href="#tools">AI tools</a><a href="#reviews">Reviews</a></nav>
+  <div class="navcta"><a class="btn sm" href="#">Sign in</a><a class="btn sm solid" href="#match">Find my card</a></div>
+</div></header>
+
+<div class="ticker"><div class="tickrow">
+  <span><b>Sweet spot</b> — Delhi to Zurich business class for 40,000 Aeroplan points</span>
+  <span><b>Change</b> — Axis Magnus Burgundy revisions effective 28 August 2026</span>
+  <span><b>Watch</b> — HDFC BizPower adds airline and hotel transfer partners</span>
+  <span><b>Sweet spot</b> — Delhi to Zurich business class for 40,000 Aeroplan points</span>
+  <span><b>Change</b> — Axis Magnus Burgundy revisions effective 28 August 2026</span>
+  <span><b>Watch</b> — HDFC BizPower adds airline and hotel transfer partners</span>
+</div></div>
+
+<div class="hero"><div class="wrap herogrid">
+  <div>
+    <div class="kicker">Live<span class="rule"></span>India</div>
+    <h1>Your points are a plane ticket. You just haven't <span class="accent">booked</span> it yet.</h1>
+    <div class="estline"><span class="pill est"><span class="dot"></span>Estimated</span><span>at <span class="num" id="spendLabel">₹50K</span>/mo · cash-only floor vs. optimised</span></div>
+    <div class="range" id="range">₹13,800–₹39,080</div>
+    <div class="slider">
+      <div class="sliderhead"><span>Monthly spend</span><span class="num" id="spendBig">₹50,000</span></div>
+      <input type="range" id="spend" min="5000" max="500000" step="5000" value="50000" aria-label="Monthly spend">
+      <div class="scale"><span>₹5,000</span><span>₹5,00,000</span></div>
+    </div>
+    <p class="method">That range is computed from each card's <b>published earn rules</b> — real math, not a self-reported guess. Link a statement and Statement Truth turns the estimate into your <span class="vf">verified</span> spend, today.</p>
+    <div class="herocta"><a class="btn solid" href="#match">Compute my cards →</a><a class="btn" href="#fares">See the method</a></div>
+  </div>
+  <div class="heroside">
+    <div class="window"><span class="wlabel">Cabin window · daylight</span></div>
+    <aside class="proof">
+      <div class="proofhead"><span>Live proof</span><span class="pill"><span class="dot"></span>Cached</span></div>
+      <div class="route">DEL → DXB · one way · economy</div>
+      <div class="fare">₹26,147</div>
+      <div class="src">Lowest cash fare in our cache · updated 3h ago · IndiGo</div>
+      <p class="proofnote">Fares are cached, not quoted. Age is stamped on every one. Connect statements and these turn <span class="vf">verified</span>.</p>
+    </aside>
+  </div>
+</div></div>
+
+<section class="band-cream" id="fares"><div class="wrap">
+  <div class="sechead">
+    <div class="kicker">Live fares<span class="rule"></span>Cached</div>
+    <h2>One price, one age stamp, one <span class="accent">source</span>.</h2>
+    <p class="sub">We cache the lowest cash fare on the corridors Indian points actually pay for. Nothing here is a live quote, and we never pretend it is.</p>
+  </div>
+  <div class="tabs" id="routeTabs"></div>
+  <div class="farecard">
+    <div class="route" id="rtLabel">BLR→DXB · economy, one way</div>
+    <div class="fare" id="rtFare">₹26,158</div>
+    <div class="stamp"><span class="pill est"><span class="dot"></span>Cached</span><span id="rtMeta">updated 3h ago · Gulf Air · sample 2026-10-12</span></div>
+    <p class="src">Cheapest cached cash fare — not a live quote for your exact dates. Age is stamped on every one.</p>
+  </div>
+</div></section>
+
+<section><div class="wrap">
+  <div class="sechead">
+    <div class="kicker">Where points<span class="rule"></span>Can go</div>
+    <h2>1,50,000 points is a business seat to Singapore, or ₹75,000 in catalogue vouchers.</h2>
+  </div>
+  <div class="redeem">
+    <div>
+      <p class="sub">The same balance is worth ₹2,70,000 or ₹75,000 depending on where it goes. We show both numbers, and where each one came from.</p>
+      <div class="redeemnums">
+        <div class="rn"><div class="v hi">₹2,70,000</div><div class="l">Transferred to airline</div></div>
+        <div class="rn"><div class="v">₹75,000</div><div class="l">Catalogue vouchers</div></div>
+      </div>
+      <p class="src" style="margin-top:18px">HDFC Infinia Metal Edition · 1,50,000 pts</p>
+    </div>
+    <div class="window" style="min-height:260px"><span class="wlabel">Boarding gate · daylight</span></div>
+  </div>
+</div></section>
+
+<section class="band-cream" id="method"><div class="wrap">
+  <div class="sechead"><div class="kicker">The method<span class="rule"></span>03 steps</div><h2>Every number here traces back to something.</h2></div>
+  <div class="steps">
+    <div class="step"><div class="n">01</div><h3>Published earn rules</h3><p>We read each card's rate card as the bank publishes it — base rate, category multipliers, caps, exclusions. Not the marketing copy, the terms.</p></div>
+    <div class="step"><div class="n">02</div><h3>Your spend, your split</h3><p>The slider applies a category split to the amount you set. Change it and the maths reruns in front of you — nothing is precomputed.</p></div>
+    <div class="step"><div class="n">03</div><h3>Redemption at cached value</h3><p>Points convert at fares we have actually seen, with the age stamped. When a fare gets old we say so rather than quietly reusing it.</p></div>
+  </div>
+</div></section>
+
+<section class="band-teal" id="match"><div class="wrap">
+  <div class="sechead">
+    <div class="kicker">Smart Card Match<span class="rule"></span>No credit pull</div>
+    <h2>Answer seven questions. Get the card the maths picks.</h2>
+    <p class="sub">We don't run a credit check and we don't pre-qualify you — nobody in India honestly can from a web form. We compute what each card returns on your spend and show the working.</p>
+  </div>
+  <div class="mgrid">
+    <div class="mcard">
+      <div class="prog">
+        <button class="back" id="mBack" aria-label="Back">←</button>
+        <div class="progbar"><div class="progfill" id="mFill"></div></div>
+        <div class="progn" id="mCount">1 of 7</div>
+      </div>
+      <div id="mBody"></div>
+      <div class="mfoot">
+        <button class="btn solid" id="mNext">Next</button>
+        <button class="btn tealout" id="mSkip">Skip the questions — upload a statement</button>
+      </div>
+      <p class="mnote" id="mNote" style="margin-top:14px">Nothing is stored until you ask us to.</p>
+    </div>
+    <aside class="side">
+      <div class="lab">Best match so far</div>
+      <div class="mname" id="sName">Answer one question</div>
+      <div class="mbank" id="sBank">The match updates as you go</div>
+      <p class="why" id="sWhy">We show the leading card from the first answer onward, and the reason it leads. If your current card is already the right one, we say that instead of selling you a new one.</p>
+      <div class="runner" id="sRunner">Runner-up appears once we have two answers.</div>
+      <span class="mstamp">Estimated · published earn rules</span>
+    </aside>
+  </div>
+</div></section>
+
+<section id="cards"><div class="wrap">
+  <div class="sechead">
+    <div class="kicker">At your spend<span class="rule"></span>Recomputed</div>
+    <h2>What these cards would actually earn you.</h2>
+    <p class="sub">Ranked by computed annual value at the spend you set above — not by who pays us. Move the slider and this reorders.</p>
+  </div>
+  <div class="ranks" id="ranks"></div>
+  <p class="ranknote">Estimated from published earn rules at the spend above. Link a statement to replace these with verified figures.</p>
+</div></section>
+
+<section class="band-cream" id="tools"><div class="wrap">
+  <div class="sechead"><div class="kicker">Tools<span class="rule"></span>Four of them</div><h2>Four ways to stop leaving money behind.</h2></div>
+  <div class="tools">
+    <a class="tool" href="#"><h3>Roast my card</h3><p>Tell us what you carry. We grade it against what you spend and say plainly whether the fee earns its keep.</p><div class="go">Grade my card →</div></a>
+    <a class="tool" href="#"><h3>Statement Truth</h3><p>Upload a statement and the estimate becomes your verified spend. Nothing leaves your account.</p><div class="go">Upload a statement →</div></a>
+    <a class="tool" href="#"><h3>Trip planner</h3><p>Point us at a route and we show which of your points get you there, at cached fares with the age on each.</p><div class="go">Plan a trip →</div></a>
+    <a class="tool" href="#"><h3>Switch wizard</h3><p>If a better card exists for your spend we say which and by how much. If one doesn't, we say that too.</p><div class="go">Compare cards →</div></a>
+  </div>
+</div></section>
+
+<section id="ask"><div class="wrap">
+  <div class="sechead"><div class="kicker">Ask CIRA<span class="rule"></span>No login</div><h2>Ask it anything about your cards.</h2></div>
+  <div class="ask">
+    <div class="chat">
+      <div class="msg you"><span>I have HDFC Regalia. ₹2,500 fee.</span></div>
+      <div class="msg ai"><span><b>Grade: C+</b><br>You're earning about 1.2% effective. For a ₹2,500 annual fee you need roughly ₹2L a month to break even.<br><br><b>Verdict:</b> overpriced for most spends. Axis Magnus or IDFC Wealth do more at your level.</span></div>
+    </div>
+    <div class="askrow"><input type="text" placeholder="Try: I have SBI SimplyCLICK" aria-label="Ask CIRA"><button class="btn solid">Ask →</button></div>
+    <div class="askmeta"><span>Live · responses in seconds</span><span>No login · no data stored</span></div>
+  </div>
+</div></section>
+
+<section class="band-cream" id="reviews"><div class="wrap">
+  <div class="sechead"><div class="kicker">Real users<span class="rule"></span>Honest reviews</div><h2>People who stopped <span class="accent">leaving money behind</span>.</h2></div>
+  <div class="revs">
+    <div class="rev"><div class="stars">★★★★★</div><p>CIRA found me ₹18,000/year I was leaving on the table. Switched to Magnus, confirmed within a week.</p><div class="who">Rahul S., Bangalore</div><div class="role">HDFC Infinia holder</div></div>
+    <div class="rev"><div class="stars">★★★★★</div><p>The devaluation tracker alone is worth it. Got an alert the day Axis removed Marriott. Transferred my points before it happened.</p><div class="who">Priya K., Mumbai</div><div class="role">Travel card optimizer</div></div>
+    <div class="rev"><div class="stars">★★★★★</div><p>Told me not to apply for Infinia yet. Would have been rejected. Got Regalia Gold first. Now approved. Actually honest advice.</p><div class="who">Arjun M., Delhi</div><div class="role">First-time premium user</div></div>
+    <div class="rev"><div class="stars">★★★★☆</div><p>The KrisFlyer sweet spot guide alone saved me ₹85,000 on a Singapore business class ticket I was about to buy in cash.</p><div class="who">Sneha T., Hyderabad</div><div class="role">Frequent flyer</div></div>
+  </div>
+</div></section>
+
+<section class="band-teal"><div class="wrap">
+  <div class="sechead" style="text-align:center"><div class="kicker" style="justify-content:center">Receipts<span class="rule"></span>By the numbers</div><h2>We don't guess. We just count.</h2></div>
+  <div class="rgrid">
+    <div class="rcell"><div class="v">1,000</div><div class="l">Cards roasted</div><div class="s">And counting daily.</div><span class="prov">Live count</span></div>
+    <div class="rcell"><div class="v">₹52L</div><div class="l">Found for users</div><div class="s">In rewards earned vs. lost.</div><span class="prov">Sum of computed deltas</span></div>
+    <div class="rcell"><div class="v">100+</div><div class="l">Cards tracked</div><div class="s">Across 24 banks.</div><span class="prov">From the card table</span></div>
+    <div class="rcell"><div class="v">0</div><div class="l">Affiliate bias</div><div class="s">Same rate on every card.</div><span class="prov">Policy · see disclosures</span></div>
+  </div>
+</div></section>
+
+<section><div class="wrap">
+  <div class="sechead"><div class="kicker">Editorial<span class="rule"></span>Hand-picked</div><h2>Cards worth knowing about.</h2><p class="sub">Chosen by our team — not ranked by anyone's spending, and nobody paid to be here.</p></div>
+  <div class="strip">
+    <div class="card" style="background:#14171C"><div style="display:flex;justify-content:space-between"><span class="bk">HDFC</span><span class="tier">PRIVATE</span></div><div class="chip"></div><div class="nm2">Infinia Metal</div></div>
+    <div class="card" style="background:#1B2A44"><div style="display:flex;justify-content:space-between"><span class="bk">AXIS</span><span class="tier">INFINITE</span></div><div class="chip"></div><div class="nm2">Atlas</div></div>
+    <div class="card" style="background:#8A5A12"><div style="display:flex;justify-content:space-between"><span class="bk">ICICI</span><span class="tier">CLASSIC</span></div><div class="chip"></div><div class="nm2">Amazon Pay</div></div>
+    <div class="card" style="background:#123043"><div style="display:flex;justify-content:space-between"><span class="bk">SBI</span><span class="tier">CLASSIC</span></div><div class="chip"></div><div class="nm2">Cashback</div></div>
+  </div>
+</div></section>
+
+<footer><div class="wrap">
+  <div class="fgrid">
+    <div class="fcol"><a class="logo" href="#" style="margin-bottom:12px"><span class="mark">C</span>CreditIQ</a><p style="max-width:34ch">Credit card intelligence for India. Every number traceable, every estimate labelled.</p></div>
+    <div class="fcol"><h4>Product</h4><a href="#">All cards</a><a href="#">Compare</a><a href="#">Statement Truth</a><a href="#">Pricing</a></div>
+    <div class="fcol"><h4>Travel</h4><a href="#">Trip planner</a><a href="#">Sweet spots</a><a href="#">Transfer partners</a><a href="#">Lounges</a></div>
+    <div class="fcol"><h4>Company</h4><a href="https://www.creditiq.app/about">About</a><a href="#">Disclosures</a><a href="#">Privacy</a><a href="#">Terms</a></div>
+  </div>
+  <div class="fbase">CreditIQ is not a lender and does not issue credit cards. We do not run credit checks and we do not pre-qualify applicants. Figures shown are estimates computed from published earn rules unless marked verified. Fares are cached and stamped with their age. Where we earn a referral commission it is paid by the bank, not by you, and it does not affect rankings.</div>
+</div></footer>
+
+<script>
+var FLOOR=0.023,OPT=0.0651302;
+var CARDS=[{n:"Infinia Metal Edition",b:"HDFC Bank",r:0.0651},{n:"Atlas",b:"Axis Bank",r:0.0538},{n:"Amazon Pay",b:"ICICI Bank",r:0.0412},{n:"Cashback",b:"SBI Card",r:0.0387}];
+var ROUTES=[{c:"BLR–DXB",l:"BLR→DXB · economy, one way",f:"₹26,158",m:"updated 3h ago · Gulf Air · sample 2026-10-12"},
+{c:"DEL–DXB",l:"DEL→DXB · economy, one way",f:"₹26,147",m:"updated 3h ago · IndiGo · sample 2026-10-12"},
+{c:"BOM–SIN",l:"BOM→SIN · economy, one way",f:"₹31,420",m:"updated 5h ago · Singapore Airlines · sample 2026-10-19"},
+{c:"DEL–LON",l:"DEL→LON · economy, one way",f:"₹48,905",m:"updated 6h ago · Virgin Atlantic · sample 2026-11-04"},
+{c:"BLR–BKK",l:"BLR→BKK · economy, one way",f:"₹18,760",m:"updated 4h ago · Thai Airways · sample 2026-09-28"}];
+function inr(n){n=Math.round(n);var s=String(n),last=s.slice(-3),rest=s.slice(0,-3);if(rest)last=rest.replace(/\B(?=(\d{2})+(?!\d))/g,",")+","+last;return "₹"+last;}
+function shortInr(n){return n>=100000?"₹"+(n/100000).toFixed(n%100000?1:0)+"L":"₹"+Math.round(n/1000)+"K";}
+function render(v){var yr=v*12;
+  document.getElementById("spendBig").textContent=inr(v);
+  document.getElementById("spendLabel").textContent=shortInr(v);
+  document.getElementById("range").textContent=inr(Math.round(yr*FLOOR/10)*10)+"–"+inr(Math.round(yr*OPT/10)*10);
+  var rows=CARDS.map(function(c){return{n:c.n,b:c.b,v:yr*c.r};}).sort(function(a,b){return b.v-a.v;});
+  document.getElementById("ranks").innerHTML=rows.map(function(c,i){
+    return '<div class="rank"><div class="pos">'+String(i+1).padStart(2,"0")+'</div><div><div class="nm">'+c.n+'</div><div class="bank">'+c.b+'</div></div><div class="val"><div class="v">'+inr(c.v)+'</div><div class="l">per year</div></div></div>';}).join("");}
+document.getElementById("spend").addEventListener("input",function(e){render(+e.target.value);});
+render(50000);
+
+var tabsEl=document.getElementById("routeTabs");
+tabsEl.innerHTML=ROUTES.map(function(r,i){return '<button class="tab'+(i?'':' on')+'" data-i="'+i+'">'+r.c+'</button>';}).join("");
+tabsEl.addEventListener("click",function(e){var b=e.target.closest(".tab"); if(!b)return;
+  var r=ROUTES[+b.dataset.i];
+  tabsEl.querySelectorAll(".tab").forEach(function(t){t.classList.remove("on");});
+  b.classList.add("on");
+  document.getElementById("rtLabel").textContent=r.l;
+  document.getElementById("rtFare").textContent=r.f;
+  document.getElementById("rtMeta").textContent=r.m;});
+
+var Q=[
+{k:"goal",t:"single",q:"What should this card actually do for you?",why:"This decides whether we optimise for rupees back or for point value at redemption.",
+ o:[["cash","Cash back on everyday spend"],["points","Points I'll turn into flights"],["both","Both — I'll carry two cards"]]},
+{k:"cats",t:"multi",q:"Where does your money actually go?",why:"Indian cards pay wildly different rates by category. Pick your top three.",
+ o:[["online","Online shopping"],["dining","Dining and food delivery"],["grocery","Groceries and quick commerce"],["fuel","Fuel"],["travel","Flights and hotels"],["bills","Utilities and bills"]]},
+{k:"rent",t:"single",q:"Do you pay rent or big bills on a card?",why:"Most Indian cards exclude rent from rewards or charge 1% on it. This is where people lose the most without noticing.",
+ o:[["rent","Yes, rent goes on the card"],["bills","Utilities only, not rent"],["none","Neither"]]},
+{k:"fly",t:"single",q:"How much do you fly in a year?",why:"Lounge access and transfer partners only earn their keep above a certain frequency.",
+ o:[["rare","Rarely — once or twice"],["dom","3–8 domestic trips"],["intl","International at least once a year"],["heavy","I'm on a plane most months"]]},
+{k:"fee",t:"single",q:"What annual fee are you willing to pay?",why:"We'll only show a fee card if the computed return clears the fee at your spend.",
+ o:[["free","₹0 — free cards only"],["1k","Up to ₹1,000"],["5k","Up to ₹5,000"],["any","Anything, if it pays for itself"]]},
+{k:"have",t:"multi",q:"Which cards do you already hold?",why:"So we don't recommend a card you have, and so we can respect issuer limits and cooling periods.",
+ o:[["hdfc","Something from HDFC"],["axis","Something from Axis"],["icici","Something from ICICI"],["sbi","Something from SBI"],["amex","American Express"],["none","None yet"]]},
+{k:"effort",t:"single",q:"How much effort will you put in?",why:"An optimiser and someone who wants one card in the wallet need different answers.",
+ o:[["one","One card, keep it simple"],["two","Two cards, split by category"],["max","Whatever earns the most, I'll juggle"]]}];
+
+var POOL=[
+{id:"icici",n:"Amazon Pay Credit Card",b:"ICICI Bank · ₹0 fee",tags:{cash:3,online:3,free:3,one:2,rare:1}},
+{id:"sbi",n:"Cashback Card",b:"SBI Card · ₹999 fee",tags:{cash:3,online:2,dining:2,"1k":3,one:2}},
+{id:"axis",n:"Atlas",b:"Axis Bank · ₹5,000 fee",tags:{points:3,travel:3,intl:3,dom:2,"5k":3,two:2,max:2}},
+{id:"hdfc",n:"Infinia Metal Edition",b:"HDFC Bank · ₹12,500 fee",tags:{points:3,travel:2,heavy:3,intl:2,any:3,max:3}},
+{id:"amex",n:"Platinum Travel",b:"American Express · ₹5,000 fee",tags:{points:2,travel:2,dom:3,"5k":2,two:1}}];
+
+var ans={},step=0;
+function score(){
+  return POOL.map(function(c){
+    var v=0;
+    Object.keys(ans).forEach(function(k){
+      var a=ans[k];
+      (Array.isArray(a)?a:[a]).forEach(function(x){ if(c.tags[x]) v+=c.tags[x]; });
+    });
+    if(ans.have && ans.have.indexOf(c.id)>-1) v-=4;
+    return {c:c,v:v};
+  }).sort(function(a,b){return b.v-a.v;});
+}
+function reasons(){
+  var r=[];
+  if(ans.goal==="cash") r.push("you want rupees back rather than points");
+  if(ans.goal==="points") r.push("you want point value at redemption");
+  if(ans.cats&&ans.cats.length) r.push("your spend is concentrated in "+ans.cats.length+" categor"+(ans.cats.length>1?"ies":"y"));
+  if(ans.rent==="rent") r.push("rent is on the card, which most issuers exclude");
+  if(ans.fly==="intl"||ans.fly==="heavy") r.push("you fly enough for transfer partners to pay");
+  if(ans.fee==="free") r.push("you capped the fee at zero");
+  if(ans.fee==="any") r.push("you'll pay a fee if the maths clears it");
+  return r;
+}
+function paint(){
+  var b=document.getElementById("mBody");
+  if(step>=Q.length){
+    var s=score();
+    b.innerHTML='<div class="qh">Here is what the maths picks.</div><div class="qwhy">Computed from published earn rules at the spend you set in the hero. No credit check was run and no data was stored.</div><div class="opts"><button class="opt on"><span class="box">✓</span>'+s[0].c.n+' — '+s[0].c.b+'</button><button class="opt"><span class="box"></span>Runner-up: '+s[1].c.n+'</button></div>';
+    document.getElementById("mNext").textContent="See the full working →";
+    document.getElementById("mCount").textContent="Done";
+    document.getElementById("mFill").style.width="100%";
+    document.getElementById("mNote").textContent="If your current card already wins at your spend, we will tell you to keep it.";
+    return;
+  }
+  var q=Q[step],cur=ans[q.k];
+  document.getElementById("mCount").textContent=(step+1)+" of "+Q.length;
+  document.getElementById("mFill").style.width=((step+1)/Q.length*100)+"%";
+  document.getElementById("mNext").textContent=step===Q.length-1?"See my match":"Next";
+  b.innerHTML='<div class="qh">'+q.q+'</div><div class="qwhy">'+q.why+'</div><div class="opts">'+
+    q.o.map(function(o){
+      var on=q.t==="multi"?(cur&&cur.indexOf(o[0])>-1):(cur===o[0]);
+      return '<button class="opt'+(q.t==="multi"?" multi":"")+(on?" on":"")+'" data-v="'+o[0]+'"><span class="box">'+(on?"✓":"")+'</span>'+o[1]+'</button>';}).join("")+'</div>';
+}
+function paintSide(){
+  if(!Object.keys(ans).length) return;
+  var s=score();
+  document.getElementById("sName").textContent=s[0].c.n;
+  document.getElementById("sBank").textContent=s[0].c.b;
+  var r=reasons();
+  document.getElementById("sWhy").textContent=r.length?"Leading because "+r.join(", and ")+".":"Leading on your answers so far.";
+  document.getElementById("sRunner").innerHTML=Object.keys(ans).length>1?'Runner-up: <b>'+s[1].c.n+'</b> — closer if your split shifts.':'Runner-up appears once we have two answers.';
+}
+document.getElementById("mBody").addEventListener("click",function(e){
+  var o=e.target.closest(".opt"); if(!o||!o.dataset.v||step>=Q.length) return;
+  var q=Q[step];
+  if(q.t==="multi"){
+    var a=ans[q.k]||[],i=a.indexOf(o.dataset.v);
+    if(i>-1) a.splice(i,1); else a.push(o.dataset.v);
+    ans[q.k]=a;
+  } else { ans[q.k]=o.dataset.v; }
+  paint(); paintSide();
+});
+document.getElementById("mNext").addEventListener("click",function(){ if(step<Q.length){step++;paint();paintSide();} });
+document.getElementById("mBack").addEventListener("click",function(){ if(step>0){step--;paint();} });
+document.getElementById("mSkip").addEventListener("click",function(){
+  document.getElementById("mNote").textContent="Statement Truth reads your real categories instead of asking you to guess them.";
+});
+paint();
+</script>
+</body>
+</html>
