@@ -1,0 +1,20 @@
+/* SectionTabs CSS. Moved out of a <style>{`…`}</style> text child: the hover
+   selector a[data-active="false"] carries double quotes, which React SSR-escaped
+   to &quot; inside the raw-text <style> element — server DOM diverged from client
+   render and React discarded the tree, stripping data-theme. As an imported
+   stylesheet the attribute-selector quotes are literal CSS. The --st-* custom
+   props these rules read are still set inline per-section on the nav element.
+   Rules byte-identical.
+
+   Hover wash, scrollbar hide, and reduced-motion override live here because inline
+   styles can't express pseudo-classes or media queries. The !important on the
+   reduced-motion rule beats the inline transition. */
+.ciq-sectiontabs { scrollbar-width: none; -ms-overflow-style: none; }
+.ciq-sectiontabs::-webkit-scrollbar { display: none; }
+.ciq-sectiontabs a[data-active="false"]:hover {
+  background: var(--st-hover);
+  color: var(--st-text-active);
+}
+@media (prefers-reduced-motion: reduce) {
+  .ciq-sectiontabs a { transition: none !important; }
+}
