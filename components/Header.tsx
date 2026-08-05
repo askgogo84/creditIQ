@@ -7,6 +7,7 @@ import { createBrowserClient } from '@supabase/ssr'
 import { TabBar } from '@/components/ciq/TabBar'
 import { APP_NAV, appActive as isAppActive } from '@/components/ciq/appNav'
 import { useTheme, reassertTheme } from '@/lib/store'
+import './Header.css'
 
 const NAV_LINKS = [
   { label: 'Discover', href: '/' },
@@ -36,72 +37,10 @@ const BROWSE_LINKS = [
 // App nav (APP_NAV) + its active-state matchers now live in
 // components/ciq/appNav.tsx so the rail, TabBar and this Header can't drift.
 
-// Header CSS — a single static, module-level constant. It is byte-identical on
-// every server and client render (nothing is interpolated from state, props or
-// theme), so it can never produce a "Text content does not match" hydration
-// mismatch. Anything that must vary by theme is expressed with design tokens
-// (var(--…)) that the browser resolves per [data-theme] — the varying part lives
-// in globals.css, never in this string.
-const HEADER_CSS = `
-        .ciq-header { position: fixed; top: 0; left: 0; right: 0; z-index: 200; transition: box-shadow 0.2s; }
-        .ciq-header.scrolled { box-shadow: var(--shadow-md); }
-        .ciq-inner { max-width: 1200px; margin: 0 auto; padding: 0 20px; height: 60px; display: flex; align-items: center; justify-content: space-between; gap: 16px; }
-        .ciq-logo { display: flex; align-items: center; gap: 10px; text-decoration: none; flex-shrink: 0; }
-        .ciq-logo-icon { width: 36px; height: 36px; background: var(--navy); border-radius: 8px; display: flex; align-items: center; justify-content: center; }
-        .ciq-logo-text { font-size: 18px; font-weight: 800; color: var(--ink); letter-spacing: -0.5px; }
-        .ciq-logo-sub { font-size: 9px; font-weight: 600; color: var(--ink-3); letter-spacing: 2px; text-transform: uppercase; margin-top: -2px; }
-        .ciq-nav { display: flex; align-items: center; gap: 2px; background: var(--bg-2); border-radius: 100px; padding: 4px; }
-        .ciq-nav-item { padding: 7px 18px; border-radius: 100px; font-size: 14px; font-weight: 600; color: var(--ink-3); text-decoration: none; cursor: pointer; background: none; border: none; transition: all 0.15s; white-space: nowrap; }
-        .ciq-nav-item:hover { color: var(--ink); background: var(--surface-2); }
-        .ciq-nav-item.active { background: var(--surface); color: var(--ink); box-shadow: var(--shadow-sm); }
-        .ciq-right { display: flex; align-items: center; gap: 10px; }
-        .ciq-theme-btn { width: 36px; height: 36px; border-radius: 50%; border: 1px solid var(--line); background: var(--surface); color: var(--ink); cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 16px; }
-        .ciq-ico-moon { display: none; }
-        :root[data-theme="dark"] .ciq-ico-sun { display: none; }
-        :root[data-theme="dark"] .ciq-ico-moon { display: block; }
-        .ciq-cta { padding: 9px 20px; background: var(--navy); color: #fff; border: none; border-radius: 100px; font-size: 14px; font-weight: 700; cursor: pointer; text-decoration: none; white-space: nowrap; display: flex; align-items: center; gap: 6px; transition: opacity 0.15s; }
-        .ciq-cta:hover { opacity: 0.88; }
-        .ciq-hamburger { display: none; flex-direction: column; gap: 5px; padding: 8px; background: none; border: none; cursor: pointer; }
-        .ciq-bar { width: 22px; height: 2px; background: var(--ink); border-radius: 2px; display: block; transition: all 0.2s; }
-        .ciq-ai-dropdown { position: absolute; top: calc(100% + 8px); left: 50%; transform: translateX(-50%); background: var(--surface); border: 1px solid var(--line); border-radius: 20px; box-shadow: var(--shadow-lg); padding: 8px; width: 280px; display: flex; flex-direction: column; gap: 2px; z-index: 300; }
-        .ciq-ai-item { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: 12px; text-decoration: none; transition: background 0.1s; }
-        .ciq-ai-item:hover { background: var(--bg-2); }
-        .ciq-ai-icon { width: 32px; height: 32px; border-radius: 8px; background: var(--bg-2); display: flex; align-items: center; justify-content: center; font-size: 16px; flex-shrink: 0; }
-        .ciq-ai-label { font-size: 13px; font-weight: 600; color: var(--ink); }
-        .ciq-badge { font-size: 9px; font-weight: 700; padding: 2px 6px; border-radius: 100px; background: var(--badge-gold); color: #fff; margin-left: 4px; vertical-align: middle; }
-        .ciq-badge.new { background: var(--badge-new); }
-        .ciq-badge.beta { background: var(--badge-beta); }
-        .ciq-badge.popular { background: var(--badge-gold); }
-        .ciq-more-mega { position: absolute; top: calc(100% + 8px); right: 0; background: var(--surface); border: 1px solid var(--line); border-radius: 20px; box-shadow: var(--shadow-lg); padding: 16px; display: grid; grid-template-columns: repeat(2, minmax(212px, 1fr)); gap: 4px 14px; z-index: 300; }
-        .ciq-more-title { font-size: 10px; font-weight: 700; color: var(--copper); letter-spacing: 1.5px; text-transform: uppercase; padding: 6px 12px 4px; }
-        .ciq-mobile-menu { position: absolute; top: 100%; left: 0; right: 0; background: var(--surface); border-bottom: 1px solid var(--line); box-shadow: var(--shadow-lg); padding: 12px 20px 20px; max-height: 80vh; overflow-y: auto; }
-        .ciq-mobile-section { font-size: 10px; font-weight: 700; color: var(--copper); letter-spacing: 1.5px; text-transform: uppercase; padding: 12px 0 6px; }
-        .ciq-mobile-link { display: flex; align-items: center; gap: 10px; padding: 11px 0; font-size: 15px; font-weight: 600; color: var(--ink); text-decoration: none; border-bottom: 1px solid var(--line-soft); }
-        .ciq-tab-bar { display: none; position: fixed; bottom: 0; left: 0; right: 0; background: var(--surface); border-top: 1px solid var(--line); z-index: 200; padding-bottom: env(safe-area-inset-bottom,0px); }
-        .ciq-tab { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; padding: 7px 0 4px; flex: 1; text-decoration: none; color: var(--ink-4); transition: color 0.15s; }
-        .ciq-tab.active { color: var(--copper); }
-        .ciq-tab-label { font-size: 9px; font-weight: 500; letter-spacing: 0.2px; }
-        .ciq-tab.active .ciq-tab-label { font-weight: 700; }
-        .ciq-tab-dot { width: 3px; height: 3px; border-radius: 50%; background: var(--copper); }
-        @media (max-width: 768px) {
-          .ciq-nav { display: none !important; }
-          .ciq-cta { display: none !important; }
-          .ciq-theme-desktop { display: none !important; }
-          .ciq-hamburger { display: flex !important; }
-          .ciq-tab-bar { display: flex !important; }
-          main, .main-content, .page-fade, body > div, #__next > div { padding-bottom: 72px !important; } body { padding-bottom: 72px !important; }
-        }
-        @media (min-width: 769px) {
-          .ciq-hamburger { display: none !important; }
-          .ciq-tab-bar { display: none !important; }
-          .ciq-mobile-menu { display: none !important; }
-        }
-        .header-spacer { height: 60px; }
-        @media (max-width: 768px) {
-          div[style*="position: fixed"][style*="bottom: 24"] { bottom: 80px !important; }
-          div[style*="position: fixed"][style*="bottom: 92"] { bottom: 148px !important; }
-        }
-`
+// Header CSS now lives in ./Header.css (imported above). It was a <style> text
+// child, whose " got SSR-escaped to &quot; inside the raw-text <style> element —
+// the escaped server DOM diverged from the client render and React discarded the
+// tree, stripping data-theme. An imported stylesheet has no such escaping.
 
 export function Header() {
   const pathname = usePathname()
@@ -212,8 +151,6 @@ export function Header() {
 
   return (
     <>
-      <style>{HEADER_CSS}</style>
-
       <header className={`ciq-header${scrolled ? ' scrolled' : ''}`} style={{ background: 'var(--surface)' }}>
         <div className="ciq-inner">
 
