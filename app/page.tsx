@@ -2,8 +2,9 @@
 
 import type { CSSProperties } from 'react';
 import Link from 'next/link';
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
+import { createBrowserClient } from '@supabase/ssr';
 import { Reveal }         from '@/components/design/Reveal';
 import { StatNumber }     from '@/components/design/StatNumber';
 import { Header }         from '@/components/Header';
@@ -68,9 +69,54 @@ function FAQItem({ q, a }: { q: string; a: string }) {
   );
 }
 
+// Where a signed-in visitor to the crawlable marketing "/" is sent. Client-side
+// only (a server redirect would kill "/" static rendering / SEO).
+// INTERIM: repoint to '/home' in one line once the Home surface ships (docs/00-SIGNED-IN-IA.md §2).
+const SIGNED_IN_HOME = '/dashboard';
+
 export default function HomePage() {
+  const router = useRouter();
+  // Client-only veil: false on the server + first client render, so the static
+  // marketing HTML is what crawlers get and hydration matches. Flips true only
+  // while a confirmed session is being redirected away, to hide the flash.
+  const [redirecting, setRedirecting] = useState(false);
+  const firedRef = useRef(false);
+
+  useEffect(() => {
+    const sb = createBrowserClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!);
+    let settled = false;
+    // Fallback: if auth never resolves within 2s, reveal marketing regardless.
+    const timer = setTimeout(() => { if (!settled) { settled = true; setRedirecting(false); } }, 2000);
+
+    // Decide ONLY on the resolved getSession() truth. Every sign-out handler awaits
+    // sb.auth.signOut() before landing on "/", so by the time this runs the session
+    // is already cleared -> null -> no redirect. That is what stops the sign-out
+    // bounce loop (sign out -> "/" -> yanked back into the app).
+    sb.auth.getSession().then(({ data: { session } }) => {
+      if (settled) return;
+      settled = true; clearTimeout(timer);
+      if (session?.user && !firedRef.current) {
+        firedRef.current = true;
+        setRedirecting(true);
+        router.replace(SIGNED_IN_HOME);
+      }
+    });
+
+    // Belt-and-suspenders for a same-tab sign-out that races the check: cancel any
+    // pending redirect and reveal marketing. (INITIAL_SESSION on subscribe is
+    // ignored; only SIGNED_OUT matters here.)
+    const { data: { subscription } } = sb.auth.onAuthStateChange((event) => {
+      if (event === 'SIGNED_OUT') { firedRef.current = true; settled = true; clearTimeout(timer); setRedirecting(false); }
+    });
+
+    return () => { clearTimeout(timer); subscription.unsubscribe(); };
+  }, [router]);
+
   return (
     <>
+      {redirecting && (
+        <div aria-hidden="true" style={{ position: 'fixed', inset: 0, zIndex: 9999, background: 'var(--bg,#fff)' }} />
+      )}
       <Header />
 
       {/* Sticky devaluation ticker — always visible below nav */}

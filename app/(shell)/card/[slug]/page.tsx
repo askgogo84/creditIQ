@@ -1,6 +1,5 @@
 import { notFound } from 'next/navigation';
 import { SEED_CARDS } from '@/lib/data/seed-cards';
-import { Header } from '@/components/Header';
 import { DesignFooter } from '@/components/design/Footer';
 import { CardDetailClient } from './CardDetailClient';
 
@@ -93,7 +92,6 @@ export default function CardDetailPage({ params }: { params: { slug: string } })
     <main className="page-fade">
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(financialProduct) }} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqPage) }} />
-      <Header />
       <CardDetailClient card={card} />
       <DesignFooter />
     </main>
