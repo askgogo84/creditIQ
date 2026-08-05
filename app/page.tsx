@@ -439,6 +439,51 @@ export default function HomePage() {
           </section>
         </SpendProvider>
       </main>
+
+      {/* ── 10 · FOOTER (cream) — link columns + the full disclosure paragraph. Every
+          link is an internal route that resolves; none are dead. Blog is intentionally
+          absent (posts deleted). ── */}
+      <footer className={cx('hm-footer')}>
+        <div className={cx('hm-wrap')}>
+          <div className={cx('hm-fgrid')}>
+            <div className={cx('hm-fcol')}>
+              <Link href="/" className={cx('hm-logo')} style={{ marginBottom: 12 }}>
+                <span className={cx('hm-mark')}>C</span>CreditIQ
+              </Link>
+              <p className={cx('hm-fintro')}>
+                Credit card intelligence for India. Every number traceable, every estimate labelled.
+              </p>
+            </div>
+            <div className={cx('hm-fcol')}>
+              <h4>Product</h4>
+              <Link href="/cards">All cards</Link>
+              <Link href="/compare">Compare</Link>
+              <Link href="/statement-truth">Statement Truth</Link>
+              <Link href="/plans">Pricing</Link>
+            </div>
+            <div className={cx('hm-fcol')}>
+              <h4>Travel</h4>
+              <Link href="/trip-planner">Trip planner</Link>
+              <Link href="/sweet-spots">Sweet spots</Link>
+              <Link href="/transfer-partners">Transfer partners</Link>
+              <Link href="/lounge-tracker">Lounges</Link>
+            </div>
+            <div className={cx('hm-fcol')}>
+              <h4>Company</h4>
+              <Link href="/about">About</Link>
+              <Link href="/disclosures">Disclosures</Link>
+              <Link href="/privacy">Privacy</Link>
+              <Link href="/terms">Terms</Link>
+            </div>
+          </div>
+          <div className={cx('hm-fbase')}>
+            CreditIQ is not a lender and does not issue credit cards. We do not run credit checks and we do not
+            pre-qualify applicants. Figures shown are estimates computed from published earn rules unless marked
+            verified. Fares are cached and stamped with their age. Where we earn a referral commission it is paid by
+            the bank, not by you, and it does not affect rankings.
+          </div>
+        </div>
+      </footer>
     </>
   );
 }

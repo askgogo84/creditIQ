@@ -171,7 +171,17 @@
 .hm-chip { width: 26px; height: 19px; border-radius: 4px; background: rgba(255,255,255,.6); }
 .hm-nm2 { font-size: 12px; font-weight: 500; }
 
+/* ── §10 Footer (cream) — link columns + full disclosure ── */
+.hm-footer { background: #F7F1E6; border-top: 1px solid #E2DCD0; color: #6E7B82; font-size: 13.5px; padding: 46px 0 60px; }
+.hm-fgrid { display: grid; gap: 30px; margin-bottom: 30px; }
+.hm-fintro { max-width: 34ch; margin: 0; line-height: 1.5; color: #48565E; }
+.hm-fcol h4 { font-size: 11px; letter-spacing: .14em; text-transform: uppercase; color: #10202A; margin: 0 0 13px; font-weight: 600; }
+.hm-fcol a:not(.hm-logo) { display: block; padding: 5px 0; color: #48565E; }
+.hm-fcol a:not(.hm-logo):hover { color: #10202A; }
+.hm-fbase { border-top: 1px solid #D3CBBB; padding-top: 22px; font-size: 12.5px; line-height: 1.7; color: #6E7B82; }
+
 @media (min-width: 768px) {
+  .hm-fgrid { grid-template-columns: 2fr 1fr 1fr 1fr; }
   .hm-navlinks { display: flex; }
   .hm-tools { grid-template-columns: repeat(2, 1fr); }
   .hm-strip { grid-template-columns: repeat(4, 1fr); }
