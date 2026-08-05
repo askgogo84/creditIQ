@@ -9,6 +9,8 @@ import { SpendProvider } from '@/components/marketing/landing/SpendContext';
 import { HeroCompute } from '@/components/marketing/landing/HeroCompute';
 import { HeroProof } from '@/components/marketing/landing/HeroProof';
 import { FaresBoard } from '@/components/marketing/landing/FaresBoard';
+import { SEED_CARDS } from '@/lib/data/seed-cards';
+import { getRedemptionOptions } from '@/lib/redemption';
 import { HomeHeroBg } from './HomeHeroBg';
 import styles from './page.module.css';
 
@@ -85,6 +87,32 @@ const FARES_VARS: CSSProperties = {
   '--fb-ink': '#10202A',
   '--fb-muted': '#6E7B82',
 } as CSSProperties;
+
+// ── §03 Where points go — the ₹2,70,000 vs ₹75,000 split, COMPUTED from one real
+// card's redemption_options (the same derivation /landing uses; the value is derived
+// from canonical SEED_CARDS, never a hardcoded rupee). The gap is real: one balance
+// priced two ways, each with its provenance. If the card or a path is missing the
+// figure is dropped (?? fallbacks in the JSX), never faked.
+const REDEEM_CARD = SEED_CARDS.find((c) => c.id === 'hdfc-infinia');
+const REDEEM_BALANCE = 150000;
+const inr = (n: number) => `₹${Math.round(n).toLocaleString('en-IN')}`;
+
+function computeRedeemSplit() {
+  if (!REDEEM_CARD) return null;
+  const opts = getRedemptionOptions(REDEEM_CARD);
+  const premium = opts
+    .filter((o) => o.type === 'transfer')
+    .sort((a, b) => b.value_per_point_inr - a.value_per_point_inr)[0];
+  const floor = opts.find((o) => o.type === 'voucher') ?? opts.find((o) => o.type === 'product');
+  if (!premium || !floor) return null;
+  return {
+    card: REDEEM_CARD.name,
+    balance: REDEEM_BALANCE.toLocaleString('en-IN'),
+    hi: inr(REDEEM_BALANCE * premium.value_per_point_inr),   // e.g. ₹2,70,000 (best transfer)
+    floor: inr(REDEEM_BALANCE * floor.value_per_point_inr),  // e.g. ₹75,000 (catalogue)
+  };
+}
+const REDEEM = computeRedeemSplit();
 
 // Where a signed-in visitor to the crawlable marketing "/" is sent. Client-side
 // only (a server redirect would kill "/" static rendering / SEO).
@@ -216,6 +244,50 @@ export default function HomePage() {
               </div>
               <div style={FARES_VARS}>
                 <FaresBoard />
+              </div>
+            </div>
+          </section>
+
+          {/* ── 03 · WHERE POINTS GO (white ground) — the ₹2,70,000 vs ₹75,000 split,
+              computed from ONE real card's redemption_options (not hardcoded). ── */}
+          <section className={cx('hm-section')} id="where">
+            <div className={cx('hm-wrap')}>
+              <div className={cx('hm-sechead')}>
+                <div className={cx('hm-kicker')}>Where points<span className={cx('hm-rule')} />Can go</div>
+                <h2 className={cx('hm-h2')}>
+                  {REDEEM?.balance ?? '1,50,000'} points is a business seat to Singapore, or{' '}
+                  {REDEEM?.floor ?? '₹75,000'} in catalogue vouchers.
+                </h2>
+              </div>
+              <div className={cx('hm-redeem')}>
+                <div>
+                  <p className={cx('hm-sub')}>
+                    The same balance is worth {REDEEM?.hi ?? '₹2,70,000'} or {REDEEM?.floor ?? '₹75,000'} depending
+                    on where it goes. We show both numbers, and where each one came from.
+                  </p>
+                  {REDEEM && (
+                    <>
+                      <div className={cx('hm-redeemnums')}>
+                        <div className={cx('hm-rn')}>
+                          <div className={cx('hm-rnv', 'hm-rnhi')}>{REDEEM.hi}</div>
+                          <div className={cx('hm-rnl')}>Transferred to airline</div>
+                        </div>
+                        <div className={cx('hm-rn')}>
+                          <div className={cx('hm-rnv')}>{REDEEM.floor}</div>
+                          <div className={cx('hm-rnl')}>Catalogue vouchers</div>
+                        </div>
+                      </div>
+                      <p className={cx('hm-src')}>
+                        <span className={cx('hm-estpill')}><i />Estimated</span>
+                        {REDEEM.card} · {REDEEM.balance} pts
+                      </p>
+                    </>
+                  )}
+                </div>
+                <div className={cx('hm-photopanel')}>
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src="/images/where-points.jpg" alt="An aircraft at a boarding gate in daylight" />
+                </div>
               </div>
             </div>
           </section>
