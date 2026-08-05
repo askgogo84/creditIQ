@@ -12,6 +12,7 @@ import { FaresBoard } from '@/components/marketing/landing/FaresBoard';
 import { SEED_CARDS } from '@/lib/data/seed-cards';
 import { getRedemptionOptions } from '@/lib/redemption';
 import { HomeHeroBg } from './HomeHeroBg';
+import { SmartCardMatch } from './SmartCardMatch';
 import styles from './page.module.css';
 
 // Map the readable hm-* names to their hashed CSS-module classes. Compound
@@ -316,6 +317,21 @@ export default function HomePage() {
                   <p>Points convert at fares we have actually seen, with the age stamped. When a fare gets old we say so rather than quietly reusing it.</p>
                 </div>
               </div>
+            </div>
+          </section>
+
+          {/* ── 05 · SMART CARD MATCH (teal band) — seven-question stepper ── */}
+          <section className={cx('hm-section', 'hm-band-teal')} id="match">
+            <div className={cx('hm-wrap')}>
+              <div className={cx('hm-sechead')}>
+                <div className={cx('hm-kicker')}>Smart Card Match<span className={cx('hm-rule')} />No credit pull</div>
+                <h2 className={cx('hm-h2')}>Answer seven questions. Get the card the maths picks.</h2>
+                <p className={cx('hm-sub')}>
+                  We don&rsquo;t run a credit check and we don&rsquo;t pre-qualify you — nobody in India honestly can from a
+                  web form. We compute what each card returns on your spend and show the working.
+                </p>
+              </div>
+              <SmartCardMatch />
             </div>
           </section>
         </SpendProvider>

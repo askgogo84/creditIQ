@@ -58,6 +58,43 @@
 
 .hm-section { padding: 62px 0; }
 .hm-band-cream { background: #F7F1E6; border-top: 1px solid #E2DCD0; border-bottom: 1px solid #E2DCD0; }
+
+/* ── §05 Smart Card Match (teal band) — seven-question stepper ── */
+.hm-band-teal { background: #0E3B3C; color: #F4F0E6; }
+.hm-band-teal .hm-h2 { color: #F4F0E6; }
+.hm-band-teal .hm-kicker { color: #8FC9BC; }
+.hm-band-teal .hm-rule { background: rgba(244,240,230,.3); }
+.hm-band-teal .hm-sub { color: #A9C4BF; }
+
+.hm-mgrid { display: grid; gap: 18px; }
+.hm-mcard { background: #F7F1E6; color: #10202A; border-radius: 18px; padding: 22px; }
+.hm-prog { display: flex; align-items: center; gap: 14px; margin-bottom: 22px; }
+.hm-progbar { flex: 1; height: 5px; border-radius: 3px; background: #EFE7D8; overflow: hidden; }
+.hm-progfill { height: 100%; background: #0E3B3C; width: 14%; transition: width .28s; }
+.hm-progn { font-size: 12px; color: #6E7B82; font-family: "JetBrains Mono", ui-monospace, monospace; flex: none; }
+.hm-back { border: 0; background: transparent; color: #0E3B3C; font-size: 20px; cursor: pointer; padding: 0 4px; line-height: 1; min-height: 32px; }
+.hm-back:disabled { opacity: .35; cursor: default; }
+.hm-qh { font-size: 21px; font-weight: 500; line-height: 1.3; margin-bottom: 8px; color: #10202A; }
+.hm-qwhy { background: #EFE7D8; border-radius: 10px; padding: 11px 13px; font-size: 13px; color: #42545A; margin-bottom: 18px; }
+.hm-opts { display: grid; gap: 9px; }
+.hm-opt { display: flex; align-items: center; gap: 12px; min-height: 52px; padding: 0 15px; border-radius: 12px; border: 1.5px solid #D3CBBB; background: #fff; color: #10202A; font-family: "Inter", system-ui, sans-serif; font-size: 14.5px; font-weight: 500; text-align: left; cursor: pointer; transition: all .15s; width: 100%; }
+.hm-opt:hover { border-color: #0E3B3C; }
+.hm-box { width: 20px; height: 20px; border-radius: 50%; border: 1.5px solid #D3CBBB; flex: none; display: grid; place-items: center; font-size: 11px; color: #fff; }
+.hm-opt.hm-multi .hm-box { border-radius: 6px; }
+.hm-opt.hm-on { border-color: #0E3B3C; background: #EAF3EF; }
+.hm-opt.hm-on .hm-box { background: #0E3B3C; border-color: #0E3B3C; }
+.hm-mfoot { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin-top: 20px; }
+.hm-btn.hm-tealout { background: transparent; color: #0E3B3C; border-color: #D3CBBB; }
+.hm-btn.hm-tealout:hover { border-color: #0E3B3C; }
+.hm-mnote { font-size: 12.5px; color: #6E7B82; }
+.hm-side { background: rgba(244,240,230,.07); border: 1px solid rgba(244,240,230,.18); border-radius: 18px; padding: 22px; align-self: start; }
+.hm-lab { font-size: 11px; letter-spacing: .14em; text-transform: uppercase; color: #8FC9BC; margin-bottom: 14px; }
+.hm-mname { font-size: 20px; font-weight: 500; color: #F4F0E6; margin-bottom: 4px; }
+.hm-mbank { font-size: 12.5px; color: #A9C4BF; margin-bottom: 16px; }
+.hm-why { font-size: 13.5px; color: #CFE0DA; line-height: 1.6; margin: 0 0 16px; }
+.hm-runner { border-top: 1px solid rgba(244,240,230,.18); padding-top: 14px; font-size: 12.5px; color: #A9C4BF; }
+.hm-runner b { color: #F4F0E6; font-weight: 500; }
+.hm-mstamp { display: inline-flex; align-items: center; gap: 6px; font-size: 10.5px; letter-spacing: .08em; text-transform: uppercase; color: #8FC9BC; border: 1px solid rgba(143,201,188,.4); border-radius: 999px; padding: 4px 9px; margin-top: 14px; }
 .hm-sechead { margin-bottom: 36px; }
 .hm-h2 { font-family: "Fraunces", Georgia, serif; font-weight: 300; letter-spacing: -.015em; line-height: 1.1; color: #10202A; font-size: clamp(27px,5.6vw,40px); margin: 0 0 14px; }
 .hm-h2 .hm-accent { color: #9A6516; }
@@ -89,6 +126,7 @@
   .hm-herogrid { grid-template-columns: 1.1fr .9fr; gap: 48px; align-items: start; }
   .hm-redeem { grid-template-columns: 1.1fr .9fr; gap: 48px; align-items: center; }
   .hm-steps { grid-template-columns: repeat(3, 1fr); }
+  .hm-mgrid { grid-template-columns: 1.25fr .75fr; }
   .hm-section { padding: 92px 0; }
 }
 @media (prefers-reduced-motion: reduce) {
