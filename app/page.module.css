@@ -202,12 +202,11 @@
      it still stretches full width and its own max-width + margin:auto centring applies —
      the copy panel then left-aligns at the page gutter. */
   .hm-where { min-height: 620px; display: flex; align-items: center; }
-  /* The child+plane sits at the CENTRE of the 16:9 frame, and at desktop widths the
-     section is far wider than the clip — so cover shows the whole frame and the subject
-     would land over the copy. object-position can't bite (no horizontal crop). Instead
-     scale the media from the LEFT edge: the left edge stays pinned (no seam — that zone is
-     the white wash anyway), and the subject is pushed to the right, clear of the copy. */
-  .hm-where-media { transform: scale(1.5); transform-origin: left center; }
+  /* The child+plane is cropped NATIVELY to ~79% across the 1000×720 file, so cover +
+     object-position:right center (set on the media in HomePointsMedia.tsx) already lands
+     the subject on the RIGHT, clear of the left-third copy. No CSS scale — upscaling a
+     720p source would render soft, worst on high-DPI; the in-file crop does the same
+     framing job at native resolution. */
   /* Desktop wash — horizontal, over the LEFT THIRD only, fading to fully clear by ~64% so
      the near-white sky and the silhouette on the right are untouched. */
   .hm-where-wash {
