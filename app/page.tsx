@@ -252,45 +252,51 @@ export default function HomePage() {
             </div>
           </section>
 
-          {/* ── 03 · WHERE POINTS GO (white ground) — the ₹2,70,000 vs ₹75,000 split,
-              computed from ONE real card's redemption_options (not hardcoded). ── */}
-          <section className={cx('hm-section')} id="where">
+          {/* ── 03 · WHERE POINTS GO — the ₹2,70,000 vs ₹75,000 split, computed from ONE
+              real card's redemption_options (not hardcoded). The points clip is now the
+              FULL-BLEED background of the whole section (no card / border / radius); the
+              copy + figures are held over a soft WHITE wash on the left third (NO dark
+              scrim — the near-white sky must stay bright). Sits between two cream bands,
+              so it reads as the page briefly opening out into a lighter panel. ── */}
+          <section className={cx('hm-section', 'hm-where')} id="where">
+            {/* Full-bleed points clip — the section background, edge to edge. */}
+            <div className={cx('hm-where-media')} aria-hidden>
+              <HomePointsMedia />
+            </div>
+            {/* Soft white wash over the left third only — keeps the copy legible without
+                darkening the sky. */}
+            <div className={cx('hm-where-wash')} aria-hidden />
             <div className={cx('hm-wrap')}>
-              <div className={cx('hm-sechead')}>
-                <div className={cx('hm-kicker')}>Where points<span className={cx('hm-rule')} />Can go</div>
-                <h2 className={cx('hm-h2')}>
-                  {REDEEM?.balance ?? '1,50,000'} points is a business seat to Singapore, or{' '}
-                  {REDEEM?.floor ?? '₹75,000'} in catalogue vouchers.
-                </h2>
-              </div>
-              <div className={cx('hm-redeem')}>
-                <div>
-                  <p className={cx('hm-sub')}>
-                    The same balance is worth {REDEEM?.hi ?? '₹2,70,000'} or {REDEEM?.floor ?? '₹75,000'} depending
-                    on where it goes. We show both numbers, and where each one came from.
-                  </p>
-                  {REDEEM && (
-                    <>
-                      <div className={cx('hm-redeemnums')}>
-                        <div className={cx('hm-rn')}>
-                          <div className={cx('hm-rnv', 'hm-rnhi')}>{REDEEM.hi}</div>
-                          <div className={cx('hm-rnl')}>Transferred to airline</div>
-                        </div>
-                        <div className={cx('hm-rn')}>
-                          <div className={cx('hm-rnv')}>{REDEEM.floor}</div>
-                          <div className={cx('hm-rnl')}>Catalogue vouchers</div>
-                        </div>
+              <div className={cx('hm-where-panel')}>
+                <div className={cx('hm-sechead')}>
+                  <div className={cx('hm-kicker')}>Where points<span className={cx('hm-rule')} />Can go</div>
+                  <h2 className={cx('hm-h2')}>
+                    {REDEEM?.balance ?? '1,50,000'} points is a business seat to Singapore, or{' '}
+                    {REDEEM?.floor ?? '₹75,000'} in catalogue vouchers.
+                  </h2>
+                </div>
+                <p className={cx('hm-sub')}>
+                  The same balance is worth {REDEEM?.hi ?? '₹2,70,000'} or {REDEEM?.floor ?? '₹75,000'} depending
+                  on where it goes. We show both numbers, and where each one came from.
+                </p>
+                {REDEEM && (
+                  <>
+                    <div className={cx('hm-redeemnums')}>
+                      <div className={cx('hm-rn')}>
+                        <div className={cx('hm-rnv', 'hm-rnhi')}>{REDEEM.hi}</div>
+                        <div className={cx('hm-rnl')}>Transferred to airline</div>
                       </div>
-                      <p className={cx('hm-src')}>
-                        <span className={cx('hm-estpill')}><i />Estimated</span>
-                        {REDEEM.card} · {REDEEM.balance} pts
-                      </p>
-                    </>
-                  )}
-                </div>
-                <div className={cx('hm-redeemmedia')}>
-                  <HomePointsMedia />
-                </div>
+                      <div className={cx('hm-rn')}>
+                        <div className={cx('hm-rnv')}>{REDEEM.floor}</div>
+                        <div className={cx('hm-rnl')}>Catalogue vouchers</div>
+                      </div>
+                    </div>
+                    <p className={cx('hm-src')}>
+                      <span className={cx('hm-estpill')}><i />Estimated</span>
+                      {REDEEM.card} · {REDEEM.balance} pts
+                    </p>
+                  </>
+                )}
               </div>
             </div>
           </section>

@@ -2,17 +2,23 @@
 
 import { useEffect, useState } from 'react';
 
-// §01 "Where points can go" — the light-keyed, near-monochrome points clip as the
-// section's right-half media. Same poster-first / desktop+motion gate as HomeHeroBg
-// (app/HomeHeroBg.tsx), pointed at the points assets — but with NO scrim. The footage
-// is light-keyed and near-monochrome, so it reads on the white band untouched;
-// darkening it is the one thing we must not do (it is the whole reason for this clip).
+// §03 "Where points can go" — the light-keyed, near-monochrome points clip, now the
+// FULL-BLEED background of the whole section (edge to edge, no card / border / radius).
+// Same poster-first / desktop+motion gate as HomeHeroBg (app/HomeHeroBg.tsx), pointed at
+// the points assets — but with NO scrim. The footage is light-keyed and near-monochrome,
+// so it reads on the white band untouched; darkening it is the one thing we must not do
+// (it is the whole reason for this clip). The copy is kept legible instead by a soft WHITE
+// wash over the left third only, owned by the section (.hm-where-wash in page.module.css).
+//
+// object-position: right center — the child+plane silhouette lives on the RIGHT of the
+// frame, so pinning right keeps it clear of the copy (which sits on the left) whenever the
+// band crops horizontally (mobile / narrow).
 //
 // ASSETS live in /video/ SINGULAR (…/videos/ plural is the auth-bg clip — see the
 // "video folder singular vs plural" project memory):
-//   poster:  /video/points-poster.jpg   1280×720
-//   video:   /video/points-loop.webm     VP9,  1280×720, seamless 17.2s ping-pong
-//            /video/points-loop.mp4      H.264 fallback, same
+//   poster:  /video/points-poster.jpg    1280×720
+//   video:   /video/points-loop.webm     VP9,   1280×720, seamless 17.2s ping-pong
+//            /video/points-loop.mp4       H.264 fallback, same
 //
 // POSTER-FIRST, ALWAYS: the poster renders on the server + first client paint, and on
 // mobile (<768px) OR reduced-motion it IS the media — the clip is fetched ONLY on
@@ -21,6 +27,15 @@ import { useEffect, useState } from 'react';
 const POSTER = '/video/points-poster.jpg';
 const VIDEO_WEBM = '/video/points-loop.webm';
 const VIDEO_MP4 = '/video/points-loop.mp4';
+
+const MEDIA_STYLE: React.CSSProperties = {
+  position: 'absolute',
+  inset: 0,
+  width: '100%',
+  height: '100%',
+  objectFit: 'cover',
+  objectPosition: 'right center',
+};
 
 export function HomePointsMedia() {
   const [showVideo, setShowVideo] = useState(false);
@@ -45,7 +60,7 @@ export function HomePointsMedia() {
       <img
         src={POSTER}
         alt="A child holding a toy plane aloft against a bright daytime sky"
-        style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }}
+        style={MEDIA_STYLE}
       />
 
       {/* Progressive clip — webm first (smaller), mp4 fallback. Muted, playsinline, loop,
@@ -60,7 +75,7 @@ export function HomePointsMedia() {
           preload="metadata"
           poster={POSTER}
           aria-hidden="true"
-          style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }}
+          style={MEDIA_STYLE}
         >
           <source src={VIDEO_WEBM} type="video/webm" />
           <source src={VIDEO_MP4} type="video/mp4" />

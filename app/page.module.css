@@ -115,8 +115,7 @@
 .hm-h2 .hm-accent { color: #9A6516; }
 .hm-sub { color: #48565E; font-size: 15.5px; max-width: 56ch; margin: 0; }
 
-/* ── §03 Where points go (white ground) — the ₹2,70,000 vs ₹75,000 split ── */
-.hm-redeem { display: grid; gap: 28px; }
+/* ── §03 Where points go — FULL-BLEED points clip as the section background ── */
 .hm-redeemnums { display: flex; flex-wrap: wrap; gap: 34px; margin-top: 24px; }
 .hm-rn { min-width: 0; }
 .hm-rnv { font-family: "JetBrains Mono", ui-monospace, monospace; font-variant-numeric: tabular-nums; font-weight: 500; font-size: clamp(24px,4vw,34px); line-height: 1; letter-spacing: -.02em; color: #6E7B82; }
@@ -125,12 +124,21 @@
 .hm-src { display: flex; align-items: center; flex-wrap: wrap; gap: 10px; font-family: "JetBrains Mono", ui-monospace, monospace; font-size: 12px; color: #6E7B82; margin: 18px 0 0; }
 .hm-estpill { display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; border-radius: 999px; background: rgba(110,123,130,.10); border: 1px solid rgba(110,123,130,.30); font-family: "Inter", system-ui, sans-serif; font-size: 10px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: #5b6169; }
 .hm-estpill i { width: 6px; height: 6px; border-radius: 999px; background: #9aa2ad; }
-/* Media panel — the light-keyed points clip (HomePointsMedia). At 375px it stacks
-   below the copy (source order) as a rounded panel. On desktop it fills the whole
-   right half AND bleeds to the right viewport edge (see the ≥768px block): rounded on
-   the left, flush + square on the right. No scrim — the footage is near-monochrome and
-   reads on white untouched. */
-.hm-redeemmedia { position: relative; border-radius: 20px; overflow: hidden; border: 1px solid #E2DCD0; min-height: 300px; background: #ECE7DD; }
+/* FULL-BLEED points clip as the section background — no card, no border, no radius,
+   edge to edge. Copy sits over a soft WHITE wash on the left third; NO dark scrim (the
+   near-white sky must stay bright). The section owns a stacking context so the media (0)
+   < wash (1) < copy (2) order can't leak into the rest of the page. */
+.hm-where { position: relative; overflow: hidden; isolation: isolate; min-height: 360px; }
+.hm-where-media { position: absolute; inset: 0; z-index: 0; }
+/* Mobile wash — copy stacks full-width over the near-white poster, so a fuller (but still
+   white, never dark) veil across the whole width keeps the dark inks legible. Heaviest at
+   the top where the headline sits. */
+.hm-where-wash {
+  position: absolute; inset: 0; z-index: 1; pointer-events: none;
+  background: linear-gradient(180deg, rgba(255,255,255,0.88) 0%, rgba(255,255,255,0.72) 60%, rgba(255,255,255,0.56) 100%);
+}
+.hm-where .hm-wrap { position: relative; z-index: 2; width: 100%; }
+.hm-where-panel { max-width: 30rem; }
 
 /* ── §04 The method (cream band) — three numbered steps ── */
 .hm-steps { display: grid; gap: 14px; }
@@ -187,17 +195,23 @@
   .hm-strip { grid-template-columns: repeat(4, 1fr); }
   .hm-hero { padding: 64px 0 84px; }
   .hm-herogrid { grid-template-columns: 1.1fr .9fr; gap: 48px; align-items: start; }
-  /* Copy holds the left half; media the right, stretched to the copy's full height and
-     bled to the viewport edge. align-items:stretch (+ a tall min-height) makes it big. */
-  .hm-redeem { grid-template-columns: 1fr 1fr; gap: 48px; align-items: stretch; }
-  .hm-redeemmedia {
-    min-height: 480px;
-    border-radius: 20px 0 0 20px;   /* rounded left, square right — flush to the edge */
-    border-right: 0;
-    /* Extend the right edge from the wrap's content edge out to the true viewport edge.
-       max(20px, 50vw - 540px) = the right gutter of the 1120px wrap at any width; body's
-       overflow-x:hidden clips any sub-pixel spill, so this never adds a scrollbar. */
-    margin-right: calc(-1 * max(20px, 50vw - 540px));
+  /* The clip is already full-bleed (the section background); on desktop give the band
+     real height so it reads as the page opening out, and centre the copy vertically. The
+     copy panel is capped (.hm-where-panel) so it holds the LEFT half. */
+  /* Vertically centre the copy in the tall band. The wrap carries width:100% (above) so
+     it still stretches full width and its own max-width + margin:auto centring applies —
+     the copy panel then left-aligns at the page gutter. */
+  .hm-where { min-height: 620px; display: flex; align-items: center; }
+  /* The child+plane sits at the CENTRE of the 16:9 frame, and at desktop widths the
+     section is far wider than the clip — so cover shows the whole frame and the subject
+     would land over the copy. object-position can't bite (no horizontal crop). Instead
+     scale the media from the LEFT edge: the left edge stays pinned (no seam — that zone is
+     the white wash anyway), and the subject is pushed to the right, clear of the copy. */
+  .hm-where-media { transform: scale(1.5); transform-origin: left center; }
+  /* Desktop wash — horizontal, over the LEFT THIRD only, fading to fully clear by ~64% so
+     the near-white sky and the silhouette on the right are untouched. */
+  .hm-where-wash {
+    background: linear-gradient(90deg, rgba(255,255,255,0.95) 0%, rgba(255,255,255,0.9) 20%, rgba(255,255,255,0.66) 38%, rgba(255,255,255,0.2) 52%, rgba(255,255,255,0) 64%);
   }
   .hm-steps { grid-template-columns: repeat(3, 1fr); }
   .hm-mgrid { grid-template-columns: 1.25fr .75fr; }
