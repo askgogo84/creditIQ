@@ -24,6 +24,29 @@ Light theme (`:root`, `app/globals.css`):
 
 Copper is for accents and CTAs, **not** a fill everywhere.
 
+### Merged homepage (home-merge v4)
+
+The merged marketing homepage (`app/page.tsx`, reference `docs/design/home-merge-v4.html`) layers its own literal token set on the white/copper system: a pure-white page ground, a warm cream band, and one teal band colour. Like the landing page, this surface uses fixed hexes and does **not** follow the app light/dark toggle.
+
+| Role | Value |
+|---|---|
+| Page ground | `#FFFFFF` |
+| Cream band | `#F7F1E6` |
+| Teal band | `#0E3B3C` |
+| Ink (headings) | `#10202A` |
+| Body | `#48565E` |
+| Muted | `#6E7B82` |
+| Hairline | `#E2DCD0` |
+| Copper (accent, on light) | `--copper` `#9A6516` |
+| Copper on dark (over footage) | `--copper-on-dark` `#D2924A` |
+| Verified | `#1A7A5E` |
+
+Rules:
+- **Teal appears at most twice per page** — reserved for full-width band sections, not scattered as a general UI colour.
+- **Copper is the only accent.** No second accent hue.
+- **Copper has two named values, one role.** On light grounds copper is `#9A6516`; on the dark hero footage that value **fails contrast** (≈1.3:1 over the clip), so the hero uses a lightened, same-hue `--copper-on-dark` `#D2924A`. Both are defined once in `app/page.module.css` (the `--copper-on-dark` token is scoped to `.hm-hero`) and referenced by token — never re-typed as a loose hex in a component.
+- **No italic or oblique anywhere** — the [Emphasis](#emphasis) rule governs. This is why the hero's "booked" is set **roman in copper**, never italic.
+
 ### Provenance (the moat) — one value per theme, one meaning
 
 | Meaning | Token | Light value |
@@ -60,6 +83,17 @@ There is a consistent **UI-chrome size ramp**:
 **Headings have no shared size scale — flag as undecided.** `h1–h5` (L235) set family, weight `700`, line-height `0.96`, letter-spacing `-0.025em`, but **no `font-size`**. Every heading is sized inline per component, so there is no ramp to cite — e.g. the landing hero is `clamp(40px, 6.4vw, 84px)` (`HeroCompute.tsx:80`), and other headings pick their own clamps. This is an inconsistency, not a decided scale: a shared display ramp (h1/h2/h3 sizes) does not exist yet and needs to be decided.
 
 Note also the weight mismatch: the base `h1–h5` rule requests weight `700`, while the design intent is Fraunces `~300`. That divergence is part of the font debt, not a settled decision.
+
+---
+
+## Emphasis
+
+Emphasis is carried by **weight, size, or colour — never by slant.**
+
+- **No italic or oblique faces for emphasis.** This includes the italicised-contrast-word-in-a-headline device (e.g. "We don't *guess*").
+- **No script, handwritten, or brush faces anywhere** — including decorative annotations and callouts.
+- Italic is permitted **only where it carries meaning**: a direct quotation, or a publication/product title. Never for stress or visual interest.
+- When Fraunces is introduced as the display face, use **the roman only.** Its italic is out of scope.
 
 ---
 

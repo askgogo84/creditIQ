@@ -1,0 +1,52 @@
+/* Themed slider track/thumb for the hero spend control, on the dark hero ground.
+   Moved here out of an inline <style>{`…`}</style> in HeroCompute.tsx. Two reasons
+   the injected tag had to go, not just be patched: (1) CSS living inside a JS
+   template literal is a standing hazard — a stray backtick or `${` in a comment
+   silently breaks the string; deleting the tag disarms the whole class, not one
+   comment. (2) An injected <style> beside the hoistable font <link> is a hydration
+   surface (same failure app/page.module.css's header documents). A CSS module has
+   neither. Class names are hashed per-module. The var(--hc-*) theming hooks are
+   unchanged, so app/page.tsx's light skin and /landing's dark fallbacks both apply
+   exactly as before; --pct is still set inline on the input. */
+
+.hero-range {
+  -webkit-appearance: none;
+  appearance: none;
+  background: transparent;
+}
+.hero-range::-webkit-slider-runnable-track {
+  height: 6px;
+  border-radius: 999px;
+  background: linear-gradient(90deg,
+    var(--hc-track-fill,#D89B2A) 0, var(--hc-track-fill,#D89B2A) var(--pct,50%),
+    var(--hc-track-rem,rgba(255,255,255,.18)) var(--pct,50%), var(--hc-track-rem,rgba(255,255,255,.18)) 100%);
+}
+.hero-range::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 18px; height: 18px;
+  margin-top: -6px; /* centre the 18px thumb on the 6px track */
+  border-radius: 999px;
+  background: var(--hc-thumb,#E4C97E);
+  border: 2px solid var(--hc-thumb-bd,#12203a);
+  cursor: pointer;
+}
+.hero-range::-moz-range-track {
+  height: 6px; border-radius: 999px; background: var(--hc-track-rem,rgba(255,255,255,.18));
+}
+.hero-range::-moz-range-progress {
+  height: 6px; border-radius: 999px; background: var(--hc-track-fill,#D89B2A);
+}
+.hero-range::-moz-range-thumb {
+  width: 18px; height: 18px; border-radius: 999px;
+  background: var(--hc-thumb,#E4C97E); border: 2px solid var(--hc-thumb-bd,#12203a); cursor: pointer;
+}
+/* Single-column (mobile) the panel spans the viewport, so its bottom-right
+   "₹5,00,000" label sits under the fixed CIRA chat FAB (56px at right:16 →
+   its left edge is 72px from the viewport edge, the label's right edge only
+   40px). Inset the label row's right side here so the max label clears the
+   FAB. Above 748px the hero is two columns, the panel is left-of-centre and
+   nowhere near the FAB, so the label goes flush to the track again. */
+@media (max-width: 747.98px) {
+  .hero-labels { padding-right: 48px; }
+}

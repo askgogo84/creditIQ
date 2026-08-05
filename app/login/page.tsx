@@ -9,19 +9,34 @@ import Link from 'next/link';
 // can't honor. The Sign up / Sign in toggle is copy-only (both run the same Google
 // OAuth) — honest, not a fake second flow.
 //
+// BACKGROUND — /video/signin-bg.{mp4,webm} + signin-bg-poster.jpg (1024×576, 8.5s
+// crossfade loop, no watermark). Assets live in /video/ SINGULAR (see the "video
+// folder singular vs plural" project memory). The clip is BRIGHT and busy (dense
+// foliage), unlike the dark pagoda it replaces, so the card carries a STRONGER scrim
+// than before — tuned so the card text and the Google button clear WCAG AA over the
+// brightest lit foliage.
+//   ⚠ MP4 SOURCE FIRST here (reverses our usual webm-first order): dense foliage
+//     compresses badly in VP9, so the webm (1.6MB) is heavier than the mp4 (993KB).
+//
+// MEDIA GATE — poster-first, always. The poster renders on the server + first client
+// paint. The clip is fetched ONLY on desktop (≥768px) with motion allowed: the <video>
+// is not mounted at all otherwise, so a phone or a reduced-motion user never downloads
+// it (mobile is poster-only — the separate auth-bg-mobile clip is dropped; at 573KB it
+// broke our mobile-first rule on the critical path into the app). The poster/OAuth
+// button render immediately; the background clip can never delay the form.
+//
 // LAYOUT — two forms keyed off 748px:
-//   >=748px: full-bleed licensed photo behind one translucent glass card, dark
-//            scrim over the whole viewport (unchanged from the prior build).
-//   <748px : SAME full-bleed loop behind the whole page (realise.club pattern) —
-//            no separate panel. The wordmark, eyebrow and glass card sit centred
-//            over the moving photo; the pagoda reads around and through the
-//            translucent card. The toggle ("Already have an account? Sign in")
-//            lives INSIDE the card as its last element so it can never fall below
-//            the fold. A localised mobile scrim darkens only the central vertical
-//            band behind the near-full-width card (top sky + lower foreground stay
-//            vivid) so all five inks clear WCAG AA against the loop's brightest
-//            lit-timber frame. The stack (~450px) fits every target height centred
-//            with no scroll (375x650 → ~121px spare).
+//   >=748px: full-bleed background behind one translucent glass card, dark scrim over
+//            the whole viewport.
+//   <748px : SAME full-bleed background behind the whole page (realise.club pattern) —
+//            no separate panel. The wordmark, eyebrow and glass card sit centred over
+//            the media; the foliage reads around and through the translucent card. The
+//            toggle ("Already have an account? Sign in") lives INSIDE the card as its
+//            last element so it can never fall below the fold. A localised mobile scrim
+//            darkens only the central vertical band behind the near-full-width card
+//            (top + bottom stay vivid) so all five inks clear WCAG AA against the
+//            poster's brightest lit foliage. The stack (~450px) fits every target
+//            height centred with no scroll (375x650 → ~121px spare).
 //
 // The structural geometry lives in the scoped <style> block below rather than in
 // Tailwind `max-[]:` variants: React can hoist a <style> tag anywhere in the head,
@@ -34,17 +49,22 @@ import Link from 'next/link';
 // from `.cinematic` in globals.css. The base is the design-language true-black.
 //
 // --copper-4 is pinned here for the same reason .cinematic locally pins --copper-3:
-// this is a DARK surface in both themes, so it must not inherit the theme token.
-// Left to inherit, --copper-4 flips from the light value #F2C658 (bright gold) to
-// #6B4A2A (dark brown) under [data-theme="dark"] — which is what dark-theme users
-// were actually getting on the eyebrow / toggle (~2.5:1, an AA fail). Pinned to the
-// bright gold, both render #F2C658 always.
+// this is a DARK surface in both themes (the scrim keeps it dark even over the bright
+// clip), so it must not inherit the theme token. Left to inherit, --copper-4 flips
+// from the light value #F2C658 (bright gold) to #6B4A2A (dark brown) under
+// [data-theme="dark"] — which is what dark-theme users were actually getting on the
+// eyebrow / toggle (~2.5:1, an AA fail). Pinned to the bright gold, both render
+// #F2C658 always.
 const AUTH_VARS = {
   '--auth-ink': '#FDFBF7',   // headline / wordmark
   '--auth-ink-2': '#F1EDE4', // body copy
   '--auth-dim': '#CFC9BC',   // captions / terms
   '--copper-4': '#F2C658',   // dark-ground gold accent — eyebrow + mode toggle
 } as React.CSSProperties;
+
+// Single poster + clip for every breakpoint (no mobile-specific variant now). In
+// /video/ SINGULAR.
+const POSTER = '/video/signin-bg-poster.jpg';
 
 export default function LoginPage() {
   const router = useRouter()
@@ -55,36 +75,25 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false)
   const [checking, setChecking] = useState(true)
   const [mode, setMode] = useState<'signup' | 'signin'>('signup')
-  // Under prefers-reduced-motion we render the poster still alone and never mount
-  // the <video>. Defaults to false so SSR and first client paint agree (matchMedia
-  // is client-only); the effect corrects it after mount.
-  const [reduceMotion, setReduceMotion] = useState(false)
-  useEffect(() => {
-    const mq = window.matchMedia('(prefers-reduced-motion: reduce)')
-    setReduceMotion(mq.matches)
-    const onChange = (e: MediaQueryListEvent) => setReduceMotion(e.matches)
-    mq.addEventListener('change', onChange)
-    return () => mq.removeEventListener('change', onChange)
-  }, [])
 
-  // Mobile (<748px) vs desktop is resolved in JS, same pattern as reduceMotion, so
-  // we render only ONE set of <source> tags and the browser fetches only that clip
-  // (no `media` attribute on <source>, which fetches unpredictably). `ready` gates
-  // the <source> children: on first paint the <video> has NO sources, so a phone
-  // never starts downloading the ~503KB desktop mp4 before the effect swaps it —
-  // the poster covers the gap. Once `ready` flips, the video is re-keyed so it
-  // remounts with the correct sources present and autoplays. Boundary is 747.98px:
-  // CSS max-width is inclusive, so this keeps exactly 748px on the desktop form and
-  // keeps the JS and the <style> media query in agreement.
-  const [isMobile, setIsMobile] = useState(false)
-  const [ready, setReady] = useState(false)
+  // Poster-first media gate: mount the <video> ONLY on desktop (≥768px) with motion
+  // allowed. Defaults to false so SSR and first client paint agree (matchMedia is
+  // client-only) and the poster is what everyone sees first — a phone or a
+  // reduced-motion user never mounts the <video>, so the clip is never fetched there.
+  // The effect flips it true after mount on qualifying desktops; the poster covers the
+  // swap-in gap. This background can never delay the form or the OAuth button.
+  const [showVideo, setShowVideo] = useState(false)
   useEffect(() => {
-    const mq = window.matchMedia('(max-width: 747.98px)')
-    setIsMobile(mq.matches)
-    setReady(true)
-    const onChange = (e: MediaQueryListEvent) => setIsMobile(e.matches)
-    mq.addEventListener('change', onChange)
-    return () => mq.removeEventListener('change', onChange)
+    const desktop = window.matchMedia('(min-width: 768px)')
+    const motionOk = window.matchMedia('(prefers-reduced-motion: no-preference)')
+    const update = () => setShowVideo(desktop.matches && motionOk.matches)
+    update()
+    desktop.addEventListener('change', update)
+    motionOk.addEventListener('change', update)
+    return () => {
+      desktop.removeEventListener('change', update)
+      motionOk.removeEventListener('change', update)
+    }
   }, [])
 
   // Where to land after login. Read ?next=/flights (etc) at runtime and only ever
@@ -128,7 +137,6 @@ export default function LoginPage() {
   if (checking) return null
 
   const isSignup = mode === 'signup'
-  const posterSrc = isMobile ? '/images/auth-bg-mobile-poster.jpg' : '/images/auth-bg-poster.jpg'
 
   return (
     <main style={AUTH_VARS} className="auth-root">
@@ -161,18 +169,18 @@ export default function LoginPage() {
           text-align: center;
         }
         @media (max-width: 747.98px) {
-          /* Full-bleed loop behind the WHOLE page (realise.club pattern) — no
+          /* Full-bleed media behind the WHOLE page (realise.club pattern) — no
              separate panel. .auth-media keeps the default position:absolute /
              inset:0 so it fills the viewport; the translucent card floats over
-             it centred, and the pagoda reads around and through it. The panel,
+             it centred, and the foliage reads around and through it. The panel,
              its top-down scrim and its bottom fade are all gone. The whole
              wordmark→sign-in stack is ~450px, so it fits every target height
              (375x650 → 121px spare) centred with no scroll. The desktop scrim
              is swapped out for .auth-scrim-mobile, which darkens only a central
-             vertical band behind the near-full-width card (top sky + lower
-             foreground stay unscrimmed and vivid) so the five inks clear AA
-             against the loop's brightest lit-timber frame. Card padding and the
-             >=748px rules are untouched. */
+             vertical band behind the near-full-width card (top + bottom stay
+             unscrimmed and vivid) so the five inks clear AA against the poster's
+             brightest lit foliage. Card padding and the >=748px rules are
+             untouched. */
           .auth-scrim-desktop { display: none; }
           .auth-scrim-mobile { display: block; }
           /* /login has no bottom tab bar, but a global (<=768px) rule forces
@@ -187,68 +195,63 @@ export default function LoginPage() {
         }
       `}</style>
 
-      {/* Media — full-bleed background at every breakpoint now (desktop and
-          mobile). Under prefers-reduced-motion we never mount the <video> and
-          show the poster alone (mobile poster below 748px, desktop poster
-          above). */}
+      {/* Media — full-bleed background at every breakpoint. The poster renders
+          always (server + first paint) and IS the media on mobile (<768px) and
+          under reduced motion. The <video> mounts only on desktop with motion
+          allowed (showVideo), layered over the poster; MP4 source is FIRST here
+          because the foliage webm is heavier than the mp4. */}
       <div className="auth-media">
-        {reduceMotion ? (
-          <img
-            aria-hidden
-            alt=""
-            src={posterSrc}
-            className="absolute inset-0 h-full w-full object-cover"
-          />
-        ) : (
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          aria-hidden
+          alt=""
+          src={POSTER}
+          className="absolute inset-0 h-full w-full object-cover"
+        />
+        {showVideo && (
           <video
-            key={`${ready}-${isMobile}`}
             aria-hidden
             autoPlay
             muted
             loop
             playsInline
-            poster={posterSrc}
+            preload="metadata"
+            poster={POSTER}
             className="absolute inset-0 h-full w-full object-cover"
           >
-            {ready &&
-              (isMobile ? (
-                <>
-                  <source src="/videos/auth-bg-mobile.webm" type="video/webm" />
-                  <source src="/videos/auth-bg-mobile.mp4" type="video/mp4" />
-                </>
-              ) : (
-                <>
-                  <source src="/videos/auth-bg.webm" type="video/webm" />
-                  <source src="/videos/auth-bg.mp4" type="video/mp4" />
-                </>
-              ))}
+            <source src="/video/signin-bg.mp4" type="video/mp4" />
+            <source src="/video/signin-bg.webm" type="video/webm" />
           </video>
         )}
       </div>
 
-      {/* Desktop-only full-bleed scrim — carries white type over the photo's
-          brightest patch; hidden below 748px where type sits on the flat base.
+      {/* Desktop-only full-bleed scrim — carries white type over the clip's
+          brightest patch; hidden below 748px where the mobile band scrim takes
+          over. STRONGER than the prior (dark-pagoda) build because this clip is
+          bright and busy: a >=0.84 floor across the whole height so the blurred
+          glass card resolves dark enough for the white inks and the Google button.
           Base colour is the design-language true-black #080807. */}
       <div
         aria-hidden
         className="auth-scrim-desktop"
         style={{
           background:
-            'linear-gradient(180deg, rgba(8,8,7,0.82) 0%, rgba(8,8,7,0.72) 34%, rgba(8,8,7,0.76) 66%, rgba(8,8,7,0.88) 100%)',
+            'linear-gradient(180deg, rgba(8,8,7,0.90) 0%, rgba(8,8,7,0.84) 32%, rgba(8,8,7,0.86) 68%, rgba(8,8,7,0.93) 100%)',
         }}
       />
 
       {/* Mobile-only scrim (<748px) — a localised vertical band, darkest through
-          the centre where the near-full-width card sits, fading to near-clear at
-          the top (sky) and bottom (foreground) so the pagoda stays vivid around
-          the card. Values tuned by measuring WCAG contrast for all five inks
-          against the loop's BRIGHTEST lit-timber frame, not the poster. */}
+          the centre where the near-full-width card sits, fading toward the top and
+          bottom so the foliage stays vivid around the card. STRONGER than the prior
+          build (0.72→0.82 through the card band) because this poster is brighter;
+          tuned so all five inks clear WCAG AA against the poster's brightest lit
+          foliage. */}
       <div
         aria-hidden
         className="auth-scrim-mobile"
         style={{
           background:
-            'linear-gradient(180deg, rgba(8,8,7,0.18) 0%, rgba(8,8,7,0.612) 20%, rgba(8,8,7,0.72) 32%, rgba(8,8,7,0.72) 84%, rgba(8,8,7,0.18) 100%)',
+            'linear-gradient(180deg, rgba(8,8,7,0.28) 0%, rgba(8,8,7,0.70) 20%, rgba(8,8,7,0.82) 32%, rgba(8,8,7,0.82) 84%, rgba(8,8,7,0.28) 100%)',
         }}
       />
 

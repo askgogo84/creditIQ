@@ -130,3 +130,40 @@ The rule (formerly `app/globals.css:1031–1035`):
 The subtle part: the title's own `text-slate-900` was **not** the cause. The `[data-ciq] :is(h1..h5){ color: var(--ciq-ink) }` heading-contract rule (`globals.css`, specificity 0,1,1) already overrode it to the theme ink — so the title was correctly light. **The heading contract themes *text*, but nothing themes *backgrounds*.** A single hardcoded panel background is therefore enough to make an already-correct title invisible — and grepping the title's colour would never find the real defect (the `bg-white` at line 36).
 
 Fixed by theming the whole component to `var(--ciq-*)`, matching the "Invite to CreditIQ" card on the same page (`var(--ciq-panel)` card, `var(--ciq-ink)` / contract-rule titles, `var(--ciq-ink-2)` secondary). Distinct from the selector-scope collision and the double-definition entries: this is neither an over-broad selector nor a duplicated key — it is a component that opts out of the token system entirely by hardcoding utilities. Swept all five gold surfaces; this was the only instance.
+
+## `"config is not valid"` console error on every marketing surface (NOTED, not fixed)
+
+**A `config is not valid` error fires in the browser console on page load of both the new homepage (`app/page.tsx`, `/`) and the untouched `/landing` (`app/(marketing)/landing/page.tsx`).** Same class as the entries above: **source-true, runtime-false** — the string `"config is not valid"` appears **nowhere in the codebase** (confirmed by grep), so nothing in source declares it; it is emitted at runtime by a dependency reading a config object it rejects. `tsc` passes — the config is valid TypeScript, just invalid to whatever consumes it at runtime.
+
+**It fires identically on `/landing`, which this branch did not touch — so it is pre-existing globals/config debt, not introduced by the Home work.** That is the reason it belongs here rather than in the Phase A changelog: it would otherwise be rediscovered later and mis-attributed to the homepage merge.
+
+**Emitter not yet pinned.** The message text alone doesn't localise the source (it's a generic library assertion, not a project string), and pinning it needs a runtime stack trace from the browser console — deferred with the rest of this backlog. Candidates to check first, since both surfaces share them: the root `app/layout.tsx` provider/analytics setup and any Tailwind/`@config` or theme-config object loaded on marketing routes. **Noted, not resolved** — captured so the next runtime pass starts from a stack trace rather than rediscovering the symptom.
+
+## Injected `<style>{`\`}` sweep catalog (the CSS-module conversion backlog)
+
+**The class of defect page.module.css's header documents — CSS living inside a JS template literal, injected as a `<style>` beside the hoistable font `<link>` — is not unique to Home.** A template-literal `<style>` is two hazards at once: a hydration surface (React #425 when float-hoisting relocates the tag, as on the old `app/page.tsx`), and a string that a stray backtick or `${` in a CSS comment silently breaks. The durable fix is per-file: move the CSS to a `*.module.css` and delete the tag. This is the catalog for the **sweep branch** that does that conversion wholesale.
+
+**Done (do NOT redo on the sweep branch):**
+- **`app/page.tsx`** — ✅ done. Converted to `app/page.module.css` earlier on `feat/home-merge` (its header records the #425 hydration failure that forced it).
+- **`components/marketing/landing/HeroCompute.tsx`** — ✅ done. Moved to `components/marketing/landing/HeroCompute.module.css` on `feat/home-merge`, opportunistically, because the file was already being modified here for the `var(--hc-*)` theming. Pulled forward off the sweep so the sweep branch skips it.
+
+**Remaining (19 files still carrying an injected `<style>{`\`}`, confirmed by grep):**
+
+| Area | Files |
+|---|---|
+| `components/ciq` | `TabBar.tsx` · `SectionTabs.tsx` · `Tour.tsx` |
+| `components/marketing` | `landing/ProductTabs.tsx` · `landing/RailNav.tsx` · `HeroLeak.tsx` |
+| `components/design` | `CleoHero.tsx` · `HowItWorks.tsx` |
+| `components` (root) | `CreditIQAssistant.tsx` · `TripComparison.tsx` · `BookingModal.tsx` |
+| `app/(shell)` pages | `trip-planner` · `travel` · `spend-optimizer` · `points-optimizer` · `card-roast` |
+| `app` (other) | `login/page.tsx` · `cira/page.tsx` · `admin/page.tsx` |
+
+Same page-by-page cadence as the palette/font/radius debt above — not a global codemod, because each `<style>` block carries file-specific selectors and a couple (`SectionTabs`, `ProductTabs`) rely on runtime-computed values that need to survive as inline custom props (the `--pct` pattern HeroCompute uses), not as static module rules.
+
+## `/login` ships a heavy background video to phones (FOLLOW-UP, not fixed)
+
+**`/login` violates the mobile-first rule: it downloads a full background *video* on phones where the poster still alone would do.** `app/login/page.tsx` renders a separate mobile clip below 748px — `public/videos/auth-bg-mobile.webm` (**573 KB**) / `auth-bg-mobile.mp4` (**638 KB**) — while the mobile poster `auth-bg-mobile-poster.jpg` is only **55 KB**. So a phone on the critical sign-in path fetches ~573–638 KB of decoration before the form settles.
+
+This is **heavier than the 433 KB hero clip that was deliberately ruled out for mobile** (the hero and Home window both fall back to poster-only under 768px for exactly this reason — see `app/HeroWindow.tsx`). `/login` predates that rule and never got it.
+
+**Follow-up task:** bring `/login` in line — drop the `<768px` (or 748px) branch to poster-only, the same matchMedia pattern `HeroWindow` uses, and retire `auth-bg-mobile.*`. Net mobile saving on the auth path ≈ **>500 KB**. Left as a follow-up because the login surface is otherwise working and tuned; not bundled into the Home work.

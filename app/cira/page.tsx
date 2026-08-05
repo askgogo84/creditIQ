@@ -44,6 +44,14 @@ export default function CiraPage() {
   useEffect(() => { endRef.current?.scrollIntoView({ behavior: "smooth" }); }, [messages, loading]);
   useEffect(() => { inputRef.current?.focus(); }, []);
 
+  // Prefill from the homepage Ask-CIRA entry block (/cira?q=…). Client-only read via
+  // window.location (no useSearchParams → no Suspense boundary / static deopt). Drops
+  // the text into the box; the user presses send — we don't auto-fire the API on load.
+  useEffect(() => {
+    const q = new URLSearchParams(window.location.search).get("q");
+    if (q) setInput(q);
+  }, []);
+
   const send = async (text: string) => {
     if (!text.trim() || loading) return;
     const history = messages.map(m => ({ role: m.role, content: m.content }));
