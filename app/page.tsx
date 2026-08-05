@@ -13,6 +13,7 @@ import { SEED_CARDS } from '@/lib/data/seed-cards';
 import { getRedemptionOptions } from '@/lib/redemption';
 import { HomeHeroBg } from './HomeHeroBg';
 import { HomePointsMedia } from './HomePointsMedia';
+import { AskCiraEntry } from './AskCiraEntry';
 import { SmartCardMatch } from './SmartCardMatch';
 import { HomeCardRanks } from './HomeCardRanks';
 import styles from './page.module.css';
@@ -386,6 +387,18 @@ export default function HomePage() {
                   <div className={cx('hm-toolgo')}>Compare cards →</div>
                 </Link>
               </div>
+            </div>
+          </section>
+
+          {/* ── 08 · ASK CIRA (white ground) — chat entry block; the input hands off to
+              the live /cira surface via ?q= (CIRA prefills from it). ── */}
+          <section className={cx('hm-section')} id="ask">
+            <div className={cx('hm-wrap')}>
+              <div className={cx('hm-sechead')}>
+                <div className={cx('hm-kicker')}>Ask CIRA<span className={cx('hm-rule')} />No login</div>
+                <h2 className={cx('hm-h2')}>Ask it anything about your cards.</h2>
+              </div>
+              <AskCiraEntry />
             </div>
           </section>
         </SpendProvider>

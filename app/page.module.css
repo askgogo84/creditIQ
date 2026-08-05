@@ -147,6 +147,20 @@
 .hm-tool p { font-size: 14px; line-height: 1.55; color: #48565E; margin: 0 0 14px; }
 .hm-toolgo { font-size: 13px; color: #9A6516; font-weight: 500; }
 
+/* ── §08 Ask CIRA (white ground) — the chat entry block ── */
+.hm-ask { background: #F7F1E6; border: 1px solid #E2DCD0; border-radius: 18px; padding: 24px; }
+.hm-chat { background: #fff; border: 1px solid #E2DCD0; border-radius: 14px; padding: 16px; margin-bottom: 18px; }
+.hm-msg { margin-bottom: 12px; font-size: 14px; }
+.hm-msg:last-child { margin-bottom: 0; }
+.hm-msg.hm-you { text-align: right; }
+.hm-msg.hm-you span { display: inline-block; text-align: left; background: #0E3B3C; color: #F4F0E6; padding: 9px 13px; border-radius: 12px 12px 3px 12px; max-width: 84%; }
+.hm-msg.hm-ai span { display: inline-block; text-align: left; background: #F7F1E6; border: 1px solid #E2DCD0; padding: 11px 13px; border-radius: 12px 12px 12px 3px; max-width: 92%; color: #48565E; line-height: 1.55; }
+.hm-msg.hm-ai b { color: #10202A; font-weight: 600; }
+.hm-askrow { display: flex; gap: 9px; }
+.hm-askinput { flex: 1; min-width: 0; min-height: 46px; background: #fff; border: 1px solid #D3CBBB; border-radius: 10px; padding: 0 14px; color: #10202A; font-family: "Inter", system-ui, sans-serif; font-size: 14px; }
+.hm-askinput::placeholder { color: #6E7B82; }
+.hm-askmeta { display: flex; flex-wrap: wrap; gap: 16px; margin-top: 14px; font-size: 12px; color: #6E7B82; }
+
 @media (min-width: 768px) {
   .hm-navlinks { display: flex; }
   .hm-tools { grid-template-columns: repeat(2, 1fr); }
