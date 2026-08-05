@@ -13,6 +13,7 @@ import { SEED_CARDS } from '@/lib/data/seed-cards';
 import { getRedemptionOptions } from '@/lib/redemption';
 import { HomeHeroBg } from './HomeHeroBg';
 import { SmartCardMatch } from './SmartCardMatch';
+import { HomeCardRanks } from './HomeCardRanks';
 import styles from './page.module.css';
 
 // Map the readable hm-* names to their hashed CSS-module classes. Compound
@@ -332,6 +333,26 @@ export default function HomePage() {
                 </p>
               </div>
               <SmartCardMatch />
+            </div>
+          </section>
+
+          {/* ── 06 · CARDS AT YOUR SPEND (white ground) — ranked list driven by the
+              hero slider (shared SpendContext); reorders live as the slider moves. ── */}
+          <section className={cx('hm-section')} id="cards">
+            <div className={cx('hm-wrap')}>
+              <div className={cx('hm-sechead')}>
+                <div className={cx('hm-kicker')}>At your spend<span className={cx('hm-rule')} />Recomputed</div>
+                <h2 className={cx('hm-h2')}>What these cards would actually earn you.</h2>
+                <p className={cx('hm-sub')}>
+                  Ranked by computed annual value at the spend you set above — not by who pays us. Move the slider
+                  and this reorders.
+                </p>
+              </div>
+              <HomeCardRanks />
+              <p className={cx('hm-ranknote')}>
+                Estimated from published earn rules at the spend above. Link a statement to replace these with
+                verified figures.
+              </p>
             </div>
           </section>
         </SpendProvider>
