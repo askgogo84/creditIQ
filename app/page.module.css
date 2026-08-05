@@ -139,8 +139,17 @@
 .hm-step h3 { font-size: 17px; font-weight: 500; color: #10202A; margin: 0 0 8px; }
 .hm-step p { font-size: 14px; line-height: 1.55; color: #48565E; margin: 0; }
 
+/* ── §07 Tools (cream band) — four tools, each an anchor card ── */
+.hm-tools { display: grid; gap: 14px; }
+.hm-tool { display: block; background: #fff; border: 1px solid #E2DCD0; border-radius: 14px; padding: 22px; transition: border-color .18s, transform .18s; }
+.hm-tool:hover { border-color: #0E3B3C; transform: translateY(-2px); }
+.hm-tool h3 { font-size: 18px; font-weight: 500; color: #10202A; margin: 0 0 8px; }
+.hm-tool p { font-size: 14px; line-height: 1.55; color: #48565E; margin: 0 0 14px; }
+.hm-toolgo { font-size: 13px; color: #9A6516; font-weight: 500; }
+
 @media (min-width: 768px) {
   .hm-navlinks { display: flex; }
+  .hm-tools { grid-template-columns: repeat(2, 1fr); }
   .hm-hero { padding: 64px 0 84px; }
   .hm-herogrid { grid-template-columns: 1.1fr .9fr; gap: 48px; align-items: start; }
   /* Copy holds the left half; media the right, stretched to the copy's full height and

@@ -355,6 +355,39 @@ export default function HomePage() {
               </p>
             </div>
           </section>
+
+          {/* ── 07 · TOOLS (cream band) — four tools, each linking to its live surface.
+              Routes live in the (shell) group; the group is URL-transparent. ── */}
+          <section className={cx('hm-section', 'hm-band-cream')} id="tools">
+            <div className={cx('hm-wrap')}>
+              <div className={cx('hm-sechead')}>
+                <div className={cx('hm-kicker')}>Tools<span className={cx('hm-rule')} />Four of them</div>
+                <h2 className={cx('hm-h2')}>Four ways to stop leaving money behind.</h2>
+              </div>
+              <div className={cx('hm-tools')}>
+                <Link className={cx('hm-tool')} href="/card-roast">
+                  <h3>Roast my card</h3>
+                  <p>Tell us what you carry. We grade it against what you spend and say plainly whether the fee earns its keep.</p>
+                  <div className={cx('hm-toolgo')}>Grade my card →</div>
+                </Link>
+                <Link className={cx('hm-tool')} href="/statement-truth">
+                  <h3>Statement Truth</h3>
+                  <p>Upload a statement and the estimate becomes your verified spend. Nothing leaves your account.</p>
+                  <div className={cx('hm-toolgo')}>Upload a statement →</div>
+                </Link>
+                <Link className={cx('hm-tool')} href="/trip-planner">
+                  <h3>Trip planner</h3>
+                  <p>Point us at a route and we show which of your points get you there, at cached fares with the age on each.</p>
+                  <div className={cx('hm-toolgo')}>Plan a trip →</div>
+                </Link>
+                <Link className={cx('hm-tool')} href="/card-switch">
+                  <h3>Switch wizard</h3>
+                  <p>If a better card exists for your spend we say which and by how much. If one doesn&rsquo;t, we say that too.</p>
+                  <div className={cx('hm-toolgo')}>Compare cards →</div>
+                </Link>
+              </div>
+            </div>
+          </section>
         </SpendProvider>
       </main>
     </>
