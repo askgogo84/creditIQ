@@ -136,7 +136,8 @@ export function SmartCardMatch() {
       <div className={cx('hm-mcard')}>
         <div className={cx('hm-prog')}>
           <button className={cx('hm-back')} aria-label="Back" onClick={() => setStep((s) => Math.max(0, s - 1))} disabled={step === 0}>←</button>
-          <div className={cx('hm-progbar')}><div className={cx('hm-progfill')} style={{ width: `${pct}%` }} /></div>
+          {/* Progress via transform: scaleX (compositor-only), not width, to avoid layout thrash. */}
+          <div className={cx('hm-progbar')}><div className={cx('hm-progfill')} style={{ transform: `scaleX(${pct / 100})` }} /></div>
           <div className={cx('hm-progn')}>{done ? 'Done' : `${step + 1} of ${Q.length}`}</div>
         </div>
 

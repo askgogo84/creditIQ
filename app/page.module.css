@@ -70,7 +70,11 @@
 .hm-mcard { background: #F7F1E6; color: #10202A; border-radius: 18px; padding: 22px; }
 .hm-prog { display: flex; align-items: center; gap: 14px; margin-bottom: 22px; }
 .hm-progbar { flex: 1; height: 5px; border-radius: 3px; background: #EFE7D8; overflow: hidden; }
-.hm-progfill { height: 100%; background: #0E3B3C; width: 14%; transition: width .28s; }
+/* Progress fill sized by transform: scaleX (compositor-only, never width — no layout
+   thrash). No CSS transition: a global rule on this surface breaks `transition: transform`
+   (it pins to the start value; `transition: width` works but animating width is the thing
+   we're avoiding), so the fill snaps per step — fine for a 7-step form. */
+.hm-progfill { height: 100%; width: 100%; background: #0E3B3C; transform-origin: left; }
 .hm-progn { font-size: 12px; color: #6E7B82; font-family: "JetBrains Mono", ui-monospace, monospace; flex: none; }
 .hm-back { border: 0; background: transparent; color: #0E3B3C; font-size: 20px; cursor: pointer; padding: 0 4px; line-height: 1; min-height: 32px; }
 .hm-back:disabled { opacity: .35; cursor: default; }
