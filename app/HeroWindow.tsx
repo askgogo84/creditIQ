@@ -11,8 +11,9 @@ import styles from './page.module.css';
 // below on the server + first client render, and as the <video poster> once the
 // clip mounts) — never a blank box.
 //
-// The ~433KB clip is requested ONLY on desktop (≥768px) with motion allowed. This
-// is a matchMedia guard, deliberately NOT <source media="…">: browsers dropped
+// The clip (hero-loop: seamless ping-pong of one continuous shot; ~87KB webm /
+// ~347KB mp4) is requested ONLY on desktop (≥768px) with motion allowed. This is
+// a matchMedia guard, deliberately NOT <source media="…">: browsers dropped
 // media-attribute support on <video><source>, so it would fetch on mobile anyway.
 // Mobile-first, Indian mobile data: no video before LCP under 768px. And
 // prefers-reduced-motion:reduce stays on the poster, no playback.
@@ -46,9 +47,10 @@ export function HeroWindow() {
           loop
           preload="metadata"
         >
-          {/* webm first (smaller), mp4 fallback. No <source media> — see note above. */}
-          <source src="/video/hero.webm" type="video/webm" />
-          <source src="/video/hero.mp4" type="video/mp4" />
+          {/* webm first (smaller), mp4 fallback. No <source media> — see note above.
+              hero-loop.* live in public/videos/ (plural); the poster stays in /video/. */}
+          <source src="/videos/hero-loop.webm" type="video/webm" />
+          <source src="/videos/hero-loop.mp4" type="video/mp4" />
         </video>
       ) : (
         <img
