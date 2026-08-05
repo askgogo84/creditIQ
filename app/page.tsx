@@ -291,6 +291,33 @@ export default function HomePage() {
               </div>
             </div>
           </section>
+
+          {/* ── 04 · THE METHOD (cream band) — three numbered steps ── */}
+          <section className={cx('hm-section', 'hm-band-cream')} id="method">
+            <div className={cx('hm-wrap')}>
+              <div className={cx('hm-sechead')}>
+                <div className={cx('hm-kicker')}>The method<span className={cx('hm-rule')} />03 steps</div>
+                <h2 className={cx('hm-h2')}>Every number here traces back to something.</h2>
+              </div>
+              <div className={cx('hm-steps')}>
+                <div className={cx('hm-step')}>
+                  <div className={cx('hm-stepn')}>01</div>
+                  <h3>Published earn rules</h3>
+                  <p>We read each card&rsquo;s rate card as the bank publishes it — base rate, category multipliers, caps, exclusions. Not the marketing copy, the terms.</p>
+                </div>
+                <div className={cx('hm-step')}>
+                  <div className={cx('hm-stepn')}>02</div>
+                  <h3>Your spend, your split</h3>
+                  <p>The slider applies a category split to the amount you set. Change it and the maths reruns in front of you — nothing is precomputed.</p>
+                </div>
+                <div className={cx('hm-step')}>
+                  <div className={cx('hm-stepn')}>03</div>
+                  <h3>Redemption at cached value</h3>
+                  <p>Points convert at fares we have actually seen, with the age stamped. When a fare gets old we say so rather than quietly reusing it.</p>
+                </div>
+              </div>
+            </div>
+          </section>
         </SpendProvider>
       </main>
     </>

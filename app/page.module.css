@@ -76,11 +76,19 @@
 .hm-photopanel { position: relative; border-radius: 20px; overflow: hidden; border: 1px solid #E2DCD0; min-height: 240px; }
 .hm-photopanel img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
 
+/* ── §04 The method (cream band) — three numbered steps ── */
+.hm-steps { display: grid; gap: 14px; }
+.hm-step { background: #fff; border: 1px solid #E2DCD0; border-radius: 14px; padding: 22px; }
+.hm-stepn { font-family: "JetBrains Mono", ui-monospace, monospace; font-size: 12px; color: #9A6516; margin-bottom: 10px; }
+.hm-step h3 { font-size: 17px; font-weight: 500; color: #10202A; margin: 0 0 8px; }
+.hm-step p { font-size: 14px; line-height: 1.55; color: #48565E; margin: 0; }
+
 @media (min-width: 768px) {
   .hm-navlinks { display: flex; }
   .hm-hero { padding: 64px 0 84px; }
   .hm-herogrid { grid-template-columns: 1.1fr .9fr; gap: 48px; align-items: start; }
   .hm-redeem { grid-template-columns: 1.1fr .9fr; gap: 48px; align-items: center; }
+  .hm-steps { grid-template-columns: repeat(3, 1fr); }
   .hm-section { padding: 92px 0; }
 }
 @media (prefers-reduced-motion: reduce) {
