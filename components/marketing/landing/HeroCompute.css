@@ -1,0 +1,50 @@
+/* HeroCompute slider CSS. Moved out of a <style>{`…`}</style> text child whose
+   CSS comment contained the double quotes in "₹5,00,000" — SSR-escaped to &quot;
+   inside the raw-text <style> element, diverging server DOM from client render and
+   stripping data-theme. As an imported stylesheet those quotes are literal CSS.
+   Rules byte-identical.
+
+   Themed slider track/thumb for THIS control only, on the dark hero ground.
+   The comp wants a visible filled copper track + grey remainder, not a bare
+   thumb — so we style the track explicitly in both engines. */
+input.ciqL-hero-range {
+  -webkit-appearance: none;
+  appearance: none;
+  background: transparent;
+}
+input.ciqL-hero-range::-webkit-slider-runnable-track {
+  height: 6px;
+  border-radius: 999px;
+  background: linear-gradient(90deg,
+    #D89B2A 0, #D89B2A var(--pct,50%),
+    rgba(255,255,255,.18) var(--pct,50%), rgba(255,255,255,.18) 100%);
+}
+input.ciqL-hero-range::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 18px; height: 18px;
+  margin-top: -6px; /* centre the 18px thumb on the 6px track */
+  border-radius: 999px;
+  background: #E4C97E;
+  border: 2px solid #12203a;
+  cursor: pointer;
+}
+input.ciqL-hero-range::-moz-range-track {
+  height: 6px; border-radius: 999px; background: rgba(255,255,255,.18);
+}
+input.ciqL-hero-range::-moz-range-progress {
+  height: 6px; border-radius: 999px; background: #D89B2A;
+}
+input.ciqL-hero-range::-moz-range-thumb {
+  width: 18px; height: 18px; border-radius: 999px;
+  background: #E4C97E; border: 2px solid #12203a; cursor: pointer;
+}
+/* Single-column (mobile) the panel spans the viewport, so its bottom-right
+   max label sits under the fixed CIRA chat FAB (56px at right:16 -> its left
+   edge is 72px from the viewport edge, the label's right edge only 40px). Inset
+   the label row's right side here so the max label clears the FAB. Above 748px
+   the hero is two columns, the panel is left-of-centre and nowhere near the FAB,
+   so the label goes flush to the track again. */
+@media (max-width: 747.98px) {
+  .ciqL-hero-labels { padding-right: 48px; }
+}

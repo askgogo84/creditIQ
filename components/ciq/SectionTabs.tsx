@@ -3,6 +3,7 @@
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { sectionTabsFor } from '@/components/ciq/appNav'
+import './SectionTabs.css'
 
 // In-page navigation for each signed-in destination — the Bilt-style segmented
 // control: icon + label per tab, laid out inside ONE rounded container with a soft
@@ -116,20 +117,10 @@ export function SectionTabs({ tone = 'light' }: { tone?: Tone }) {
         })}
       </div>
 
-      {/* Hover wash, scrollbar hide, and reduced-motion override live here because
-          inline styles can't express pseudo-classes or media queries. The
-          !important on the reduced-motion rule beats the inline transition. */}
-      <style>{`
-        .ciq-sectiontabs { scrollbar-width: none; -ms-overflow-style: none; }
-        .ciq-sectiontabs::-webkit-scrollbar { display: none; }
-        .ciq-sectiontabs a[data-active="false"]:hover {
-          background: var(--st-hover);
-          color: var(--st-text-active);
-        }
-        @media (prefers-reduced-motion: reduce) {
-          .ciq-sectiontabs a { transition: none !important; }
-        }
-      `}</style>
+      {/* Hover wash, scrollbar hide, and reduced-motion override live in
+          ./SectionTabs.css (imported above) — moved out of a <style> text child
+          whose a[data-active="false"] quotes React SSR-escaped, stripping
+          data-theme. The --st-* custom props are still set inline on the nav. */}
     </nav>
   )
 }
