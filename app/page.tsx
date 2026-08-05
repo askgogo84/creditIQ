@@ -401,6 +401,42 @@ export default function HomePage() {
               <AskCiraEntry />
             </div>
           </section>
+
+          {/* ── 09 · EDITORIAL (white ground) — four hand-picked card faces, each a link
+              to its detail page (slugs verified in SEED_CARDS; /card/<slug> resolves). ── */}
+          <section className={cx('hm-section')} id="editorial">
+            <div className={cx('hm-wrap')}>
+              <div className={cx('hm-sechead')}>
+                <div className={cx('hm-kicker')}>Editorial<span className={cx('hm-rule')} />Hand-picked</div>
+                <h2 className={cx('hm-h2')}>Cards worth knowing about.</h2>
+                <p className={cx('hm-sub')}>
+                  Chosen by our team — not ranked by anyone&rsquo;s spending, and nobody paid to be here.
+                </p>
+              </div>
+              <div className={cx('hm-strip')}>
+                <Link className={cx('hm-facecard')} href="/card/hdfc-infinia" style={{ background: '#14171C' }}>
+                  <div className={cx('hm-facetop')}><span className={cx('hm-bk')}>HDFC</span><span className={cx('hm-tier')}>PRIVATE</span></div>
+                  <div className={cx('hm-chip')} />
+                  <div className={cx('hm-nm2')}>Infinia Metal</div>
+                </Link>
+                <Link className={cx('hm-facecard')} href="/card/axis-atlas" style={{ background: '#1B2A44' }}>
+                  <div className={cx('hm-facetop')}><span className={cx('hm-bk')}>AXIS</span><span className={cx('hm-tier')}>INFINITE</span></div>
+                  <div className={cx('hm-chip')} />
+                  <div className={cx('hm-nm2')}>Atlas</div>
+                </Link>
+                <Link className={cx('hm-facecard')} href="/card/icici-amazon-pay" style={{ background: '#8A5A12' }}>
+                  <div className={cx('hm-facetop')}><span className={cx('hm-bk')}>ICICI</span><span className={cx('hm-tier')}>CLASSIC</span></div>
+                  <div className={cx('hm-chip')} />
+                  <div className={cx('hm-nm2')}>Amazon Pay</div>
+                </Link>
+                <Link className={cx('hm-facecard')} href="/card/sbi-cashback" style={{ background: '#123043' }}>
+                  <div className={cx('hm-facetop')}><span className={cx('hm-bk')}>SBI</span><span className={cx('hm-tier')}>CLASSIC</span></div>
+                  <div className={cx('hm-chip')} />
+                  <div className={cx('hm-nm2')}>Cashback</div>
+                </Link>
+              </div>
+            </div>
+          </section>
         </SpendProvider>
       </main>
     </>

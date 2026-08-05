@@ -161,9 +161,20 @@
 .hm-askinput::placeholder { color: #6E7B82; }
 .hm-askmeta { display: flex; flex-wrap: wrap; gap: 16px; margin-top: 14px; font-size: 12px; color: #6E7B82; }
 
+/* ── §09 Editorial (white ground) — four card faces, each a link ── */
+.hm-strip { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
+.hm-facecard { aspect-ratio: 1.586 / 1; border-radius: 12px; padding: 13px; display: flex; flex-direction: column; justify-content: space-between; color: #fff; transition: transform .18s; }
+.hm-facecard:hover { transform: translateY(-3px); }
+.hm-facetop { display: flex; justify-content: space-between; }
+.hm-bk { font-size: 10px; letter-spacing: .14em; font-weight: 600; opacity: .9; }
+.hm-tier { font-size: 9px; letter-spacing: .14em; text-align: right; opacity: .75; }
+.hm-chip { width: 26px; height: 19px; border-radius: 4px; background: rgba(255,255,255,.6); }
+.hm-nm2 { font-size: 12px; font-weight: 500; }
+
 @media (min-width: 768px) {
   .hm-navlinks { display: flex; }
   .hm-tools { grid-template-columns: repeat(2, 1fr); }
+  .hm-strip { grid-template-columns: repeat(4, 1fr); }
   .hm-hero { padding: 64px 0 84px; }
   .hm-herogrid { grid-template-columns: 1.1fr .9fr; gap: 48px; align-items: start; }
   /* Copy holds the left half; media the right, stretched to the copy's full height and
