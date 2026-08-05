@@ -38,14 +38,15 @@ const cx = (...names: string[]) => names.map((n) => styles[n]).join(' ');
 // background) while the rest of the page stays white/cream/teal — so the copy column
 // takes LIGHT inks here. Each key overrides a var(--x, <landing-fallback>) inside the
 // shared component, so /landing (which sets none of these) is untouched.
-//   · Copper accent is LIGHTENED to #D2924A: the page copper #9A6516 is too dark to
-//     clear AA on the dark clip. "booked" stays ROMAN (accent-style normal), in copper.
+//   · Copper accent is LIGHTENED for the dark clip (the page copper #9A6516 fails
+//     contrast on footage). One named place: the --copper-on-dark token is defined on
+//     .hm-hero in page.module.css; these inline vars reference it so the value is never
+//     re-typed here. "booked" stays ROMAN (accent-style normal), in copper.
 //   · Estimated pill stays neutral grey (provenance law) — the light-grey dark variant.
 //   · Slider track fill goes copper (teal #0E3B3C would vanish on the dark ground).
-const COPPER_ON_DARK = '#D2924A';
 const HERO_COMPUTE_VARS: CSSProperties = {
   '--hc-headline': '#F4F1EC',
-  '--hc-accent': COPPER_ON_DARK,
+  '--hc-accent': 'var(--copper-on-dark)',
   '--hc-accent-style': 'normal', // "booked" roman, not italic (Emphasis rule)
   '--hc-pill-bg': 'rgba(255,255,255,0.08)',
   '--hc-pill-bd': 'rgba(255,255,255,0.22)',
@@ -57,7 +58,7 @@ const HERO_COMPUTE_VARS: CSSProperties = {
   '--hc-label': 'rgba(244,241,236,0.66)',
   '--hc-value': '#F7F4EF',
   '--hc-scale': 'rgba(244,241,236,0.62)', // slider end labels — kept legible over the clip
-  '--hc-track-fill': COPPER_ON_DARK,
+  '--hc-track-fill': 'var(--copper-on-dark)',
   '--hc-track-rem': 'rgba(255,255,255,0.18)',
   '--hc-thumb': '#EFD9A6',
   '--hc-thumb-bd': '#0B0E13',

@@ -37,12 +37,14 @@ The merged marketing homepage (`app/page.tsx`, reference `docs/design/home-merge
 | Body | `#48565E` |
 | Muted | `#6E7B82` |
 | Hairline | `#E2DCD0` |
-| Copper (accent) | `#9A6516` |
+| Copper (accent, on light) | `--copper` `#9A6516` |
+| Copper on dark (over footage) | `--copper-on-dark` `#D2924A` |
 | Verified | `#1A7A5E` |
 
 Rules:
 - **Teal appears at most twice per page** — reserved for full-width band sections, not scattered as a general UI colour.
 - **Copper is the only accent.** No second accent hue.
+- **Copper has two named values, one role.** On light grounds copper is `#9A6516`; on the dark hero footage that value **fails contrast** (≈1.3:1 over the clip), so the hero uses a lightened, same-hue `--copper-on-dark` `#D2924A`. Both are defined once in `app/page.module.css` (the `--copper-on-dark` token is scoped to `.hm-hero`) and referenced by token — never re-typed as a loose hex in a component.
 - **No italic or oblique anywhere** — the [Emphasis](#emphasis) rule governs. This is why the hero's "booked" is set **roman in copper**, never italic.
 
 ### Provenance (the moat) — one value per theme, one meaning
