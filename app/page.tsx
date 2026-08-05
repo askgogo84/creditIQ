@@ -12,6 +12,7 @@ import { FaresBoard } from '@/components/marketing/landing/FaresBoard';
 import { SEED_CARDS } from '@/lib/data/seed-cards';
 import { getRedemptionOptions } from '@/lib/redemption';
 import { HomeHeroBg } from './HomeHeroBg';
+import { HomePointsMedia } from './HomePointsMedia';
 import { SmartCardMatch } from './SmartCardMatch';
 import { HomeCardRanks } from './HomeCardRanks';
 import styles from './page.module.css';
@@ -286,9 +287,8 @@ export default function HomePage() {
                     </>
                   )}
                 </div>
-                <div className={cx('hm-photopanel')}>
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src="/images/where-points.jpg" alt="An aircraft at a boarding gate in daylight" />
+                <div className={cx('hm-redeemmedia')}>
+                  <HomePointsMedia />
                 </div>
               </div>
             </div>

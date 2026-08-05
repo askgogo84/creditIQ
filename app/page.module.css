@@ -125,8 +125,12 @@
 .hm-src { display: flex; align-items: center; flex-wrap: wrap; gap: 10px; font-family: "JetBrains Mono", ui-monospace, monospace; font-size: 12px; color: #6E7B82; margin: 18px 0 0; }
 .hm-estpill { display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; border-radius: 999px; background: rgba(110,123,130,.10); border: 1px solid rgba(110,123,130,.30); font-family: "Inter", system-ui, sans-serif; font-size: 10px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: #5b6169; }
 .hm-estpill i { width: 6px; height: 6px; border-radius: 999px; background: #9aa2ad; }
-.hm-photopanel { position: relative; border-radius: 20px; overflow: hidden; border: 1px solid #E2DCD0; min-height: 240px; }
-.hm-photopanel img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+/* Media panel — the light-keyed points clip (HomePointsMedia). At 375px it stacks
+   below the copy (source order) as a rounded panel. On desktop it fills the whole
+   right half AND bleeds to the right viewport edge (see the ≥768px block): rounded on
+   the left, flush + square on the right. No scrim — the footage is near-monochrome and
+   reads on white untouched. */
+.hm-redeemmedia { position: relative; border-radius: 20px; overflow: hidden; border: 1px solid #E2DCD0; min-height: 300px; background: #ECE7DD; }
 
 /* ── §04 The method (cream band) — three numbered steps ── */
 .hm-steps { display: grid; gap: 14px; }
@@ -139,7 +143,18 @@
   .hm-navlinks { display: flex; }
   .hm-hero { padding: 64px 0 84px; }
   .hm-herogrid { grid-template-columns: 1.1fr .9fr; gap: 48px; align-items: start; }
-  .hm-redeem { grid-template-columns: 1.1fr .9fr; gap: 48px; align-items: center; }
+  /* Copy holds the left half; media the right, stretched to the copy's full height and
+     bled to the viewport edge. align-items:stretch (+ a tall min-height) makes it big. */
+  .hm-redeem { grid-template-columns: 1fr 1fr; gap: 48px; align-items: stretch; }
+  .hm-redeemmedia {
+    min-height: 480px;
+    border-radius: 20px 0 0 20px;   /* rounded left, square right — flush to the edge */
+    border-right: 0;
+    /* Extend the right edge from the wrap's content edge out to the true viewport edge.
+       max(20px, 50vw - 540px) = the right gutter of the 1120px wrap at any width; body's
+       overflow-x:hidden clips any sub-pixel spill, so this never adds a scrollbar. */
+    margin-right: calc(-1 * max(20px, 50vw - 540px));
+  }
   .hm-steps { grid-template-columns: repeat(3, 1fr); }
   .hm-mgrid { grid-template-columns: 1.25fr .75fr; }
   .hm-section { padding: 92px 0; }
