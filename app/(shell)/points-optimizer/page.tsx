@@ -2,7 +2,7 @@
 
 import { authedFetch } from '@/lib/authed-fetch';
 import { useState } from 'react';
-import { SectionTabs } from '@/components/ciq/SectionTabs';
+import { PageHeader } from '@/components/ciq/PageHeader';
 
 const CARDS_WITH_POINTS = [
   { value: 'hdfc-infinia', label: 'HDFC Infinia', bank: 'HDFC Bank', pointName: 'Reward Points', ratio: '1 pt = Rs.1 (SmartBuy) / 0.5 base' },
@@ -38,7 +38,7 @@ const GOALS = [
 
 // SVG icons — no emoji, no font dependency
 function GoalIcon({ icon, active }: { icon: string; active: boolean }) {
-  const color = active ? '#C9972E' : '#94a3b8';
+  const color = active ? 'var(--copper)' : 'var(--ink-4)';
   const size = 18;
   if (icon === 'FLIGHT') return (
     <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -162,33 +162,21 @@ Respond ONLY with valid JSON (no markdown, no code fences):
   const maxVal = result ? Math.max(...result.paths.map(p => p.estimatedValue)) : 1;
 
   return (
-    <div className="min-h-screen" style={{ backgroundColor: '#f1f5f9' }}>
-      <main className="mx-auto px-4 pb-28" style={{ maxWidth: 760, paddingTop: 40 }}>
+    <div style={{ paddingTop: 16, paddingBottom: 112 }}>
+      {/* App template: left-aligned compact PageHeader with SectionTabs directly beneath,
+          in the same app column as /dashboard. No centred marketing hero. */}
+      <div style={{ maxWidth: 1100, margin: '0 auto', padding: '0 20px' }}>
+        <PageHeader
+          eyebrow="AI-Powered · Real Valuations"
+          eyebrowPill
+          pillDotColor="var(--copper)"
+          title="Squeeze every rupee from your reward points"
+          subtitle="Pick a card, tell us your goal — we rank every redemption path by actual value."
+          maxWidth={1100}
+        />
 
-        {/* Hero */}
-        <div className="text-center mb-8">
-          <span style={{
-            display: 'inline-block', backgroundColor: '#1B3A5C', color: '#C9972E',
-            fontSize: 11, fontWeight: 700, letterSpacing: 1.5, padding: '5px 16px',
-            borderRadius: 100, marginBottom: 20, textTransform: 'uppercase',
-          }}>
-            AI-Powered &nbsp;&bull;&nbsp; Real Valuations
-          </span>
-          <h1 style={{
-            fontSize: 'clamp(26px,5vw,38px)', fontWeight: 800, color: '#1B3A5C',
-            margin: '0 0 12px', lineHeight: 1.15, letterSpacing: '-0.5px',
-          }}>
-            Squeeze every rupee from<br />your reward points
-          </h1>
-          <p style={{ fontSize: 15, color: '#64748b', maxWidth: 460, marginInline: 'auto', lineHeight: 1.7 }}>
-            Pick a card, tell me your goal &mdash; I&apos;ll rank every redemption path by actual value.
-          </p>
-        </div>
-
-        <SectionTabs />
-
-        {/* Two-column grid */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0,1fr) minmax(0,1.4fr)', gap: 20 }}
+        {/* Two-column tool beneath the header. */}
+        <div style={{ maxWidth: 760, margin: '24px auto 0', display: 'grid', gridTemplateColumns: 'minmax(0,1fr) minmax(0,1.4fr)', gap: 20 }}
           className="points-grid">
           <style>{`
             @media (max-width: 640px) { .points-grid { grid-template-columns: 1fr !important; } }
@@ -199,15 +187,15 @@ Respond ONLY with valid JSON (no markdown, no code fences):
           <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
 
             {/* Card selector */}
-            <div style={{ backgroundColor: '#fff', borderRadius: 18, padding: '18px 20px', boxShadow: '0 1px 3px rgba(0,0,0,0.06)' }}>
-              <p style={{ margin: '0 0 10px', fontSize: 11, fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: 1.2 }}>Your Card</p>
+            <div style={{ background: 'var(--surface)', borderRadius: 18, padding: '18px 20px', border: '1px solid var(--line)', boxShadow: '0 1px 3px rgba(20,35,53,0.05)' }}>
+              <p style={{ margin: '0 0 10px', fontSize: 11, fontWeight: 700, color: 'var(--ink-4)', textTransform: 'uppercase', letterSpacing: 1.2 }}>Your Card</p>
               <select
                 value={selectedCard}
                 onChange={e => setSelectedCard(e.target.value)}
                 style={{
                   width: '100%', padding: '10px 14px', borderRadius: 10,
-                  border: '1.5px solid #e2e8f0', fontSize: 14, color: '#1e293b',
-                  backgroundColor: '#f8fafc', outline: 'none', cursor: 'pointer',
+                  border: '1.5px solid var(--line-strong)', fontSize: 14, color: 'var(--ink)',
+                  background: 'var(--surface-2)', outline: 'none', cursor: 'pointer',
                 }}
               >
                 <option value="">Select your card...</option>
@@ -216,15 +204,15 @@ Respond ONLY with valid JSON (no markdown, no code fences):
                 ))}
               </select>
               {selectedCardData && (
-                <div style={{ marginTop: 10, padding: '8px 12px', backgroundColor: '#f0f4ff', borderRadius: 8, fontSize: 12, color: '#3730a3' }}>
+                <div style={{ marginTop: 10, padding: '8px 12px', background: 'color-mix(in srgb, var(--copper) 8%, transparent)', borderRadius: 8, fontSize: 12, color: 'var(--copper)' }}>
                   Points: {selectedCardData.pointName} &middot; {selectedCardData.ratio}
                 </div>
               )}
             </div>
 
             {/* Points input */}
-            <div style={{ backgroundColor: '#fff', borderRadius: 18, padding: '18px 20px', boxShadow: '0 1px 3px rgba(0,0,0,0.06)' }}>
-              <p style={{ margin: '0 0 10px', fontSize: 11, fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: 1.2 }}>Points to Redeem</p>
+            <div style={{ background: 'var(--surface)', borderRadius: 18, padding: '18px 20px', border: '1px solid var(--line)', boxShadow: '0 1px 3px rgba(20,35,53,0.05)' }}>
+              <p style={{ margin: '0 0 10px', fontSize: 11, fontWeight: 700, color: 'var(--ink-4)', textTransform: 'uppercase', letterSpacing: 1.2 }}>Points to Redeem</p>
               <input
                 type="number"
                 placeholder="e.g. 60000"
@@ -232,21 +220,21 @@ Respond ONLY with valid JSON (no markdown, no code fences):
                 onChange={e => setPoints(e.target.value)}
                 style={{
                   width: '100%', padding: '10px 14px', borderRadius: 10,
-                  border: '1.5px solid #e2e8f0', fontSize: 16, fontWeight: 700,
-                  color: '#1B3A5C', backgroundColor: '#f8fafc', outline: 'none',
+                  border: '1.5px solid var(--line-strong)', fontSize: 16, fontWeight: 700,
+                  color: 'var(--ink)', background: 'var(--surface-2)', outline: 'none',
                   boxSizing: 'border-box',
                 }}
               />
               {pointsNum > 0 && (
-                <p style={{ margin: '6px 0 0', fontSize: 12, color: '#64748b' }}>
+                <p style={{ margin: '6px 0 0', fontSize: 12, color: 'var(--ink-3)' }}>
                   Base value (cash): ~{fmt(pointsNum * 0.25)} &ndash; {fmt(pointsNum * 1.0)}
                 </p>
               )}
             </div>
 
             {/* Goal selector — SVG icons, no emoji */}
-            <div style={{ backgroundColor: '#fff', borderRadius: 18, padding: '18px 20px', boxShadow: '0 1px 3px rgba(0,0,0,0.06)' }}>
-              <p style={{ margin: '0 0 12px', fontSize: 11, fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: 1.2 }}>Optimize For</p>
+            <div style={{ background: 'var(--surface)', borderRadius: 18, padding: '18px 20px', border: '1px solid var(--line)', boxShadow: '0 1px 3px rgba(20,35,53,0.05)' }}>
+              <p style={{ margin: '0 0 12px', fontSize: 11, fontWeight: 700, color: 'var(--ink-4)', textTransform: 'uppercase', letterSpacing: 1.2 }}>Optimize For</p>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                 {GOALS.map(g => {
                   const active = goal === g.id;
@@ -257,17 +245,17 @@ Respond ONLY with valid JSON (no markdown, no code fences):
                       style={{
                         display: 'flex', alignItems: 'center', gap: 12,
                         padding: '10px 14px', borderRadius: 10,
-                        border: active ? '1.5px solid #C9972E' : '1.5px solid transparent',
-                        backgroundColor: active ? '#1B3A5C' : '#f8fafc',
+                        border: active ? '1.5px solid var(--copper)' : '1.5px solid transparent',
+                        background: active ? 'var(--ink)' : 'var(--surface-2)',
                         cursor: 'pointer', textAlign: 'left', transition: 'all 0.15s',
                       }}
                     >
                       <GoalIcon icon={g.icon} active={active} />
                       <div>
-                        <p style={{ margin: 0, fontSize: 13, fontWeight: 600, color: active ? '#fff' : '#334155' }}>
+                        <p style={{ margin: 0, fontSize: 13, fontWeight: 600, color: active ? 'var(--paper)' : 'var(--ink-2)' }}>
                           {g.label}
                         </p>
-                        <p style={{ margin: 0, fontSize: 11, color: active ? '#94a3b8' : '#94a3b8', lineHeight: 1.4 }}>{g.desc}</p>
+                        <p style={{ margin: 0, fontSize: 11, color: active ? 'rgba(255,255,255,0.6)' : 'var(--ink-4)', lineHeight: 1.4 }}>{g.desc}</p>
                       </div>
                     </button>
                   );
@@ -276,7 +264,7 @@ Respond ONLY with valid JSON (no markdown, no code fences):
             </div>
 
             {error && (
-              <div style={{ backgroundColor: '#fef2f2', border: '1px solid #fecaca', borderRadius: 10, padding: '10px 14px', color: '#dc2626', fontSize: 13 }}>
+              <div style={{ background: 'rgba(184,66,48,0.08)', border: '1px solid rgba(184,66,48,0.25)', borderRadius: 10, padding: '10px 14px', color: '#B84230', fontSize: 13 }}>
                 {error}
               </div>
             )}
@@ -286,8 +274,8 @@ Respond ONLY with valid JSON (no markdown, no code fences):
               disabled={loading || !selectedCard || pointsNum < 100}
               style={{
                 padding: '14px 20px', borderRadius: 12, border: 'none',
-                backgroundColor: selectedCard && pointsNum >= 100 ? '#C9972E' : '#cbd5e1',
-                color: '#fff', fontSize: 15, fontWeight: 700,
+                background: selectedCard && pointsNum >= 100 ? 'var(--copper)' : 'var(--ink-5)',
+                color: 'var(--paper)', fontSize: 15, fontWeight: 700,
                 cursor: selectedCard && pointsNum >= 100 && !loading ? 'pointer' : 'not-allowed',
                 display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
                 transition: 'all 0.2s',
@@ -307,27 +295,27 @@ Respond ONLY with valid JSON (no markdown, no code fences):
 
             {!result && !loading && (
               <div style={{
-                backgroundColor: '#fff', borderRadius: 18, padding: '32px 24px',
-                boxShadow: '0 1px 3px rgba(0,0,0,0.06)', textAlign: 'center',
+                background: 'var(--surface)', borderRadius: 18, padding: '32px 24px',
+                border: '1px solid var(--line)', boxShadow: '0 1px 3px rgba(20,35,53,0.05)', textAlign: 'center',
                 display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
                 minHeight: 300,
               }}>
-                <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#e2e8f0" strokeWidth="1.5" style={{ marginBottom: 16 }}>
+                <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="var(--line-strong)" strokeWidth="1.5" style={{ marginBottom: 16 }}>
                   <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
                 </svg>
-                <p style={{ fontWeight: 700, fontSize: 15, color: '#64748b', margin: '0 0 6px' }}>Redemption paths will appear here</p>
-                <p style={{ fontSize: 13, margin: 0, color: '#94a3b8' }}>Select a card and enter your points balance to get started</p>
+                <p style={{ fontWeight: 700, fontSize: 15, color: 'var(--ink-3)', margin: '0 0 6px' }}>Redemption paths will appear here</p>
+                <p style={{ fontSize: 13, margin: 0, color: 'var(--ink-4)' }}>Select a card and enter your points balance to get started</p>
               </div>
             )}
 
             {loading && (
               <div style={{
-                backgroundColor: '#fff', borderRadius: 18, padding: '32px 24px',
-                boxShadow: '0 1px 3px rgba(0,0,0,0.06)', textAlign: 'center',
+                background: 'var(--surface)', borderRadius: 18, padding: '32px 24px',
+                border: '1px solid var(--line)', boxShadow: '0 1px 3px rgba(20,35,53,0.05)', textAlign: 'center',
                 minHeight: 300, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
               }}>
-                <span style={{ width: 32, height: 32, border: '3px solid #e2e8f0', borderTopColor: '#C9972E', borderRadius: '50%', display: 'inline-block', animation: 'spin 0.8s linear infinite', marginBottom: 16 }} />
-                <p style={{ color: '#64748b', fontWeight: 600, margin: 0 }}>Calculating best redemption paths...</p>
+                <span style={{ width: 32, height: 32, border: '3px solid var(--line-strong)', borderTopColor: 'var(--copper)', borderRadius: '50%', display: 'inline-block', animation: 'spin 0.8s linear infinite', marginBottom: 16 }} />
+                <p style={{ color: 'var(--ink-3)', fontWeight: 600, margin: 0 }}>Calculating best redemption paths...</p>
               </div>
             )}
 
@@ -335,73 +323,75 @@ Respond ONLY with valid JSON (no markdown, no code fences):
               <>
                 {/* AI Strategy banner */}
                 {aiStrategy && (
-                  <div style={{ backgroundColor: '#1B3A5C', borderRadius: 16, padding: '16px 18px' }}>
-                    <p style={{ margin: '0 0 6px', fontSize: 10, fontWeight: 700, color: '#C9972E', textTransform: 'uppercase', letterSpacing: 1.2 }}>AI Strategy</p>
-                    <p style={{ margin: 0, fontSize: 13, color: '#e2e8f0', lineHeight: 1.65 }}>{aiStrategy}</p>
+                  <div style={{ background: 'var(--ink)', borderRadius: 16, padding: '16px 18px' }}>
+                    <p style={{ margin: '0 0 6px', fontSize: 10, fontWeight: 700, color: 'var(--copper-3)', textTransform: 'uppercase', letterSpacing: 1.2 }}>AI Strategy</p>
+                    <p style={{ margin: 0, fontSize: 13, color: 'rgba(255,255,255,0.72)', lineHeight: 1.65 }}>{aiStrategy}</p>
                   </div>
                 )}
 
-                <p style={{ margin: 0, fontSize: 11, fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: 1.2 }}>
+                <p style={{ margin: 0, fontSize: 11, fontWeight: 700, color: 'var(--ink-4)', textTransform: 'uppercase', letterSpacing: 1.2 }}>
                   Redemption Paths &mdash; Ranked
                 </p>
 
                 {result.paths.map((path, idx) => (
                   <div key={idx} style={{
-                    backgroundColor: '#fff', borderRadius: 16,
+                    background: 'var(--surface)', borderRadius: 16,
                     boxShadow: path.isTopPick
-                      ? '0 0 0 2px #C9972E, 0 4px 16px rgba(201,151,46,0.1)'
-                      : '0 1px 3px rgba(0,0,0,0.06)',
+                      ? '0 0 0 2px var(--copper), 0 4px 16px rgba(140,95,18,0.1)'
+                      : '0 1px 3px rgba(20,35,53,0.05)',
+                    border: path.isTopPick ? 'none' : '1px solid var(--line)',
                     overflow: 'hidden',
                   }}>
                     <div style={{ padding: '14px 18px 14px' }}>
                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 6 }}>
                         <div>
                           {path.isTopPick && (
-                            <span style={{ fontSize: 10, fontWeight: 700, color: '#C9972E', textTransform: 'uppercase', letterSpacing: 1, display: 'block', marginBottom: 2 }}>
+                            <span style={{ fontSize: 10, fontWeight: 700, color: 'var(--copper)', textTransform: 'uppercase', letterSpacing: 1, display: 'block', marginBottom: 2 }}>
                               Best Value
                             </span>
                           )}
-                          <p style={{ margin: 0, fontSize: 11, color: '#94a3b8', fontWeight: 600, textTransform: 'uppercase', letterSpacing: 0.8 }}>{path.program}</p>
-                          <p style={{ margin: '2px 0 0', fontSize: 16, fontWeight: 800, color: '#1B3A5C' }}>{path.route}</p>
+                          <p style={{ margin: 0, fontSize: 11, color: 'var(--ink-4)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: 0.8 }}>{path.program}</p>
+                          <p style={{ margin: '2px 0 0', fontSize: 16, fontWeight: 800, color: 'var(--ink)' }}>{path.route}</p>
                         </div>
                         <div style={{ textAlign: 'right' }}>
-                          <p style={{ margin: 0, fontSize: 10, color: '#94a3b8', fontWeight: 600, textTransform: 'uppercase' }}>Value</p>
-                          <p style={{ margin: 0, fontSize: 20, fontWeight: 800, color: '#10b981' }}>{fmt(path.estimatedValue)}</p>
+                          <p style={{ margin: 0, fontSize: 10, color: 'var(--ink-4)', fontWeight: 600, textTransform: 'uppercase' }}>Value</p>
+                          {/* AI ESTIMATE — copper, not verified-green (DESIGN.md §Provenance). */}
+                          <p style={{ margin: 0, fontSize: 20, fontWeight: 800, color: 'var(--copper)' }}>{fmt(path.estimatedValue)}</p>
                         </div>
                       </div>
 
                       {/* Value bar */}
-                      <div style={{ height: 4, backgroundColor: '#f1f5f9', borderRadius: 4, margin: '8px 0', overflow: 'hidden' }}>
+                      <div style={{ height: 4, background: 'var(--line)', borderRadius: 4, margin: '8px 0', overflow: 'hidden' }}>
                         <div style={{
                           height: '100%', borderRadius: 4,
-                          backgroundColor: path.isTopPick ? '#C9972E' : '#94a3b8',
+                          background: path.isTopPick ? 'var(--copper)' : 'var(--ink-4)',
                           width: barWidth(path.estimatedValue, maxVal),
                         }} />
                       </div>
 
                       <div style={{ display: 'flex', gap: 16, marginBottom: path.steps?.length ? 10 : 0 }}>
                         <div>
-                          <p style={{ margin: 0, fontSize: 10, color: '#94a3b8', fontWeight: 600 }}>POINTS</p>
-                          <p style={{ margin: 0, fontSize: 13, fontWeight: 700, color: '#475569' }}>{path.pointsNeeded.toLocaleString('en-IN')} pts</p>
+                          <p style={{ margin: 0, fontSize: 10, color: 'var(--ink-4)', fontWeight: 600 }}>POINTS</p>
+                          <p style={{ margin: 0, fontSize: 13, fontWeight: 700, color: 'var(--ink-2)' }}>{path.pointsNeeded.toLocaleString('en-IN')} pts</p>
                         </div>
                         <div>
-                          <p style={{ margin: 0, fontSize: 10, color: '#94a3b8', fontWeight: 600 }}>VALUE / PT</p>
-                          <p style={{ margin: 0, fontSize: 13, fontWeight: 700, color: '#475569' }}>Rs.{path.valuePerPoint.toFixed(2)}</p>
+                          <p style={{ margin: 0, fontSize: 10, color: 'var(--ink-4)', fontWeight: 600 }}>VALUE / PT</p>
+                          <p style={{ margin: 0, fontSize: 13, fontWeight: 700, color: 'var(--ink-2)' }}>Rs.{path.valuePerPoint.toFixed(2)}</p>
                         </div>
                         {path.transferPartner && (
                           <div>
-                            <p style={{ margin: 0, fontSize: 10, color: '#94a3b8', fontWeight: 600 }}>PARTNER</p>
-                            <p style={{ margin: 0, fontSize: 13, fontWeight: 700, color: '#475569' }}>{path.transferPartner}</p>
+                            <p style={{ margin: 0, fontSize: 10, color: 'var(--ink-4)', fontWeight: 600 }}>PARTNER</p>
+                            <p style={{ margin: 0, fontSize: 13, fontWeight: 700, color: 'var(--ink-2)' }}>{path.transferPartner}</p>
                           </div>
                         )}
                       </div>
 
                       {path.steps && path.steps.length > 0 && (
-                        <div style={{ borderTop: '1px solid #f1f5f9', paddingTop: 10 }}>
-                          <p style={{ margin: '0 0 6px', fontSize: 10, color: '#94a3b8', fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.8 }}>How to redeem</p>
+                        <div style={{ borderTop: '1px solid var(--line)', paddingTop: 10 }}>
+                          <p style={{ margin: '0 0 6px', fontSize: 10, color: 'var(--ink-4)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.8 }}>How to redeem</p>
                           <ol style={{ margin: 0, paddingLeft: 18, display: 'flex', flexDirection: 'column', gap: 4 }}>
                             {path.steps.map((step, si) => (
-                              <li key={si} style={{ fontSize: 12, color: '#475569', lineHeight: 1.5 }}>{step}</li>
+                              <li key={si} style={{ fontSize: 12, color: 'var(--ink-2)', lineHeight: 1.5 }}>{step}</li>
                             ))}
                           </ol>
                         </div>
@@ -411,9 +401,9 @@ Respond ONLY with valid JSON (no markdown, no code fences):
                 ))}
 
                 {result.warnings && result.warnings.length > 0 && (
-                  <div style={{ backgroundColor: '#fffbeb', border: '1px solid #fde68a', borderRadius: 12, padding: '12px 16px' }}>
+                  <div style={{ background: 'rgba(212,163,115,0.12)', border: '1px solid rgba(212,163,115,0.30)', borderRadius: 12, padding: '12px 16px' }}>
                     {result.warnings.map((w, i) => (
-                      <p key={i} style={{ margin: i > 0 ? '6px 0 0' : 0, fontSize: 12, color: '#78350f' }}>Note: {w}</p>
+                      <p key={i} style={{ margin: i > 0 ? '6px 0 0' : 0, fontSize: 12, color: 'var(--ink-2)' }}>Note: {w}</p>
                     ))}
                   </div>
                 )}
@@ -421,7 +411,7 @@ Respond ONLY with valid JSON (no markdown, no code fences):
             )}
           </div>
         </div>
-      </main>
+      </div>
     </div>
   );
 }
