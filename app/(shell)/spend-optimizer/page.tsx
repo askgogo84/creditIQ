@@ -3,6 +3,13 @@
 import { useState } from 'react';
 import { authedFetch } from '@/lib/authed-fetch';
 import { PageHeader } from '@/components/ciq/PageHeader';
+import { SEED_CARDS } from '@/lib/data/seed-cards';
+
+// Card-count claim is COMPUTED from the canonical catalogue, never typed — so it can't
+// drift from reality the way the old hardcoded "93+" did. The engine (RAG) is grounded
+// strictly on this database ("use ONLY these cards"), so the honest claim is our real
+// catalogue size, not an inflated marketing figure.
+const CARD_COUNT = SEED_CARDS.length;
 
 const CATEGORIES = [
   { id: 'dining', label: 'Dining & Restaurants', placeholder: '5000', icon: '🍽️' },
@@ -125,7 +132,7 @@ Respond ONLY with valid JSON (no markdown, no backticks, no explanation outside 
           eyebrowPill
           pillDotColor="var(--copper)"
           title="Which card earns you the most money?"
-          subtitle="Enter your monthly spends. Our AI scans 93+ Indian credit cards and shows exactly how much each card earns you — with zero bank bias."
+          subtitle={`Enter your monthly spends — our AI picks from our ${CARD_COUNT} tracked cards by what each earns.`}
           maxWidth={1100}
         />
 
@@ -217,7 +224,7 @@ Respond ONLY with valid JSON (no markdown, no backticks, no explanation outside 
                       borderTopColor: '#fff', borderRadius: '50%',
                       display: 'inline-block', animation: 'spin 0.8s linear infinite',
                     }} />
-                    Analysing 93+ cards...
+                    Analysing {CARD_COUNT} cards...
                   </>
                 ) : (
                   <>✨ Find My Best Card</>
