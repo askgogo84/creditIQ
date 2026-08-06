@@ -1,5 +1,6 @@
 import { ImageResponse } from 'next/og';
 import { NextRequest } from 'next/server';
+import { CARD_COUNT, BANK_COUNT } from '@/lib/catalogue-stats';
 
 export const runtime = 'edge';
 
@@ -57,8 +58,8 @@ export async function GET(req: NextRequest) {
         {/* Bottom stats */}
         <div style={{ position: 'absolute', bottom: 60, left: 80, right: 80, display: 'flex', gap: 60, borderTop: '1px solid rgba(255,255,255,0.08)', paddingTop: 30 }}>
           {[
-            { v: '100+', l: 'Cards tracked' },
-            { v: '17', l: 'Banks covered' },
+            { v: String(CARD_COUNT), l: 'Cards tracked' },
+            { v: String(BANK_COUNT), l: 'Banks covered' },
             { v: '0%', l: 'Affiliate bias' },
           ].map(s => (
             <div key={s.l} style={{ display: 'flex', flexDirection: 'column' }}>

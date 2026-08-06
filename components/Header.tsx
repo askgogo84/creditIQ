@@ -6,6 +6,7 @@ import { usePathname, useRouter } from 'next/navigation'
 import { createBrowserClient } from '@supabase/ssr'
 import { TabBar } from '@/components/ciq/TabBar'
 import { APP_NAV, appActive as isAppActive } from '@/components/ciq/appNav'
+import { CARD_COUNT } from '@/lib/catalogue-stats'
 import { useTheme, reassertTheme } from '@/lib/store'
 import './Header.css'
 
@@ -217,7 +218,7 @@ export function Header() {
               {cardsOpen && (
                 <div className="ciq-ai-dropdown" style={{ width: 220 }}>
                   {[
-                    { label: 'All Cards', href: '/cards', icon: '💳', desc: '100+ cards ranked honestly' },
+                    { label: 'All Cards', href: '/cards', icon: '💳', desc: `${CARD_COUNT} cards ranked honestly` },
                     { label: 'Compare', href: '/compare', icon: '⚖️', desc: 'Side by side comparison' },
                     { label: 'Best Travel Cards', href: '/best-cards/travel', icon: '✈️', desc: 'Top cards for travel' },
                     { label: 'Best Cashback', href: '/best-cards/cashback', icon: '💰', desc: 'Maximum cashback cards' },

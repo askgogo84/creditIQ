@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { CARD_COUNT } from '@/lib/catalogue-stats';
 
 export function Footer() {
   return (
@@ -14,7 +15,7 @@ export function Footer() {
             </div>
             <p className="text-sm font-display leading-relaxed" style={{ color: 'var(--text-muted)' }}>
               India's first affiliate-bias-free credit card intelligence platform. {' '}
-              <span style={{ color: 'var(--text-dim)' }}>100+ cards tracked.</span>
+              <span style={{ color: 'var(--text-dim)' }}>{CARD_COUNT} cards tracked.</span>
             </p>
             <div className="text-xs font-mono uppercase tracking-widest mt-4" style={{ color: 'var(--text-dim)' }}>
               (c) {new Date().getFullYear()} CreditIQ . Bengaluru
