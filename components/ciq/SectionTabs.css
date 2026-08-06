@@ -9,12 +9,42 @@
    Hover wash, scrollbar hide, and reduced-motion override live here because inline
    styles can't express pseudo-classes or media queries. The !important on the
    reduced-motion rule beats the inline transition. */
+.ciq-sectiontabs-wrap { position: relative; }
 .ciq-sectiontabs { scrollbar-width: none; -ms-overflow-style: none; }
 .ciq-sectiontabs::-webkit-scrollbar { display: none; }
 .ciq-sectiontabs a[data-active="false"]:hover {
   background: var(--st-hover);
   color: var(--st-text-active);
 }
+
+/* Edge-fade cues. Absolutely positioned over the scroll viewport's left/right edge,
+   above the tabs but click-through (pointer-events:none). Width is the feathered
+   peek zone; the outer corner radius matches the strip's 16px so the fade never
+   paints a square corner over the rounded track. Opacity is set inline from scroll
+   state — the rule only provides geometry + the same-hue gradient. */
+.ciq-st-fade {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 44px;
+  pointer-events: none;
+  z-index: 1;
+  transition: opacity 0.18s ease;
+}
+.ciq-st-fade--l {
+  left: 0;
+  border-top-left-radius: 16px;
+  border-bottom-left-radius: 16px;
+  background: linear-gradient(to right, var(--st-ground), transparent);
+}
+.ciq-st-fade--r {
+  right: 0;
+  border-top-right-radius: 16px;
+  border-bottom-right-radius: 16px;
+  background: linear-gradient(to left, var(--st-ground), transparent);
+}
+
 @media (prefers-reduced-motion: reduce) {
   .ciq-sectiontabs a { transition: none !important; }
+  .ciq-st-fade { transition: none; }
 }
