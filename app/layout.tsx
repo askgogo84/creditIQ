@@ -6,14 +6,13 @@ import "./globals.css";
 import { CreditIQAssistant } from "@/components/CreditIQAssistant";
 import { AppDownloadBanner } from '@/components/AppDownloadBanner';
 import { logMissingEnv } from "@/lib/env-check";
-import { CARD_COUNT } from "@/lib/catalogue-stats";
 
 // Runs once per server cold start (module-level guard inside). Log-only.
 logMissingEnv();
 
 export const metadata: Metadata = {
   title: "CreditIQ - India's Honest Credit Card Intelligence",
-  description: `Find the best Indian credit card. AI-powered, zero affiliate bias. Compare ${CARD_COUNT} cards honestly.`,
+  description: "Honest credit card comparison for India — every number computed, every estimate labelled.",
   icons: {
     icon: [
       { url: '/favicon.svg', type: 'image/svg+xml' },
@@ -23,7 +22,7 @@ export const metadata: Metadata = {
   },
   openGraph: {
     title: "CreditIQ - India's Honest Credit Card Intelligence",
-    description: `Find the best Indian credit card. AI-powered, zero affiliate bias. Compare ${CARD_COUNT} cards honestly.`,
+    description: "Honest credit card comparison for India — every number computed, every estimate labelled.",
     url: 'https://creditiq.app',
     siteName: 'CreditIQ',
     locale: 'en_IN',

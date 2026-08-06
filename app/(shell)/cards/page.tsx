@@ -5,18 +5,17 @@ import { DesignFooter } from '@/components/design/Footer';
 import { CardsClient } from './CardsClient';
 import { SectionTabs } from '@/components/ciq/SectionTabs';
 import { createClient } from '@supabase/supabase-js';
-import { CARD_COUNT } from '@/lib/catalogue-stats';
 
 export const revalidate = 300; // revalidate every 5 mins
 
 export const metadata: Metadata = {
-  title: `All Credit Cards in India 2026 -- Compare ${CARD_COUNT} cards | CreditIQ`,
-  description: `Compare all ${CARD_COUNT} credit cards in India. HDFC, Axis, SBI, ICICI, Amex, IDFC First and more. Honest reviews, real fees, no affiliate bias. Find the best card for your spends.`,
+  title: 'Every card we track, ranked by what it earns you | CreditIQ',
+  description: 'Ranked by what each card actually earns at your spend — real reward rates, fees and live devaluations, with zero affiliate bias. HDFC, Axis, SBI, ICICI, Amex, IDFC First and more.',
   keywords: 'credit cards India 2026, best credit card India, HDFC credit card, Axis credit card, SBI credit card, compare credit cards India',
   alternates: { canonical: 'https://creditiq.app/cards' },
   openGraph: {
-    title: 'All Credit Cards in India 2026 | CreditIQ',
-    description: `Compare ${CARD_COUNT} credit cards honestly. No affiliate bias.`,
+    title: 'Every card we track, ranked by what it earns you | CreditIQ',
+    description: 'Ranked by what each card actually earns — with zero affiliate bias.',
     url: 'https://creditiq.app/cards',
   },
 };
