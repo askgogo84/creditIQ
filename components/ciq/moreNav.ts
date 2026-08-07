@@ -14,6 +14,8 @@
 // The groups mirror the old marketing Header dropdowns (Header.tsx @ 2cbc6fe8)
 // so the 16 feature pages orphaned by the nav-identity fix are reachable again.
 
+import { CARD_COUNT } from '@/lib/catalogue-stats'
+
 export type MoreLink = {
   label: string
   href: string
@@ -41,7 +43,7 @@ export const MORE_GROUPS: MoreGroup[] = [
   {
     title: 'Cards',
     links: [
-      { label: 'All Cards', href: '/cards', icon: '💳', desc: '100+ cards ranked honestly' },
+      { label: 'All Cards', href: '/cards', icon: '💳', desc: `${CARD_COUNT} cards ranked honestly` },
       { label: 'Compare', href: '/compare', icon: '⚖️', desc: 'Side by side comparison' },
       { label: 'Best Travel', href: '/best-cards/travel', icon: '✈️', desc: 'Top cards for travel' },
       { label: 'Best Cashback', href: '/best-cards/cashback', icon: '💰', desc: 'Maximum cashback cards' },

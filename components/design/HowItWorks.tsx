@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
+import { CARD_COUNT } from '@/lib/catalogue-stats'
 
 const STEPS = [
   {
@@ -21,7 +22,7 @@ const STEPS = [
     title1: 'AI reads every MITC',
     title2: 'so you',
     titleAccent: "don't have to.",
-    desc: '100+ cards cross-referenced with your spend, live devaluation history, and break-even point  --  in real time.',
+    desc: `${CARD_COUNT} cards cross-referenced with your spend, live devaluation history, and break-even point  --  in real time.`,
     exLabel: 'What happens',
     exText: 'Effective rate calculated. Devaluations checked. Break-even verified.',
     exResult: 'Regalia: 1.4% effective -> Infinia: 3.3% on your profile.',

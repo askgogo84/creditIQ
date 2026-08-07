@@ -3,6 +3,7 @@ import React from 'react';
 import Link from 'next/link';
 import { Reveal } from '@/components/design/Reveal';
 import { CopperCTA, GhostCTA } from '@/components/design/CTAs';
+import { CARD_COUNT, BANK_COUNT } from '@/lib/catalogue-stats';
 
 export function MeetTheC() {
   return (
@@ -72,7 +73,7 @@ export function MeetTheC() {
 
 export function CleoStatsBar() {
   const stats = [
-    { n: '100+', label: 'Cards tracked', sub: 'across 24 banks' },
+    { n: String(CARD_COUNT), label: 'Cards tracked', sub: `across ${BANK_COUNT} banks` },
     { n: '24h', label: 'Devaluation detection', sub: 'within 24 hours' },
     { n: '0', label: 'Bank sponsorships', sub: 'ever. zero.' },
     { n: '₹0', label: 'Cost to use', sub: 'free forever' },

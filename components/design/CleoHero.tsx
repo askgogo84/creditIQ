@@ -1,6 +1,7 @@
 'use client'
 import { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
+import { CARD_COUNT } from '@/lib/catalogue-stats'
 
 type SceneKey = 'roast' | 'match' | 'points'
 type Msg = { role: 'user' | 'bot'; text: string }
@@ -133,7 +134,7 @@ export function CleoHero() {
               {' '}— built to earn you more.
             </h1>
             <p style={{ fontSize: 'clamp(15px,1.3vw,18px)', color: 'var(--ink-2,#2A3F6B)', maxWidth: 520, lineHeight: 1.55, marginBottom: 32 }}>
-              Compare 100+ cards with{' '}
+              Compare {CARD_COUNT} cards with{' '}
               <span style={{ fontFamily: 'var(--font-serif,Georgia,serif)', fontStyle: 'italic', color: 'var(--ink,#142950)' }}>zero affiliate bias</span>.{' '}
               Our AI finds every rupee you’re leaving on the table — smarter points, better matches, live devaluation alerts.
             </p>

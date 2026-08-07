@@ -12,7 +12,7 @@ logMissingEnv();
 
 export const metadata: Metadata = {
   title: "CreditIQ - India's Honest Credit Card Intelligence",
-  description: "Find the best Indian credit card. AI-powered, zero affiliate bias. Compare 170+ cards honestly.",
+  description: "Honest credit card comparison for India — every number computed, every estimate labelled.",
   icons: {
     icon: [
       { url: '/favicon.svg', type: 'image/svg+xml' },
@@ -22,7 +22,7 @@ export const metadata: Metadata = {
   },
   openGraph: {
     title: "CreditIQ - India's Honest Credit Card Intelligence",
-    description: "Find the best Indian credit card. AI-powered, zero affiliate bias. Compare 170+ cards honestly.",
+    description: "Honest credit card comparison for India — every number computed, every estimate labelled.",
     url: 'https://creditiq.app',
     siteName: 'CreditIQ',
     locale: 'en_IN',

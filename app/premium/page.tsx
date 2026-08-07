@@ -5,9 +5,10 @@ import { Header } from '@/components/Header';
 import { DesignFooter } from '@/components/design/Footer';
 import { Check, Zap, Shield, Star, CreditCard, TrendingUp, Bell, Plane, Building2, ChevronDown } from 'lucide-react';
 import Link from 'next/link';
+import { CARD_COUNT, BANK_COUNT } from '@/lib/catalogue-stats';
 
 const FREE_FEATURES = [
-  '170+ cards across 17 banks',
+  `${CARD_COUNT} cards across ${BANK_COUNT} banks`,
   'Smart Match card finder',
   'Points optimizer (basic)',
   'Devaluation tracker',
