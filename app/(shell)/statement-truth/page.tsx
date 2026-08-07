@@ -4,7 +4,7 @@ import { authedFetch } from '@/lib/authed-fetch';
 import { useState, useRef } from 'react';
 import { DesignFooter } from '@/components/design/Footer';
 import { Reveal } from '@/components/design/Reveal';
-import { SectionTabs } from '@/components/ciq/SectionTabs';
+import { PageHeader } from '@/components/ciq/PageHeader';
 
 import Link from 'next/link';
 
@@ -66,31 +66,38 @@ export default function StatementTruthPage() {
 
   return (
     <>
-      <div className="page-fade">
+      <div className="page-fade" style={{ paddingTop: 16, paddingBottom: 80 }}>
 
-        {/* Hero */}
-        <section style={{ position: 'relative', paddingTop: 'clamp(120px,18vw,150px)', paddingBottom: 48 }}>
-          <div className="aurora" style={{ top: -80, right: -100, width: 600, height: 500, background: 'radial-gradient(circle,rgba(212,163,115,0.22),transparent 60%)' }} />
-          <div className="shell" style={{ position: 'relative', zIndex: 2 }}>
-            <Reveal>
-              <div style={{ display: 'inline-flex', alignItems: 'center', gap: 10, padding: '7px 16px', borderRadius: 999, background: 'rgba(212,163,115,0.12)', border: '1px solid rgba(212,163,115,0.28)', marginBottom: 24 }}>
-                <span style={{ fontFamily: 'var(--font-mono,monospace)', fontSize: 10, letterSpacing: '0.18em', color: 'var(--copper,#8C5F12)', textTransform: 'uppercase', fontWeight: 700 }}>AI Tool &bull; Statement Truth</span>
-              </div>
-              <h1 style={{ fontSize: 'clamp(36px,6vw,80px)', fontWeight: 800, color: 'var(--ink,#142950)', lineHeight: 1.0, letterSpacing: '-0.04em', margin: '0 0 16px' }}>
-                Is your bank{' '}
-                <span style={{ fontFamily: 'var(--font-serif,Georgia,serif)', color: '#B84230', fontStyle: 'italic', fontWeight: 400 }}>lying</span>{' '}
-                about your rewards?
-              </h1>
-              <p style={{ fontSize: 'clamp(15px,1.4vw,18px)', color: 'var(--ink-2,#2A3F6B)', lineHeight: 1.65, margin: 0, maxWidth: 520 }}>
-                Upload your credit card statement. We show you what you actually earned vs what the bank advertised — category by category.
-              </p>
-            </Reveal>
-            <SectionTabs />
-          </div>
-        </section>
+        {/* App column — SAME width as /dashboard's app column (not .shell). Compact
+            PageHeader (eyebrow pill · roman headline · one supporting line) with
+            SectionTabs rendered directly beneath it, then the tool. No marketing hero,
+            no aurora glow: this surface now reads as part of the app, so tapping between
+            "Your cards" and here no longer feels like leaving it. */}
+        <div style={{ maxWidth: 1100, margin: '0 auto', padding: '0 20px' }}>
+          <PageHeader
+            eyebrow={
+              <span style={{
+                display: 'inline-flex', alignItems: 'center', gap: 6, padding: '5px 10px',
+                borderRadius: 999, color: 'var(--copper)',
+                background: 'color-mix(in srgb, var(--copper) 10%, transparent)',
+                border: '1px solid color-mix(in srgb, var(--copper) 25%, transparent)',
+              }}>
+                <span style={{ width: 6, height: 6, borderRadius: '50%', background: 'var(--copper)' }} />
+                AI Tool · Statement Truth
+              </span>
+            }
+            title={
+              <>Is your bank{' '}
+                {/* Emphasis by colour + weight, ROMAN — never italic (DESIGN.md §Emphasis). */}
+                <span style={{ color: '#B84230', fontWeight: 700 }}>lying</span>{' '}
+                about your rewards?</>
+            }
+            subtitle="Upload your credit card statement — we show what you actually earned versus what the bank advertised, category by category."
+            maxWidth={1100}
+          />
 
-        <section style={{ paddingBottom: 80 }}>
-          <div style={{ maxWidth: 720, margin: '0 auto', padding: '0 clamp(16px,4vw,24px)' }}>
+          {/* The tool itself, on a comfortable reading measure beneath the header. */}
+          <div style={{ maxWidth: 720, margin: '28px auto 0' }}>
 
             {step === 'upload' && (
               <Reveal>
@@ -250,7 +257,7 @@ export default function StatementTruthPage() {
               </>
             )}
           </div>
-        </section>
+        </div>
 
         <DesignFooter />
       </div>
