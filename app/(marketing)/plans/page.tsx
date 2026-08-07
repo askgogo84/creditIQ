@@ -35,7 +35,6 @@ export default function PlansPage() {
             </div>
           ))}
         </div>
-        <p style={{ marginTop: 28, fontSize: 13, color: '#8A93A3' }}>Checkout wiring lands with the paywall slice. This is a stub.</p>
       </div>
     </main>
   );
