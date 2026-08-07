@@ -2,17 +2,24 @@
 
 import { useState } from 'react';
 import { authedFetch } from '@/lib/authed-fetch';
-import { SectionTabs } from '@/components/ciq/SectionTabs';
+import { PageHeader } from '@/components/ciq/PageHeader';
+import { SEED_CARDS } from '@/lib/data/seed-cards';
+
+// Card-count claim is COMPUTED from the canonical catalogue, never typed — so it can't
+// drift from reality the way the old hardcoded "93+" did. The engine (RAG) is grounded
+// strictly on this database ("use ONLY these cards"), so the honest claim is our real
+// catalogue size, not an inflated marketing figure.
+const CARD_COUNT = SEED_CARDS.length;
 
 const CATEGORIES = [
-  { id: 'dining', label: 'Dining & Restaurants', color: '#e11d48', placeholder: '5000', icon: '🍽️' },
-  { id: 'travel', label: 'Travel & Hotels', color: '#0ea5e9', placeholder: '10000', icon: '✈️' },
-  { id: 'fuel', label: 'Fuel', color: '#f59e0b', placeholder: '4000', icon: '⛽' },
-  { id: 'shopping', label: 'Online Shopping', color: '#8b5cf6', placeholder: '8000', icon: '🛍️' },
-  { id: 'grocery', label: 'Grocery & Supermarket', color: '#10b981', placeholder: '6000', icon: '🛒' },
-  { id: 'ott', label: 'OTT & Subscriptions', color: '#6366f1', placeholder: '1500', icon: '📺' },
-  { id: 'utilities', label: 'Utilities & Bills', color: '#f97316', placeholder: '3000', icon: '💡' },
-  { id: 'international', label: 'International Spends', color: '#14b8a6', placeholder: '0', icon: '🌍' },
+  { id: 'dining', label: 'Dining & Restaurants', placeholder: '5000', icon: '🍽️' },
+  { id: 'travel', label: 'Travel & Hotels', placeholder: '10000', icon: '✈️' },
+  { id: 'fuel', label: 'Fuel', placeholder: '4000', icon: '⛽' },
+  { id: 'shopping', label: 'Online Shopping', placeholder: '8000', icon: '🛍️' },
+  { id: 'grocery', label: 'Grocery & Supermarket', placeholder: '6000', icon: '🛒' },
+  { id: 'ott', label: 'OTT & Subscriptions', placeholder: '1500', icon: '📺' },
+  { id: 'utilities', label: 'Utilities & Bills', placeholder: '3000', icon: '💡' },
+  { id: 'international', label: 'International Spends', placeholder: '0', icon: '🌍' },
 ];
 
 interface SpendData { [key: string]: string; }
@@ -41,7 +48,9 @@ function fmt(n: number) {
 }
 
 const RANK_LABELS = ['🥇 Best Pick', '🥈 Runner Up', '🥉 Third Pick'];
-const RANK_COLORS = ['#C9972E', '#64748b', '#cd7f32'];
+// Rank accents on the white/copper system: copper for the winner, muted ink for the
+// runner-up, a lighter copper for third — no gold/bronze literals.
+const RANK_COLORS = ['var(--copper)', 'var(--ink-3)', 'var(--copper-2)'];
 
 export default function SpendOptimizerPage() {
   const [spends, setSpends] = useState<SpendData>({});
@@ -113,262 +122,259 @@ Respond ONLY with valid JSON (no markdown, no backticks, no explanation outside 
   };
 
   return (
-    <div className="min-h-screen" style={{ backgroundColor: '#f1f5f9' }}>
-      <main className="mx-auto px-4 pb-28" style={{ maxWidth: 700, paddingTop: 40 }}>
+    <div style={{ paddingTop: 16, paddingBottom: 112 }}>
+      {/* App template: left-aligned compact PageHeader (eyebrow pill · roman headline ·
+          one supporting line) with SectionTabs directly beneath, in the same app column
+          as /dashboard. No centred marketing hero. */}
+      <div style={{ maxWidth: 1100, margin: '0 auto', padding: '0 20px' }}>
+        <PageHeader
+          eyebrow="No affiliate bias · Pure AI"
+          eyebrowPill
+          pillDotColor="var(--copper)"
+          title="Which card earns you the most money?"
+          subtitle={`Enter your monthly spends — our AI picks from our ${CARD_COUNT} tracked cards by what each earns.`}
+          maxWidth={1100}
+        />
 
-        {/* Hero */}
-        <div className="text-center mb-8">
-          <span style={{
-            display: 'inline-block', backgroundColor: '#1B3A5C', color: '#C9972E',
-            fontSize: 11, fontWeight: 700, letterSpacing: 1.5, padding: '5px 16px',
-            borderRadius: 100, marginBottom: 20, textTransform: 'uppercase',
-          }}>
-            No affiliate bias &nbsp;•&nbsp; Pure AI
-          </span>
-          <h1 style={{
-            fontSize: 'clamp(28px,5vw,40px)', fontWeight: 800, color: '#1B3A5C',
-            margin: '0 0 14px', lineHeight: 1.15, letterSpacing: '-0.5px',
-          }}>
-            Which card earns you<br />the most money?
-          </h1>
-          <p style={{ fontSize: 16, color: '#64748b', margin: 0, lineHeight: 1.7, maxWidth: 480, marginInline: 'auto' }}>
-            Enter your monthly spends. Our AI scans 93+ Indian credit cards and shows exactly how much each card earns you — with zero bank bias.
-          </p>
-        </div>
+        {/* The tool, on its own reading measure beneath the header. */}
+        <div style={{ maxWidth: 700, margin: '24px auto 0' }}>
 
-        <SectionTabs />
-
-        {step === 'input' && (
-          <>
-            {/* Input card */}
-            <div style={{
-              backgroundColor: '#fff', borderRadius: 20,
-              boxShadow: '0 1px 3px rgba(0,0,0,0.08), 0 8px 24px rgba(0,0,0,0.04)',
-              overflow: 'hidden', marginBottom: 20,
-            }}>
-              <div style={{ padding: '18px 24px 14px', borderBottom: '1px solid #f1f5f9' }}>
-                <p style={{ fontSize: 11, fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: 1.5, margin: 0 }}>
-                  Monthly Spends
-                </p>
-              </div>
-
-              {CATEGORIES.map((cat, i) => (
-                <div key={cat.id} style={{
-                  display: 'flex', alignItems: 'center', gap: 12,
-                  padding: '12px 24px',
-                  borderBottom: i < CATEGORIES.length - 1 ? '1px solid #f8fafc' : 'none',
-                }}>
-                  <span style={{ fontSize: 18, flexShrink: 0 }}>{cat.icon}</span>
-                  <div style={{ flex: 1, fontSize: 14, color: '#334155', fontWeight: 500 }}>
-                    {cat.label}
-                  </div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                    <span style={{ fontSize: 13, color: '#94a3b8', fontWeight: 500 }}>Rs.</span>
-                    <input
-                      type="number"
-                      min="0"
-                      step="500"
-                      placeholder={cat.placeholder}
-                      value={spends[cat.id] || ''}
-                      onChange={e => setSpends(prev => ({ ...prev, [cat.id]: e.target.value }))}
-                      style={{
-                        width: 90, padding: '8px 10px', borderRadius: 10,
-                        border: spends[cat.id] ? '1.5px solid #1B3A5C' : '1px solid #e2e8f0',
-                        fontSize: 14, textAlign: 'right', color: '#1e293b',
-                        backgroundColor: spends[cat.id] ? '#f0f4ff' : '#f8fafc',
-                        outline: 'none', fontWeight: spends[cat.id] ? 600 : 400,
-                      }}
-                    />
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            {/* Total bar */}
-            {totalSpend > 0 && (
+          {step === 'input' && (
+            <>
+              {/* Input card */}
               <div style={{
-                backgroundColor: '#1B3A5C', borderRadius: 14, padding: '14px 24px',
-                display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-                marginBottom: 16,
+                background: 'var(--surface)', borderRadius: 20, border: '1px solid var(--line)',
+                boxShadow: '0 1px 3px rgba(20,35,53,0.06), 0 8px 24px rgba(20,35,53,0.04)',
+                overflow: 'hidden', marginBottom: 20,
               }}>
-                <span style={{ color: '#94a3b8', fontSize: 13, fontWeight: 500 }}>Total monthly spend</span>
-                <span style={{ color: '#C9972E', fontSize: 20, fontWeight: 800 }}>{fmt(totalSpend)}</span>
+                <div style={{ padding: '18px 24px 14px', borderBottom: '1px solid var(--line)' }}>
+                  <p style={{ fontSize: 11, fontWeight: 700, color: 'var(--ink-4)', textTransform: 'uppercase', letterSpacing: 1.5, margin: 0 }}>
+                    Monthly Spends
+                  </p>
+                </div>
+
+                {CATEGORIES.map((cat, i) => (
+                  <div key={cat.id} style={{
+                    display: 'flex', alignItems: 'center', gap: 12,
+                    padding: '12px 24px',
+                    borderBottom: i < CATEGORIES.length - 1 ? '1px solid var(--line-soft)' : 'none',
+                  }}>
+                    <span style={{ fontSize: 18, flexShrink: 0 }}>{cat.icon}</span>
+                    <div style={{ flex: 1, fontSize: 14, color: 'var(--ink-2)', fontWeight: 500 }}>
+                      {cat.label}
+                    </div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                      <span style={{ fontSize: 13, color: 'var(--ink-4)', fontWeight: 500 }}>Rs.</span>
+                      <input
+                        type="number"
+                        min="0"
+                        step="500"
+                        placeholder={cat.placeholder}
+                        value={spends[cat.id] || ''}
+                        onChange={e => setSpends(prev => ({ ...prev, [cat.id]: e.target.value }))}
+                        style={{
+                          width: 90, padding: '8px 10px', borderRadius: 10,
+                          border: spends[cat.id] ? '1.5px solid var(--copper)' : '1px solid var(--line-strong)',
+                          fontSize: 14, textAlign: 'right', color: 'var(--ink)',
+                          background: spends[cat.id] ? 'color-mix(in srgb, var(--copper) 8%, transparent)' : 'var(--surface-2)',
+                          outline: 'none', fontWeight: spends[cat.id] ? 600 : 400,
+                        }}
+                      />
+                    </div>
+                  </div>
+                ))}
               </div>
-            )}
 
-            {error && (
-              <div style={{
-                backgroundColor: '#fef2f2', border: '1px solid #fecaca',
-                borderRadius: 12, padding: '12px 16px', marginBottom: 16,
-                color: '#dc2626', fontSize: 14,
-              }}>{error}</div>
-            )}
-
-            <button
-              onClick={handleAnalyze}
-              disabled={loading || totalSpend === 0}
-              style={{
-                width: '100%', padding: '16px 24px', borderRadius: 14,
-                backgroundColor: totalSpend > 0 ? '#1B3A5C' : '#cbd5e1',
-                color: '#fff', fontSize: 16, fontWeight: 700, border: 'none',
-                cursor: totalSpend > 0 && !loading ? 'pointer' : 'not-allowed',
-                display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10,
-                transition: 'all 0.2s',
-              }}
-            >
-              {loading ? (
-                <>
-                  <span style={{
-                    width: 18, height: 18, border: '2px solid rgba(255,255,255,0.3)',
-                    borderTopColor: '#fff', borderRadius: '50%',
-                    display: 'inline-block', animation: 'spin 0.8s linear infinite',
-                  }} />
-                  Analysing 93+ cards...
-                </>
-              ) : (
-                <>✨ Find My Best Card</>
+              {/* Total bar */}
+              {totalSpend > 0 && (
+                <div style={{
+                  background: 'var(--ink)', borderRadius: 14, padding: '14px 24px',
+                  display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+                  marginBottom: 16,
+                }}>
+                  <span style={{ color: 'rgba(255,255,255,0.55)', fontSize: 13, fontWeight: 500 }}>Total monthly spend</span>
+                  <span style={{ color: 'var(--copper-3)', fontSize: 20, fontWeight: 800 }}>{fmt(totalSpend)}</span>
+                </div>
               )}
-            </button>
 
-            <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
-          </>
-        )}
+              {error && (
+                <div style={{
+                  background: 'rgba(184,66,48,0.08)', border: '1px solid rgba(184,66,48,0.25)',
+                  borderRadius: 12, padding: '12px 16px', marginBottom: 16,
+                  color: '#B84230', fontSize: 14,
+                }}>{error}</div>
+              )}
 
-        {step === 'result' && result && (
-          <>
-            {/* Insight banner */}
-            {result.insight && (
-              <div style={{
-                backgroundColor: '#fffbeb', border: '1px solid #fde68a',
-                borderRadius: 14, padding: '14px 18px', marginBottom: 20,
-                display: 'flex', gap: 10, alignItems: 'flex-start',
-              }}>
-                <span style={{ fontSize: 20, flexShrink: 0 }}>💡</span>
-                <p style={{ margin: 0, fontSize: 14, color: '#78350f', lineHeight: 1.6 }}>{result.insight}</p>
-              </div>
-            )}
+              <button
+                onClick={handleAnalyze}
+                disabled={loading || totalSpend === 0}
+                style={{
+                  width: '100%', padding: '16px 24px', borderRadius: 14,
+                  background: totalSpend > 0 ? 'var(--copper)' : 'var(--ink-5)',
+                  color: 'var(--paper)', fontSize: 16, fontWeight: 700, border: 'none',
+                  cursor: totalSpend > 0 && !loading ? 'pointer' : 'not-allowed',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10,
+                  transition: 'all 0.2s',
+                }}
+              >
+                {loading ? (
+                  <>
+                    <span style={{
+                      width: 18, height: 18, border: '2px solid rgba(255,255,255,0.3)',
+                      borderTopColor: '#fff', borderRadius: '50%',
+                      display: 'inline-block', animation: 'spin 0.8s linear infinite',
+                    }} />
+                    Analysing {CARD_COUNT} cards...
+                  </>
+                ) : (
+                  <>✨ Find My Best Card</>
+                )}
+              </button>
 
-            {/* Top pick reason */}
-            {result.topPickReason && (
-              <div style={{
-                backgroundColor: '#f0fdf4', border: '1px solid #bbf7d0',
-                borderRadius: 14, padding: '14px 18px', marginBottom: 20,
-                display: 'flex', gap: 10, alignItems: 'flex-start',
-              }}>
-                <span style={{ fontSize: 20, flexShrink: 0 }}>🏆</span>
-                <p style={{ margin: 0, fontSize: 14, color: '#14532d', lineHeight: 1.6 }}>{result.topPickReason}</p>
-              </div>
-            )}
+              <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
+            </>
+          )}
 
-            {/* Cards */}
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 16, marginBottom: 24 }}>
-              {result.cards.map((card, idx) => (
-                <div key={idx} style={{
-                  backgroundColor: '#fff', borderRadius: 20,
-                  boxShadow: idx === 0
-                    ? '0 0 0 2px #C9972E, 0 8px 24px rgba(201,151,46,0.12)'
-                    : '0 1px 3px rgba(0,0,0,0.08), 0 4px 12px rgba(0,0,0,0.04)',
-                  overflow: 'hidden',
+          {step === 'result' && result && (
+            <>
+              {/* Insight banner — informational (amber), a semantic feedback tint kept
+                  as an intentional literal (no on-system token for info states). */}
+              {result.insight && (
+                <div style={{
+                  background: 'rgba(212,163,115,0.12)', border: '1px solid rgba(212,163,115,0.30)',
+                  borderRadius: 14, padding: '14px 18px', marginBottom: 20,
+                  display: 'flex', gap: 10, alignItems: 'flex-start',
                 }}>
-                  {/* Card header */}
-                  <div style={{
-                    backgroundColor: idx === 0 ? '#1B3A5C' : '#f8fafc',
-                    padding: '14px 20px',
-                    display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-                  }}>
-                    <div>
-                      <span style={{
-                        fontSize: 11, fontWeight: 700, letterSpacing: 1,
-                        color: RANK_COLORS[idx] || '#64748b',
-                        textTransform: 'uppercase',
-                      }}>
-                        {RANK_LABELS[idx] || `#${card.rank}`}
-                      </span>
-                      <p style={{
-                        margin: '2px 0 0', fontWeight: 800,
-                        fontSize: 17, color: idx === 0 ? '#fff' : '#1B3A5C',
-                      }}>{card.name}</p>
-                      <p style={{ margin: 0, fontSize: 12, color: idx === 0 ? '#94a3b8' : '#64748b' }}>{card.bank}</p>
-                    </div>
-                    <div style={{ textAlign: 'right' }}>
-                      <p style={{ margin: 0, fontSize: 11, color: idx === 0 ? '#94a3b8' : '#64748b', fontWeight: 600 }}>NET ANNUAL VALUE</p>
-                      <p style={{
-                        margin: 0, fontSize: 22, fontWeight: 800,
-                        color: idx === 0 ? '#C9972E' : '#10b981',
-                      }}>
-                        {fmt(card.netAnnualValue)}
-                      </p>
-                    </div>
-                  </div>
-
-                  {/* Earnings breakdown */}
-                  <div style={{
-                    display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)',
-                    gap: 1, backgroundColor: '#f1f5f9',
-                  }}>
-                    {[
-                      { label: 'Monthly Earn', value: fmt(card.monthlyEarnings) },
-                      { label: 'Annual Earn', value: fmt(card.annualEarnings) },
-                      { label: 'Annual Fee', value: card.annualFee === 0 ? 'FREE' : fmt(card.annualFee) },
-                    ].map((stat, i) => (
-                      <div key={i} style={{
-                        backgroundColor: '#fff', padding: '12px 14px', textAlign: 'center',
-                      }}>
-                        <p style={{ margin: 0, fontSize: 10, color: '#94a3b8', fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.8 }}>{stat.label}</p>
-                        <p style={{ margin: '4px 0 0', fontSize: 15, fontWeight: 700, color: stat.label === 'Annual Fee' && card.annualFee === 0 ? '#10b981' : '#1e293b' }}>{stat.value}</p>
-                      </div>
-                    ))}
-                  </div>
-
-                  {/* Highlights */}
-                  <div style={{ padding: '14px 20px' }}>
-                    <p style={{ margin: '0 0 8px', fontSize: 11, fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: 1 }}>Why this card</p>
-                    <ul style={{ margin: 0, padding: 0, listStyle: 'none', display: 'flex', flexDirection: 'column', gap: 6 }}>
-                      {card.highlights.map((h, i) => (
-                        <li key={i} style={{ display: 'flex', gap: 8, alignItems: 'flex-start', fontSize: 13, color: '#475569', lineHeight: 1.5 }}>
-                          <span style={{ color: '#C9972E', fontWeight: 700, flexShrink: 0 }}>→</span>
-                          {h}
-                        </li>
-                      ))}
-                    </ul>
-                    {card.bestFor && (
-                      <div style={{
-                        marginTop: 10, padding: '8px 12px',
-                        backgroundColor: '#f8fafc', borderRadius: 8,
-                        fontSize: 12, color: '#475569', fontStyle: 'italic',
-                      }}>
-                        {card.bestFor}
-                      </div>
-                    )}
-                  </div>
+                  <span style={{ fontSize: 20, flexShrink: 0 }}>💡</span>
+                  <p style={{ margin: 0, fontSize: 14, color: 'var(--ink-2)', lineHeight: 1.6 }}>{result.insight}</p>
                 </div>
-              ))}
-            </div>
+              )}
 
-            {/* Spend summary */}
-            <div style={{
-              backgroundColor: '#1B3A5C', borderRadius: 14, padding: '14px 20px',
-              display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-              marginBottom: 20,
-            }}>
-              <span style={{ color: '#94a3b8', fontSize: 13, fontWeight: 500 }}>Monthly spend analysed</span>
-              <span style={{ color: '#C9972E', fontSize: 18, fontWeight: 800 }}>{fmt(result.totalSpend)}</span>
-            </div>
+              {/* Top-pick reasoning */}
+              {result.topPickReason && (
+                <div style={{
+                  background: 'color-mix(in srgb, var(--copper) 8%, transparent)', border: '1px solid color-mix(in srgb, var(--copper) 22%, transparent)',
+                  borderRadius: 14, padding: '14px 18px', marginBottom: 20,
+                  display: 'flex', gap: 10, alignItems: 'flex-start',
+                }}>
+                  <span style={{ fontSize: 20, flexShrink: 0 }}>🏆</span>
+                  <p style={{ margin: 0, fontSize: 14, color: 'var(--ink-2)', lineHeight: 1.6 }}>{result.topPickReason}</p>
+                </div>
+              )}
 
-            <button
-              onClick={handleReset}
-              style={{
-                width: '100%', padding: '14px 24px', borderRadius: 14,
-                backgroundColor: 'transparent', color: '#1B3A5C',
-                fontSize: 15, fontWeight: 600, border: '2px solid #1B3A5C',
-                cursor: 'pointer',
-              }}
-            >
-              ← Try Different Spends
-            </button>
-          </>
-        )}
-      </main>
+              {/* Cards */}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 16, marginBottom: 24 }}>
+                {result.cards.map((card, idx) => (
+                  <div key={idx} style={{
+                    background: 'var(--surface)', borderRadius: 20,
+                    boxShadow: idx === 0
+                      ? '0 0 0 2px var(--copper), 0 8px 24px rgba(140,95,18,0.12)'
+                      : '0 1px 3px rgba(20,35,53,0.06), 0 4px 12px rgba(20,35,53,0.04)',
+                    border: idx === 0 ? 'none' : '1px solid var(--line)',
+                    overflow: 'hidden',
+                  }}>
+                    {/* Card header */}
+                    <div style={{
+                      background: idx === 0 ? 'var(--ink)' : 'var(--surface-2)',
+                      padding: '14px 20px',
+                      display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+                    }}>
+                      <div>
+                        <span style={{
+                          fontSize: 11, fontWeight: 700, letterSpacing: 1,
+                          color: RANK_COLORS[idx] || 'var(--ink-3)',
+                          textTransform: 'uppercase',
+                        }}>
+                          {RANK_LABELS[idx] || `#${card.rank}`}
+                        </span>
+                        <p style={{
+                          margin: '2px 0 0', fontWeight: 800,
+                          fontSize: 17, color: idx === 0 ? 'var(--paper)' : 'var(--ink)',
+                        }}>{card.name}</p>
+                        <p style={{ margin: 0, fontSize: 12, color: idx === 0 ? 'rgba(255,255,255,0.55)' : 'var(--ink-3)' }}>{card.bank}</p>
+                      </div>
+                      <div style={{ textAlign: 'right' }}>
+                        <p style={{ margin: 0, fontSize: 11, color: idx === 0 ? 'rgba(255,255,255,0.55)' : 'var(--ink-3)', fontWeight: 600 }}>NET ANNUAL VALUE</p>
+                        {/* AI ESTIMATE — copper, never verified-green (green is reserved
+                            for statement-verified figures, DESIGN.md §Provenance). */}
+                        <p style={{
+                          margin: 0, fontSize: 22, fontWeight: 800,
+                          color: idx === 0 ? 'var(--copper-3)' : 'var(--copper)',
+                        }}>
+                          {fmt(card.netAnnualValue)}
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* Earnings breakdown */}
+                    <div style={{
+                      display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)',
+                      gap: 1, background: 'var(--line)',
+                    }}>
+                      {[
+                        { label: 'Monthly Earn', value: fmt(card.monthlyEarnings) },
+                        { label: 'Annual Earn', value: fmt(card.annualEarnings) },
+                        { label: 'Annual Fee', value: card.annualFee === 0 ? 'FREE' : fmt(card.annualFee) },
+                      ].map((stat, i) => (
+                        <div key={i} style={{
+                          background: 'var(--surface)', padding: '12px 14px', textAlign: 'center',
+                        }}>
+                          <p style={{ margin: 0, fontSize: 10, color: 'var(--ink-4)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.8 }}>{stat.label}</p>
+                          <p style={{ margin: '4px 0 0', fontSize: 15, fontWeight: 700, color: stat.label === 'Annual Fee' && card.annualFee === 0 ? 'var(--copper)' : 'var(--ink)' }}>{stat.value}</p>
+                        </div>
+                      ))}
+                    </div>
+
+                    {/* Highlights */}
+                    <div style={{ padding: '14px 20px' }}>
+                      <p style={{ margin: '0 0 8px', fontSize: 11, fontWeight: 700, color: 'var(--ink-4)', textTransform: 'uppercase', letterSpacing: 1 }}>Why this card</p>
+                      <ul style={{ margin: 0, padding: 0, listStyle: 'none', display: 'flex', flexDirection: 'column', gap: 6 }}>
+                        {card.highlights.map((h, i) => (
+                          <li key={i} style={{ display: 'flex', gap: 8, alignItems: 'flex-start', fontSize: 13, color: 'var(--ink-2)', lineHeight: 1.5 }}>
+                            <span style={{ color: 'var(--copper)', fontWeight: 700, flexShrink: 0 }}>→</span>
+                            {h}
+                          </li>
+                        ))}
+                      </ul>
+                      {card.bestFor && (
+                        <div style={{
+                          marginTop: 10, padding: '8px 12px',
+                          background: 'var(--surface-2)', borderRadius: 8,
+                          fontSize: 12, color: 'var(--ink-2)',
+                        }}>
+                          {card.bestFor}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              {/* Spend summary */}
+              <div style={{
+                background: 'var(--ink)', borderRadius: 14, padding: '14px 20px',
+                display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+                marginBottom: 20,
+              }}>
+                <span style={{ color: 'rgba(255,255,255,0.55)', fontSize: 13, fontWeight: 500 }}>Monthly spend analysed</span>
+                <span style={{ color: 'var(--copper-3)', fontSize: 18, fontWeight: 800 }}>{fmt(result.totalSpend)}</span>
+              </div>
+
+              <button
+                onClick={handleReset}
+                style={{
+                  width: '100%', padding: '14px 24px', borderRadius: 14,
+                  background: 'transparent', color: 'var(--ink)',
+                  fontSize: 15, fontWeight: 600, border: '2px solid var(--ink)',
+                  cursor: 'pointer',
+                }}
+              >
+                ← Try Different Spends
+              </button>
+            </>
+          )}
+        </div>
+      </div>
     </div>
   );
 }
