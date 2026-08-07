@@ -75,17 +75,9 @@ export default function StatementTruthPage() {
             "Your cards" and here no longer feels like leaving it. */}
         <div style={{ maxWidth: 1100, margin: '0 auto', padding: '0 20px' }}>
           <PageHeader
-            eyebrow={
-              <span style={{
-                display: 'inline-flex', alignItems: 'center', gap: 6, padding: '5px 10px',
-                borderRadius: 999, color: 'var(--copper)',
-                background: 'color-mix(in srgb, var(--copper) 10%, transparent)',
-                border: '1px solid color-mix(in srgb, var(--copper) 25%, transparent)',
-              }}>
-                <span style={{ width: 6, height: 6, borderRadius: '50%', background: 'var(--copper)' }} />
-                AI Tool · Statement Truth
-              </span>
-            }
+            eyebrow="AI Tool · Statement Truth"
+            eyebrowPill
+            pillDotColor="var(--copper)"
             title={
               <>Is your bank{' '}
                 {/* Emphasis by colour + weight, ROMAN — never italic (DESIGN.md §Emphasis). */}
