@@ -9,7 +9,7 @@ import { createClient } from '@supabase/supabase-js';
 export const revalidate = 300; // revalidate every 5 mins
 
 export const metadata: Metadata = {
-  title: 'Every card we track, ranked by what it earns you | CreditIQ',
+  title: 'Every credit card we track in India, ranked by what it earns | CreditIQ',
   description: 'Ranked by what each card actually earns at your spend — real reward rates, fees and live devaluations, with zero affiliate bias. HDFC, Axis, SBI, ICICI, Amex, IDFC First and more.',
   keywords: 'credit cards India 2026, best credit card India, HDFC credit card, Axis credit card, SBI credit card, compare credit cards India',
   alternates: { canonical: 'https://creditiq.app/cards' },
