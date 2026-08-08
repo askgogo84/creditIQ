@@ -43,7 +43,7 @@ export default async function SweetSpotsPage() {
               eyebrowPill
               pillDotColor="var(--copper)"
               title="Sweet Spots"
-              subtitle="The best redemptions found by top Indian CC creators, updated nightly."
+              subtitle="The best redemptions found by top Indian CC creators — updated nightly from Instagram, YouTube and Reddit."
               maxWidth={1100}
             />
           </div>

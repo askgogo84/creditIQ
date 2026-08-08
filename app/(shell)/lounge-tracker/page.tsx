@@ -34,7 +34,7 @@ export default function LoungeTrackerPage() {
               eyebrow="Travel tool · Lounge tracker"
               eyebrowPill
               pillDotColor="var(--copper)"
-              title="Never turned away"
+              title="Never get turned away at the gate"
               subtitle="Track free lounge visits across every card you carry. Know before you go."
               maxWidth={1100}
             />

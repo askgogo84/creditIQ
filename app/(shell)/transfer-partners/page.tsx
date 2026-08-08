@@ -85,7 +85,7 @@ export default function TransferPartnersPage() {
               eyebrowPill
               pillDotColor="var(--copper)"
               title="Transfer Partners"
-              subtitle="Airline and hotel transfer partners for Indian cards — ratios and value."
+              subtitle="Every airline and hotel transfer partner for Indian cards — ratios, timelines and value."
               maxWidth={1100}
             />
           </div>
