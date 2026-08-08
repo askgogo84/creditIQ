@@ -2,6 +2,7 @@ import { createClient } from '@supabase/supabase-js'
 import { DesignFooter } from '@/components/design/Footer'
 import Link from 'next/link'
 import { PageHeader } from '@/components/ciq/PageHeader'
+import { SectionCard } from '@/components/ciq/SectionCard'
 
 export const revalidate = 3600
 
@@ -35,9 +36,10 @@ export default async function SweetSpotsPage() {
           eyebrow pill — aligned to the other four Travel pages (was a marketing clamp
           hero on maxWidth 900 with a plain eyebrow). */}
       <div style={{ paddingTop: 16, paddingBottom: 80 }}>
-        <div style={{ maxWidth: 1100, margin: '0 auto', padding: '0 20px' }}>
-
-          <div style={{ marginBottom: 36 }}>
+        <SectionCard
+          tone="light"
+          maxWidth={1100}
+          header={
             <PageHeader
               eyebrow="Community discovered"
               eyebrowPill
@@ -45,8 +47,10 @@ export default async function SweetSpotsPage() {
               title="Sweet Spots"
               subtitle="The best redemptions found by top Indian CC creators — updated nightly from Instagram, YouTube and Reddit."
               maxWidth={1100}
+              contained
             />
-          </div>
+          }
+        >
 
           {/* Transfer Hacks */}
           {transferHacks.length > 0 && (
@@ -109,7 +113,7 @@ export default async function SweetSpotsPage() {
             </Link>
           </div>
 
-        </div>
+        </SectionCard>
       </div>
       <DesignFooter />
     </>

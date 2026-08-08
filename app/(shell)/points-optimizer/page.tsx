@@ -3,6 +3,7 @@
 import { authedFetch } from '@/lib/authed-fetch';
 import { useState } from 'react';
 import { PageHeader } from '@/components/ciq/PageHeader';
+import { SectionCard } from '@/components/ciq/SectionCard';
 
 const CARDS_WITH_POINTS = [
   { value: 'hdfc-infinia', label: 'HDFC Infinia', bank: 'HDFC Bank', pointName: 'Reward Points', ratio: '1 pt = Rs.1 (SmartBuy) / 0.5 base' },
@@ -165,18 +166,23 @@ Respond ONLY with valid JSON (no markdown, no code fences):
     <div style={{ paddingTop: 16, paddingBottom: 112 }}>
       {/* App template: left-aligned compact PageHeader with SectionTabs directly beneath,
           in the same app column as /dashboard. No centred marketing hero. */}
-      <div style={{ maxWidth: 1100, margin: '0 auto', padding: '0 20px' }}>
-        <PageHeader
-          eyebrow="AI-Powered · Real Valuations"
-          eyebrowPill
-          pillDotColor="var(--copper)"
-          title="Squeeze every rupee from your reward points"
-          subtitle="Pick a card, tell us your goal — we rank every redemption path by actual value."
-          maxWidth={1100}
-        />
-
-        {/* Two-column tool beneath the header. */}
-        <div style={{ maxWidth: 760, margin: '24px auto 0', display: 'grid', gridTemplateColumns: 'minmax(0,1fr) minmax(0,1.4fr)', gap: 20 }}
+      <SectionCard
+        tone="light"
+        maxWidth={1100}
+        header={
+          <PageHeader
+            eyebrow="AI-Powered · Real Valuations"
+            eyebrowPill
+            pillDotColor="var(--copper)"
+            title="Squeeze every rupee from your reward points"
+            subtitle="Pick a card, tell us your goal — we rank every redemption path by actual value."
+            maxWidth={1100}
+            contained
+          />
+        }
+      >
+        {/* Two-column tool inside the card body. */}
+        <div style={{ maxWidth: 760, margin: '0 auto', display: 'grid', gridTemplateColumns: 'minmax(0,1fr) minmax(0,1.4fr)', gap: 20 }}
           className="points-grid">
           <style>{`
             @media (max-width: 640px) { .points-grid { grid-template-columns: 1fr !important; } }
@@ -411,7 +417,7 @@ Respond ONLY with valid JSON (no markdown, no code fences):
             )}
           </div>
         </div>
-      </div>
+      </SectionCard>
     </div>
   );
 }

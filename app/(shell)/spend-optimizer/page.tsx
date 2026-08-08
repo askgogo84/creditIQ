@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { authedFetch } from '@/lib/authed-fetch';
 import { PageHeader } from '@/components/ciq/PageHeader';
+import { SectionCard } from '@/components/ciq/SectionCard';
 import { SEED_CARDS } from '@/lib/data/seed-cards';
 
 // Card-count claim is COMPUTED from the canonical catalogue, never typed — so it can't
@@ -126,18 +127,23 @@ Respond ONLY with valid JSON (no markdown, no backticks, no explanation outside 
       {/* App template: left-aligned compact PageHeader (eyebrow pill · roman headline ·
           one supporting line) with SectionTabs directly beneath, in the same app column
           as /dashboard. No centred marketing hero. */}
-      <div style={{ maxWidth: 1100, margin: '0 auto', padding: '0 20px' }}>
-        <PageHeader
-          eyebrow="No affiliate bias · Pure AI"
-          eyebrowPill
-          pillDotColor="var(--copper)"
-          title="Which card earns you the most money?"
-          subtitle={`Enter your monthly spends — our AI picks from our ${CARD_COUNT} tracked cards by what each earns.`}
-          maxWidth={1100}
-        />
-
-        {/* The tool, on its own reading measure beneath the header. */}
-        <div style={{ maxWidth: 700, margin: '24px auto 0' }}>
+      <SectionCard
+        tone="light"
+        maxWidth={1100}
+        header={
+          <PageHeader
+            eyebrow="No affiliate bias · Pure AI"
+            eyebrowPill
+            pillDotColor="var(--copper)"
+            title="Which card earns you the most money?"
+            subtitle={`Enter your monthly spends — our AI picks from our ${CARD_COUNT} tracked cards by what each earns.`}
+            maxWidth={1100}
+            contained
+          />
+        }
+      >
+        {/* The tool, on its own reading measure inside the card body. */}
+        <div style={{ maxWidth: 700, margin: '0 auto' }}>
 
           {step === 'input' && (
             <>
@@ -374,7 +380,7 @@ Respond ONLY with valid JSON (no markdown, no backticks, no explanation outside 
             </>
           )}
         </div>
-      </div>
+      </SectionCard>
     </div>
   );
 }

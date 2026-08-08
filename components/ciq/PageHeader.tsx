@@ -56,6 +56,7 @@ export function PageHeader({
   tone = 'light',
   maxWidth = 900,
   showTabs = true,
+  contained = false,
 }: {
   eyebrow?: ReactNode
   eyebrowPill?: boolean
@@ -66,11 +67,15 @@ export function PageHeader({
   tone?: Tone
   maxWidth?: number
   showTabs?: boolean
+  // `contained`: this header is the HEAD of a <SectionCard>. The card owns the column
+  // width and (on mobile) supplies the tinted ground + border, so the header fills the
+  // card and the carousel deck renders BARE (no card of its own). See SectionCard.tsx.
+  contained?: boolean
 }) {
   const c = INK[tone]
   const dot = pillDotColor ?? c.eyebrow
   return (
-    <header style={{ maxWidth, margin: '0 auto', width: '100%' }}>
+    <header style={{ maxWidth: contained ? '100%' : maxWidth, margin: '0 auto', width: '100%' }}>
       {eyebrow && (eyebrowPill ? (
         <div style={{ marginBottom: 12 }}>
           <span style={{
@@ -104,7 +109,7 @@ export function PageHeader({
         </p>
       )}
       {supporting && <div style={{ marginTop: 8 }}>{supporting}</div>}
-      {showTabs && <SectionTabs tone={tone} />}
+      {showTabs && <SectionTabs tone={tone} contained={contained} />}
     </header>
   )
 }

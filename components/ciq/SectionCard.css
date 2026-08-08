@@ -1,0 +1,39 @@
+/* SectionCard — see SectionCard.tsx.
+   DESKTOP (default): owns the app column (max-width + 20px gutters) and stacks head then
+   body with a 24px gap. No border, no tint — visually identical to the old two-container
+   layout, so desktop is unchanged.
+   MOBILE (<768px): becomes ONE bordered, rounded card inset from the screen edges; the
+   head sits on a slightly tinted ground and the body holds the content. */
+.ciq-seccard {
+  max-width: var(--seccard-max, 1100px);
+  margin: 0 auto;
+  padding: 0 20px;
+}
+.ciq-seccard-body {
+  margin-top: 24px;
+}
+
+/* Tone grounds for the mobile card. */
+.ciq-seccard--light { --seccard-bg: var(--surface); --seccard-head: var(--surface-2); --seccard-line: var(--line); }
+.ciq-seccard--gold  { --seccard-bg: var(--ciq-bg); --seccard-head: var(--ciq-panel); --seccard-line: var(--ciq-line); }
+
+@media (max-width: 767px) {
+  .ciq-seccard {
+    max-width: none;
+    margin: 0 14px;
+    padding: 0;
+    background: var(--seccard-bg);
+    border: 1px solid var(--seccard-line);
+    border-radius: 18px;
+    overflow: hidden;
+  }
+  .ciq-seccard-head {
+    background: var(--seccard-head);
+    border-bottom: 1px solid var(--seccard-line);
+    padding: 16px 16px 14px;
+  }
+  .ciq-seccard-body {
+    margin-top: 0;
+    padding: 16px;
+  }
+}

@@ -65,6 +65,13 @@
   border-radius: 16px;
   padding: 8px 8px 10px;
 }
+/* Inside a <SectionCard>, the card's tinted head is the single ground: the deck drops
+   its own card (bg/border set transparent inline) and its padding so it doesn't inset
+   twice within the card head. */
+.ciq-st-deck--bare {
+  border-radius: 0;
+  padding: 0;
+}
 .ciq-st-carousel {
   display: flex;
   align-items: center;

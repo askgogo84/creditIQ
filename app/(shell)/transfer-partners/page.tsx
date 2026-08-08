@@ -3,6 +3,7 @@ import { Reveal } from '@/components/design/Reveal';
 import Link from 'next/link';
 import type { Metadata } from 'next';
 import { PageHeader } from '@/components/ciq/PageHeader';
+import { SectionCard } from '@/components/ciq/SectionCard';
 
 export const metadata: Metadata = {
   title: 'Credit Card Transfer Partners India 2026 | CreditIQ',
@@ -78,23 +79,25 @@ export default function TransferPartnersPage() {
         {/* App template: left-aligned <PageHeader> (eyebrow pill · roman headline · one
             supporting line) with SectionTabs beneath, in the /dashboard app column.
             16px top padding, no marketing clamp, no aurora hero decoration. */}
-        <div style={{ paddingTop: 16 }}>
-          <div style={{ maxWidth: 1100, margin: '0 auto', padding: '0 20px' }}>
-            <PageHeader
-              eyebrow="Verified May 2026"
-              eyebrowPill
-              pillDotColor="var(--copper)"
-              title="Transfer Partners"
-              subtitle="Every airline and hotel transfer partner for Indian cards — ratios, timelines and value."
-              maxWidth={1100}
-            />
-          </div>
-        </div>
-
-        <section style={{ paddingTop: 24, paddingBottom: 80 }}>
-          {/* Body shares the header's /dashboard app column (1100) so header and body
-              left edges align on wide desktop — was the wider .shell (1320). */}
-          <div style={{ maxWidth: 1100, margin: '0 auto', padding: '0 20px', display: 'flex', flexDirection: 'column', gap: 40 }}>
+        <div style={{ paddingTop: 16, paddingBottom: 80 }}>
+          <SectionCard
+            tone="light"
+            maxWidth={1100}
+            header={
+              <PageHeader
+                eyebrow="Verified May 2026"
+                eyebrowPill
+                pillDotColor="var(--copper)"
+                title="Transfer Partners"
+                subtitle="Every airline and hotel transfer partner for Indian cards — ratios, timelines and value."
+                maxWidth={1100}
+                contained
+              />
+            }
+          >
+            {/* Header + body share one enclosed card (SectionCard); on mobile the deck
+                sits on the card's tinted head, the tables in its body. */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 40 }}>
             {PARTNERS.map((bank, bi) => (
               <Reveal key={bi} style={{ animationDelay: `${bi * 80}ms` }}>
                 <div style={{ background: 'var(--paper,#FAF5EB)', borderRadius: 20, border: '1px solid var(--line,rgba(20,41,80,0.08))', overflow: 'hidden' }}>
@@ -183,8 +186,9 @@ export default function TransferPartnersPage() {
                 </div>
               </div>
             </Reveal>
-          </div>
-        </section>
+            </div>
+          </SectionCard>
+        </div>
         <DesignFooter />
       </div>
     </>
