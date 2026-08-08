@@ -14,7 +14,7 @@ import { ProGate } from '@/components/design/ProGate';
 import { createBrowserClient } from '@supabase/ssr';
 import { authedFetch } from '@/lib/authed-fetch';
 import { cardPageExists } from '@/lib/data/seed-cards';
-import { SectionTabs } from '@/components/ciq/SectionTabs';
+import { PageHeader } from '@/components/ciq/PageHeader';
 
 interface TripResult {
   destination: string;
@@ -223,32 +223,31 @@ function TripPlannerPageInner() {
   };
 
   const LABEL: React.CSSProperties = {
-    fontSize: 11, fontWeight: 700, color: 'var(--text-muted, #64748b)',
+    fontSize: 11, fontWeight: 700, color: 'var(--ink-3)',
     textTransform: 'uppercase', letterSpacing: 1, display: 'block', marginBottom: 8,
   };
 
   return (
-    <div style={{ minHeight: '100vh', background: 'var(--bg, #f8f9fc)' }}>
-      <main style={{ maxWidth: 880, margin: '0 auto', padding: '32px 20px 100px' }}>
-
-        {/* Hero */}
-        <div style={{ marginBottom: 28, textAlign: 'center' }}>
-          <div style={{ display: 'inline-flex', alignItems: 'center', gap: 8, background: 'rgba(201,151,46,0.12)', border: '1px solid rgba(201,151,46,0.3)', borderRadius: 100, padding: '5px 16px', marginBottom: 16 }}>
-            <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#C9972E', display: 'inline-block' }} />
-            <span style={{ fontSize: 11, fontWeight: 700, color: '#C9972E', letterSpacing: 1.5, textTransform: 'uppercase' }}>AI Trip Planner</span>
-          </div>
-          <h1 style={{ fontSize: 'clamp(28px, 5vw, 48px)', fontWeight: 900, color: 'var(--text, #0f172a)', margin: '0 0 10px', letterSpacing: -1, lineHeight: 1.1 }}>
-            Where are you going?
-          </h1>
-          <p style={{ fontSize: 15, color: 'var(--text-muted, #64748b)', margin: 0, lineHeight: 1.6, maxWidth: 500, marginInline: 'auto' }}>
-            Tell us your trip. We&rsquo;ll find the smartest way to pay with your credit&#8209;card points &mdash; flights, hotels, everything.
-          </p>
+    <div>
+      {/* App template: left-aligned <PageHeader> (eyebrow pill · roman headline · one
+          supporting line) with SectionTabs beneath, in the /dashboard app column. 16px
+          top padding, no marketing clamp, no centred hero, white body (no page fill). */}
+      <div style={{ paddingTop: 16 }}>
+        <div style={{ maxWidth: 1100, margin: '0 auto', padding: '0 20px' }}>
+          <PageHeader
+            eyebrow="AI Trip Planner"
+            eyebrowPill
+            pillDotColor="var(--copper)"
+            title="Where are you going?"
+            subtitle="Tell us your trip and we’ll find the smartest way to pay with points."
+            maxWidth={1100}
+          />
         </div>
-
-        <SectionTabs />
+      </div>
+      <main style={{ maxWidth: 880, margin: '0 auto', padding: '24px 20px 100px' }}>
 
         {/* Input card */}
-        <div style={{ background: 'var(--bg-card, #fff)', border: '1px solid var(--border, #e2e8f0)', borderRadius: 20, padding: 24, marginBottom: 20, boxShadow: '0 4px 24px rgba(15,23,42,0.06)' }}>
+        <div style={{ background: 'var(--surface)', border: '1px solid var(--line)', borderRadius: 20, padding: 24, marginBottom: 20, boxShadow: '0 4px 24px rgba(15,23,42,0.06)' }}>
           <div style={{ marginBottom: 16 }}>
             <label style={LABEL}>Describe your trip</label>
             <textarea
@@ -258,10 +257,10 @@ function TripPlannerPageInner() {
               rows={3}
               style={{
                 width: '100%', padding: '12px 14px',
-                background: 'var(--bg-surface, #f8fafc)',
-                border: '1.5px solid var(--border, #e2e8f0)',
+                background: 'var(--surface-2)',
+                border: '1.5px solid var(--line)',
                 borderRadius: 12, fontSize: 14,
-                color: 'var(--text, #0f172a)',
+                color: 'var(--ink)',
                 outline: 'none', resize: 'none',
                 fontFamily: 'inherit', lineHeight: 1.5,
                 boxSizing: 'border-box',
@@ -287,10 +286,10 @@ function TripPlannerPageInner() {
                 placeholder={pointsLoaded ? '' : 'e.g. 52,164'}
                 style={{
                   width: '100%', height: 44, padding: '0 14px',
-                  background: 'var(--bg-surface, #f8fafc)',
-                  border: '1.5px solid var(--border, #e2e8f0)',
+                  background: 'var(--surface-2)',
+                  border: '1.5px solid var(--line)',
                   borderRadius: 10, fontSize: 14,
-                  color: 'var(--text, #0f172a)', outline: 'none',
+                  color: 'var(--ink)', outline: 'none',
                   boxSizing: 'border-box',
                   WebkitAppearance: 'none',
                 }}
@@ -303,10 +302,10 @@ function TripPlannerPageInner() {
                 onChange={e => setCardBank(e.target.value)}
                 style={{
                   width: '100%', height: 44, padding: '0 14px',
-                  background: 'var(--bg-surface, #f8fafc)',
-                  border: '1.5px solid var(--border, #e2e8f0)',
+                  background: 'var(--surface-2)',
+                  border: '1.5px solid var(--line)',
                   borderRadius: 10, fontSize: 14,
-                  color: 'var(--text, #0f172a)', outline: 'none',
+                  color: 'var(--ink)', outline: 'none',
                   cursor: 'pointer', boxSizing: 'border-box',
                 }}
               >
@@ -317,8 +316,8 @@ function TripPlannerPageInner() {
 
           {/* Origin city */}
           {showOriginPrompt && (
-            <div style={{ marginBottom: 16, padding: '12px 14px', background: 'rgba(201,151,46,0.08)', border: '1px solid rgba(201,151,46,0.2)', borderRadius: 12 }}>
-              <div style={{ fontSize: 11, fontWeight: 700, color: '#C9972E', marginBottom: 8, textTransform: 'uppercase', letterSpacing: 1 }}>
+            <div style={{ marginBottom: 16, padding: '12px 14px', background: 'rgba(140,95,18,0.08)', border: '1px solid rgba(140,95,18,0.2)', borderRadius: 12 }}>
+              <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--copper)', marginBottom: 8, textTransform: 'uppercase', letterSpacing: 1 }}>
                 Where do you usually fly from?
               </div>
               <div style={{ display: 'flex', gap: 8 }}>
@@ -329,10 +328,10 @@ function TripPlannerPageInner() {
                   placeholder="e.g. Bangalore, Mumbai, Delhi..."
                   style={{
                     flex: 1, height: 40, padding: '0 12px',
-                    background: 'var(--bg-surface, #f8fafc)',
-                    border: '1.5px solid var(--border, #e2e8f0)',
+                    background: 'var(--surface-2)',
+                    border: '1.5px solid var(--line)',
                     borderRadius: 8, fontSize: 13,
-                    color: 'var(--text, #0f172a)', outline: 'none',
+                    color: 'var(--ink)', outline: 'none',
                   }}
                 />
                 <button
@@ -355,25 +354,25 @@ function TripPlannerPageInner() {
                   }}
                   style={{
                     padding: '0 16px', height: 40, borderRadius: 8,
-                    background: '#C9972E', color: '#0a0a0a',
+                    background: 'var(--copper)', color: 'var(--paper)',
                     border: 'none', fontSize: 12, fontWeight: 700, cursor: 'pointer',
                   }}
                 >
                   Save
                 </button>
               </div>
-              <div style={{ fontSize: 11, color: 'rgba(201,151,46,0.7)', marginTop: 6 }}>
+              <div style={{ fontSize: 11, color: 'rgba(140,95,18,0.7)', marginTop: 6 }}>
                 We&rsquo;ll remember this for all your trip plans
               </div>
             </div>
           )}
           {!showOriginPrompt && (
             <div style={{ marginBottom: 12, display: 'flex', alignItems: 'center', gap: 6 }}>
-              <span style={{ fontSize: 11, color: 'var(--text-muted, #64748b)' }}>Flying from:</span>
-              <span style={{ fontSize: 12, fontWeight: 700, color: 'var(--text, #0f172a)' }}>{originCity}</span>
+              <span style={{ fontSize: 11, color: 'var(--ink-3)' }}>Flying from:</span>
+              <span style={{ fontSize: 12, fontWeight: 700, color: 'var(--ink)' }}>{originCity}</span>
               <button
                 onClick={() => setShowOriginPrompt(true)}
-                style={{ fontSize: 11, color: '#C9972E', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
+                style={{ fontSize: 11, color: 'var(--copper)', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
               >
                 Change
               </button>
@@ -385,13 +384,13 @@ function TripPlannerPageInner() {
             disabled={loading || !query.trim()}
             style={{
               width: '100%', height: 52,
-              background: loading || !query.trim() ? '#cbd5e1' : 'linear-gradient(135deg, #C9972E, #E8B84B)',
-              color: loading || !query.trim() ? '#94a3b8' : '#0a0a0a',
+              background: loading || !query.trim() ? 'var(--ink-5)' : 'linear-gradient(135deg, var(--copper), var(--copper-3))',
+              color: loading || !query.trim() ? 'var(--ink-4)' : 'var(--paper)',
               border: 'none', borderRadius: 14,
               fontSize: 15, fontWeight: 800,
               cursor: loading || !query.trim() ? 'not-allowed' : 'pointer',
               transition: 'transform 0.12s, box-shadow 0.2s',
-              boxShadow: loading || !query.trim() ? 'none' : '0 6px 20px rgba(201,151,46,0.28)',
+              boxShadow: loading || !query.trim() ? 'none' : '0 6px 20px rgba(140,95,18,0.28)',
             }}
           >
             {loading ? 'Planning your trip\u2026' : 'Plan my trip with points \u2192'}
@@ -401,14 +400,14 @@ function TripPlannerPageInner() {
         {/* Quick chips */}
         {!result && !loading && (
           <div style={{ textAlign: 'center' }}>
-            <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-muted, #94a3b8)', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 12 }}>Quick ideas</div>
+            <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--ink-4)', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 12 }}>Quick ideas</div>
             <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', justifyContent: 'center' }}>
               {QUICK_TRIPS.map((trip, i) => (
                 <button key={i} onClick={() => { setQuery(trip.query); plan(trip.query); }} style={{
                   display: 'flex', alignItems: 'center', gap: 7, padding: '8px 16px',
-                  background: 'var(--bg-card, #fff)', border: '1px solid var(--border, #e2e8f0)',
+                  background: 'var(--surface)', border: '1px solid var(--line)',
                   borderRadius: 100, fontSize: 13, fontWeight: 600,
-                  color: 'var(--text, #0f172a)', cursor: 'pointer',
+                  color: 'var(--ink)', cursor: 'pointer',
                   boxShadow: '0 1px 3px rgba(15,23,42,0.05)',
                 }}>
                   <span style={{ fontSize: 15 }}>{trip.emoji}</span><span>{trip.label}</span>
@@ -422,21 +421,21 @@ function TripPlannerPageInner() {
         {!result && !loading && (
           <div style={{ marginTop: 44 }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 18, flexWrap: 'wrap' }}>
-              <div style={{ fontSize: 16, fontWeight: 800, color: 'var(--text, #0f172a)', letterSpacing: -0.3 }}>
+              <div style={{ fontSize: 16, fontWeight: 800, color: 'var(--ink)', letterSpacing: -0.3 }}>
                 {'\u2726'} Or get inspired
               </div>
               <div style={{ display: 'flex', gap: 8, marginLeft: 'auto' }}>
                 <div onClick={() => setInspireRegion('international')} style={{
                   padding: '6px 14px', borderRadius: 100, fontSize: 12, fontWeight: 700, cursor: 'pointer',
-                  border: inspireRegion === 'international' ? 'none' : '1px solid var(--border, #e2e8f0)',
-                  background: inspireRegion === 'international' ? 'var(--ink, #142950)' : 'var(--bg-card, #fff)',
-                  color: inspireRegion === 'international' ? '#fff' : 'var(--text, #0f172a)',
+                  border: inspireRegion === 'international' ? 'none' : '1px solid var(--line)',
+                  background: inspireRegion === 'international' ? 'var(--ink)' : 'var(--surface)',
+                  color: inspireRegion === 'international' ? '#fff' : 'var(--ink)',
                 }}>{'\u{1F30F}'} International</div>
                 <div onClick={() => setInspireRegion('india')} style={{
                   padding: '6px 14px', borderRadius: 100, fontSize: 12, fontWeight: 700, cursor: 'pointer',
-                  border: inspireRegion === 'india' ? 'none' : '1px solid var(--border, #e2e8f0)',
-                  background: inspireRegion === 'india' ? 'var(--ink, #142950)' : 'var(--bg-card, #fff)',
-                  color: inspireRegion === 'india' ? '#fff' : 'var(--text, #0f172a)',
+                  border: inspireRegion === 'india' ? 'none' : '1px solid var(--line)',
+                  background: inspireRegion === 'india' ? 'var(--ink)' : 'var(--surface)',
+                  color: inspireRegion === 'india' ? '#fff' : 'var(--ink)',
                 }}>{'\u{1F1EE}\u{1F1F3}'} India</div>
               </div>
             </div>
@@ -450,7 +449,7 @@ function TripPlannerPageInner() {
                   style={{
                     position: 'relative', borderRadius: 16, overflow: 'hidden',
                     aspectRatio: '4 / 3', boxShadow: '0 4px 16px rgba(15,23,42,0.10)',
-                    cursor: 'pointer', background: '#1e293b',
+                    cursor: 'pointer', background: 'var(--ink)',
                   }}
                 >
                   <img src={d.image} alt={d.city} loading="lazy"
@@ -469,7 +468,7 @@ function TripPlannerPageInner() {
                     </div>
                     <div style={{ textAlign: 'right' }}>
                       <div style={{ fontSize: 9, color: 'rgba(255,255,255,0.7)', fontWeight: 600 }}>from</div>
-                      <div style={{ fontSize: 17, fontWeight: 900, color: '#E8B84B', lineHeight: 1 }}>{Math.round(d.miles / 1000)}K</div>
+                      <div style={{ fontSize: 17, fontWeight: 900, color: 'var(--copper-3)', lineHeight: 1 }}>{Math.round(d.miles / 1000)}K</div>
                       <div style={{ fontSize: 9, color: 'rgba(255,255,255,0.7)', fontWeight: 600 }}>points</div>
                     </div>
                   </div>
@@ -492,7 +491,7 @@ function TripPlannerPageInner() {
                 </Fragment>
               ))}
             </div>
-            <p style={{ fontSize: 12, color: 'var(--text-muted, #94a3b8)', marginTop: 16, textAlign: 'center' }}>
+            <p style={{ fontSize: 12, color: 'var(--ink-4)', marginTop: 16, textAlign: 'center' }}>
               Tap any destination to instantly plan your trip with points.
             </p>
           </div>
@@ -511,7 +510,7 @@ function TripPlannerPageInner() {
               .ttp-loader { position: relative; width: 100px; height: 60px; margin: 0 auto 16px; }
               .ttp-loader__track { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
               .ttp-loader__plane {
-                position: absolute; top: 0; left: 0; width: 20px; height: 20px; line-height: 0; color: #C9972E;
+                position: absolute; top: 0; left: 0; width: 20px; height: 20px; line-height: 0; color: var(--copper);
                 offset-path: path('M50,30 C50,15 25,15 25,30 C25,45 50,45 50,30 C50,15 75,15 75,30 C75,45 50,45 50,30 Z');
                 offset-rotate: auto;
                 animation: ttpFly 2.6s linear infinite;
@@ -527,7 +526,7 @@ function TripPlannerPageInner() {
               <svg className="ttp-loader__track" viewBox="0 0 100 60" fill="none">
                 <path
                   d="M50,30 C50,15 25,15 25,30 C25,45 50,45 50,30 C50,15 75,15 75,30 C75,45 50,45 50,30 Z"
-                  stroke="rgba(201,151,46,0.22)" strokeWidth="1.5" strokeDasharray="3 4" strokeLinecap="round"
+                  stroke="rgba(140,95,18,0.22)" strokeWidth="1.5" strokeDasharray="3 4" strokeLinecap="round"
                 />
               </svg>
               <span className="ttp-loader__plane">
@@ -536,8 +535,8 @@ function TripPlannerPageInner() {
                 </svg>
               </span>
             </div>
-            <div style={{ fontSize: 16, fontWeight: 700, color: 'var(--text, #0f172a)', marginBottom: 8 }}>Finding the best options&hellip;</div>
-            <div style={{ fontSize: 13, color: 'var(--text-muted, #64748b)' }}>Checking flights, hotels, transfer partners and pricing</div>
+            <div style={{ fontSize: 16, fontWeight: 700, color: 'var(--ink)', marginBottom: 8 }}>Finding the best options&hellip;</div>
+            <div style={{ fontSize: 13, color: 'var(--ink-3)' }}>Checking flights, hotels, transfer partners and pricing</div>
           </div>
         )}
 
@@ -548,10 +547,10 @@ function TripPlannerPageInner() {
         {result && (
           <div style={{ marginTop: 8 }}>
             {/* Summary (FREE) */}
-            <div style={{ background: 'linear-gradient(135deg, #1B3A5C, #0d2240)', borderRadius: 20, padding: '28px', marginBottom: 20, border: '1px solid rgba(201,151,46,0.2)' }}>
+            <div style={{ background: 'var(--ink)', borderRadius: 20, padding: '28px', marginBottom: 20, border: '1px solid rgba(216,155,42,0.22)' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: 16, marginBottom: 16 }}>
                 <div>
-                  <div style={{ fontSize: 11, fontWeight: 700, color: '#C9972E', textTransform: 'uppercase', letterSpacing: 1.5, marginBottom: 6 }}>
+                  <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--copper-3)', textTransform: 'uppercase', letterSpacing: 1.5, marginBottom: 6 }}>
                     {result.destination} &middot; {result.duration} &middot; {result.tripType}
                   </div>
                   <div style={{ fontSize: 20, fontWeight: 800, color: '#fff', marginBottom: 4, lineHeight: 1.4 }}>{result.summary}</div>
@@ -559,7 +558,7 @@ function TripPlannerPageInner() {
                 </div>
                 <div style={{ textAlign: 'right' }}>
                   <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.4)', marginBottom: 4 }}>You save vs cash</div>
-                  <div style={{ fontSize: 32, fontWeight: 900, color: '#22c55e' }}>&#8377;{result.totalSaving.toLocaleString('en-IN')}</div>
+                  <div style={{ fontSize: 32, fontWeight: 900, color: 'var(--copper-3)' }}>&#8377;{result.totalSaving.toLocaleString('en-IN')}</div>
                 </div>
               </div>
 
@@ -574,18 +573,18 @@ function TripPlannerPageInner() {
                 </div>
                 {!result.canAfford && (
                   cardPageExists(result.bestCardId) ? (
-                    <Link href={`/card/${result.bestCardId}`} style={{ padding: '8px 16px', background: '#C9972E', color: '#0a0a0a', borderRadius: 10, fontSize: 12, fontWeight: 700, textDecoration: 'none' }}>
+                    <Link href={`/card/${result.bestCardId}`} style={{ padding: '8px 16px', background: 'var(--copper)', color: 'var(--paper)', borderRadius: 10, fontSize: 12, fontWeight: 700, textDecoration: 'none' }}>
                       Get {result.bestCard} &rarr;
                     </Link>
                   ) : (
-                    <span style={{ padding: '8px 16px', color: '#C9972E', fontSize: 12, fontWeight: 700 }}>
+                    <span style={{ padding: '8px 16px', color: 'var(--copper-3)', fontSize: 12, fontWeight: 700 }}>
                       Consider {result.bestCard}
                     </span>
                   )
                 )}
               </div>
 
-              {result.proTip && <div style={{ marginTop: 12, fontSize: 13, color: 'rgba(255,255,255,0.45)', lineHeight: 1.6, fontStyle: 'italic' }}>&ldquo;{result.proTip}&rdquo;</div>}
+              {result.proTip && <div style={{ marginTop: 12, fontSize: 13, color: 'rgba(255,255,255,0.55)', lineHeight: 1.6 }}>&ldquo;{result.proTip}&rdquo;</div>}
             </div>
 
             <SavePromptBanner feature='trip' />
@@ -613,22 +612,22 @@ function TripPlannerPageInner() {
 
               {/* Points redemption CTA */}
               {result.flights?.[0] && (
-                <div style={{ background: 'rgba(201,151,46,0.06)', border: '1px solid rgba(201,151,46,0.15)', borderRadius: 16, padding: '16px 20px', marginTop: 16, marginBottom: 16 }}>
-                  <div style={{ fontSize: 10, fontWeight: 700, color: '#C9972E', letterSpacing: 1.5, textTransform: 'uppercase', marginBottom: 10 }}>
+                <div style={{ background: 'rgba(140,95,18,0.06)', border: '1px solid rgba(140,95,18,0.15)', borderRadius: 16, padding: '16px 20px', marginTop: 16, marginBottom: 16 }}>
+                  <div style={{ fontSize: 10, fontWeight: 700, color: 'var(--copper)', letterSpacing: 1.5, textTransform: 'uppercase', marginBottom: 10 }}>
                     Redeem your points
                   </div>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 12 }}>
                     <div>
-                      <div style={{ fontSize: 14, fontWeight: 700, color: 'var(--text, #0f172a)', marginBottom: 2 }}>
+                      <div style={{ fontSize: 14, fontWeight: 700, color: 'var(--ink)', marginBottom: 2 }}>
                         {result.flights[0].airline} via {result.flights[0].transferPartner}
                       </div>
-                      <div style={{ fontSize: 12, color: 'var(--text-muted, #64748b)' }}>
+                      <div style={{ fontSize: 12, color: 'var(--ink-3)' }}>
                         {result.flights[0].pointsNeeded.toLocaleString('en-IN')} pts needed &middot; Best card: {result.flights[0].cardNeeded}
                       </div>
                     </div>
                     <button
                       onClick={() => { setModalFlight(result.flights[0]); setModalHotel(result.hotels[0] || null); setModalOpen(true); }}
-                      style={{ padding: '10px 20px', background: 'linear-gradient(135deg, #C9972E, #E8B84B)', color: '#0a0a0a', border: 'none', borderRadius: 10, fontSize: 13, fontWeight: 800, cursor: 'pointer', whiteSpace: 'nowrap' }}
+                      style={{ padding: '10px 20px', background: 'linear-gradient(135deg, var(--copper), var(--copper-3))', color: 'var(--paper)', border: 'none', borderRadius: 10, fontSize: 13, fontWeight: 800, cursor: 'pointer', whiteSpace: 'nowrap' }}
                     >
                       How to redeem points
                     </button>
@@ -638,7 +637,7 @@ function TripPlannerPageInner() {
             </ProGate>
 
             <div style={{ textAlign: 'center', marginTop: 24 }}>
-              <button onClick={() => { setResult(null); setQuery(''); }} style={{ padding: '12px 28px', background: 'var(--bg-card, #fff)', border: '1px solid var(--border, #e2e8f0)', borderRadius: 12, fontSize: 14, fontWeight: 600, color: 'var(--text, #0f172a)', cursor: 'pointer' }}>
+              <button onClick={() => { setResult(null); setQuery(''); }} style={{ padding: '12px 28px', background: 'var(--surface)', border: '1px solid var(--line)', borderRadius: 12, fontSize: 14, fontWeight: 600, color: 'var(--ink)', cursor: 'pointer' }}>
                 Plan another trip
               </button>
             </div>

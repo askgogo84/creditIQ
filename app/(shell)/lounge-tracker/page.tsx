@@ -2,7 +2,7 @@
 import { useState } from 'react'
 import { DesignFooter } from '@/components/design/Footer'
 import { Reveal } from '@/components/design/Reveal'
-import { SectionTabs } from '@/components/ciq/SectionTabs'
+import { PageHeader } from '@/components/ciq/PageHeader'
 
 const MY_CARDS = [
   { name: 'HDFC Infinia', bank: 'HDFC', domestic: 'Unlimited', international: 'Unlimited', network: 'Priority Pass', used: 2, total: 999, color: '#142950' },
@@ -25,26 +25,21 @@ export default function LoungeTrackerPage() {
   return (
     <>
       <div className="page-fade">
-        <section style={{ position: 'relative', paddingTop: 'clamp(120px,18vw,150px)', paddingBottom: 80 }}>
-          <div className="aurora" style={{ top: -100, right: -100, width: 600, height: 500, background: 'radial-gradient(circle,rgba(124,137,112,0.30),transparent 60%)' }} />
-          <div className="shell" style={{ position: 'relative', zIndex: 2 }}>
-            <Reveal style={{ textAlign: 'center', marginBottom: 'clamp(40px,6vw,64px)', maxWidth: 800, margin: '0 auto clamp(40px,6vw,64px)' }}>
-              <div style={{ display: 'inline-flex', alignItems: 'center', gap: 10, padding: '8px 14px', borderRadius: 999, background: 'rgba(124,137,112,0.12)', border: '1px solid rgba(124,137,112,0.25)', marginBottom: 28 }}>
-                <span>🛋</span>
-                <span style={{ fontFamily: 'var(--font-mono,monospace)', fontSize: 11, letterSpacing: '0.16em', color: 'var(--sage,#7C8970)', textTransform: 'uppercase', fontWeight: 600 }}>TRAVEL TOOL - LOUNGE TRACKER</span>
-              </div>
-              <h1 style={{ fontSize: 'clamp(40px,7vw,96px)', letterSpacing: '-0.04em', lineHeight: 1.0, fontWeight: 800, color: 'var(--ink,#142950)' }}>
-                Never get turned away{' '}
-                <span style={{ fontFamily: 'var(--font-serif,Georgia,serif)', color: 'var(--sage,#7C8970)', fontStyle: 'italic', fontWeight: 400 }}>at the gate</span>.
-              </h1>
-              <p style={{ maxWidth: 560, margin: '20px auto 0', color: 'var(--ink-2,#2A3F6B)', fontSize: 'clamp(15px,1.3vw,18px)', lineHeight: 1.55 }}>
-                Track free visits across every card you carry. Know before you go.
-              </p>
-            </Reveal>
+        {/* App template: left-aligned <PageHeader> (eyebrow pill · roman headline · one
+            supporting line) with SectionTabs beneath, in the /dashboard app column.
+            16px top padding, no marketing clamp, no aurora hero decoration. */}
+        <div style={{ paddingTop: 16, paddingBottom: 80 }}>
+          <div style={{ maxWidth: 1100, margin: '0 auto', padding: '0 20px' }}>
+            <PageHeader
+              eyebrow="Travel tool · Lounge tracker"
+              eyebrowPill
+              pillDotColor="var(--copper)"
+              title="Never turned away"
+              subtitle="Track free lounge visits across every card you carry. Know before you go."
+              maxWidth={1100}
+            />
 
-            <SectionTabs />
-
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1.4fr', gap: 32, alignItems: 'flex-start' }} className="grid-1-mobile">
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1.4fr', gap: 32, alignItems: 'flex-start', marginTop: 24 }} className="grid-1-mobile">
               <div>
                 <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: '0.15em', textTransform: 'uppercase', color: 'var(--copper,#8C5F12)', marginBottom: 16 }}>YOUR CARDS</div>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
@@ -116,7 +111,7 @@ export default function LoungeTrackerPage() {
               </div>
             </div>
           </div>
-        </section>
+        </div>
         <DesignFooter />
       </div>
     </>
