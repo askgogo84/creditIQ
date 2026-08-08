@@ -92,7 +92,9 @@ export default function TransferPartnersPage() {
         </div>
 
         <section style={{ paddingTop: 24, paddingBottom: 80 }}>
-          <div className="shell" style={{ display: 'flex', flexDirection: 'column', gap: 40 }}>
+          {/* Body shares the header's /dashboard app column (1100) so header and body
+              left edges align on wide desktop — was the wider .shell (1320). */}
+          <div style={{ maxWidth: 1100, margin: '0 auto', padding: '0 20px', display: 'flex', flexDirection: 'column', gap: 40 }}>
             {PARTNERS.map((bank, bi) => (
               <Reveal key={bi} style={{ animationDelay: `${bi * 80}ms` }}>
                 <div style={{ background: 'var(--paper,#FAF5EB)', borderRadius: 20, border: '1px solid var(--line,rgba(20,41,80,0.08))', overflow: 'hidden' }}>
