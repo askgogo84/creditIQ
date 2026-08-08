@@ -2,7 +2,7 @@ import { DesignFooter } from '@/components/design/Footer';
 import { Reveal } from '@/components/design/Reveal';
 import Link from 'next/link';
 import type { Metadata } from 'next';
-import { SectionTabs } from '@/components/ciq/SectionTabs';
+import { PageHeader } from '@/components/ciq/PageHeader';
 
 export const metadata: Metadata = {
   title: 'Credit Card Transfer Partners India 2026 | CreditIQ',
@@ -75,27 +75,26 @@ export default function TransferPartnersPage() {
   return (
     <>
       <div className="page-fade">
-        <section style={{ position: 'relative', paddingTop: 'clamp(120px,18vw,150px)', paddingBottom: 48 }}>
-          <div className="aurora" style={{ top: -80, right: -100, width: 600, height: 500, background: 'radial-gradient(circle,rgba(212,163,115,0.22),transparent 60%)' }} />
-          <div className="shell" style={{ position: 'relative', zIndex: 2 }}>
-            <Reveal>
-              <div style={{ display: 'inline-flex', alignItems: 'center', gap: 10, padding: '7px 16px', borderRadius: 999, background: 'rgba(212,163,115,0.12)', border: '1px solid rgba(212,163,115,0.28)', marginBottom: 24 }}>
-                <span style={{ fontFamily: 'var(--font-mono,monospace)', fontSize: 10, letterSpacing: '0.18em', color: 'var(--copper,#8C5F12)', textTransform: 'uppercase', fontWeight: 700 }}>Verified May 2026</span>
-              </div>
-              <h1 style={{ fontSize: 'clamp(32px,5vw,64px)', fontWeight: 800, color: 'var(--ink,#142950)', lineHeight: 1.05, letterSpacing: '-0.03em', margin: '0 0 16px' }}>
-                Transfer Partners{' '}
-                <span style={{ fontFamily: 'var(--font-serif,Georgia,serif)', color: 'var(--copper-3,#D89B2A)', fontStyle: 'italic', fontWeight: 400 }}>& Ratios</span>
-              </h1>
-              <p style={{ fontSize: 'clamp(15px,1.4vw,18px)', color: 'var(--ink-2,#2A3F6B)', lineHeight: 1.65, margin: 0, maxWidth: 560 }}>
-                Every airline and hotel transfer partner for Indian credit cards — with actual ratios, timelines, and where to get the best value.
-              </p>
-            </Reveal>
-            <SectionTabs />
+        {/* App template: left-aligned <PageHeader> (eyebrow pill · roman headline · one
+            supporting line) with SectionTabs beneath, in the /dashboard app column.
+            16px top padding, no marketing clamp, no aurora hero decoration. */}
+        <div style={{ paddingTop: 16 }}>
+          <div style={{ maxWidth: 1100, margin: '0 auto', padding: '0 20px' }}>
+            <PageHeader
+              eyebrow="Verified May 2026"
+              eyebrowPill
+              pillDotColor="var(--copper)"
+              title="Transfer Partners"
+              subtitle="Every airline and hotel transfer partner for Indian cards — ratios, timelines and value."
+              maxWidth={1100}
+            />
           </div>
-        </section>
+        </div>
 
-        <section style={{ paddingBottom: 80 }}>
-          <div className="shell" style={{ display: 'flex', flexDirection: 'column', gap: 40 }}>
+        <section style={{ paddingTop: 24, paddingBottom: 80 }}>
+          {/* Body shares the header's /dashboard app column (1100) so header and body
+              left edges align on wide desktop — was the wider .shell (1320). */}
+          <div style={{ maxWidth: 1100, margin: '0 auto', padding: '0 20px', display: 'flex', flexDirection: 'column', gap: 40 }}>
             {PARTNERS.map((bank, bi) => (
               <Reveal key={bi} style={{ animationDelay: `${bi * 80}ms` }}>
                 <div style={{ background: 'var(--paper,#FAF5EB)', borderRadius: 20, border: '1px solid var(--line,rgba(20,41,80,0.08))', overflow: 'hidden' }}>

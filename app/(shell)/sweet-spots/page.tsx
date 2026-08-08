@@ -31,15 +31,20 @@ export default async function SweetSpotsPage() {
 
   return (
     <>
-      <div style={{ paddingTop: 'clamp(80px,12vw,100px)', paddingBottom: 80 }}>
-        <div style={{ maxWidth: 900, margin: '0 auto', padding: '0 clamp(16px,4vw,24px)' }}>
+      {/* App template: 16px top padding, /dashboard app column (1100), first-class
+          eyebrow pill — aligned to the other four Travel pages (was a marketing clamp
+          hero on maxWidth 900 with a plain eyebrow). */}
+      <div style={{ paddingTop: 16, paddingBottom: 80 }}>
+        <div style={{ maxWidth: 1100, margin: '0 auto', padding: '0 20px' }}>
 
           <div style={{ marginBottom: 36 }}>
             <PageHeader
               eyebrow="Community discovered"
-              title="Redemption Sweet Spots"
+              eyebrowPill
+              pillDotColor="var(--copper)"
+              title="Sweet Spots"
               subtitle="The best redemptions found by top Indian CC creators — updated nightly from Instagram, YouTube and Reddit."
-              maxWidth={900}
+              maxWidth={1100}
             />
           </div>
 

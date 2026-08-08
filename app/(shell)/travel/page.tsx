@@ -3,7 +3,7 @@
 import { useState, useRef, useEffect, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { authedFetch } from '@/lib/authed-fetch';
-import { SectionTabs } from '@/components/ciq/SectionTabs';
+import { PageHeader } from '@/components/ciq/PageHeader';
 
 interface Message {
   role: 'user' | 'assistant';
@@ -81,29 +81,28 @@ function TravelPageInner() {
   return (
     <div style={{ minHeight: '100vh', backgroundColor: 'var(--bg,#F5EFE6)', display: 'flex', flexDirection: 'column' }}>
 
-      {/* Aurora background */}
-      <div className="aurora" style={{ position: 'fixed', top: -80, right: -120, width: 600, height: 500, background: 'radial-gradient(circle,rgba(212,163,115,0.18),transparent 60%)', pointerEvents: 'none', zIndex: 0 }} />
+      {/* App template: <PageHeader> (eyebrow pill · roman headline · one supporting line)
+          with SectionTabs beneath, in the /dashboard app column — 16px top padding, no
+          aurora, no marketing clamp. The chat keeps its own 720 reading measure below. */}
+      <div style={{ paddingTop: 16 }}>
+        <div style={{ maxWidth: 1100, width: '100%', margin: '0 auto', padding: '0 20px' }}>
+          <PageHeader
+            eyebrow="Travel AI · Powered by Claude"
+            eyebrowPill
+            pillDotColor="var(--copper)"
+            title="Your AI travel advisor"
+            subtitle="Ask anything about flights, lounges, points transfers and redemptions."
+            maxWidth={1100}
+          />
+        </div>
+      </div>
 
-      {/* Main content */}
-      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', maxWidth: 720, width: '100%', margin: '0 auto', padding: '0 clamp(16px,4vw,24px)', paddingTop: 'clamp(80px,12vw,100px)', paddingBottom: 120, position: 'relative', zIndex: 1 }}>
+      {/* Chat column — its own narrower reading measure below the header */}
+      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', maxWidth: 720, width: '100%', margin: '0 auto', padding: '0 clamp(16px,4vw,24px)', paddingTop: 24, paddingBottom: 120, position: 'relative', zIndex: 1 }}>
 
-        <SectionTabs />
-
-        {/* Hero - only when empty */}
+        {/* Suggested prompts - only when empty */}
         {empty && (
-          <div style={{ textAlign: 'center', marginBottom: 32, paddingTop: 24 }}>
-            <div style={{ display: 'inline-flex', alignItems: 'center', gap: 10, padding: '7px 18px', borderRadius: 999, background: 'rgba(212,163,115,0.12)', border: '1px solid rgba(212,163,115,0.28)', marginBottom: 24 }}>
-              <span style={{ fontFamily: 'var(--font-mono,monospace)', fontSize: 10, letterSpacing: '0.18em', color: 'var(--copper,#8C5F12)', textTransform: 'uppercase', fontWeight: 700 }}>
-                Travel AI &bull; Powered by Claude
-              </span>
-            </div>
-            <h1 style={{ fontSize: 'clamp(28px,5vw,52px)', fontWeight: 800, color: 'var(--ink,#142950)', margin: '0 0 14px', lineHeight: 1.1, letterSpacing: '-0.03em' }}>
-              Your AI{' '}
-              <span style={{ fontFamily: 'var(--font-serif,Georgia,serif)', color: 'var(--copper-3,#D89B2A)', fontStyle: 'italic', fontWeight: 400 }}>travel advisor</span>
-            </h1>
-            <p style={{ fontSize: 16, color: 'var(--ink-2,#2A3F6B)', margin: '0 0 32px', lineHeight: 1.7, maxWidth: 460, marginInline: 'auto' }}>
-              Ask anything about flights, hotels, lounge access, points transfers, and award redemptions.
-            </p>
+          <div style={{ marginBottom: 32 }}>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }} className="grid-1-mobile">
               {SUGGESTIONS.map((s, i) => (
                 <button key={i} onClick={() => send(s)} style={{
