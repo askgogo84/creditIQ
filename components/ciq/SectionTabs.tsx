@@ -18,10 +18,19 @@ import './SectionTabs.css'
 // `tone` lets the gold [data-ciq] pages (profile / pro) render the same control on
 // their gold ground without migrating to white in this pass.
 //
-// 375px: the strip stays a SINGLE ROW that scrolls horizontally (never wraps — a
-// second line would change page height between sections and reintroduce jumping).
-// The 5-tab Travel group is 676px wide inside a ~335px column, so most of it is
-// off-screen. Three things make that discoverable instead of silent:
+// BELOW 768px: the strip WRAPS to multiple rows (flex-wrap in ./SectionTabs.css) so
+// every tab is visible at once — no horizontal scroll, no hidden/off-screen state.
+// The earlier single-row-scroll approach failed on real devices: the active tab could
+// sit entirely off-screen (e.g. Trip Planner showing only Sweet Spots / Transfer
+// Partners / Lounges), telling the user about places they aren't. Wrapping makes the
+// header taller on 5-tab (Travel) and 4-tab (Cards) groups than on 2-tab (Wallet) —
+// accepted: switching groups is a bottom-nav action (a big context change); WITHIN a
+// group the height is constant, so tab-to-tab stays still, which is what we fixed.
+// Each tab still holds a 44px tap target; pills tighten padding + font at ≤420px.
+//
+// AT/ABOVE 768px (desktop): UNCHANGED — a SINGLE ROW that scrolls horizontally. Two
+// things keep the off-screen tabs discoverable, and both are DESKTOP-ONLY (there is
+// nothing to scroll when the strip wraps, so they no-op below 768px):
 //   1. Edge-fade cues (below) that appear only when there is hidden content on that
 //      side and disappear at the extremes — driven by scroll position, so they work
 //      on mouse/trackpad, not only touch. They also feather the boundary pill so it
@@ -29,7 +38,6 @@ import './SectionTabs.css'
 //   2. On mount / route change we scroll the ACTIVE tab into view, so arriving on a
 //      late tab (e.g. Lounges) never shows a strip that appears to start at Trip
 //      Planner.
-// Each tab still holds a 44px tap target.
 //
 // NOT sticky on purpose: html/body set overflow-x:hidden here, which silently
 // breaks position:sticky (it scrolls away).
@@ -66,6 +74,12 @@ const TOKENS: Record<Tone, ToneTokens> = {
 // pill peeks and the active tab never sits flush against the edge.
 const PEEK = 28
 
+// The strip only scrolls at/above 768px; below that it wraps (see ./SectionTabs.css).
+// The scroll-into-view and edge-fade logic is therefore desktop-only — this gate keeps
+// it in lockstep with the CSS breakpoint so neither runs while the strip is wrapped.
+const isDesktop = () =>
+  typeof window !== 'undefined' && window.matchMedia('(min-width: 768px)').matches
+
 export function SectionTabs({ tone = 'light' }: { tone?: Tone }) {
   const pathname = usePathname()
   const tabs = sectionTabsFor(pathname)
@@ -79,6 +93,11 @@ export function SectionTabs({ tone = 'light' }: { tone?: Tone }) {
   const syncEdges = useCallback(() => {
     const el = scrollerRef.current
     if (!el) return
+    // Wrapped (mobile) strips never scroll: force both cues off and bail.
+    if (!isDesktop()) {
+      setEdges({ left: false, right: false })
+      return
+    }
     const max = el.scrollWidth - el.clientWidth
     setEdges({ left: el.scrollLeft > 1, right: el.scrollLeft < max - 1 })
   }, [])
@@ -88,7 +107,7 @@ export function SectionTabs({ tone = 'light' }: { tone?: Tone }) {
   useIso(() => {
     const el = scrollerRef.current
     if (!el) return
-    const active = el.querySelector<HTMLElement>('[data-active="true"]')
+    const active = isDesktop() ? el.querySelector<HTMLElement>('[data-active="true"]') : null
     if (active) {
       const aL = active.offsetLeft
       const aR = aL + active.offsetWidth
@@ -147,6 +166,7 @@ export function SectionTabs({ tone = 'light' }: { tone?: Tone }) {
         }}
       >
         <div
+          className="ciq-st-track"
           style={{
             display: 'inline-flex', gap: 4, padding: 4, borderRadius: 16,
             background: c.ground, border: `1px solid ${c.border}`,
@@ -161,6 +181,7 @@ export function SectionTabs({ tone = 'light' }: { tone?: Tone }) {
                 href={t.href}
                 data-active={active ? 'true' : 'false'}
                 aria-current={active ? 'page' : undefined}
+                className="ciq-st-pill"
                 style={{
                   flexShrink: 0, display: 'inline-flex', alignItems: 'center', gap: 8,
                   minHeight: 44, padding: '0 15px', borderRadius: 12,

@@ -44,6 +44,32 @@
   background: linear-gradient(to left, var(--st-ground), transparent);
 }
 
+/* BELOW 768px: wrap to multiple rows instead of scrolling. Every tab is visible at
+   once, so the active tab can never be off-screen. These !important rules override the
+   per-tone inline styles (display/flex-shrink) and the inline overflow on the nav; the
+   edge fades are hidden because a wrapped strip has no hidden content to cue. The
+   matching JS gate (isDesktop) stops the scroll-into-view / cue sync from running here.
+   Desktop (>=768px) keeps the single-row scroller + fades untouched. */
+@media (max-width: 767px) {
+  .ciq-sectiontabs { overflow: visible !important; }
+  .ciq-st-track {
+    display: flex !important;
+    flex-wrap: wrap !important;
+  }
+  .ciq-st-pill { flex-shrink: 1 !important; }
+  .ciq-st-fade { display: none !important; }
+}
+
+/* At 375–420px, tighten pill padding + font so 4–5 tabs settle into two sensible rows
+   without crowding. The 44px min-height (tap target) is set inline and left intact. */
+@media (max-width: 420px) {
+  .ciq-st-pill {
+    padding: 0 11px !important;
+    gap: 6px !important;
+    font-size: 13px !important;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .ciq-sectiontabs a { transition: none !important; }
   .ciq-st-fade { transition: none; }
