@@ -50,7 +50,11 @@
   .ciq-theme-desktop { display: none !important; }
   .ciq-hamburger { display: flex !important; }
   .ciq-tab-bar { display: flex !important; }
-  main, .main-content, .page-fade, body > div, #__next > div { padding-bottom: 72px !important; } body { padding-bottom: 72px !important; }
+  /* STEP 1 (dead-selector cleanup): dropped `.main-content` (zero usages in the repo)
+     and `#__next > div` (pages-router root; this is app-router, so #__next never exists).
+     Both matched nothing, so removing them changes no element's padding. `body > div`
+     is the over-broad catch-all tracked for STEP 2. */
+  main, .page-fade, body > div { padding-bottom: 72px !important; } body { padding-bottom: 72px !important; }
 }
 @media (min-width: 769px) {
   .ciq-hamburger { display: none !important; }
