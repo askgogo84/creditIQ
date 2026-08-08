@@ -188,6 +188,31 @@ describe('SectionTabs — all-sections sheet', () => {
   })
 })
 
+describe('SectionTabs — scroll reset on section change', () => {
+  it('scrolls to the top of the content after a chevron navigation', () => {
+    const spy = vi.spyOn(window, 'scrollTo').mockImplementation(() => {})
+    nav.path = '/trip-planner'
+    const { container, rerender } = render(<SectionTabs />)
+    fireEvent.click(mobile(container).getByRole('button', { name: 'Next section' }))
+    // simulate the route actually changing (what router.push would cause)
+    nav.path = '/travel'
+    rerender(<SectionTabs />)
+    expect(spy).toHaveBeenCalledWith(0, 0)
+    spy.mockRestore()
+  })
+
+  it('does NOT reset scroll for a #hash target (its anchor jump must survive)', () => {
+    const spy = vi.spyOn(window, 'scrollTo').mockImplementation(() => {})
+    nav.path = '/profile' // You group — WhatsApp is /profile#whatsapp
+    const { container, rerender } = render(<SectionTabs />)
+    fireEvent.click(mobile(container).getByRole('button', { name: /Open all sections/ }))
+    fireEvent.click(within(screen.getByRole('dialog')).getByRole('link', { name: /WhatsApp/ }))
+    rerender(<SectionTabs />)
+    expect(spy).not.toHaveBeenCalled()
+    spy.mockRestore()
+  })
+})
+
 describe('SectionTabs — constant header structure across groups', () => {
   // The header height no longer depends on section count: every group renders the same
   // single carousel row + one dots row, so nothing grows with more sections. We assert

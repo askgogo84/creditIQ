@@ -69,6 +69,8 @@ const TOKENS: Record<Tone, ToneTokens> = {
 // carousel has no "pill ground" — it is a chevron/title/dots row on the page's own
 // surface — and the sheet needs its own panel/row/accent set.
 type MobileTokens = {
+  deckGround: string     // the deck card's slightly-tinted header ground
+  deckBorder: string     // the deck card's enclosing hairline
   title: string          // active section title
   chevron: string        // enabled chevron glyph + border tint reference
   chevronOff: string     // disabled chevron glyph (muted, still occupies space)
@@ -90,6 +92,7 @@ type MobileTokens = {
 
 const MOBILE: Record<Tone, MobileTokens> = {
   light: {
+    deckGround: 'var(--surface-2)', deckBorder: 'var(--line)',
     title: 'var(--ink)', chevron: 'var(--ink-2)', chevronOff: 'var(--line-strong)',
     chevBorder: 'var(--line)', chevHover: 'var(--line-soft)',
     dotOn: 'var(--copper)', dotOff: 'var(--line-strong)',
@@ -99,6 +102,7 @@ const MOBILE: Record<Tone, MobileTokens> = {
     iconTile: 'var(--surface-2)', iconTileBorder: 'var(--line)',
   },
   gold: {
+    deckGround: 'var(--ciq-panel)', deckBorder: 'var(--ciq-line)',
     title: 'var(--ciq-ink)', chevron: 'var(--ciq-ink-3)', chevronOff: 'var(--ciq-line-2)',
     chevBorder: 'var(--ciq-line)', chevHover: 'var(--ciq-line)',
     dotOn: 'var(--ciq-gold-2)', dotOff: 'var(--ciq-line-2)',
@@ -185,6 +189,18 @@ export function SectionTabs({ tone = 'light' }: { tone?: Tone }) {
   // Close the sheet whenever the route changes (a section inside it was tapped).
   useEffect(() => { setSheetOpen(false) }, [pathname])
 
+  // A section change via the carousel (chevron / swipe / sheet) should land at the TOP
+  // of the new section's content, not inherit the previous page's scroll offset (which
+  // dropped the user part-way down the new page). We flag when WE drive the navigation
+  // and reset scroll once the route actually changes. #hash targets (e.g.
+  // /profile#whatsapp) are skipped so their in-page anchor jump still works.
+  const resetScrollOnNav = useRef(false)
+  useEffect(() => {
+    if (!resetScrollOnNav.current) return
+    resetScrollOnNav.current = false
+    window.scrollTo(0, 0)
+  }, [pathname])
+
   if (!tabs || tabs.length === 0) return null
 
   // Single active tab = the one whose base path (ignoring #hash) is the longest
@@ -211,10 +227,17 @@ export function SectionTabs({ tone = 'light' }: { tone?: Tone }) {
   const atStart = activeIndex <= 0
   const atEnd = activeIndex >= tabs.length - 1
 
+  // Navigate to a section, flagging a scroll-to-top for the post-route effect (skipped
+  // for #hash targets so their anchor jump survives). Used by chevrons, swipe and sheet.
+  const navTo = (href: string) => {
+    if (!href.includes('#')) resetScrollOnNav.current = true
+    router.push(href)
+  }
+
   // Navigate one section along. Bounds-checked so end swipes / disabled chevrons no-op.
   const goTo = (i: number) => {
     if (i < 0 || i >= tabs.length) return
-    router.push(tabs[i].href)
+    navTo(tabs[i].href)
   }
 
   // Swipe: measure the touch delta on release. Horizontal intent only (dx dominates and
@@ -304,8 +327,16 @@ export function SectionTabs({ tone = 'light' }: { tone?: Tone }) {
         />
       </div>
 
-      {/* ───────── MOBILE (<768px): carousel header, constant height ───────── */}
+      {/* ───────── MOBILE (<768px): carousel header, constant height ─────────
+          Header controls + dots live inside ONE bordered, radiused card on a slightly
+          tinted ground (the "deck") so the section nav reads as a single contained
+          element, not loose controls floating above the content (fix: realise.club
+          containment). */}
       <div className="ciq-st-mobile">
+        <div
+          className="ciq-st-deck"
+          style={{ background: m.deckGround, borderColor: m.deckBorder }}
+        >
         <nav
           aria-label="Section navigation"
           className="ciq-st-carousel"
@@ -315,14 +346,15 @@ export function SectionTabs({ tone = 'light' }: { tone?: Tone }) {
             ['--st-chev-hover' as string]: m.chevHover,
           }}
         >
-          {/* Previous — disabled (not hidden) at the first section so nothing reflows. */}
+          {/* Previous — disabled (not hidden) at the first section so nothing reflows.
+              Borderless: the deck card supplies the single enclosing border. */}
           <button
             type="button"
             className="ciq-st-chev"
             onClick={() => goTo(activeIndex - 1)}
             disabled={atStart}
             aria-label="Previous section"
-            style={{ borderColor: m.chevBorder, color: atStart ? m.chevronOff : m.chevron }}
+            style={{ color: atStart ? m.chevronOff : m.chevron }}
           >
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true">
               <path d="M15 5l-7 7 7 7" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
@@ -353,7 +385,7 @@ export function SectionTabs({ tone = 'light' }: { tone?: Tone }) {
             onClick={() => goTo(activeIndex + 1)}
             disabled={atEnd}
             aria-label="Next section"
-            style={{ borderColor: m.chevBorder, color: atEnd ? m.chevronOff : m.chevron }}
+            style={{ color: atEnd ? m.chevronOff : m.chevron }}
           >
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true">
               <path d="M9 5l7 7-7 7" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
@@ -384,6 +416,7 @@ export function SectionTabs({ tone = 'light' }: { tone?: Tone }) {
             )
           })}
         </div>
+        </div>
       </div>
 
       {sheetOpen && (
@@ -391,6 +424,7 @@ export function SectionTabs({ tone = 'light' }: { tone?: Tone }) {
           tabs={tabs}
           activeHref={activeHref}
           tokens={m}
+          markScroll={(href) => { if (!href.includes('#')) resetScrollOnNav.current = true }}
           onClose={() => {
             setSheetOpen(false)
             titleBtnRef.current?.focus()
@@ -406,11 +440,12 @@ export function SectionTabs({ tone = 'light' }: { tone?: Tone }) {
 // Escape/backdrop to close, focus moved in on open and trapped, restored to the title
 // on close (handled by the caller's onClose). Rendered only while open.
 function SectionSheet({
-  tabs, activeHref, tokens, onClose,
+  tabs, activeHref, tokens, markScroll, onClose,
 }: {
   tabs: SectionTab[]
   activeHref: string | null
   tokens: MobileTokens
+  markScroll: (href: string) => void
   onClose: () => void
 }) {
   const panelRef = useRef<HTMLDivElement | null>(null)
@@ -486,7 +521,7 @@ function SectionSheet({
               <Link
                 key={tab.href}
                 href={tab.href}
-                onClick={onClose}
+                onClick={() => { markScroll(tab.href); onClose() }}
                 aria-current={active ? 'page' : undefined}
                 className="ciq-st-sheet-row"
                 style={{

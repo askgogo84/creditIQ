@@ -56,13 +56,19 @@
 }
 
 /* ───────── MOBILE: carousel header (constant height, any section count) ─────────
-   One row: chevron · centred title · chevron, then a dots row. Nothing here depends on
+   One row: chevron · centred title · chevron, then a dots row — all wrapped in ONE
+   bordered, rounded card on a slightly tinted ground (the deck). Nothing here depends on
    the number of sections, so the header height is identical across all five groups —
    which is exactly the cross-group variance the old wrapping strip introduced. */
+.ciq-st-deck {
+  border: 1px solid transparent;   /* colour set inline per tone */
+  border-radius: 16px;
+  padding: 8px 8px 10px;
+}
 .ciq-st-carousel {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
   /* No horizontal overflow: the title truncates rather than pushing the chevrons. */
 }
 .ciq-st-chev {

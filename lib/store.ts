@@ -38,7 +38,7 @@ interface ThemeStore {
 const THEME_KEY = 'creditiq-theme';
 
 // `data-theme` on <html> is the single source of truth; the inline script in
-// app/layout.tsx sets it before first paint (stored choice → OS preference → light).
+// app/layout.tsx sets it before first paint (stored choice → light; OS is not consulted).
 // applyTheme mirrors a change back onto the attribute, the legacy .dark/.light classes
 // (still read by html.dark CSS + Logo), and localStorage so the pre-paint script
 // restores it next load. Same key the script and the nav toggle read.
@@ -80,7 +80,14 @@ function currentTheme(): 'dark' | 'light' {
 // effect at shell/root level (NavShell) and on the marketing Header calls this.
 // It routes through applyTheme — the ONE writer — so there is no second copy of the
 // logic and the single-writer gate stays green. Guarded: if data-theme survived,
-// this is a no-op (no flash). Same resolution order as the pre-paint script.
+// this is a no-op (no flash).
+//
+// RESOLUTION: stored choice → light. LIGHT IS THE DECIDED DEFAULT — the device's
+// OS `prefers-color-scheme` is deliberately NOT consulted, so a user with nothing
+// saved always lands on light regardless of a dark phone. (Was stored → OS → light;
+// the OS step made dark-phone users default to dark and, once there, unable to reach
+// light on a route where the pre-paint attr had been stripped.) Same order as the
+// pre-paint script in app/layout.tsx — keep the two in lockstep.
 export function reassertTheme() {
   if (typeof document === 'undefined') return;
   const el = document.documentElement;
@@ -88,9 +95,7 @@ export function reassertTheme() {
   let t: 'dark' | 'light' = 'light';
   try {
     const saved = localStorage.getItem(THEME_KEY);
-    t = saved === 'dark' || saved === 'light'
-      ? saved
-      : (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+    t = saved === 'dark' || saved === 'light' ? saved : 'light';
   } catch {}
   applyTheme(t);
 }

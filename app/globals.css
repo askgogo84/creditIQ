@@ -206,7 +206,12 @@ body {
   overflow-x: hidden;
   position: relative;
   width: 100%;
-  transition: background 0.4s ease, color 0.4s ease;
+  /* NO background/color transition on <body>: Chrome does not settle a transition of a
+     property whose value comes from a CSS-variable (--bg / --ink) change, so on a runtime
+     theme toggle it left <body> pinned at the PREVIOUS theme's colour — the page appeared
+     stuck and "wouldn't switch". <html> had no transition and flipped instantly, which is
+     why the two diverged. The theme switch is instant (as the gold surfaces already are).
+     Verified at 375px: toggling now flips the body ground both directions. */
 }
 
 img, svg, video { max-width: 100%; height: auto; }
