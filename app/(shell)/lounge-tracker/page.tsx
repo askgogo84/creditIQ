@@ -3,7 +3,6 @@ import { useState } from 'react'
 import { DesignFooter } from '@/components/design/Footer'
 import { Reveal } from '@/components/design/Reveal'
 import { PageHeader } from '@/components/ciq/PageHeader'
-import { SectionCard } from '@/components/ciq/SectionCard'
 
 const MY_CARDS = [
   { name: 'HDFC Infinia', bank: 'HDFC', domestic: 'Unlimited', international: 'Unlimited', network: 'Priority Pass', used: 2, total: 999, color: '#142950' },
@@ -30,22 +29,17 @@ export default function LoungeTrackerPage() {
             supporting line) with SectionTabs beneath, in the /dashboard app column.
             16px top padding, no marketing clamp, no aurora hero decoration. */}
         <div style={{ paddingTop: 16, paddingBottom: 80 }}>
-          <SectionCard
-            tone="light"
-            maxWidth={1100}
-            header={
-              <PageHeader
-                eyebrow="Travel tool · Lounge tracker"
-                eyebrowPill
-                pillDotColor="var(--copper)"
-                title="Never get turned away at the gate"
-                subtitle="Track free lounge visits across every card you carry. Know before you go."
-                maxWidth={1100}
-                contained
-              />
-            }
-          >
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1.4fr', gap: 32, alignItems: 'flex-start', marginTop: 0 }} className="grid-1-mobile">
+          <div style={{ maxWidth: 1100, margin: '0 auto', padding: '0 20px' }}>
+            <PageHeader
+              eyebrow="Travel tool · Lounge tracker"
+              eyebrowPill
+              pillDotColor="var(--copper)"
+              title="Never get turned away at the gate"
+              subtitle="Track free lounge visits across every card you carry. Know before you go."
+              maxWidth={1100}
+            />
+
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1.4fr', gap: 32, alignItems: 'flex-start', marginTop: 24 }} className="grid-1-mobile">
               <div>
                 <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: '0.15em', textTransform: 'uppercase', color: 'var(--copper,#8C5F12)', marginBottom: 16 }}>YOUR CARDS</div>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
@@ -116,7 +110,7 @@ export default function LoungeTrackerPage() {
                 </div>
               </div>
             </div>
-          </SectionCard>
+          </div>
         </div>
         <DesignFooter />
       </div>

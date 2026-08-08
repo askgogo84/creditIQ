@@ -188,23 +188,6 @@ describe('SectionTabs — all-sections sheet', () => {
   })
 })
 
-describe('SectionTabs — contained (inside a SectionCard)', () => {
-  it('renders the deck bare so the card supplies the single ground/border', () => {
-    nav.path = '/trip-planner'
-    const { container } = render(<SectionTabs contained />)
-    const deck = container.querySelector('.ciq-st-mobile .ciq-st-deck') as HTMLElement
-    expect(deck).toHaveClass('ciq-st-deck--bare')
-    expect(deck.style.background).toBe('transparent')
-  })
-
-  it('keeps its own deck card when standalone (not contained)', () => {
-    nav.path = '/trip-planner'
-    const { container } = render(<SectionTabs />)
-    const deck = container.querySelector('.ciq-st-mobile .ciq-st-deck') as HTMLElement
-    expect(deck).not.toHaveClass('ciq-st-deck--bare')
-  })
-})
-
 describe('SectionTabs — scroll reset on section change', () => {
   it('scrolls to the top of the content after a chevron navigation', () => {
     const spy = vi.spyOn(window, 'scrollTo').mockImplementation(() => {})

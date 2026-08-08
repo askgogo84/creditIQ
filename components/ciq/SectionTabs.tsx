@@ -128,7 +128,7 @@ const SWIPE = 45
 const isDesktop = () =>
   typeof window !== 'undefined' && window.matchMedia('(min-width: 768px)').matches
 
-export function SectionTabs({ tone = 'light', contained = false }: { tone?: Tone; contained?: boolean }) {
+export function SectionTabs({ tone = 'light' }: { tone?: Tone }) {
   const pathname = usePathname()
   const router = useRouter()
   const tabs = sectionTabsFor(pathname)
@@ -334,11 +334,8 @@ export function SectionTabs({ tone = 'light', contained = false }: { tone?: Tone
           containment). */}
       <div className="ciq-st-mobile">
         <div
-          className={`ciq-st-deck${contained ? ' ciq-st-deck--bare' : ''}`}
-          style={{
-            background: contained ? 'transparent' : m.deckGround,
-            borderColor: contained ? 'transparent' : m.deckBorder,
-          }}
+          className="ciq-st-deck"
+          style={{ background: m.deckGround, borderColor: m.deckBorder }}
         >
         <nav
           aria-label="Section navigation"
