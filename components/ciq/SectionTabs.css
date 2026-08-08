@@ -4,12 +4,23 @@
    render and React discarded the tree, stripping data-theme. As an imported
    stylesheet the attribute-selector quotes are literal CSS. The --st-* custom
    props these rules read are still set inline per-section on the nav element.
-   Rules byte-identical.
 
-   Hover wash, scrollbar hide, and reduced-motion override live here because inline
-   styles can't express pseudo-classes or media queries. The !important on the
-   reduced-motion rule beats the inline transition. */
+   Two presentations live here, switched at 768px so both render to the DOM and one
+   is display:none'd (no hydration/JS-timing flash): the DESKTOP pill-row scroller and
+   the MOBILE carousel. Hover washes, scrollbar hide, sheet animation and reduced-motion
+   overrides live here because inline styles can't express pseudo-classes/media queries;
+   the !important on the reduced-motion rule beats the inline transitions. */
 .ciq-sectiontabs-wrap { position: relative; }
+
+/* Which presentation shows. Desktop by default; carousel takes over below 768px. */
+.ciq-st-desktop { display: block; }
+.ciq-st-mobile { display: none; }
+@media (max-width: 767px) {
+  .ciq-st-desktop { display: none; }
+  .ciq-st-mobile { display: block; }
+}
+
+/* ───────── DESKTOP: horizontal-scroll pill row ───────── */
 .ciq-sectiontabs { scrollbar-width: none; -ms-overflow-style: none; }
 .ciq-sectiontabs::-webkit-scrollbar { display: none; }
 .ciq-sectiontabs a[data-active="false"]:hover {
@@ -44,33 +55,155 @@
   background: linear-gradient(to left, var(--st-ground), transparent);
 }
 
-/* BELOW 768px: wrap to multiple rows instead of scrolling. Every tab is visible at
-   once, so the active tab can never be off-screen. These !important rules override the
-   per-tone inline styles (display/flex-shrink) and the inline overflow on the nav; the
-   edge fades are hidden because a wrapped strip has no hidden content to cue. The
-   matching JS gate (isDesktop) stops the scroll-into-view / cue sync from running here.
-   Desktop (>=768px) keeps the single-row scroller + fades untouched. */
-@media (max-width: 767px) {
-  .ciq-sectiontabs { overflow: visible !important; }
-  .ciq-st-track {
-    display: flex !important;
-    flex-wrap: wrap !important;
-  }
-  .ciq-st-pill { flex-shrink: 1 !important; }
-  .ciq-st-fade { display: none !important; }
+/* ───────── MOBILE: carousel header (constant height, any section count) ─────────
+   One row: chevron · centred title · chevron, then a dots row. Nothing here depends on
+   the number of sections, so the header height is identical across all five groups —
+   which is exactly the cross-group variance the old wrapping strip introduced. */
+.ciq-st-carousel {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  /* No horizontal overflow: the title truncates rather than pushing the chevrons. */
+}
+.ciq-st-chev {
+  flex: 0 0 auto;
+  width: 44px;
+  height: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid transparent;
+  border-radius: 12px;
+  background: transparent;
+  cursor: pointer;
+  font-family: inherit;
+  transition: background 0.15s ease;
+}
+.ciq-st-chev:not(:disabled):hover { background: var(--st-chev-hover); }
+.ciq-st-chev:disabled { cursor: default; }
+.ciq-st-title {
+  flex: 1 1 auto;
+  min-width: 0;
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 0 8px;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  font-family: var(--font-display, inherit);
+  font-size: 18px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  transition: opacity 0.15s ease;
+}
+.ciq-st-title:hover { opacity: 0.7; }
+.ciq-st-title-text {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.ciq-st-dots {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  height: 14px;
+  margin-top: 10px;
+}
+.ciq-st-dot {
+  height: 6px;
+  border-radius: 999px;
+  flex: 0 0 auto;
+  transition: width 0.2s ease, background 0.2s ease;
 }
 
-/* At 375–420px, tighten pill padding + font so 4–5 tabs settle into two sensible rows
-   without crowding. The 44px min-height (tap target) is set inline and left intact. */
-@media (max-width: 420px) {
-  .ciq-st-pill {
-    padding: 0 11px !important;
-    gap: 6px !important;
-    font-size: 13px !important;
-  }
+/* ───────── MOBILE: all-sections sheet ───────── */
+.ciq-st-sheet-scrim {
+  position: fixed;
+  inset: 0;
+  z-index: 2000;
+  display: flex;
+  align-items: flex-end;
+  animation: ciqStScrimIn 0.2s ease;
 }
+.ciq-st-sheet {
+  width: 100%;
+  max-width: 480px;
+  margin: 0 auto;
+  border: 1px solid;
+  border-bottom: none;
+  border-top-left-radius: 20px;
+  border-top-right-radius: 20px;
+  padding-bottom: env(safe-area-inset-bottom);
+  max-height: 82vh;
+  display: flex;
+  flex-direction: column;
+  animation: ciqStSheetIn 0.24s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.ciq-st-sheet-grip {
+  width: 36px;
+  height: 4px;
+  border-radius: 999px;
+  margin: 8px auto 2px;
+  flex: 0 0 auto;
+}
+.ciq-st-sheet-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 16px 12px;
+  border-bottom: 1px solid;
+}
+.ciq-st-sheet-close {
+  width: 34px;
+  height: 34px;
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid;
+  border-radius: 999px;
+  background: transparent;
+  cursor: pointer;
+}
+.ciq-st-sheet-list {
+  overflow-y: auto;
+  padding: 12px 16px calc(20px + env(safe-area-inset-bottom));
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.ciq-st-sheet-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 56px;
+  padding: 8px 12px;
+  border: 1px solid;
+  border-radius: 14px;
+  text-decoration: none;
+  font-family: inherit;
+}
+.ciq-st-sheet-tile {
+  width: 40px;
+  height: 40px;
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid;
+  border-radius: 12px;
+}
+
+@keyframes ciqStScrimIn { from { opacity: 0; } to { opacity: 1; } }
+@keyframes ciqStSheetIn { from { transform: translateY(100%); } to { transform: none; } }
 
 @media (prefers-reduced-motion: reduce) {
   .ciq-sectiontabs a { transition: none !important; }
   .ciq-st-fade { transition: none; }
+  .ciq-st-chev, .ciq-st-title, .ciq-st-dot { transition: none !important; }
+  .ciq-st-sheet-scrim, .ciq-st-sheet { animation: none !important; }
 }

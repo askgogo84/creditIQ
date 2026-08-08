@@ -1,5 +1,14 @@
 import { describe, it, expect, vi, beforeAll, beforeEach } from 'vitest';
 import { render, screen, fireEvent, within } from '@testing-library/react';
+
+// WalletView renders PageHeader → SectionTabs, which calls useRouter() (throws outside
+// the app-router context) and usePathname(). Stub both; a null pathname makes SectionTabs
+// render nothing here, keeping this suite focused on the wallet itself.
+vi.mock('next/navigation', () => ({
+  usePathname: () => null,
+  useRouter: () => ({ push: vi.fn() }),
+}));
+
 import { WalletView } from './WalletView';
 
 // jsdom has no matchMedia; stub it so HeroGauge's count-up takes the
