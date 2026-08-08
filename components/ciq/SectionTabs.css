@@ -117,7 +117,9 @@
   height: 6px;
   border-radius: 999px;
   flex: 0 0 auto;
-  transition: width 0.2s ease, background 0.2s ease;
+  /* Only the colour tweens; the active dot's wider width snaps rather than animating a
+     layout property (the dots change on a route navigation / full re-render anyway). */
+  transition: background 0.2s ease;
 }
 
 /* ───────── MOBILE: all-sections sheet ───────── */
