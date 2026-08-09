@@ -42,7 +42,11 @@ export function CardDetailClient({ card }: { card: CreditCard }) {
   const cardVariant = VARIANT_MAP[card.bank?.toLowerCase().split(' ')[0]] ?? 'obsidian';
 
   return (
-    <div className="page-fade">
+    // No `page-fade` here: the parent app/(shell)/card/[slug]/page.tsx wraps this in
+    // <main className="page-fade">, which already supplies BOTH the fade-in animation
+    // (it cascades over this subtree) AND the mobile bottom-tab clearance. Duplicating
+    // the class on this nested wrapper double-counted the 72px clearance (176px stack).
+    <div>
 
       {/* ── Hero ── */}
       <section style={{ position: 'relative', paddingTop: 'clamp(120px,18vw,150px)', paddingBottom: 60 }}>

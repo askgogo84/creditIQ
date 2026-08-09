@@ -99,7 +99,7 @@ export default function TransferPartnersPage() {
               <Reveal key={bi} style={{ animationDelay: `${bi * 80}ms` }}>
                 <div style={{ background: 'var(--paper,#FAF5EB)', borderRadius: 20, border: '1px solid var(--line,rgba(20,41,80,0.08))', overflow: 'hidden' }}>
                   {/* Bank header */}
-                  <div style={{ background: 'var(--ink,#142950)', padding: '16px 24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 12 }}>
+                  <div style={{ background: 'var(--navy,#142950)', padding: '16px 24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 12 }}>
                     <div>
                       <div style={{ fontFamily: 'var(--font-mono,monospace)', fontSize: 9, fontWeight: 700, letterSpacing: '0.18em', color: 'var(--copper-3,#D89B2A)', textTransform: 'uppercase', marginBottom: 4 }}>{bank.currency}</div>
                       <h2 style={{ fontSize: 20, fontWeight: 800, color: '#fff', margin: 0, letterSpacing: '-0.02em' }}>{bank.bank}</h2>
@@ -152,7 +152,7 @@ export default function TransferPartnersPage() {
 
             {/* Key rules */}
             <Reveal>
-              <div style={{ background: 'var(--ink,#142950)', borderRadius: 20, padding: 'clamp(24px,4vw,40px)', position: 'relative', overflow: 'hidden' }}>
+              <div style={{ background: 'var(--navy,#142950)', borderRadius: 20, padding: 'clamp(24px,4vw,40px)', position: 'relative', overflow: 'hidden' }}>
                 <div className="aurora" style={{ top: -40, right: -40, width: 300, height: 300, background: 'radial-gradient(circle,rgba(212,163,115,0.18),transparent 60%)' }} />
                 <div style={{ position: 'relative', zIndex: 2 }}>
                   <h2 style={{ fontSize: 'clamp(18px,2.5vw,24px)', fontWeight: 700, color: '#fff', margin: '0 0 20px', letterSpacing: '-0.01em' }}>

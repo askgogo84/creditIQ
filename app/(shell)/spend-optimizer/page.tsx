@@ -188,7 +188,7 @@ Respond ONLY with valid JSON (no markdown, no backticks, no explanation outside 
               {/* Total bar */}
               {totalSpend > 0 && (
                 <div style={{
-                  background: 'var(--ink)', borderRadius: 14, padding: '14px 24px',
+                  background: 'var(--navy)', borderRadius: 14, padding: '14px 24px',
                   display: 'flex', justifyContent: 'space-between', alignItems: 'center',
                   marginBottom: 16,
                 }}>
@@ -352,7 +352,7 @@ Respond ONLY with valid JSON (no markdown, no backticks, no explanation outside 
 
               {/* Spend summary */}
               <div style={{
-                background: 'var(--ink)', borderRadius: 14, padding: '14px 20px',
+                background: 'var(--navy)', borderRadius: 14, padding: '14px 20px',
                 display: 'flex', justifyContent: 'space-between', alignItems: 'center',
                 marginBottom: 20,
               }}>

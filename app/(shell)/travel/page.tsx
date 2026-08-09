@@ -131,7 +131,7 @@ function TravelPageInner() {
               {/* Avatar */}
               <div style={{
                 width: 36, height: 36, borderRadius: 10, flexShrink: 0,
-                backgroundColor: msg.role === 'user' ? 'var(--copper-3,#D89B2A)' : 'var(--ink,#142950)',
+                backgroundColor: msg.role === 'user' ? 'var(--copper-3,#D89B2A)' : 'var(--navy,#142950)',
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
                 fontSize: 14, fontWeight: 800, color: '#fff',
                 fontFamily: 'var(--font-mono,monospace)',
@@ -142,7 +142,7 @@ function TravelPageInner() {
               {/* Bubble */}
               <div style={{
                 maxWidth: '82%',
-                backgroundColor: msg.role === 'user' ? 'var(--ink,#142950)' : 'var(--surface,#fff)',
+                backgroundColor: msg.role === 'user' ? 'var(--navy,#142950)' : 'var(--surface,#fff)',
                 borderRadius: msg.role === 'user' ? '16px 4px 16px 16px' : '4px 16px 16px 16px',
                 padding: '13px 18px',
                 fontSize: 14,

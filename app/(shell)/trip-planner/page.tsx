@@ -428,13 +428,13 @@ function TripPlannerPageInner() {
                 <div onClick={() => setInspireRegion('international')} style={{
                   padding: '6px 14px', borderRadius: 100, fontSize: 12, fontWeight: 700, cursor: 'pointer',
                   border: inspireRegion === 'international' ? 'none' : '1px solid var(--line)',
-                  background: inspireRegion === 'international' ? 'var(--ink)' : 'var(--surface)',
+                  background: inspireRegion === 'international' ? 'var(--navy)' : 'var(--surface)',
                   color: inspireRegion === 'international' ? '#fff' : 'var(--ink)',
                 }}>{'\u{1F30F}'} International</div>
                 <div onClick={() => setInspireRegion('india')} style={{
                   padding: '6px 14px', borderRadius: 100, fontSize: 12, fontWeight: 700, cursor: 'pointer',
                   border: inspireRegion === 'india' ? 'none' : '1px solid var(--line)',
-                  background: inspireRegion === 'india' ? 'var(--ink)' : 'var(--surface)',
+                  background: inspireRegion === 'india' ? 'var(--navy)' : 'var(--surface)',
                   color: inspireRegion === 'india' ? '#fff' : 'var(--ink)',
                 }}>{'\u{1F1EE}\u{1F1F3}'} India</div>
               </div>
@@ -449,7 +449,7 @@ function TripPlannerPageInner() {
                   style={{
                     position: 'relative', borderRadius: 16, overflow: 'hidden',
                     aspectRatio: '4 / 3', boxShadow: '0 4px 16px rgba(15,23,42,0.10)',
-                    cursor: 'pointer', background: 'var(--ink)',
+                    cursor: 'pointer', background: 'var(--navy)',
                   }}
                 >
                   <img src={d.image} alt={d.city} loading="lazy"
@@ -547,7 +547,7 @@ function TripPlannerPageInner() {
         {result && (
           <div style={{ marginTop: 8 }}>
             {/* Summary (FREE) */}
-            <div style={{ background: 'var(--ink)', borderRadius: 20, padding: '28px', marginBottom: 20, border: '1px solid rgba(216,155,42,0.22)' }}>
+            <div style={{ background: 'var(--navy)', borderRadius: 20, padding: '28px', marginBottom: 20, border: '1px solid rgba(216,155,42,0.22)' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: 16, marginBottom: 16 }}>
                 <div>
                   <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--copper-3)', textTransform: 'uppercase', letterSpacing: 1.5, marginBottom: 6 }}>

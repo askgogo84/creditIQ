@@ -25,6 +25,16 @@ const SHELL_CSS = `
   @media (max-width: 899px) {
     .ciq-shell-rail { display: none !important; }
     .ciq-shell-tabbar { display: block; }
+    /* Header.css is loaded on every (shell) page (NavShell imports Header for the
+       signed-out branch), and its marketing bottom-tab clearance —
+       \`body > div, #__next > div { padding-bottom: 72px !important }\` — matches the
+       shell's own body-level wrappers. On the fixed-TabBar wrapper (whose only child is
+       position:fixed, so it should be 0-height) that !important padding becomes 72px of
+       IN-FLOW height at the TOP of the column, pushing every signed-in page down 72px
+       (the eyebrow sat at 96px instead of ~16px). Neutralise it on the wrapper; the app
+       TabBar's real clearance is .ciq-shell-main's own padding-bottom below, made
+       !important so it no longer loses to that leaked 72px. */
+    .ciq-shell-tabbar { padding-bottom: 0 !important; }
     /* TabBar clearance for EVERY shell page, whatever its root element. Kept at
        the wrapper (not the page root) so div-root pages (/trip-planner, /profile)
        clear too — they get no element-level padding from globals.css:1417, which
@@ -34,7 +44,7 @@ const SHELL_CSS = `
        was reverted: it left div-root pages depending on the body rule, whose
        computed value did not match its source and could not be verified on-device.
        Optimise only with real-session phone testing. */
-    .ciq-shell-main { padding-bottom: 76px; }
+    .ciq-shell-main { padding-bottom: 76px !important; }
   }
 `
 

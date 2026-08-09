@@ -50,7 +50,14 @@
   .ciq-theme-desktop { display: none !important; }
   .ciq-hamburger { display: flex !important; }
   .ciq-tab-bar { display: flex !important; }
-  main, .main-content, .page-fade, body > div, #__next > div { padding-bottom: 72px !important; } body { padding-bottom: 72px !important; }
+  /* Bottom-tab-bar CLEARANCE is NOT here — this block is only the mobile chrome swap
+     (hide desktop nav, show hamburger + tab bar). The clearance lived here through four
+     passes (body > div → dead selectors → .mobile-tabbar-clear) but was always a DUPLICATE
+     of the globals.css bottom-tab-bar rule, and it padded BOTH `body` AND the content-root
+     (main/.page-fade), stacking into a double 72px on nested pages (card-detail = 176px).
+     Measured (375px, all clearance off): NO page self-clears — every one clips at 32-40px
+     vs a ~55px bar, so clearance IS needed; but `body` padding ALONE clears every page type
+     (104-112px). So clearance now lives once, on `body` only, in globals.css. */
 }
 @media (min-width: 769px) {
   .ciq-hamburger { display: none !important; }
