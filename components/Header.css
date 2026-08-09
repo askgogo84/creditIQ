@@ -50,20 +50,14 @@
   .ciq-theme-desktop { display: none !important; }
   .ciq-hamburger { display: flex !important; }
   .ciq-tab-bar { display: flex !important; }
-  /* Mobile bottom-tab clearance for the fixed marketing tab bar (~55px). Clears via
-     INTENTFUL selectors only.
-       STEP 1 dropped the two dead selectors (`.main-content` — zero usages; `#__next > div`
-       — pages-router root, absent in this app-router build).
-       STEP 3 replaced the over-broad `body > div`, which matched EVERY top-level div by
-       position — chrome wrappers (the shell TabBar wrapper → top gap), no-bar pages
-       (/login phantom scroll) and already-cleared shell content (card-detail double
-       padding) — with the opt-in `.mobile-tabbar-clear`.
-     AUDIT: no current page needs that class. Every bare-<div>-root page that renders the
-     Header self-clears via its footer (measured intrinsic clearance 112-184px vs a ~55px
-     bar: flights, explore, singapore, credit-simulator, approval-odds, rewards-calculator,
-     intelligence, bank/[slug]); every other page uses `main` or `.page-fade`. The class
-     is kept as the documented hook for any FUTURE bare-div page that lacks a footer. */
-  main, .page-fade, .mobile-tabbar-clear { padding-bottom: 72px !important; } body { padding-bottom: 72px !important; }
+  /* Bottom-tab-bar CLEARANCE is NOT here — this block is only the mobile chrome swap
+     (hide desktop nav, show hamburger + tab bar). The clearance lived here through four
+     passes (body > div → dead selectors → .mobile-tabbar-clear) but was always a DUPLICATE
+     of the globals.css bottom-tab-bar rule, and it padded BOTH `body` AND the content-root
+     (main/.page-fade), stacking into a double 72px on nested pages (card-detail = 176px).
+     Measured (375px, all clearance off): NO page self-clears — every one clips at 32-40px
+     vs a ~55px bar, so clearance IS needed; but `body` padding ALONE clears every page type
+     (104-112px). So clearance now lives once, on `body` only, in globals.css. */
 }
 @media (min-width: 769px) {
   .ciq-hamburger { display: none !important; }

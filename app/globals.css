@@ -1414,11 +1414,14 @@ html.dark [style*="background: 'var(--bg-surface"] {
    Does NOT add side padding (that breaks heroes).
    ============================================ */
 @media (max-width: 768px) {
-  /* Every possible top-level content wrapper */
-  body,
-  main,
-  .page-fade,
-  section.section:last-of-type {
+  /* SINGLE-LAYER clearance: pad `body` ONLY. Padding body AND the content-root
+     (main/.page-fade/section) stacked into a double on nested pages — card-detail was
+     176px (body 72 + main.page-fade 72). `body`'s padding sits below ALL content, so one
+     layer clears every page type: measured 104-112px of clearance vs a ~55px bar across
+     marketing, shell, <main>, bare-div and card-detail. (/login overrides its own body
+     padding to 0, so no-bar pages get no phantom scroll.) Header.css no longer duplicates
+     this — its @media block is now the mobile chrome swap only. */
+  body {
     padding-bottom: 80px !important;
   }
 
