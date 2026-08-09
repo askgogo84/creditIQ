@@ -74,6 +74,19 @@ const STARS = (n: number) => '★'.repeat(n) + '☆'.repeat(5 - n);
 export default function TransferPartnersPage() {
   return (
     <>
+      {/* Responsive split for the partner list: the 7-column table overflowed at
+          375px (ratio column clipped, type badge wrapped). Below 768px we drop the
+          table and render each partner as a stacked card (name; then type + ratio;
+          then value / timeline / rating / sweet spot) so nothing clips and there is
+          no horizontal scroll. The table stays on desktop where it fits. */}
+      <style>{`
+        .tp-table-wrap { display: none; }
+        .tp-stack { display: flex; flex-direction: column; }
+        @media (min-width: 768px) {
+          .tp-table-wrap { display: block; }
+          .tp-stack { display: none; }
+        }
+      `}</style>
       <div className="page-fade">
         {/* App template: left-aligned <PageHeader> (eyebrow pill · roman headline · one
             supporting line) with SectionTabs beneath, in the /dashboard app column.
@@ -117,8 +130,9 @@ export default function TransferPartnersPage() {
                     </div>
                   )}
 
-                  {/* Partners table */}
-                  <div style={{ overflowX: 'auto' }}>
+                  {/* Partners table — desktop (>=768px). overflowX kept as a safety
+                      net for the 768-900 tablet band. */}
+                  <div className="tp-table-wrap" style={{ overflowX: 'auto' }}>
                     <table style={{ width: '100%', borderCollapse: 'collapse' }}>
                       <thead>
                         <tr style={{ background: 'var(--surface,#fff)' }}>
@@ -145,6 +159,35 @@ export default function TransferPartnersPage() {
                         ))}
                       </tbody>
                     </table>
+                  </div>
+
+                  {/* Partners stack — mobile (<768px). Each partner is a stacked card:
+                      name (+ rating), then type badge + ratio on one line, then the
+                      remaining fields. No table, no horizontal scroll, nothing clipped. */}
+                  <div className="tp-stack">
+                    {bank.partners.map((p, pi) => (
+                      <div key={pi} style={{ padding: '14px 20px', borderTop: pi > 0 ? '1px solid var(--line,rgba(20,41,80,0.06))' : 'none', background: pi % 2 === 0 ? 'var(--paper,#FAF5EB)' : 'var(--surface,#fff)' }}>
+                        {/* Line 1 — partner name + rating */}
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', gap: 10 }}>
+                          <span style={{ fontSize: 15, fontWeight: 700, color: 'var(--ink,#142950)' }}>{p.name}</span>
+                          <span style={{ fontSize: 12, color: 'var(--copper-3,#D89B2A)', whiteSpace: 'nowrap', flexShrink: 0 }}>{STARS(p.rating)}</span>
+                        </div>
+                        {/* Line 2 — type badge + ratio (both fully visible, no wrap) */}
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginTop: 6 }}>
+                          <span style={{ padding: '2px 8px', borderRadius: 100, fontSize: 10, fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', whiteSpace: 'nowrap', background: p.type === 'airline' ? 'rgba(14,165,233,0.12)' : 'rgba(201,151,46,0.12)', color: p.type === 'airline' ? '#0369a1' : 'var(--copper,#8C5F12)' }}>
+                            {p.type === 'airline' ? '✈ Airline' : '🏨 Hotel'}
+                          </span>
+                          <span style={{ fontFamily: 'var(--font-mono,monospace)', fontSize: 13, fontWeight: 700, color: 'var(--ink,#142950)' }}>{p.ratio}</span>
+                        </div>
+                        {/* Value + timeline */}
+                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px 20px', marginTop: 8 }}>
+                          <span style={{ fontSize: 12 }}><span style={{ color: 'var(--ink-3,#5A6A8A)' }}>Value </span><span style={{ fontWeight: 700, color: '#2d7a56' }}>{p.value}</span></span>
+                          <span style={{ fontSize: 12 }}><span style={{ color: 'var(--ink-3,#5A6A8A)' }}>Timeline </span><span style={{ fontFamily: 'var(--font-mono,monospace)', color: 'var(--ink-2,#2A3F6B)' }}>{p.timeline}</span></span>
+                        </div>
+                        {/* Sweet spot — wraps full width */}
+                        <div style={{ fontSize: 12, color: 'var(--ink-2,#2A3F6B)', lineHeight: 1.5, marginTop: 6 }}>{p.sweet_spot}</div>
+                      </div>
+                    ))}
                   </div>
                 </div>
               </Reveal>
