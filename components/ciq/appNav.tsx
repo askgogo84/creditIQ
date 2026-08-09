@@ -22,15 +22,18 @@
 // then its bound routes (/feed, /intelligence) fold under Wallet — the /dashboard
 // surface they live on today.
 import type { ReactNode } from 'react'
+import { Wallet, Receipt, Plane, CreditCard, User, type LucideIcon } from 'lucide-react'
 
 export type AppNavItem = {
   key: string
   label: string
   href: string
-  // Icon drawn in a 24x24 viewBox. `color` is applied to the stroke so each
-  // surface can tint its own active state with its own token (gold in the ciq
-  // TabBar, copper in the app rail) without forking the path data.
-  icon: (color: string) => ReactNode
+  // A self-contained lucide-react icon component — the SINGLE source every nav
+  // surface renders (TabBar, AppRail, and the TabBar the Header injects on
+  // mobile), so the glyph can never diverge from the label across viewports.
+  // Each surface passes its own size / strokeWidth / active `color` token (gold
+  // in the ciq TabBar, copper in the rail); the glyph data itself lives here once.
+  Icon: LucideIcon
   // Which paths fold into this destination so the tab stays lit — marketing
   // routes like /flights or /compare belong to a primary app tab.
   match: (p: string) => boolean
@@ -39,7 +42,7 @@ export type AppNavItem = {
 export const APP_NAV: AppNavItem[] = [
   {
     key: 'wallet', label: 'Wallet', href: '/dashboard',
-    icon: c => <path d="m3 10 9-7 9 7v9a2 2 0 0 1-2 2h-4v-6H9v6H5a2 2 0 0 1-2-2v-9Z" stroke={c} strokeWidth="1.7" strokeLinejoin="round" />,
+    Icon: Wallet,
     // Holdings ledger — the real, shipped wallet (WalletView / HeroGauge / CardRow /
     // 2-step tour). Folds: /my-cards (legacy gold card-list, not yet migrated),
     // /statement-truth (verification happens inside Wallet, IA §3), and /feed +
@@ -49,7 +52,7 @@ export const APP_NAV: AppNavItem[] = [
   },
   {
     key: 'spend', label: 'Spend', href: '/spend-optimizer',
-    icon: c => <path d="M13 2 3 14h7l-1 8 10-12h-7l1-8Z" stroke={c} strokeWidth="1.7" strokeLinejoin="round" />,
+    Icon: Receipt,
     // Lands on the Spend Optimizer (the "which card for this purchase" surface),
     // which is the default section tab. Points Optimizer is the other tab; /optimize
     // (a redemption tool) and /smart-match still light Spend but are orphaned tools
@@ -58,14 +61,14 @@ export const APP_NAV: AppNavItem[] = [
   },
   {
     key: 'travel', label: 'Travel', href: '/trip-planner',
-    icon: c => <path d="m3 11 19-9-9 19-2-8-8-2Z" stroke={c} strokeWidth="1.7" strokeLinejoin="round" />,
+    Icon: Plane,
     // Travel AI = the search itself; Sweet Spots / Transfer Partners / Lounges /
     // Trip Planner = tabs & modes within Travel (IA §3).
     match: p => p.startsWith('/trip-planner') || p.startsWith('/travel') || p.startsWith('/flights') || p.startsWith('/lounge-tracker') || p.startsWith('/sweet-spots') || p.startsWith('/transfer-partners'),
   },
   {
     key: 'cards', label: 'Cards', href: '/cards',
-    icon: c => <><rect x="2" y="5" width="20" height="14" rx="2.5" stroke={c} strokeWidth="1.7" /><path d="M2 10h20" stroke={c} strokeWidth="1.7" /></>,
+    Icon: CreditCard,
     // Public catalogue. Compare / Best-of / UAE = filters; Switch Wizard hangs off a
     // comparison; Card Roast's route is card-focused so it folds here (its Home entry
     // card stays a link, not a route match — IA §3).
@@ -73,7 +76,7 @@ export const APP_NAV: AppNavItem[] = [
   },
   {
     key: 'you', label: 'You', href: '/profile',
-    icon: c => <><circle cx="12" cy="8" r="4" stroke={c} strokeWidth="1.7" /><path d="M4 21a8 8 0 0 1 16 0" stroke={c} strokeWidth="1.7" strokeLinecap="round" /></>,
+    Icon: User,
     // Account, plan, remaining searches & WhatsApp connect. Pro/Billing folds here.
     match: p => p.startsWith('/profile') || p.startsWith('/pro'),
   },

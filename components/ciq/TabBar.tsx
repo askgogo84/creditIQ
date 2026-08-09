@@ -4,21 +4,14 @@ import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { createBrowserClient } from '@supabase/ssr';
-import { Wallet, Receipt, Plane, CreditCard, MoreHorizontal, type LucideIcon } from 'lucide-react';
+import { MoreHorizontal } from 'lucide-react';
 import { APP_NAV } from '@/components/ciq/appNav';
 import { useTheme } from '@/lib/store';
 
-// Bottom-bar glyphs come from lucide-react (one coherent set at a single size +
-// stroke weight) so the icon always matches its label — the shared appNav path
-// icons still feed the desktop rail/Header. Keyed by APP_NAV.key:
-//   wallet → Wallet  · spend → Receipt (money out / purchases, not a bolt)
-//   travel → Plane   · cards → CreditCard · More → MoreHorizontal
-const TAB_ICONS: Record<string, LucideIcon> = {
-  wallet: Wallet,
-  spend: Receipt,
-  travel: Plane,
-  cards: CreditCard,
-};
+// Each tab's glyph is the lucide component carried on its APP_NAV item, so the
+// bottom bar, the desktop rail and the Header-injected TabBar all render the
+// exact same icon — no per-surface fork. "More" is not an APP_NAV destination
+// (it opens the account sheet), so it uses MoreHorizontal directly.
 // One size + stroke weight for every bottom-bar glyph so they read as a set.
 const ICON_SIZE = 21;
 const ICON_STROKE = 1.8;
@@ -101,7 +94,7 @@ export function TabBar() {
       }}>
         {TABS.map(t => {
           const active = t.match(path);
-          const Icon = TAB_ICONS[t.key];
+          const Icon = t.Icon;
           return (
             <Link key={t.href} href={t.href} style={tabItem(active)}>
               <Icon size={ICON_SIZE} strokeWidth={ICON_STROKE} color={active ? 'var(--ciq-gold-2)' : 'currentColor'} aria-hidden />
