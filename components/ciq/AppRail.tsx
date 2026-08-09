@@ -87,12 +87,11 @@ export function AppRail() {
       <nav style={{ flex: 1, overflowY: 'auto', padding: '4px 12px 12px', display: 'flex', flexDirection: 'column', gap: 2 }}>
         {APP_NAV.map(item => {
           const active = appActive(item.href, path)
+          const Icon = item.Icon
           return (
             <Link key={item.href} href={item.href} style={navRow(active)}>
               {active && <span style={{ position: 'absolute', left: -12, top: '50%', transform: 'translateY(-50%)', width: 3, height: 20, borderRadius: 3, background: 'var(--copper)' }} />}
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" style={{ flexShrink: 0 }}>
-                {item.icon(active ? 'var(--copper)' : 'currentColor')}
-              </svg>
+              <Icon size={20} strokeWidth={1.8} color={active ? 'var(--copper)' : 'currentColor'} style={{ flexShrink: 0 }} aria-hidden />
               {item.label}
             </Link>
           )

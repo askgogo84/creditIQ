@@ -4,8 +4,17 @@ import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { createBrowserClient } from '@supabase/ssr';
+import { MoreHorizontal } from 'lucide-react';
 import { APP_NAV } from '@/components/ciq/appNav';
 import { useTheme } from '@/lib/store';
+
+// Each tab's glyph is the lucide component carried on its APP_NAV item, so the
+// bottom bar, the desktop rail and the Header-injected TabBar all render the
+// exact same icon — no per-surface fork. "More" is not an APP_NAV destination
+// (it opens the account sheet), so it uses MoreHorizontal directly.
+// One size + stroke weight for every bottom-bar glyph so they read as a set.
+const ICON_SIZE = 21;
+const ICON_STROKE = 1.8;
 
 // Logged-in bottom bar: 4 primary destinations + a "More" sheet that is the "You"
 // account surface (Profile, Pro, theme, sign out). The four tabs are pulled by key
@@ -85,9 +94,10 @@ export function TabBar() {
       }}>
         {TABS.map(t => {
           const active = t.match(path);
+          const Icon = t.Icon;
           return (
             <Link key={t.href} href={t.href} style={tabItem(active)}>
-              <svg width="21" height="21" viewBox="0 0 24 24" fill="none">{t.icon(active ? 'var(--ciq-gold-2)' : 'currentColor')}</svg>
+              <Icon size={ICON_SIZE} strokeWidth={ICON_STROKE} color={active ? 'var(--ciq-gold-2)' : 'currentColor'} aria-hidden />
               {t.label}
               {/* active marker — gold dot, matching the logged-out Home tab */}
               {active && <span style={{ width: 4, height: 4, borderRadius: '50%', background: 'var(--ciq-gold-2)' }} />}
@@ -96,11 +106,7 @@ export function TabBar() {
         })}
         {/* "More" — opens the full-screen sheet, never a link itself. */}
         <button type="button" onClick={() => setMoreOpen(true)} aria-label="More" aria-expanded={moreOpen} style={tabItem(moreOpen)}>
-          <svg width="21" height="21" viewBox="0 0 24 24" fill="none">
-            <circle cx="5" cy="12" r="1.6" fill={moreOpen ? 'var(--ciq-gold-2)' : 'currentColor'} />
-            <circle cx="12" cy="12" r="1.6" fill={moreOpen ? 'var(--ciq-gold-2)' : 'currentColor'} />
-            <circle cx="19" cy="12" r="1.6" fill={moreOpen ? 'var(--ciq-gold-2)' : 'currentColor'} />
-          </svg>
+          <MoreHorizontal size={ICON_SIZE} strokeWidth={ICON_STROKE} color={moreOpen ? 'var(--ciq-gold-2)' : 'currentColor'} aria-hidden />
           More
           {moreOpen && <span style={{ width: 4, height: 4, borderRadius: '50%', background: 'var(--ciq-gold-2)' }} />}
         </button>
