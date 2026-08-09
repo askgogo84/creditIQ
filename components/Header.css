@@ -50,11 +50,20 @@
   .ciq-theme-desktop { display: none !important; }
   .ciq-hamburger { display: flex !important; }
   .ciq-tab-bar { display: flex !important; }
-  /* STEP 1 (dead-selector cleanup): dropped `.main-content` (zero usages in the repo)
-     and `#__next > div` (pages-router root; this is app-router, so #__next never exists).
-     Both matched nothing, so removing them changes no element's padding. `body > div`
-     is the over-broad catch-all tracked for STEP 2. */
-  main, .page-fade, body > div { padding-bottom: 72px !important; } body { padding-bottom: 72px !important; }
+  /* Mobile bottom-tab clearance for the fixed marketing tab bar (~55px). Clears via
+     INTENTFUL selectors only.
+       STEP 1 dropped the two dead selectors (`.main-content` — zero usages; `#__next > div`
+       — pages-router root, absent in this app-router build).
+       STEP 3 replaced the over-broad `body > div`, which matched EVERY top-level div by
+       position — chrome wrappers (the shell TabBar wrapper → top gap), no-bar pages
+       (/login phantom scroll) and already-cleared shell content (card-detail double
+       padding) — with the opt-in `.mobile-tabbar-clear`.
+     AUDIT: no current page needs that class. Every bare-<div>-root page that renders the
+     Header self-clears via its footer (measured intrinsic clearance 112-184px vs a ~55px
+     bar: flights, explore, singapore, credit-simulator, approval-odds, rewards-calculator,
+     intelligence, bank/[slug]); every other page uses `main` or `.page-fade`. The class
+     is kept as the documented hook for any FUTURE bare-div page that lacks a footer. */
+  main, .page-fade, .mobile-tabbar-clear { padding-bottom: 72px !important; } body { padding-bottom: 72px !important; }
 }
 @media (min-width: 769px) {
   .ciq-hamburger { display: none !important; }
