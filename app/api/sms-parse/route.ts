@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { callerId } from '@/lib/api-auth';
 export const runtime = 'nodejs';
 
 const SMS_PATTERNS = [
@@ -73,11 +74,15 @@ function parseSms(messages: Array<{text: string; sender: string; date?: string}>
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    const { messages, userId } = body;
+    const { messages } = body;
 
     if (!messages || !Array.isArray(messages)) {
       return NextResponse.json({ error: 'messages array required' }, { status: 400 });
     }
+
+    // Identity from the bearer token — a body `userId` is ignored. Anonymous
+    // callers still get parsed results; they just aren't saved. Closes the IDOR.
+    const userId = await callerId(req);
 
     const cards = parseSms(messages);
 
@@ -85,7 +90,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ success: true, cards: [], message: 'No reward points found in these messages' });
     }
 
-    // Save to Supabase if userId provided
+    // Save only for an authenticated caller, scoped to their verified id
     if (userId) {
       const sUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
       const sKey = process.env.SUPABASE_SERVICE_ROLE_KEY;

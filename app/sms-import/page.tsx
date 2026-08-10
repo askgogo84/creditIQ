@@ -65,10 +65,12 @@ export default function SmsImportPage() {
     setLoading(true); setError(''); setResult(null);
     try {
       const messages = parseSmsText(rawText);
-      const res = await fetch('/api/sms-parse', {
+      // Identity travels via the bearer token (authedFetch); the server ignores
+      // any userId in the body. Anonymous callers are parsed but not saved.
+      const res = await authedFetch('/api/sms-parse', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ messages, userId }),
+        body: JSON.stringify({ messages }),
       });
       const data = await res.json();
       if (!res.ok || data.error) throw new Error(data.error || 'Failed to parse');
