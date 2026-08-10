@@ -20,6 +20,15 @@
         "value": "dot-bounce",
         "createdAt": "2026-08-08T09:11:06.645Z",
         "reason": "Chat typing indicator (looping activity pulse, not an object settling); previously user-confirmed, re-applied shared after the (travelgrp) route-group move changed the file path."
+      },
+      {
+        "rule": "bounce-easing",
+        "value": "*",
+        "files": [
+          "app/(shell)/(travelgrp)/travel/page.tsx"
+        ],
+        "createdAt": "2026-08-10T05:34:01.749Z",
+        "reason": "Chat typing-indicator dot-bounce keyframe (ease-in-out easing; rule fires on the substring 'bounce' in the name). Value-scoped ignore can't match — detector keeps the leading backtick from the JSX template-literal animation token — so scope this one rule to this one file."
       }
     ]
   }
