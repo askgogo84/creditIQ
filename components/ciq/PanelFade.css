@@ -1,0 +1,11 @@
+/* PanelFade — the ONLY animation on a section-group tab change.
+   Opacity-only, 140ms. No width/height/transform is animated (a transform would
+   reintroduce the .page-fade "slide" flash this refactor removes). The wrapper is
+   keyed on pathname by PanelFade.tsx, so it remounts — and this fade replays — only
+   when the panel below the persistent section header swaps.
+   prefers-reduced-motion escapes to no animation. */
+@keyframes ciqPanelFade { from { opacity: 0; } to { opacity: 1; } }
+.ciq-panel-fade { animation: ciqPanelFade 140ms ease both; }
+@media (prefers-reduced-motion: reduce) {
+  .ciq-panel-fade { animation: none !important; }
+}

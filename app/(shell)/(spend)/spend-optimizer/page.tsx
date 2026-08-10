@@ -122,22 +122,21 @@ Respond ONLY with valid JSON (no markdown, no backticks, no explanation outside 
   };
 
   return (
-    <div style={{ paddingTop: 16, paddingBottom: 112 }}>
-      {/* App template: left-aligned compact PageHeader (eyebrow pill · roman headline ·
-          one supporting line) with SectionTabs directly beneath, in the same app column
-          as /dashboard. No centred marketing hero. */}
-      <div style={{ maxWidth: 1100, margin: '0 auto', padding: '0 20px' }}>
-        <PageHeader
-          eyebrow="No affiliate bias · Pure AI"
-          eyebrowPill
-          pillDotColor="var(--copper)"
-          title="Which card earns you the most money?"
-          subtitle={`Enter your monthly spends — our AI picks from our ${CARD_COUNT} tracked cards by what each earns.`}
-          maxWidth={1100}
-        />
+    <>
+      {/* Section name + SectionTabs live in the (spend) layout above this panel. This
+          panel owns the page's own display headline + subtitle (eyebrow dropped as
+          redundant with the section name) and the tool. The tool keeps its 700 reading
+          measure but left-aligns (no margin:0 auto) so its left edge sits flush under
+          the headline in the shared 1100 container. */}
+      <PageHeader
+        title="Which card earns you the most money?"
+        subtitle={`Enter your monthly spends — our AI picks from our ${CARD_COUNT} tracked cards by what each earns.`}
+        maxWidth={1100}
+        showTabs={false}
+      />
 
-        {/* The tool, on its own reading measure beneath the header. */}
-        <div style={{ maxWidth: 700, margin: '24px auto 0' }}>
+      {/* The tool, on its own reading measure beneath the headline. */}
+      <div style={{ maxWidth: 700, marginTop: 24 }}>
 
           {step === 'input' && (
             <>
@@ -373,8 +372,7 @@ Respond ONLY with valid JSON (no markdown, no backticks, no explanation outside 
               </button>
             </>
           )}
-        </div>
       </div>
-    </div>
+    </>
   );
 }

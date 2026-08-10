@@ -162,22 +162,22 @@ Respond ONLY with valid JSON (no markdown, no code fences):
   const maxVal = result ? Math.max(...result.paths.map(p => p.estimatedValue)) : 1;
 
   return (
-    <div style={{ paddingTop: 16, paddingBottom: 112 }}>
-      {/* App template: left-aligned compact PageHeader with SectionTabs directly beneath,
-          in the same app column as /dashboard. No centred marketing hero. */}
-      <div style={{ maxWidth: 1100, margin: '0 auto', padding: '0 20px' }}>
-        <PageHeader
-          eyebrow="AI-Powered · Real Valuations"
-          eyebrowPill
-          pillDotColor="var(--copper)"
-          title="Squeeze every rupee from your reward points"
-          subtitle="Pick a card, tell us your goal — we rank every redemption path by actual value."
-          maxWidth={1100}
-        />
+    <>
+      {/* Section name + SectionTabs live in the (spend) layout above this panel. This
+          panel owns the page's own display headline + subtitle (eyebrow dropped as
+          redundant with the section name) and the tool. The grid keeps its 760 measure
+          but left-aligns (no margin:0 auto) so its left edge sits flush under the
+          headline in the shared 1100 container. */}
+      <PageHeader
+        title="Squeeze every rupee from your reward points"
+        subtitle="Pick a card, tell us your goal — we rank every redemption path by actual value."
+        maxWidth={1100}
+        showTabs={false}
+      />
 
-        {/* Two-column tool beneath the header. */}
-        <div style={{ maxWidth: 760, margin: '24px auto 0', display: 'grid', gridTemplateColumns: 'minmax(0,1fr) minmax(0,1.4fr)', gap: 20 }}
-          className="points-grid">
+      {/* Two-column tool beneath the headline. */}
+      <div style={{ maxWidth: 760, marginTop: 24, display: 'grid', gridTemplateColumns: 'minmax(0,1fr) minmax(0,1.4fr)', gap: 20 }}
+        className="points-grid">
           <style>{`
             @media (max-width: 640px) { .points-grid { grid-template-columns: 1fr !important; } }
             @keyframes spin { to { transform: rotate(360deg); } }
@@ -411,7 +411,6 @@ Respond ONLY with valid JSON (no markdown, no code fences):
             )}
           </div>
         </div>
-      </div>
-    </div>
+    </>
   );
 }
