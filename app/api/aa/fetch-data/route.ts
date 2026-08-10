@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { aaEnabled } from '@/lib/aa-flag';
 export const runtime = 'edge';
 
 const FINVU_UAT = 'https://webueuat.finvu.in';
@@ -6,6 +7,9 @@ const FINVU_PROD = 'https://webue.finvu.in';
 
 export async function POST(req: NextRequest) {
   try {
+    // Kill-switch: AA flow disabled until identity is bound. See lib/aa-flag.ts.
+    if (!aaEnabled()) return NextResponse.json({ error: 'not_found' }, { status: 404 });
+
     const { consentHandle } = await req.json();
     if (!consentHandle) return NextResponse.json({ error: 'consentHandle required' }, { status: 400 });
 

@@ -1,7 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { aaEnabled } from '@/lib/aa-flag';
 export const runtime = 'edge';
 
 export async function GET(req: NextRequest) {
+  // Kill-switch: AA flow disabled until identity is bound. See lib/aa-flag.ts.
+  // Browser-facing redirect target, so bounce to the link-card page rather than
+  // returning JSON.
+  if (!aaEnabled()) return NextResponse.redirect('https://creditiq.app/link-card?error=unavailable');
+
   const { searchParams } = new URL(req.url);
   const consentHandle = searchParams.get('consentHandle');
   const status = searchParams.get('status'); // ACTIVE or REJECTED

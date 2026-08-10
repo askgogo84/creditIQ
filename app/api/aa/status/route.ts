@@ -1,7 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { aaEnabled } from '@/lib/aa-flag';
 export const runtime = 'edge';
 
 export async function GET(req: NextRequest) {
+  // Kill-switch: AA flow disabled until identity is bound. See lib/aa-flag.ts.
+  if (!aaEnabled()) return NextResponse.json({ error: 'not_found' }, { status: 404 });
+
   const userId = new URL(req.url).searchParams.get('userId');
   if (!userId) return NextResponse.json({ error: 'userId required' }, { status: 400 });
 
