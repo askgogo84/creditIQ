@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { callClaude, MODELS } from '@/lib/ai';
+import { callerId } from '@/lib/api-auth';
 
 export const runtime = 'nodejs';
 export const maxDuration = 30;
@@ -77,7 +78,10 @@ export async function POST(req: NextRequest) {
     const formData = await req.formData();
     const file = formData.get('file') as File;
     const bank = (formData.get('bank') as string) || 'Unknown';
-    const userId = (formData.get('userId') as string) || null;
+    // Identity comes from the bearer token — a formData `userId` is ignored.
+    // Anonymous uploads are still parsed; they just aren't saved. Closes the
+    // IDOR where any caller could persist a card under another user's id.
+    const userId = await callerId(req);
     // Password comes from the request, hard-capped at 256 chars. In-memory use only.
     const pwdRaw = formData.get('password');
     const password = pwdRaw != null ? String(pwdRaw).slice(0, 256) : undefined;
@@ -151,7 +155,7 @@ export async function POST(req: NextRequest) {
 
     const sUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
     const sKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
-    if (sUrl && sKey && parsed.points_balance) {
+    if (sUrl && sKey && userId && parsed.points_balance) {
       const { createClient } = await import('@supabase/supabase-js');
       const sb = createClient(sUrl, sKey);
       await sb.from('statement_imports').upsert({

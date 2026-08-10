@@ -109,11 +109,12 @@ export default function UploadStatementPage() {
       const formData = new FormData();
       formData.append('file', file);
       formData.append('bank', selectedBank?.id || 'Unknown');
-      if (userId) formData.append('userId', userId);
+      // Identity travels via the bearer token (authedFetch); the server ignores
+      // any userId in the body. Anonymous uploads are parsed but not saved.
       // Locked PDFs are unlocked server-side, in memory, with this password.
       if (pdfPassword.trim()) formData.append('password', pdfPassword.trim());
 
-      const res = await fetch('/api/parse-statement', { method: 'POST', body: formData });
+      const res = await authedFetch('/api/parse-statement', { method: 'POST', body: formData });
       const data = await res.json();
 
       if (data.needsPassword) {
