@@ -11,12 +11,31 @@ interface Message {
 }
 
 function parseMarkdown(text: string): string {
-  return text
+  // SECURITY: this string is injected via dangerouslySetInnerHTML, and the model reply
+  // is influenced by third-party content pulled into the system prompt (Instagram-scraped
+  // igInsights + Seats.aero award data via the RAG context in /api/travel-ai), so treat
+  // it as untrusted. Escape HTML FIRST so any raw tags in the reply (e.g.
+  // <img src=x onerror=...>) render as inert text; every tag emitted below is our own
+  // trusted template markup applied to the already-escaped text.
+  const escaped = text
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
+  return escaped
     .replace(/^### (.+)$/gm, '<h3 style="font-size:14px;font-weight:700;color:var(--ink,#142950);margin:14px 0 4px">$1</h3>')
     .replace(/^## (.+)$/gm, '<h2 style="font-size:16px;font-weight:700;color:var(--ink,#142950);margin:16px 0 6px;padding-bottom:4px;border-bottom:1px solid var(--line,rgba(20,41,80,0.08))">$1</h2>')
     .replace(/^# (.+)$/gm, '<h1 style="font-size:18px;font-weight:800;color:var(--ink,#142950);margin:0 0 12px">$1</h1>')
     .replace(/\*\*(.+?)\*\*/g, '<strong style="font-weight:700;color:var(--ink,#142950)">$1</strong>')
     .replace(/\*(.+?)\*/g, '<em style="font-style:italic">$1</em>')
+    // Links: ONLY http/https become live anchors. Any other scheme (javascript:, data:,
+    // vbscript:, etc.) is left as its literal [label](url) source — i.e. inert text, not
+    // a live link. The url can't contain " or < > (escaped above), so it can't break out
+    // of the href attribute or inject an event handler.
+    .replace(/\[([^\]]+)\]\(([^)\s]+)\)/g, (m, label, url) =>
+      /^https?:\/\//i.test(url)
+        ? `<a href="${url}" target="_blank" rel="noopener noreferrer nofollow" style="color:var(--copper-3,#D89B2A);text-decoration:underline">${label}</a>`
+        : m)
     .replace(/^- (.+)$/gm, '<div style="display:flex;gap:8px;margin:5px 0;align-items:flex-start"><span style="color:var(--copper-3,#D89B2A);font-weight:900;font-size:14px;line-height:1.5;flex-shrink:0">&rarr;</span><span style="line-height:1.65;color:var(--ink-2,#2A3F6B)">$1</span></div>')
     .replace(/\n{2,}/g, '<div style="height:8px"></div>')
     .replace(/\n/g, ' ');

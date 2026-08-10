@@ -19,7 +19,7 @@
         "rule": "bounce-easing",
         "value": "dot-bounce",
         "createdAt": "2026-08-08T09:11:06.645Z",
-        "reason": "chat typing indicator — intentional looping activity pulse"
+        "reason": "Chat typing indicator (looping activity pulse, not an object settling); previously user-confirmed, re-applied shared after the (travelgrp) route-group move changed the file path."
       }
     ]
   }
