@@ -87,27 +87,16 @@ export default function TransferPartnersPage() {
           .tp-stack { display: none; }
         }
       `}</style>
-      <div className="page-fade">
-        {/* App template: left-aligned <PageHeader> (eyebrow pill · roman headline · one
-            supporting line) with SectionTabs beneath, in the /dashboard app column.
-            16px top padding, no marketing clamp, no aurora hero decoration. */}
-        <div style={{ paddingTop: 16 }}>
-          <div style={{ maxWidth: 1100, margin: '0 auto', padding: '0 20px' }}>
-            <PageHeader
-              eyebrow="Verified May 2026"
-              eyebrowPill
-              pillDotColor="var(--copper)"
-              title="Transfer Partners"
-              subtitle="Every airline and hotel transfer partner for Indian cards — ratios, timelines and value."
-              maxWidth={1100}
-            />
-          </div>
-        </div>
-
-        <section style={{ paddingTop: 24, paddingBottom: 80 }}>
-          {/* Body shares the header's /dashboard app column (1100) so header and body
-              left edges align on wide desktop — was the wider .shell (1320). */}
-          <div style={{ maxWidth: 1100, margin: '0 auto', padding: '0 20px', display: 'flex', flexDirection: 'column', gap: 40 }}>
+      {/* Section name + SectionTabs live in the (travelgrp) layout above this panel;
+          this panel owns the display headline + subtitle (eyebrow dropped as redundant
+          with the section name) and the partner list, in the shared 1100 container. */}
+      <PageHeader
+        title="Transfer Partners"
+        subtitle="Every airline and hotel transfer partner for Indian cards — ratios, timelines and value."
+        maxWidth={1100}
+        showTabs={false}
+      />
+      <div style={{ marginTop: 24, display: 'flex', flexDirection: 'column', gap: 40 }}>
             {PARTNERS.map((bank, bi) => (
               <Reveal key={bi} style={{ animationDelay: `${bi * 80}ms` }}>
                 <div style={{ background: 'var(--paper,#FAF5EB)', borderRadius: 20, border: '1px solid var(--line,rgba(20,41,80,0.08))', overflow: 'hidden' }}>
@@ -227,9 +216,7 @@ export default function TransferPartnersPage() {
               </div>
             </Reveal>
           </div>
-        </section>
-        <DesignFooter />
-      </div>
+      <DesignFooter />
     </>
   );
 }

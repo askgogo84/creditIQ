@@ -228,23 +228,20 @@ function TripPlannerPageInner() {
   };
 
   return (
-    <div>
-      {/* App template: left-aligned <PageHeader> (eyebrow pill · roman headline · one
-          supporting line) with SectionTabs beneath, in the /dashboard app column. 16px
-          top padding, no marketing clamp, no centred hero, white body (no page fill). */}
-      <div style={{ paddingTop: 16 }}>
-        <div style={{ maxWidth: 1100, margin: '0 auto', padding: '0 20px' }}>
-          <PageHeader
-            eyebrow="AI Trip Planner"
-            eyebrowPill
-            pillDotColor="var(--copper)"
-            title="Where are you going?"
-            subtitle="Tell us your trip and we’ll find the smartest way to pay with points."
-            maxWidth={1100}
-          />
-        </div>
-      </div>
-      <main style={{ maxWidth: 880, margin: '0 auto', padding: '24px 20px 100px' }}>
+    <>
+      {/* Section name + SectionTabs live in the (travelgrp) layout above this panel.
+          This panel owns the page's display headline + subtitle (eyebrow dropped as
+          redundant with the section name). The tool keeps its 880 measure but
+          left-aligns (no margin:0 auto) under the headline in the shared 1100 container;
+          horizontal gutters come from the layout container, bottom clearance from the
+          layout. */}
+      <PageHeader
+        title="Where are you going?"
+        subtitle="Tell us your trip and we’ll find the smartest way to pay with points."
+        maxWidth={1100}
+        showTabs={false}
+      />
+      <main style={{ maxWidth: 880, marginTop: 24 }}>
 
         {/* Input card */}
         <div style={{ background: 'var(--surface)', border: '1px solid var(--line)', borderRadius: 20, padding: 24, marginBottom: 20, boxShadow: '0 4px 24px rgba(15,23,42,0.06)' }}>
@@ -654,7 +651,7 @@ function TripPlannerPageInner() {
         cardBank={cardBank}
       />
       <DesignFooter />
-    </div>
+    </>
   );
 }
 

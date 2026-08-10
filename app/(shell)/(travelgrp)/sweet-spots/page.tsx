@@ -31,22 +31,17 @@ export default async function SweetSpotsPage() {
 
   return (
     <>
-      {/* App template: 16px top padding, /dashboard app column (1100), first-class
-          eyebrow pill — aligned to the other four Travel pages (was a marketing clamp
-          hero on maxWidth 900 with a plain eyebrow). */}
-      <div style={{ paddingTop: 16, paddingBottom: 80 }}>
-        <div style={{ maxWidth: 1100, margin: '0 auto', padding: '0 20px' }}>
-
-          <div style={{ marginBottom: 36 }}>
-            <PageHeader
-              eyebrow="Community discovered"
-              eyebrowPill
-              pillDotColor="var(--copper)"
-              title="Sweet Spots"
-              subtitle="The best redemptions found by top Indian CC creators — updated nightly from Instagram, YouTube and Reddit."
-              maxWidth={1100}
-            />
-          </div>
+      {/* Section name + SectionTabs live in the (travelgrp) layout above this panel;
+          this panel owns the display headline + subtitle (eyebrow dropped as redundant
+          with the section name) and the content, in the shared 1100 container. */}
+      <div style={{ marginBottom: 36 }}>
+        <PageHeader
+          title="Sweet Spots"
+          subtitle="The best redemptions found by top Indian CC creators — updated nightly from Instagram, YouTube and Reddit."
+          maxWidth={1100}
+          showTabs={false}
+        />
+      </div>
 
           {/* Transfer Hacks */}
           {transferHacks.length > 0 && (
@@ -109,8 +104,6 @@ export default async function SweetSpotsPage() {
             </Link>
           </div>
 
-        </div>
-      </div>
       <DesignFooter />
     </>
   )

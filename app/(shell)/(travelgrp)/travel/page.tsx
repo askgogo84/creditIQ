@@ -79,26 +79,22 @@ function TravelPageInner() {
   const empty = messages.length === 0;
 
   return (
-    <div style={{ minHeight: '100vh', backgroundColor: 'var(--bg,#F5EFE6)', display: 'flex', flexDirection: 'column' }}>
+    <>
+      {/* Section name + SectionTabs live in the (travelgrp) layout above this panel;
+          this panel owns the display headline + subtitle (eyebrow dropped as redundant
+          with the section name). The chat FILLS the remaining height under the header —
+          the layout is a 100dvh flex column and this column's flex:1 fills it (100dvh on
+          the page itself would overflow past the header). It keeps its own 720 reading
+          measure, left-aligned (no margin:0 auto); gutters come from the layout. */}
+      <PageHeader
+        title="Your AI travel advisor"
+        subtitle="Ask anything about flights, lounges, points transfers and redemptions."
+        maxWidth={1100}
+        showTabs={false}
+      />
 
-      {/* App template: <PageHeader> (eyebrow pill · roman headline · one supporting line)
-          with SectionTabs beneath, in the /dashboard app column — 16px top padding, no
-          aurora, no marketing clamp. The chat keeps its own 720 reading measure below. */}
-      <div style={{ paddingTop: 16 }}>
-        <div style={{ maxWidth: 1100, width: '100%', margin: '0 auto', padding: '0 20px' }}>
-          <PageHeader
-            eyebrow="Travel AI · Powered by Claude"
-            eyebrowPill
-            pillDotColor="var(--copper)"
-            title="Your AI travel advisor"
-            subtitle="Ask anything about flights, lounges, points transfers and redemptions."
-            maxWidth={1100}
-          />
-        </div>
-      </div>
-
-      {/* Chat column — its own narrower reading measure below the header */}
-      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', maxWidth: 720, width: '100%', margin: '0 auto', padding: '0 clamp(16px,4vw,24px)', paddingTop: 24, paddingBottom: 120, position: 'relative', zIndex: 1 }}>
+      {/* Chat column — fills remaining height, its own 720 measure, left-aligned */}
+      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', maxWidth: 720, width: '100%', paddingTop: 24, paddingBottom: 120, position: 'relative', zIndex: 1 }}>
 
         {/* Suggested prompts - only when empty */}
         {empty && (
@@ -227,7 +223,7 @@ function TravelPageInner() {
           .grid-1-mobile { grid-template-columns: 1fr !important; }
         }
       `}</style>
-    </div>
+    </>
   );
 }
 

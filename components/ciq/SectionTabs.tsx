@@ -289,6 +289,7 @@ export function SectionTabs({ tone = 'light' }: { tone?: Tone }) {
                 <Link
                   key={t.href}
                   href={t.href}
+                  prefetch
                   data-active={active ? 'true' : 'false'}
                   aria-current={active ? 'page' : undefined}
                   className="ciq-st-pill"
@@ -521,6 +522,7 @@ function SectionSheet({
               <Link
                 key={tab.href}
                 href={tab.href}
+                prefetch
                 onClick={() => { markScroll(tab.href); onClose() }}
                 aria-current={active ? 'page' : undefined}
                 className="ciq-st-sheet-row"

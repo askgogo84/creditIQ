@@ -24,20 +24,15 @@ export default function LoungeTrackerPage() {
 
   return (
     <>
-      <div className="page-fade">
-        {/* App template: left-aligned <PageHeader> (eyebrow pill · roman headline · one
-            supporting line) with SectionTabs beneath, in the /dashboard app column.
-            16px top padding, no marketing clamp, no aurora hero decoration. */}
-        <div style={{ paddingTop: 16, paddingBottom: 80 }}>
-          <div style={{ maxWidth: 1100, margin: '0 auto', padding: '0 20px' }}>
-            <PageHeader
-              eyebrow="Travel tool · Lounge tracker"
-              eyebrowPill
-              pillDotColor="var(--copper)"
-              title="Never get turned away at the gate"
-              subtitle="Track free lounge visits across every card you carry. Know before you go."
-              maxWidth={1100}
-            />
+      {/* Section name + SectionTabs live in the (travelgrp) layout above this panel;
+          this panel owns the display headline + subtitle (eyebrow dropped as redundant
+          with the section name) and the content, in the shared 1100 container. */}
+      <PageHeader
+        title="Never get turned away at the gate"
+        subtitle="Track free lounge visits across every card you carry. Know before you go."
+        maxWidth={1100}
+        showTabs={false}
+      />
 
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1.4fr', gap: 32, alignItems: 'flex-start', marginTop: 24 }} className="grid-1-mobile">
               <div>
@@ -110,10 +105,7 @@ export default function LoungeTrackerPage() {
                 </div>
               </div>
             </div>
-          </div>
-        </div>
-        <DesignFooter />
-      </div>
+      <DesignFooter />
     </>
   )
 }
