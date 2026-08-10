@@ -25,6 +25,11 @@ export async function authedFetch(input: string, init: RequestInit = {}): Promis
   const token = data.session?.access_token ?? '';
   const headers = new Headers(init.headers || {});
   headers.set('Authorization', `Bearer ${token}`);
-  if (init.body && !headers.has('Content-Type')) headers.set('Content-Type', 'application/json');
+  // Only default to JSON for non-FormData bodies. For FormData the browser must
+  // set Content-Type itself (with the multipart boundary) — forcing JSON here
+  // breaks multipart uploads (e.g. parse-statement).
+  if (init.body && !headers.has('Content-Type') && !(init.body instanceof FormData)) {
+    headers.set('Content-Type', 'application/json');
+  }
   return fetch(input, { ...init, headers });
 }
