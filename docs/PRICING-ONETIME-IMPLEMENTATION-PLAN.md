@@ -143,3 +143,27 @@ Do not build Phase 2 first. The modal's cards render prices and durations that P
 3. Review the diff before deploy, especially the webhook
 4. Test on a phone against a Vercel preview, never localhost (dev renders in a Times fallback)
 5. One phase at a time
+
+---
+
+## Note — what `RAZORPAY_MODE` is (and is not)
+
+`RAZORPAY_MODE` is a **code-level revert switch, not a working fallback payment path.**
+
+- **Set `RAZORPAY_MODE=orders`** → `/pro` calls `create-order`, and the webhook's
+  `payment.captured` branch grants Pro via `extend_pro` into `user_profiles.pro_until`.
+- **Unset** → the order branch no-ops and `/pro` falls back to the subscription route.
+
+Unsetting it only chooses which code branch runs. It does **not** re-route in-flight
+payments, reconcile orders already captured under the order path, or provide an
+alternate way for money to move. If the order path is misconfigured (webhook not
+registered, secret wrong), flipping the flag off does not make payments "work" — it
+just disables the new branch. Treat it as a kill-switch for the new code, and prove the
+order path with a real ₹149 payment (webhook-only) before relying on it.
+
+**STEP 2 is inert:** the migration and gated webhook branch write nothing until STEP 3
+registers the webhook and `RAZORPAY_MODE=orders` is set. The fast-path grant in
+`verify/route.ts` is deliberately out of STEP 2 — when added, it must fetch the
+order/payment from Razorpay's API and require `status=captured`, taking plan/months/
+amount from Razorpay, never from the request body (a checkout signature proves Razorpay
+signed the order/payment pair; it does not prove capture).
