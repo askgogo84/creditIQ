@@ -1,7 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
+import { requireAuth } from '@/lib/api-auth'
 
 export const runtime = 'nodejs'
+
+// Both handlers act on the LOGGED-IN user's own home city. Identity comes from
+// the bearer token (requireAuth) — never a caller-supplied `userId`. This closes
+// the IDOR where any caller could read or overwrite another user's home city.
 
 // Major Indian cities with IATA codes for flight search
 const CITY_IATA: Record<string, string> = {
@@ -39,8 +44,9 @@ function extractCityFromAddress(address: string): string | null {
 
 export async function GET(req: NextRequest) {
   try {
-    const userId = new URL(req.url).searchParams.get('userId')
-    if (!userId) return NextResponse.json({ city: null })
+    const gate = await requireAuth(req)
+    if (!gate.ok) return gate.res
+    const userId = gate.userId
 
     const supabase = createClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -90,8 +96,12 @@ export async function GET(req: NextRequest) {
 
 export async function POST(req: NextRequest) {
   try {
-    const { userId, city } = await req.json()
-    if (!userId || !city) return NextResponse.json({ ok: false })
+    const gate = await requireAuth(req)
+    if (!gate.ok) return gate.res
+    const userId = gate.userId
+
+    const { city } = await req.json()
+    if (!city) return NextResponse.json({ ok: false })
 
     const supabase = createClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,

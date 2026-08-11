@@ -161,7 +161,7 @@ function TripPlannerPageInner() {
         );
         const { data: { user } } = await supabase.auth.getUser();
         if (!user) { setShowOriginPrompt(true); return; }
-        const res = await fetch('/api/user-city?userId=' + user.id);
+        const res = await authedFetch('/api/user-city');
         if (res.ok) {
           const d = await res.json();
           if (d.city) { setOriginCity(d.city); setOriginIata(d.iata || 'BLR'); }
@@ -340,10 +340,10 @@ function TripPlannerPageInner() {
                       );
                       const { data: { user } } = await supabase.auth.getUser();
                       if (user) {
-                        await fetch('/api/user-city', {
+                        await authedFetch('/api/user-city', {
                           method: 'POST',
                           headers: { 'Content-Type': 'application/json' },
-                          body: JSON.stringify({ userId: user.id, city: originCity }),
+                          body: JSON.stringify({ city: originCity }),
                         });
                       }
                       setShowOriginPrompt(false);
