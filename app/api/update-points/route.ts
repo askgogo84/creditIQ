@@ -14,7 +14,11 @@ export async function POST(req: NextRequest) {
     const userId = gate.userId;
 
     const { cardId, source, points } = await req.json();
-    if (!cardId || points == null) return NextResponse.json({ error: 'Missing fields' }, { status: 400 });
+    // points must be a finite, non-negative number. A negative or NaN balance
+    // would corrupt the dashboard total shown under "We don't guess your money".
+    if (!cardId || typeof points !== 'number' || !Number.isFinite(points) || points < 0) {
+      return NextResponse.json({ error: 'Missing or invalid fields' }, { status: 400 });
+    }
 
     const sUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
     const sKey = process.env.SUPABASE_SERVICE_ROLE_KEY;

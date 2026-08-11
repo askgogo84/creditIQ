@@ -70,4 +70,20 @@ describe('update-points IDOR', () => {
     expect(res.status).toBe(401);
     expect(captured.table).toBeUndefined();           // no write attempted
   });
+
+  // A negative/zero/NaN balance would corrupt the dashboard total — reject it,
+  // and write nothing, even for an authenticated caller on their own card.
+  it.each([-1, -5000, NaN, 'abc', null])('rejects a non-finite/negative points value (%s) with 400', async (bad) => {
+    const { POST } = await import('@/app/api/update-points/route');
+    const res = await POST(post({ cardId: 'card1', source: 'manual', points: bad }, 'Bearer tokenA'));
+    expect(res.status).toBe(400);
+    expect(captured.table).toBeUndefined();
+  });
+
+  it('accepts 0 as a valid balance (a real zeroed-out card)', async () => {
+    const { POST } = await import('@/app/api/update-points/route');
+    const res = await POST(post({ cardId: 'card1', source: 'manual', points: 0 }, 'Bearer tokenA'));
+    expect(res.status).toBe(200);
+    expect(captured.eq.user_id).toBe('user-A');
+  });
 });
