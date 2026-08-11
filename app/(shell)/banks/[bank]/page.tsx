@@ -35,7 +35,7 @@ function toTileCard(c: any, i: number) {
     tagline: c.tier || 'Standard', tier: (c.tier || 'CARD').toUpperCase().replace(/-/g, ' '),
     network: 'VISA', variant: VARIANT_ROTATION[i % VARIANT_ROTATION.length],
     tags: (c.category || []).slice(0, 2).map((s: string) => s.replace(/-/g, ' ')),
-    fee: c.annual_fee_inr || 0, iqScore: Math.round((c.expert_rating ?? 8) * 10),
+    fee: c.annual_fee_inr || 0, iqScore: c.expert_rating ?? 8,
   };
 }
 
@@ -92,7 +92,7 @@ export default function BankPage({ params }: { params: { bank: string } }) {
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(280px,1fr))', gap: 16 }}>
                 {cards.map((card, i) => (
                   <Reveal key={card.id} style={{ animationDelay: `${i * 50}ms` }}>
-                    <CardTile card={toTileCard(card, i)} href={`/card/${card.slug}`} rank={i + 1} />
+                    <CardTile card={toTileCard(card, i)} href={`/card/${card.slug}`} rank={i + 1} scoreLabel="Our rating" scoreMax={10} />
                   </Reveal>
                 ))}
               </div>

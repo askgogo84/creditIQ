@@ -87,8 +87,11 @@ export function CardDetailClient({ card }: { card: CreditCard }) {
                 <Metric label="Annual Fee" value={card.annual_fee_inr === 0 ? 'FREE' : formatINR(card.annual_fee_inr)} estimated={isFieldUnverified(card.slug, 'annual_fee_inr')} />
                 <Metric label="Joining Fee" value={card.joining_fee_inr === 0 ? 'FREE' : formatINR(card.joining_fee_inr)} estimated={isFieldUnverified(card.slug, 'joining_fee_inr')} />
                 <Metric label="Base Rate" value={`${card.base_reward_rate}%`} highlight estimated={isFieldUnverified(card.slug, 'base_reward_rate')} />
-                <Metric label="CreditIQ Score" value={`${card.expert_rating?.toFixed(1) ?? '--'}/10`} highlight />
+                <Metric label="Our rating" value={`${card.expert_rating?.toFixed(1) ?? '--'}/10`} highlight />
               </div>
+              <p style={{ fontSize: 12, color: 'var(--ink-3,#5A6A8A)', margin: '0 0 32px', lineHeight: 1.5 }}>
+                <strong style={{ fontWeight: 600 }}>Our rating</strong> is our own hand-set overall judgment of this card — not a computed score. <a href="/disclosures#rating" style={{ color: 'var(--copper,#8C5F12)', textDecoration: 'underline' }}>How we set it →</a>
+              </p>
 
               {isCardUnverified(card.slug) && (
                 <div style={{ display: 'flex', gap: 10, alignItems: 'flex-start', padding: '12px 14px', borderRadius: 12, marginBottom: 24, background: 'color-mix(in srgb, var(--copper-3,#D89B2A) 8%, transparent)', border: '1px solid color-mix(in srgb, var(--copper-3,#D89B2A) 28%, transparent)' }}>

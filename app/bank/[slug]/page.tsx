@@ -10,7 +10,7 @@ const VARIANT_ROTATION: CardVariant[] = ['obsidian', 'navy', 'plum', 'gold', 'ir
 const NETWORK_BY_BANK: Record<string, string> = { HDFC: 'VISA', AXIS: 'MASTERCARD', ICICI: 'AMEX', SBI: 'VISA', AMEX: 'AMEX', IDFC: 'VISA', RBL: 'MASTERCARD' }
 function toTileCard(c: CreditCard, i: number) {
   const bank = c.bank.toUpperCase()
-  return { slug: c.slug, color: c.color, bank, name: c.name.replace(/^HDFC\s+|^AXIS\s+|^ICICI\s+|^SBI\s+|^AMEX\s+/i, '').replace(/ Credit Card$/i, ''), tagline: c.tier || 'Standard', tier: (c.tier || 'CARD').toUpperCase().replace(/-/g, ' '), network: NETWORK_BY_BANK[bank.split(' ')[0]] || 'VISA', variant: VARIANT_ROTATION[i % VARIANT_ROTATION.length], tags: (c.category || []).slice(0, 2).map((s: string) => s.replace(/-/g, ' ')), fee: c.annual_fee_inr, iqScore: Math.round((c.expert_rating ?? 8) * 10) }
+  return { slug: c.slug, color: c.color, bank, name: c.name.replace(/^HDFC\s+|^AXIS\s+|^ICICI\s+|^SBI\s+|^AMEX\s+/i, '').replace(/ Credit Card$/i, ''), tagline: c.tier || 'Standard', tier: (c.tier || 'CARD').toUpperCase().replace(/-/g, ' '), network: NETWORK_BY_BANK[bank.split(' ')[0]] || 'VISA', variant: VARIANT_ROTATION[i % VARIANT_ROTATION.length], tags: (c.category || []).slice(0, 2).map((s: string) => s.replace(/-/g, ' ')), fee: c.annual_fee_inr, iqScore: c.expert_rating ?? 8 }
 };
 import type { Bank } from '@/lib/types';
 import { ArrowLeft } from 'lucide-react';
@@ -37,8 +37,8 @@ export async function generateStaticParams() {
 
 export async function generateMetadata({ params }: { params: { slug: string } }) {
   const bank = BANK_INFO[params.slug];
-  if (!bank) return { title: 'Bank not found . CardIQ' };
-  return { title: `${bank.name} Credit Cards . CardIQ`, description: bank.desc };
+  if (!bank) return { title: 'Bank not found . CreditIQ' };
+  return { title: `${bank.name} Credit Cards . CreditIQ`, description: bank.desc };
 }
 
 export default function BankPage({ params }: { params: { slug: string } }) {
@@ -71,7 +71,7 @@ export default function BankPage({ params }: { params: { slug: string } }) {
               { l: 'Founded', v: bank.founded },
               { l: 'Headquarters', v: bank.hq },
               { l: 'Cards issued', v: bank.cards_issued },
-              { l: 'Cards on CardIQ', v: `${cards.length}` },
+              { l: 'Cards on CreditIQ', v: `${cards.length}` },
             ].map(s => (
               <div key={s.l} className="bg-ink-900/40 border border-white/10 rounded-lg p-3">
                 <div className="text-[10px] font-mono uppercase tracking-widest text-ink-400">{s.l}</div>
@@ -85,7 +85,7 @@ export default function BankPage({ params }: { params: { slug: string } }) {
         <div className="max-w-7xl mx-auto px-4 sm:px-6">
           <div className="divider-rule mb-8 max-w-xs">-- {cards.length} cards tracked</div>
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
-            {cards.map((card, i) => <CardTile key={card.id} card={toTileCard(card, i)} rank={i + 1} href={`/card/${card.slug}`} />)}
+            {cards.map((card, i) => <CardTile key={card.id} card={toTileCard(card, i)} rank={i + 1} href={`/card/${card.slug}`} scoreLabel="Our rating" scoreMax={10} />)}
           </div>
           {cards.length === 0 && (
             <div className="text-center py-20 text-ink-400 font-display italic">No cards tracked yet for this bank.</div>

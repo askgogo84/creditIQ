@@ -11,13 +11,13 @@ import type { CreditCard } from '@/lib/types'
 import { type CardVariant } from '@/components/design/CreditCard3D'
 
 const CATS: Record<string, { label: string; desc: string; emoji: string }> = {
-  travel:        { label: 'Best Travel Cards',        desc: 'Ranked by effective reward rate on travel spend, lounge access, and forex markup.',       emoji: '✈' },
-  cashback:      { label: 'Best Cashback Cards',      desc: 'Ranked by effective cashback rate across all spend categories.',                          emoji: '💰' },
-  shopping:      { label: 'Best Shopping Cards',      desc: 'Ranked by online and offline shopping reward rates.',                                     emoji: '🛍' },
-  dining:        { label: 'Best Dining Cards',        desc: 'Ranked by dining and food delivery reward rates.',                                        emoji: '🍽' },
-  fuel:          { label: 'Best Fuel Cards',          desc: 'Ranked by fuel surcharge waiver and fuel spend rewards.',                                 emoji: '⛽' },
-  forex:         { label: 'Best Forex Cards',         desc: 'Zero or near-zero forex markup for international spends.',                                emoji: '🌍' },
-  lounge:        { label: 'Best Lounge Access Cards', desc: 'Ranked by lounge access benefits — domestic and international.',                          emoji: '🛋' },
+  travel:        { label: 'Best Travel Cards',        desc: 'Ranked by our overall rating — weighing travel rewards, lounge access, and forex markup.', emoji: '✈' },
+  cashback:      { label: 'Best Cashback Cards',      desc: 'Ranked by our overall rating for everyday cashback across all spend categories.',           emoji: '💰' },
+  shopping:      { label: 'Best Shopping Cards',      desc: 'Ranked by our overall rating for online and offline shopping rewards.',                      emoji: '🛍' },
+  dining:        { label: 'Best Dining Cards',        desc: 'Ranked by our overall rating for dining and food-delivery rewards.',                        emoji: '🍽' },
+  fuel:          { label: 'Best Fuel Cards',          desc: 'Ranked by our overall rating for fuel surcharge waiver and fuel rewards.',                  emoji: '⛽' },
+  forex:         { label: 'Best Forex Cards',         desc: 'Zero or near-zero forex markup for international spends.',                                  emoji: '🌍' },
+  lounge:        { label: 'Best Lounge Access Cards', desc: 'Ranked by our overall rating for lounge access — domestic and international.',              emoji: '🛋' },
   lifetime_free: { label: 'Best Lifetime Free Cards', desc: 'Zero annual fee cards with the best rewards.',                                            emoji: '🎁' },
 }
 
@@ -51,7 +51,7 @@ function toTileCard(c: CreditCard, i: number): TileCard {
     variant: VARIANT_ROTATION[i % VARIANT_ROTATION.length],
     tags: (c.category || []).slice(0, 2).map(s => s.replace(/-/g, ' ')),
     fee: c.annual_fee_inr,
-    iqScore: Math.round((c.expert_rating ?? 8) * 10),
+    iqScore: c.expert_rating ?? 8,
   }
 }
 
@@ -115,7 +115,7 @@ export default function CategoryPage({ params }: { params: { category: string } 
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 24 }} className="grid-1-mobile">
                 {cards.map((c, i) => (
                   <Reveal key={c.slug} delay={i * 40}>
-                    <CardTile card={toTileCard(c, i)} rank={i + 1} href={`/card/${c.slug}`} />
+                    <CardTile card={toTileCard(c, i)} rank={i + 1} href={`/card/${c.slug}`} scoreLabel="Our rating" scoreMax={10} />
                   </Reveal>
                 ))}
               </div>
@@ -124,7 +124,7 @@ export default function CategoryPage({ params }: { params: { category: string } 
             <Reveal style={{ marginTop: 64, padding: 'clamp(24px,4vw,40px)', borderRadius: 20, background: 'var(--paper,#FAF5EB)', border: '1px solid var(--line,rgba(20,41,80,0.08))' }}>
               <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: '0.15em', textTransform: 'uppercase' as const, color: 'var(--copper,#8C5F12)', marginBottom: 16 }}>HOW WE RANK THESE CARDS</div>
               <p style={{ fontSize: 15, color: 'var(--ink-2,#2A3F6B)', lineHeight: 1.6, maxWidth: 700 }}>
-                Cards are ranked by effective reward rate on a representative spend profile, after annual fees and accounting for any devaluations in the last 12 months. No bank pays us to rank their cards higher. We charge a flat fee on approved applications — same rate on every card.
+                Cards are ranked by <a href="/disclosures#rating" style={{ color: 'var(--copper,#8C5F12)', textDecoration: 'underline' }}>our overall rating</a> — our own hand-set judgment of each card, not a computed score. No bank pays us to rank their cards higher. We charge a flat fee on approved applications — same rate on every card.
               </p>
             </Reveal>
 

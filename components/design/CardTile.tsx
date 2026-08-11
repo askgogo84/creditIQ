@@ -28,9 +28,14 @@ interface CardTileProps {
   card: TileCard;
   href: string;
   rank?: number;
+  /** Score readout label. Default 'IQ Score' = the computed iq_score (used on /cards).
+   *  Hand-set expert_rating pages pass 'Our rating'. */
+  scoreLabel?: string;
+  /** Scale max: 100 for the computed IQ Score, 10 for the hand-set rating. */
+  scoreMax?: number;
 }
 
-export function CardTile({ card, href, rank }: CardTileProps) {
+export function CardTile({ card, href, rank, scoreLabel = 'IQ Score', scoreMax = 100 }: CardTileProps) {
   return (
     <Reveal>
       <Link
@@ -99,7 +104,7 @@ export function CardTile({ card, href, rank }: CardTileProps) {
             </div>
           </div>
           <div style={{ textAlign: 'right' }}>
-            <div className="label" style={{ fontSize: 9 }}>IQ Score</div>
+            <div className="label" style={{ fontSize: 9 }}>{scoreLabel}</div>
             <div
               style={{
                 fontSize: 28,
@@ -110,9 +115,12 @@ export function CardTile({ card, href, rank }: CardTileProps) {
                 letterSpacing: '-0.02em',
               }}
             >
-              {card.iqScore}
-              <span style={{ fontSize: 14, color: 'var(--ink-4)' }}>/100</span>
+              {scoreMax === 10 ? card.iqScore.toFixed(1) : card.iqScore}
+              <span style={{ fontSize: 14, color: 'var(--ink-4)' }}>/{scoreMax}</span>
             </div>
+            {scoreMax === 10 && (
+              <div style={{ fontSize: 9, color: 'var(--ink-4)', marginTop: 2 }}>hand-set · not computed</div>
+            )}
           </div>
         </div>
       </Link>

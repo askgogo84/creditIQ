@@ -438,7 +438,7 @@ function DiscoverCardsPanel() {
       </div>
 
       <p style={{ fontFamily: IN, fontSize: 13, lineHeight: 1.6, color: '#6b6b6d', margin: '14px 0 0', maxWidth: '60ch' }}>
-        Ranked purely by computed net value. No card pays for placement, no affiliate links — the order is the maths, nothing else.
+        Ranked purely by computed net value. No card pays for placement — the order is the maths, nothing else.
       </p>
 
       <Link href="/cards" style={panelCta}>Browse all cards <span style={{ fontFamily: MO }}>→</span></Link>

@@ -72,6 +72,11 @@ Not all cards on CreditIQ have affiliate links. Cards without affiliate relation
 If we ever change any of these policies, we will disclose the change prominently.`,
               },
               {
+                id: 'rating',
+                title: 'How we set our rating',
+                body: `Our rating (out of 10) is our own overall judgment of a card. We weigh reward value, fees, lounge access, redemption flexibility, partner quality and historical reliability — but we set it by hand. It is not a computed score.`,
+              },
+              {
                 title: 'AI tool disclosures',
                 body: `Our AI-powered tools (Card Roast, Spend Optimizer, Points Optimizer, Statement Truth, Travel AI) use the Anthropic Claude API to generate personalised analysis.
 
@@ -88,9 +93,7 @@ We do not use your data from AI tool sessions to train AI models. Sessions are p
 — RBI and bank regulatory filings
 — Direct verification with bank communications teams where possible
 
-We update card data when devaluations or benefit changes are announced. Despite our best efforts, card terms change frequently. Always verify current terms directly with the issuing bank before applying.
-
-Our CreditIQ Score (out of 10) is a proprietary rating based on reward rate, fee value, redemption flexibility, partner quality, and historical reliability. It is our editorial opinion, not a financial rating.`,
+We update card data when devaluations or benefit changes are announced. Despite our best efforts, card terms change frequently. Always verify current terms directly with the issuing bank before applying.`,
               },
               {
                 title: 'No guaranteed approvals',
@@ -106,7 +109,7 @@ We do not provide regulated financial advice. Our tools and content are for info
               },
             ].map((s, i) => (
               <Reveal key={i} style={{ animationDelay: `${(i + 1) * 40}ms` }}>
-                <div style={{ background: 'var(--paper,#FAF5EB)', border: '1px solid var(--line,rgba(20,41,80,0.08))', borderRadius: 18, padding: 'clamp(20px,3vw,32px)' }}>
+                <div id={(s as any).id} style={{ scrollMarginTop: 90, background: 'var(--paper,#FAF5EB)', border: '1px solid var(--line,rgba(20,41,80,0.08))', borderRadius: 18, padding: 'clamp(20px,3vw,32px)' }}>
                   <h2 style={{ fontSize: 'clamp(16px,2vw,19px)', fontWeight: 700, color: 'var(--ink,#142950)', margin: '0 0 14px', letterSpacing: '-0.01em' }}>{s.title}</h2>
                   <div>
                     {s.body.split('\n\n').map((para, j) => (

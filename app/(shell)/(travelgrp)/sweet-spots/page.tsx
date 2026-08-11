@@ -43,6 +43,10 @@ export default async function SweetSpotsPage() {
         />
       </div>
 
+      <div style={{ marginBottom: 28, padding: '10px 14px', background: 'rgba(201,151,46,0.06)', border: '1px solid rgba(201,151,46,0.18)', borderRadius: 10, fontSize: 12.5, lineHeight: 1.55, color: 'var(--ink-3,#5A6A8A)' }}>
+        These are creator-reported claims collected from public posts — <strong>not independently verified by CreditIQ</strong>. Confirm current transfer ratios and award availability with the bank before you move points.
+      </div>
+
           {/* Transfer Hacks */}
           {transferHacks.length > 0 && (
             <div style={{ marginBottom: 36 }}>

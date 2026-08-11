@@ -454,7 +454,7 @@ export default function LandingPage() {
               <Link href="/plans" style={{ fontFamily: IN, fontSize: 13.5, color: 'rgba(247,244,239,.62)', textDecoration: 'none' }}>Pricing</Link>
               <Link href="#top" style={{ fontFamily: IN, fontSize: 13.5, color: 'rgba(247,244,239,.62)', textDecoration: 'none' }}>Method</Link>
             </div>
-            <span style={{ fontFamily: IN, fontSize: 12.5, color: 'rgba(247,244,239,.4)' }}>No affiliate links. No issuer money.</span>
+            <span style={{ fontFamily: IN, fontSize: 12.5, color: 'rgba(247,244,239,.4)' }}>No affiliate bias. No bank pays for placement.</span>
           </div>
         </div>
       </section>

@@ -29,7 +29,7 @@ function toTileCard(c: any, i: number) {
     variant: VARIANT_ROTATION[i % VARIANT_ROTATION.length],
     tags: (c.category || []).slice(0, 2).map((s: string) => s.replace(/-/g, ' ')),
     fee: c.annual_fee_inr || 0,
-    iqScore: Math.round((c.expert_rating ?? 8) * 10),
+    iqScore: c.expert_rating ?? 8,
   };
 }
 
@@ -164,7 +164,7 @@ export default function SmartMatchPage() {
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(280px,1fr))', gap: 16 }}>
                 {results.map((r, i) => (
                   <motion.div key={r.card.id} layout initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.04 }} style={{ position: 'relative' }}>
-                    <CardTile card={toTileCard(r.card, i)} href={`/card/${r.card.slug}`} rank={i + 1} />
+                    <CardTile card={toTileCard(r.card, i)} href={`/card/${r.card.slug}`} rank={i + 1} scoreLabel="Our rating" scoreMax={10} />
                     {r.approval_prob > 0 && (
                       <div style={{ position: 'absolute', top: 10, right: 10, zIndex: 10, background: 'var(--paper,#FAF5EB)', border: '1px solid var(--line,rgba(20,41,80,0.12))', borderRadius: 8, padding: '3px 8px' }}>
                         <span style={{ fontFamily: 'var(--font-mono,monospace)', fontSize: 9, color: 'var(--ink-3,#5A6A8A)' }}>approval </span>

@@ -9,22 +9,22 @@ export async function generateStaticParams() {
 
 export async function generateMetadata({ params }: { params: { slug: string } }) {
   const card = SEED_CARDS.find((c) => c.slug === params.slug);
-  if (!card) return { title: 'Card not found | CardIQ' };
+  if (!card) return { title: 'Card not found | CreditIQ' };
   const fee = card.annual_fee_inr === 0 ? 'zero annual fee' : `Rs.${card.annual_fee_inr} annual fee`;
-  const desc = `${card.name} review -- ${card.best_for}. ${fee}, ${card.base_reward_rate}% base reward rate. Compare with other ${card.bank} credit cards on CardIQ.`;
+  const desc = `${card.name} review -- ${card.best_for}. ${fee}, ${card.base_reward_rate}% base reward rate. Compare with other ${card.bank} credit cards on CreditIQ.`;
   return {
-    title: `${card.name} Review 2026 | CardIQ`,
+    title: `${card.name} Review 2026 | CreditIQ`,
     description: desc,
     keywords: [`${card.name}`, `${card.bank} credit card`, `${card.name} review`, `${card.name} benefits`, `best ${card.bank} credit card india`],
     openGraph: {
-      title: `${card.name} - Honest Review | CardIQ`,
+      title: `${card.name} - Honest Review | CreditIQ`,
       description: desc,
       url: `https://creditiq.app/card/${card.slug}`,
       images: [`https://creditiq.app/og?title=${encodeURIComponent(card.name)}&subtitle=${encodeURIComponent(card.best_for)}&badge=${encodeURIComponent(card.bank)}`],
     },
     twitter: {
       card: 'summary_large_image',
-      title: `${card.name} Review | CardIQ`,
+      title: `${card.name} Review | CreditIQ`,
       description: desc,
     },
     alternates: { canonical: `https://creditiq.app/card/${card.slug}` },

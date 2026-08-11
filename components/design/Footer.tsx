@@ -52,7 +52,7 @@ export function DesignFooter() {
               marginBottom: 32,
             }}
           >
-            Card<span style={{ fontStyle: 'italic', color: 'var(--copper)' }}>IQ</span>.<br />
+            Credit<span style={{ fontStyle: 'italic', color: 'var(--copper)' }}>IQ</span>.<br />
             <span className="serif" style={{ color: 'var(--ink-3)' }}>The honest one.</span>
           </h2>
         </Reveal>

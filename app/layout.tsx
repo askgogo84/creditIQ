@@ -50,11 +50,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             __html: `(function(){try{var s=localStorage.getItem('creditiq-theme');var t=(s==='dark'||s==='light')?s:'light';var el=document.documentElement;el.setAttribute('data-theme',t);el.classList.toggle('dark',t==='dark');el.classList.toggle('light',t==='light');}catch(e){var d=document.documentElement;d.setAttribute('data-theme','light');d.classList.add('light');}})();`
           }}
         />
-        <script
-          dangerouslySetInnerHTML={{
-            __html: `(function () { var script = document.createElement("script"); script.async = 1; script.src = 'https://emrldco.com/NTMzNDA5.js?t=533409'; document.head.appendChild(script); })();`
-          }}
-        />
         <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
         <link rel="alternate icon" href="/favicon.svg" />
         <meta name="theme-color" content="#1B3A5C" />
