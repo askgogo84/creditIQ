@@ -13,9 +13,15 @@ export async function POST(req: NextRequest) {
     const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
     if (url && key) {
       const supabase = createClient(url, key);
+      // NON-DESTRUCTIVE: this endpoint is anonymous email capture on public
+      // marketing pages, so anyone can POST any email. Insert only when the
+      // email is NEW (ON CONFLICT DO NOTHING); an existing subscriber's card_ids
+      // are left untouched — we never silently overwrite someone's alert
+      // preferences from an unauthenticated form. Proper double opt-in / a
+      // "manage your alerts" email is a deferred follow-up.
       await supabase.from('alert_subscriptions').upsert(
         { email, card_ids: cards, active: true },
-        { onConflict: 'email' }
+        { onConflict: 'email', ignoreDuplicates: true }
       );
     }
     return NextResponse.json({ ok: true });
