@@ -19,6 +19,15 @@ const nextConfig = {
         destination: '/card/:slug',
         permanent: true,
       },
+      // Front-door consolidation: /landing is the retired twin of the home page
+      // (both render the same components/marketing/landing/* surface). 308 permanent
+      // to the canonical home so there is one front door, not two. The unreachable
+      // app/(marketing)/landing/page.tsx is now dead code — deletable in the #14 sweep.
+      {
+        source: '/landing',
+        destination: '/',
+        permanent: true,
+      },
     ];
   },
 };

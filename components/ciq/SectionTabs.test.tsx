@@ -11,10 +11,13 @@ vi.mock('next/navigation', () => ({
 }))
 
 // next/link needs the app-router context to render; a plain anchor is enough here and
-// keeps the sheet rows queryable as links with their hrefs.
+// keeps the sheet rows queryable as links with their hrefs. Real next/link consumes
+// `prefetch` and never emits it to the DOM, so pull it out and reflect it as
+// data-prefetch: this both silences the "non-boolean attribute prefetch" React warning
+// and lets the suite prove prefetch is actually wired (see the prefetch test below).
 vi.mock('next/link', () => ({
-  default: ({ href, children, ...rest }: { href: string; children: React.ReactNode }) => (
-    <a href={typeof href === 'string' ? href : ''} {...rest}>{children}</a>
+  default: ({ href, children, prefetch, ...rest }: { href: string; children: React.ReactNode; prefetch?: boolean }) => (
+    <a href={typeof href === 'string' ? href : ''} data-prefetch={prefetch ? 'true' : undefined} {...rest}>{children}</a>
   ),
 }))
 
@@ -170,6 +173,14 @@ describe('SectionTabs — all-sections sheet', () => {
     fireEvent.click(mobile(container).getByRole('button', { name: /Open all sections/ }))
     const lounges = within(screen.getByRole('dialog')).getByRole('link', { name: /Lounges/ })
     expect(lounges).toHaveAttribute('href', '/lounge-tracker')
+  })
+
+  it('prefetches every section link so the panel is warm before the tap', () => {
+    const { container } = render(<SectionTabs />)
+    fireEvent.click(mobile(container).getByRole('button', { name: /Open all sections/ }))
+    const rows = within(screen.getByRole('dialog')).getAllByRole('link')
+    expect(rows.length).toBeGreaterThan(0)
+    rows.forEach(r => expect(r).toHaveAttribute('data-prefetch', 'true'))
   })
 
   it('Escape closes the sheet', () => {

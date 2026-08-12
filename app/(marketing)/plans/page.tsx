@@ -18,7 +18,7 @@ export default function PlansPage() {
   return (
     <main style={{ background: 'var(--bg-deep, #0E1420)', color: '#C7CDD6', minHeight: '100vh', fontFamily: 'var(--font-satoshi), system-ui, sans-serif' }}>
       <div style={{ maxWidth: 720, margin: '0 auto', padding: 'clamp(56px,10vw,120px) clamp(20px,5vw,48px)' }}>
-        <Link href="/landing" style={{ fontSize: 13, color: '#8A93A3', textDecoration: 'none' }}>← Back</Link>
+        <Link href="/" style={{ fontSize: 13, color: '#8A93A3', textDecoration: 'none' }}>← Back</Link>
         <h1 style={{ fontFamily: clash, fontSize: 'clamp(32px,6vw,52px)', fontWeight: 600, letterSpacing: '-0.02em', margin: '16px 0 8px', color: '#F5F0E8' }}>
           Pay once. Renew when you want.
         </h1>
