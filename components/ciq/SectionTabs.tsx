@@ -302,12 +302,7 @@ export function SectionTabs({ tone = 'light' }: { tone?: Tone }) {
                     transition: 'background 0.15s ease, color 0.15s ease',
                   }}
                 >
-                  <svg
-                    width="17" height="17" viewBox="0 0 24 24" fill="none"
-                    aria-hidden="true" style={{ flexShrink: 0 }}
-                  >
-                    {t.icon(color)}
-                  </svg>
+                  <t.Icon size={17} strokeWidth={1.8} color={color} aria-hidden style={{ flexShrink: 0 }} />
                   {t.label}
                 </Link>
               )
@@ -538,9 +533,7 @@ function SectionSheet({
                     borderColor: active ? t.rowActiveBorder : t.iconTileBorder,
                   }}
                 >
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                    {tab.icon(color)}
-                  </svg>
+                  <tab.Icon size={20} strokeWidth={1.8} color={color} aria-hidden />
                 </span>
                 <span style={{ flex: 1, minWidth: 0, fontSize: 15, fontWeight: active ? 650 : 500, color: active ? t.accent : t.rowText }}>
                   {tab.label}
