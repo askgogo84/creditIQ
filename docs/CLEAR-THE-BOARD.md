@@ -15,7 +15,7 @@ They are now **one page-by-page pass** (Batch 3). A page is visited **once** and
 
 A page is **done** when it is converted, tokenised and on-system — not when three batches have each brushed past it. `/card/[slug]` and the remaining marketing-hero pages (banks, glossary) join that same pass because it's the same work in the same files.
 
-Everything that is **genuinely independent** of that pass — font debt, `/login` video, dead-file deletion, `/landing` 301, `/optimize` retirement, `reassertTheme` removal, icon unification, the Reveal/count-up polish — drops into the small-bugs batch. Compliance (delete-account, Receipts/Reviews) is its own batch. Data (NEW_CARDS, the WhatsApp honesty leak) folds into the catalogue batch.
+Everything that is **genuinely independent** of that pass — font debt, `/login` video, dead-file deletion, `/landing` 301, `reassertTheme` removal, icon unification, the Reveal/count-up polish — drops into the small-bugs batch. Compliance (delete-account, Receipts/Reviews) is its own batch. Data (NEW_CARDS, the WhatsApp honesty leak) folds into the catalogue batch.
 
 ---
 
@@ -36,7 +36,7 @@ The top two are checks only you can run (Phase 2 on prod, the card count). The `
 
 - **Did Phase 2 actually land?** Check `/cards` on production for the three italics ("ranked *honestly*", "Pick cards to *compare*", footer "*The honest one*" / "*unbiased*"), the **CardIQ** wordmark in the footer, the gold gradient button, and the mobile whitespace above the fold at 375px. If any survive, they get closed inside Batch 3's Cards-group visit — not as a standalone.
 - **Card count.** `/cards` reads **173 cards · 36 banks**; `lib/catalogue-stats.ts` holds literals of 49 · 12 with a drift test that should have failed. `git log --oneline -- lib/catalogue-stats.ts` — did the catalogue grow and the literals move with it, or did a branch never merge? Answer feeds Batch 7.
-- **`/optimize` — RESOLVED (retire).** One route (`app/(shell)/optimize/page.tsx`) — the abandoned dark redemption optimiser (duplicated CTA block + blank-line cruft). `/points-optimizer` is a *different* tool and **does not read `?points=`/`?bank=`** (no `useSearchParams`), so it can't be a param-preserving alias. Retire it (Batch 2 #9); **not tokenised in Batch 3.**
+- **`/optimize` — RESOLVED (KEEP, do NOT retire).** Not a duplicate: it's the only **balance→redemption ranker** (takes `?points=`/`?bank=`), fed by `app/upload-statement/page.tsx:374` and `app/sms-import/page.tsx:254` with the user's real post-upload balance. `/points-optimizer` is a *different* model (card + goal, no balance input) and can't receive that handoff — retiring would break the post-upload payoff. **Kept. It IS tokenised in Batch 3** (dark/gold theme — Spend group). Needs a nav home (IA decision — see Batch 2 #9).
 
 **✓ VERIFIED (11 Aug) — the two "unverified diagnoses" were run:**
 
@@ -67,10 +67,9 @@ Unrelated to each other and to the page pass. All self-contained.
 6. **Wallet count-up stall.** `/dashboard` shows 3,68,844 against a true 8,76,499 when the animation stalls, directly under "We don't guess your money". Fix template exists — final value as the rendered default, count-up as progressive enhancement.
 7. **Prefetch test.** `SectionTabs.test.tsx` mocks `next/link` as a plain `<a>`, so the suite can't prove prefetch and emits a React warning. Fix the mock or test a real Link.
 8. **`/landing` → `/` 301.** Two front doors still exist; the merge shipped but the redirect never did.
-9. **Retire `/optimize`** (verified 11 Aug — see Batch 0):
-   - `/points-optimizer` **does not** read `?points=`/`?bank=`, so this is a plain retirement, not a param-preserving alias.
-   - Repoint the devaluation-alert email CTA (`app/api/alerts/send/route.ts:85`) → `/points-optimizer`. The CTA is generic ("Optimize My Points Now", no params), so **no email copy change is needed and no 404** — the earlier "every alert email 404s" caveat was wrong.
-   - 301 `/optimize` → `/points-optimizer`, then delete `app/(shell)/optimize/page.tsx` + `app/api/optimize/route.ts`.
+9. **`/optimize` — KEEP (dropped from Batch 2, 12 Aug).** Investigation showed it is **not** a duplicate: it's the only balance→redemption ranker (`?points=`/`?bank=`), fed by `app/upload-statement/page.tsx:374` and `app/sms-import/page.tsx:254` with the user's real post-upload balance. `/points-optimizer` is a different model (card + goal, no balance input) and can't receive that handoff, so retiring breaks the post-upload payoff. **Not retired.** `PRICING-METER-DECISIONS.md`'s "retire" line corrected. Two follow-ups (NOT now):
+   - **Nav home needed.** Reachable only by completing an upload — that's why it looked dead. Where it belongs is an IA decision: the third of three overlapping spend routes — `/optimize` (points→redemption), `/spend-optimizer` (category+amount→card), `/smart-match` (card matcher).
+   - **In the Batch 3 page walk.** It's on the dark/gold theme, so it gets converted in the page-by-page pass (Spend group), not skipped.
 10. **`reassertTheme` removal.** `useEffect(() => { reassertTheme() }, [])` plus the inline pre-paint — the pre-paint stays; the redundant effect was never removed.
 11. **Icon vocabulary.** `SECTION_TABS` still runs its own path-icon factory while the nav is on lucide. One vocabulary.
 12. **`/login` background video on phones.** `/login` downloads a full mobile background *video* (`auth-bg-mobile.webm` 573 KB / `.mp4` 638 KB) where the 55 KB poster would do — heavier than the 433 KB hero clip already ruled out for mobile. Drop the `<768px` branch to poster-only (the `HeroWindow` matchMedia pattern), retire `auth-bg-mobile.*`. ≈ **>500 KB** saved on the sign-in path.
@@ -105,11 +104,11 @@ Unrelated to each other and to the page pass. All self-contained.
 | Group | Pages (visit once each) | Notable on-visit work |
 |---|---|---|
 | **Cards** | `/cards`, `/compare` (10), `/card-switch` (13), `/card-roast` (10) | **Kill 3 italics** + **CardIQ→CreditIQ footer wordmark** + replace gold "Find my perfect card" pill with standard primary. Cream `#FAF5EB` islands. |
-| **Spend** | `/spend-optimizer` (16), `/points-optimizer` (47) | **Slate `#f1f5f9` ground → white**; navy `#1B3A5C` hero retune. Highest hex count in the app. |
+| **Spend** | `/spend-optimizer` (16), `/points-optimizer` (47), `/optimize` (10, dark/gold) | **Slate `#f1f5f9` ground → white**; navy `#1B3A5C` hero retune. Highest hex count in the app. `/optimize` is kept (not retired) and joins the walk here. |
 | **Travel** | `/travel` (6), `/lounge-tracker` (6), `/trip-planner` (~40) | Cream islands (`#F5EFE6`, `#EFE7D8`). `/trip-planner`'s *content* simplification is Batch 6 — this visit only tokenises/grounds it. |
 | **standalone** | `/statement-truth` (16), `/transfer-partners` (7) | tokens + ground. |
 | **Card detail** | `/card/[slug]` | Tokenise + **fix the diverged face-ink**: `CreditCard3D` uses YIQ luma + `>0.6` threshold; the `110fc889` WCAG-linear `0.1791` fix landed on `CardMockup` only, so `/card/[slug]` can pick the wrong ink. Route both faces onto one shared `faceInk`. |
-| **Marketing hero** | `/banks/[bank]`, `/bank/[slug]`, `/best-cards/[category]`, glossary | Same layout + hex work. ⚠ These are **public crawlable acquisition pages** — H1 survives so SEO impact is small, but decide the hero→panel change deliberately. *(`optimize` is retired in Batch 2, not converted — confirm in Batch 0.)* |
+| **Marketing hero** | `/banks/[bank]`, `/bank/[slug]`, `/best-cards/[category]`, glossary | Same layout + hex work. ⚠ These are **public crawlable acquisition pages** — H1 survives so SEO impact is small, but decide the hero→panel change deliberately. *(`optimize` is kept, not retired — converted in the Spend group above, not here.)* |
 
 ### The gold four (their visit = the `[data-ciq]` migration + wallet CRUD)
 

@@ -26,7 +26,7 @@ the free allowance runs out.
    per-user. Free users get the ProGate blur + a link to the sample — **no in-app run**.
 2. **points-optimizer + optimize → GENERAL pool.** Same 1-`sonnet`-call cost as spend-optimizer;
    the free/Pro split was drift, not design.
-3. **`/optimize` → RETIRE** (IA already calls it superseded). Blast radius in §Retire-/optimize.
+3. **`/optimize` → KEEP** *(corrected 12 Aug — see §Retire-/optimize).* Not a duplicate; it's the balance→redemption ranker fed by upload-statement + sms-import. Route it into the general meter pool like the others; do **not** delete.
    **Not done yet** — repoint the link sites first.
 4. **FLIGHT = 1 user action, not 1 route.** trip-planner + trip-compare fire together for one
    "plan a trip" action and count as **one** flight search → requires a **shared key**.
@@ -83,7 +83,7 @@ reset is primarily a **key-construction change, not an `rl_hit` rewrite**:
 | card-switch | GENERAL | General pool | 1 LLM | sonnet | same |
 | spend-optimizer | GENERAL | General pool | 1 LLM | sonnet | same |
 | points-optimizer | GENERAL | General pool | 1 LLM | sonnet | **remove `requirePro`** → general meter gate |
-| optimize | GENERAL | **RETIRE** | 1 LLM | sonnet | delete page + `/api/optimize`; repoint link sites (§Retire) |
+| optimize | GENERAL | **KEEP** | 1 LLM | sonnet | corrected 12 Aug — not a duplicate; balance→redemption ranker (§Retire) |
 | assistant (CIRA) | GENERAL | **Own counter (§B)** | 1 LLM/turn | haiku | dedicated `cira` IST key (30/day); not in the general 10 |
 | trip-planner | FLIGHT | Flight pool (5/day) | 1 opus + 1–2 seats.aero | opus | shared `flight` IST key — counts once with compare |
 | trip-compare | FLIGHT | Flight pool | 1 opus + 1 fare (Travelpayouts, cached) | opus | shared `flight` IST key — same action as planner |
@@ -96,7 +96,7 @@ reset is primarily a **key-construction change, not an `rl_hit` rewrite**:
 - **FLIGHT (5/day):** trip-planner + trip-compare (= 1 action, shared key), travel-ai.
 - **CIRA (30/day, own counter):** assistant.
 - **PRO-only (no meter):** statement-truth.
-- **Retired:** optimize.
+- **Retired:** *(none — the earlier "retire optimize" was wrong; see §Retire-/optimize.)*
 
 **New meter keys (IST-dated):** `user:<id>:general:<istdate>` (10), `user:<id>:flight:<istdate>` (5),
 `user:<id>:cira:<istdate>` (30). These are **additive** to the existing per-route abuse keys, not a
@@ -128,10 +128,9 @@ replacement.
 
 ---
 
-## Retire `/optimize` — verify-first, then repoint, THEN delete (NOT done)
+## ~~Retire `/optimize`~~ — CORRECTED 12 Aug: KEEP, do not retire
 
-Leaf route; nothing imports its logic. **10 references** must be repointed before deletion. Target =
-`/points-optimizer` (the Footer already *labels* `/optimize` "Points Optimizer").
+**Decision reversed. This section is retained for the record; do NOT action the table below.** The §VERIFY gate at the bottom resolved *against* retiring: `/optimize` accepts `?points=`/`?bank=` and is the only **balance→redemption ranker**, fed by `upload-statement:374` and `sms-import:254` with the user's real post-upload balance. `/points-optimizer` consumes **neither** param (it's a card+goal tool with no balance input), so it cannot receive that handoff — retiring would silently break the post-upload payoff. **Kept** (CLEAR-THE-BOARD Batch 2 #9): it stays, gets tokenised in the Batch 3 Spend walk, and needs a nav home (IA decision — it's the third of three overlapping spend routes). The repoint/delete table below is **superseded**.
 
 | Site | Type | Action |
 |---|---|---|
