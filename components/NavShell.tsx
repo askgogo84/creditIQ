@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { createBrowserClient } from '@supabase/ssr'
 import { Header } from '@/components/Header'
 import { AppRail } from '@/components/ciq/AppRail'
@@ -48,6 +48,19 @@ const SHELL_CSS = `
   }
 `
 
+// useLayoutEffect on the client (runs before the browser paints), useEffect on the
+// server (React skips layout effects during SSR and would warn). Only ever used for
+// the client-only cookie hint below.
+const useIsoLayoutEffect = typeof window !== 'undefined' ? useLayoutEffect : useEffect
+
+// Presence-only check for the Supabase auth cookie (@supabase/ssr names it
+// sb-<ref>-auth-token, sometimes chunked .0/.1). We only need "is a session cookie
+// present" as a fast signed-in hint; getSession() below stays the source of truth.
+function hasSupabaseAuthCookie(): boolean {
+  if (typeof document === 'undefined') return false
+  return /(?:^|;\s*)sb-[^=;]*-auth-token(?:\.\d+)?=/.test(document.cookie)
+}
+
 export function NavShell({ children }: { children: React.ReactNode }) {
   // undefined = auth not resolved yet (matches the server render -> Header).
   const [user, setUser] = useState<any>(undefined)
@@ -61,9 +74,40 @@ export function NavShell({ children }: { children: React.ReactNode }) {
   // through lib/store's single writer (applyTheme); no-op if the attr survived.
   useEffect(() => { reassertTheme() }, [])
 
+  // Flash-mitigation timestamp; set at hydration by the layout effect below so both
+  // the cookie-hint flip and the getSession flip can be measured from the same t0.
+  const flashT0 = useRef<number>(0)
+
+  // MITIGATION, NOT A FIX. On statically-cached (shell) pages (e.g. /transfer-partners)
+  // the server cannot know the visitor, so SSR + the first client render are the
+  // signed-out Header — a signed-in user sees it flash. Removing the flash entirely
+  // would need dynamic rendering for the whole group (regressing the static/ISR public
+  // catalogue), so instead we SHORTEN it: read the Supabase auth cookie synchronously in
+  // a LAYOUT effect (post-hydration, before paint where the platform allows) and flip to
+  // the shell immediately, instead of waiting for the async getSession() round-trip below.
+  // The read is NOT in the render body: the first client render MUST equal SSR
+  // (user===undefined -> Header) or we trip the documented React #425 -> #423 path that
+  // strips data-theme from <html>. A stale cookie self-corrects when getSession resolves.
+  useIsoLayoutEffect(() => {
+    flashT0.current = performance.now()
+    if (hasSupabaseAuthCookie()) {
+      setUser((prev: any) => (prev === undefined ? { __authHint: true } : prev))
+      if (typeof window !== 'undefined' && window.location.search.includes('flashdebug')) {
+        // eslint-disable-next-line no-console
+        console.log('[navshell-flash] cookie-hint flip @', Math.round(performance.now() - flashT0.current), 'ms')
+      }
+    }
+  }, [])
+
   useEffect(() => {
     const sb = createBrowserClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!)
-    sb.auth.getSession().then(({ data: { session } }) => setUser(session?.user ?? null))
+    sb.auth.getSession().then(({ data: { session } }) => {
+      setUser(session?.user ?? null)
+      if (typeof window !== 'undefined' && window.location.search.includes('flashdebug')) {
+        // eslint-disable-next-line no-console
+        console.log('[navshell-flash] getSession resolved @', Math.round(performance.now() - flashT0.current), 'ms ->', session?.user ? 'signed-in' : 'signed-out')
+      }
+    })
     const { data: { subscription } } = sb.auth.onAuthStateChange((_e, session) => setUser(session?.user ?? null))
     return () => subscription.unsubscribe()
   }, [])
