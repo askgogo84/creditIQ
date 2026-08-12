@@ -94,7 +94,7 @@ export function WalletView({
   // <div data-ciq data-theme="light"> island so it renders correctly until Step 6
   // removes the block AND the island together. Do not add new content to the islands.
   return (
-    <div className="max-w-[420px] md:max-w-[1100px] mx-auto pt-4 pb-[104px] md:pb-16" style={{ position: 'relative' }}>
+    <div className="max-w-[420px] md:max-w-none mx-auto md:mx-0" style={{ position: 'relative' }}>
       {/* Theme toggle + sign out live in the TabBar "More" sheet (Settings +
           Sign out). The shell Header supplies the logo/top chrome. */}
 
@@ -102,7 +102,7 @@ export function WalletView({
           grid so the section tabs sit directly under it and span the full content width
           (docs/00-SIGNED-IN-IA.md §3a). Same eyebrow-pill + supporting-lines the header
           now models first-class, so dashboard is no longer bespoke. */}
-      <div style={{ padding: '10px 20px 0' }}>
+      <div style={{ paddingTop: 10 }}>
         <PageHeader
           eyebrow="Live · verified wallet"
           eyebrowPill
@@ -119,6 +119,7 @@ export function WalletView({
             </>
           }
           maxWidth={1100}
+          showTabs={false}
         />
       </div>
 
