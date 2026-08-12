@@ -1,5 +1,5 @@
-import { describe, it, expect, beforeAll } from 'vitest';
-import { render, screen } from '@testing-library/react';
+import { describe, it, expect, beforeAll, vi } from 'vitest';
+import { render, screen, act } from '@testing-library/react';
 import { HeroGauge } from './HeroGauge';
 
 // jsdom has no matchMedia; stub it so the count-up takes its reduced-motion
@@ -38,6 +38,32 @@ describe('HeroGauge — honesty invariants', () => {
     render(<HeroGauge points={1240} verifiedPoints={900} estimatedPoints={340} estLow={310} estHigh={2232} cardCount={2} />);
     expect(screen.getByText('estimate')).toBeInTheDocument();
     expect(screen.getByText('≈ ₹310–₹2,232')).toBeInTheDocument();
+  });
+
+  // Regression for the animation-gated-correctness incident (docs/dashboard-data-audit.md
+  // addendum): a backgrounded tab / throttle pauses the count-up rAF. The headline must
+  // NEVER strand an intermediate value under "We don't guess your money" — the setTimeout
+  // guard has to land the true total even if no animation frame ever fires.
+  it('lands the TRUE total via the guard even if the count-up rAF never fires', () => {
+    const realMM = window.matchMedia;
+    // motion allowed (not the reduced-motion shortcut), so the enhancement path runs
+    window.matchMedia = ((q: string) => ({
+      matches: false, media: q, onchange: null,
+      addEventListener: () => {}, removeEventListener: () => {},
+      addListener: () => {}, removeListener: () => {}, dispatchEvent: () => false,
+    })) as unknown as typeof window.matchMedia;
+    // rAF is scheduled but never calls back — the backgrounded-tab case
+    const raf = vi.spyOn(window, 'requestAnimationFrame').mockReturnValue(0 as unknown as number);
+    vi.useFakeTimers();
+    try {
+      render(<HeroGauge points={876499} verifiedPoints={56499} estimatedPoints={820000} estLow={310} estHigh={2232} cardCount={3} />);
+      act(() => { vi.advanceTimersByTime(2000); }); // past the ms(1400)+200 count-up guard
+      expect(screen.getByText('8,76,499')).toBeInTheDocument();
+    } finally {
+      vi.useRealTimers();
+      raf.mockRestore();
+      window.matchMedia = realMM;
+    }
   });
 
   it('pluralises the card count', () => {

@@ -1,36 +1,52 @@
 // components/ciq/HeroGauge.tsx
 'use client';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { EstimateRange } from './EstimateRange';
 
-// Count-up that RE-RUNS whenever the target changes (fixes 0 when data loads
-// after mount). Honours prefers-reduced-motion by jumping straight to target.
+const prefersReducedMotion = () =>
+  typeof window !== 'undefined' &&
+  window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+
+// Run the count-up setup BEFORE paint on the client (0→climb, no flash of the final
+// value); fall back to useEffect on the server where useLayoutEffect is a no-op + warns.
+const useIsomorphicLayoutEffect = typeof window !== 'undefined' ? useLayoutEffect : useEffect;
+
+// Count-up for the wallet headline. ANIMATION-GATED CORRECTNESS
+// (docs/dashboard-data-audit.md addendum, 3 Aug 2026): this number sits under
+// "We don't guess your money", so a wrong-but-animating value reads as a lie. The FINAL
+// value is therefore the rendered DEFAULT (useState(target)) — SSR, no-JS, reduced-motion
+// and any rAF stall/interrupt (backgrounded tab, dropped frame, throttle) all leave the
+// TRUE count on screen. The 0→target ease is progressive enhancement layered on in a
+// layout effect, with a hard setTimeout guard that snaps to the true value if rAF never
+// completes. Re-runs when the target changes (data can load after mount).
 function useCountUp(target: number, ms = 1400) {
-  const [val, setVal] = useState(0);
+  const [display, setDisplay] = useState(target);
   const fromRef = useRef(0);
-  useEffect(() => {
-    const reduce =
-      typeof window !== 'undefined' &&
-      typeof window.matchMedia === 'function' &&
-      window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    if (reduce) { setVal(target); fromRef.current = target; return; }
-    const from = fromRef.current;
+  useIsomorphicLayoutEffect(() => {
     const to = target;
-    if (from === to) { setVal(to); return; }
-    let t0: number | null = null;
+    if (prefersReducedMotion() || fromRef.current === to) { setDisplay(to); fromRef.current = to; return; }
+    const from = fromRef.current;
     let raf = 0;
-    const step = (ts: number) => {
-      if (t0 === null) t0 = ts;
-      const p = Math.min((ts - t0) / ms, 1);
-      const e = 1 - Math.pow(1 - p, 3);
-      setVal(Math.round(from + (to - from) * e));
-      if (p < 1) raf = requestAnimationFrame(step);
-      else fromRef.current = to;
+    let start = 0;
+    let done = false;
+    const ease = (t: number) => 1 - Math.pow(1 - t, 3);
+    const finish = () => { if (done) return; done = true; setDisplay(to); fromRef.current = to; };
+    // Hard guard: a backgrounded tab / throttle / dropped frame pauses rAF — snap to the
+    // true value after the window so a wrong number is never stranded under the honesty claim.
+    const guard = setTimeout(finish, ms + 200);
+    const tick = (now: number) => {
+      if (done) return;
+      if (!start) start = now;
+      const t = Math.min(1, (now - start) / ms);
+      setDisplay(Math.round(from + (to - from) * ease(t)));
+      if (t < 1) raf = requestAnimationFrame(tick);
+      else { clearTimeout(guard); finish(); }
     };
-    raf = requestAnimationFrame(step);
-    return () => cancelAnimationFrame(raf);
+    setDisplay(from); // begin the climb (pre-paint via layout effect)
+    raf = requestAnimationFrame(tick);
+    return () => { done = true; cancelAnimationFrame(raf); clearTimeout(guard); };
   }, [target, ms]);
-  return val;
+  return display;
 }
 
 /**
@@ -52,7 +68,10 @@ export function HeroGauge({
   estLow: number; estHigh: number; cardCount: number;
 }) {
   const counted = useCountUp(points);
-  const [fill, setFill] = useState(false);
+  // Bars default to their TRUE width (fill=true): SSR, no-JS, reduced-motion and any rAF
+  // stall all leave the correct split drawn — same animation-gated-correctness rule as the
+  // headline (a wallet with verified points must never draw an empty verified segment).
+  const [fill, setFill] = useState(true);
   // prefers-reduced-motion: the wallet no longer sits under the [data-ciq] rule
   // that used to kill transitions, so the gauge fill honours it itself — reduced
   // users get the final split instantly, no width animation.
@@ -63,11 +82,16 @@ export function HeroGauge({
     }
   }, []);
 
-  // re-trigger the gauge fill whenever the split changes (data arrives after mount)
-  useEffect(() => {
+  // Grow-in enhancement: drop to 0 then rAF→true so the bar animates; re-runs when the
+  // split changes (data arrives after mount). Guarded with a setTimeout so a
+  // backgrounded/throttled tab (rAF paused) still lands at the true width, never an empty bar.
+  useIsomorphicLayoutEffect(() => {
+    if (prefersReducedMotion()) { setFill(true); return; }
+    let raf = 0;
+    const guard = setTimeout(() => setFill(true), 1800);
     setFill(false);
-    const id = requestAnimationFrame(() => requestAnimationFrame(() => setFill(true)));
-    return () => cancelAnimationFrame(id);
+    raf = requestAnimationFrame(() => requestAnimationFrame(() => { clearTimeout(guard); setFill(true); }));
+    return () => { cancelAnimationFrame(raf); clearTimeout(guard); };
   }, [verifiedPoints, estimatedPoints]);
 
   const denom = verifiedPoints + estimatedPoints || 1;
