@@ -43,8 +43,15 @@ const SHELL_CSS = `
        attempt to scope this to the 769-899 band and lean on globals for <=768px
        was reverted: it left div-root pages depending on the body rule, whose
        computed value did not match its source and could not be verified on-device.
-       Optimise only with real-session phone testing. */
-    .ciq-shell-main { padding-bottom: 76px !important; }
+       Optimise only with real-session phone testing.
+       env(safe-area-inset-bottom): the fixed TabBar grows by the home-indicator inset
+       on notched devices (its own padding uses the same env), so this floor must grow
+       with it or ~34px of content hides behind the bar on-device. Desktop Chrome reports
+       env()=0, so this is a no-op there and only takes effect on real hardware. NB the
+       "112" is SectionShell's paddingBottom on the (wallet) layout — a real BOTTOM reserve
+       specific to those pages — NOT this global floor, and unrelated to the .pt-28 (7rem)
+       TOP padding that public marketing pages use. */
+    .ciq-shell-main { padding-bottom: calc(76px + env(safe-area-inset-bottom)) !important; }
   }
 `
 
