@@ -96,7 +96,17 @@ export default function DashboardPage() {
         try {
           const obRes = await authedFetch('/api/onboarding');
           const ob = await obRes.json();
-          if (!ob?.onboarding_complete) { router.replace('/onboarding'); return; }
+          if (!ob?.onboarding_complete) {
+            // Don't send a brand-new user to the onboarding wizard while the first-run
+            // pricing modal still owes a choice — the modal comes first. Once plan_chosen
+            // is stamped, the modal reloads /dashboard and this bounce proceeds. With
+            // FIRST_RUN_MODAL off (prod default) enabled=false, so this is a no-op there.
+            try {
+              const fr = await (await authedFetch('/api/first-run')).json();
+              if (fr?.enabled && !fr?.plan_chosen) return;
+            } catch {}
+            router.replace('/onboarding'); return;
+          }
         } catch {}
       }
     } catch {}

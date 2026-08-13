@@ -6,6 +6,7 @@ import { CiqTheme } from '@/components/ciq/ThemeProvider';
 import { authedFetch } from '@/lib/authed-fetch';
 import { SectionTabs } from '@/components/ciq/SectionTabs';
 import { PLANS as ORDER_PLANS } from '@/lib/plans';
+import { startOrderCheckout } from '@/lib/checkout';
 
 type PlanKey = 'monthly' | 'sixmonth' | 'twelvemonth';
 type PlanDisplay = { label: string; rupees: number; per: string; note: string; effective: string };
@@ -82,65 +83,16 @@ export default function ProClient({ ordersMode }: { ordersMode: boolean }) {
   }, []);
 
   // ---- ORDERS path (RAZORPAY_MODE=orders): one-time charge; entitlement is granted
-  //      by the payment.captured webhook (extend_pro -> pro_until), NOT by verify.
+  //      by the order.paid webhook (extend_pro -> pro_until), NOT by verify. The flow
+  //      lives in lib/checkout.ts so /pro and the first-run modal share ONE copy.
   const upgradeViaOrder = async () => {
-    // create-order 401s without the bearer — authedFetch attaches the session token.
-    const orderRes = await authedFetch('/api/razorpay/create-order', {
-      method: 'POST',
-      body: JSON.stringify({ plan }),
+    await startOrderCheckout({
+      plan,
+      planLabel: PLANS[plan].label,
+      user,
+      onStatus: setMsg,
+      onDone: () => setBusy(false),
     });
-    const order = await orderRes.json();
-    if (!orderRes.ok || !order.id) {
-      setMsg(order.error || 'Could not start checkout. Try again.');
-      setBusy(false);
-      return;
-    }
-    if (!window.Razorpay) {
-      setMsg('Checkout still loading. Try again in a moment.');
-      setBusy(false);
-      return;
-    }
-
-    const rzp = new window.Razorpay({
-      key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID || '',
-      order_id: order.id,
-      amount: order.amount,
-      currency: order.currency,
-      name: 'CreditIQ Pro',
-      description: `${PLANS[plan].label} — one-time`,
-      prefill: {
-        email: user?.email || '',
-        name: user?.user_metadata?.full_name || user?.user_metadata?.name || '',
-      },
-      theme: { color: '#C9A24B' },
-      handler: async (resp: any) => {
-        // Signature check is for immediate UX only. The webhook is the source of truth
-        // for entitlement, so Pro may activate a moment after this message shows.
-        const verifyRes = await authedFetch('/api/razorpay/verify', {
-          method: 'POST',
-          body: JSON.stringify({
-            razorpay_payment_id: resp.razorpay_payment_id,
-            razorpay_order_id: resp.razorpay_order_id,
-            razorpay_signature: resp.razorpay_signature,
-          }),
-        });
-        const v = await verifyRes.json();
-        if (verifyRes.ok && v.verified) {
-          setMsg('Payment received — activating your Pro access. This can take a few seconds.');
-        } else {
-          setMsg('Payment could not be verified. If you were charged, contact support.');
-        }
-        setBusy(false);
-      },
-      modal: {
-        ondismiss: () => setBusy(false),
-      },
-    });
-    rzp.on('payment.failed', () => {
-      setMsg('Payment failed or was cancelled.');
-      setBusy(false);
-    });
-    rzp.open();
   };
 
   // ---- SUBSCRIPTION path (RAZORPAY_MODE unset): unchanged recurring mandate.

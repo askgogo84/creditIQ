@@ -154,6 +154,30 @@ is blocked on it.
 
 ---
 
+## INTENDED-BUT-UNBUILT — paid-tier daily search caps (added 13 Aug for the record)
+
+**Gogo decided these on 7 Aug.** They were never written into this sheet and are **not built** —
+no code applies a per-day search cap to anyone (the meter is unbuilt; `lib/rate-limit.ts` is an
+abuse ceiling, not the product meter). Recorded here so the numbers aren't lost, and flagged as
+**not enforceable today**:
+
+| Tier | Intended searches/day | Built? |
+|---|---|---|
+| Free | 5 general + 5 flight *(note: earlier §Model says 10 general — reconcile before build)* | ❌ |
+| ₹149 (1mo) | 15/day | ❌ |
+| ₹499 (6mo) | 30/day | ❌ |
+| ₹999 (12mo) | 50/day | ❌ |
+
+- **Reconcile before building:** the §Model line at the top of this sheet locks Free at **10 general +
+  5 flight**; the 7-Aug ladder above has Free at **5 general + 5 flight**. One of the two is stale —
+  settle which before the meter ships.
+- **Not a marketing claim until enforced.** The first-run modal (`components/ciq/FirstRunModal.tsx`)
+  was rebuilt 13 Aug to **shape (a)** — it lists only what code enforces today and prints **no**
+  per-day numbers, precisely because these caps aren't applied. Re-add the numbers to the modal only
+  when the meter enforces them.
+
+---
+
 ## Open values still needed before the six docs
 
 - **B — CIRA number:** proposed 30/day; confirm or adjust.

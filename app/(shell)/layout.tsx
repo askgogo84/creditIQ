@@ -1,4 +1,5 @@
 import { NavShell } from '@/components/NavShell'
+import { FirstRunGate } from '@/components/ciq/FirstRunModal'
 
 // (shell) route group layout — the single home for the app nav chrome.
 //
@@ -8,6 +9,16 @@ import { NavShell } from '@/components/NavShell'
 //
 // Chromeless routes (login, admin, admin/cards) stay OUTSIDE this group so they
 // never render the app nav.
+//
+// FirstRunGate self-gates: it renders nothing without a session (so the public
+// crawlable pages in this group — /cards, /compare, /transfer-partners,
+// /sweet-spots — never fetch or show a modal) and nothing unless FIRST_RUN_MODAL
+// is on and the user hasn't chosen yet.
 export default function ShellLayout({ children }: { children: React.ReactNode }) {
-  return <NavShell>{children}</NavShell>
+  return (
+    <NavShell>
+      {children}
+      <FirstRunGate />
+    </NavShell>
+  )
 }
