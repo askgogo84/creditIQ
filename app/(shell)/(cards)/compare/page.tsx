@@ -8,7 +8,6 @@ import { SEED_CARDS } from '@/lib/data/seed-cards';
 import { getApplyUrl } from '@/lib/affiliate';
 import { EstimatedValue } from '@/components/cards/Unverified';
 import { X, Plus } from 'lucide-react';
-import { SectionTabs } from '@/components/ciq/SectionTabs';
 
 const ALL_CARDS = SEED_CARDS as any[];
 
@@ -45,7 +44,7 @@ export default function ComparePage() {
 
   return (
     <>
-      <div className="page-fade">
+      <div>
         <section style={{ position: 'relative', paddingTop: 'clamp(120px,18vw,150px)', paddingBottom: 40 }}>
           <div className="aurora" style={{ top: -80, right: -100, width: 600, height: 500, background: 'radial-gradient(circle,rgba(212,163,115,0.20),transparent 60%)' }} />
           <div className="shell" style={{ position: 'relative', zIndex: 2 }}>
@@ -59,7 +58,6 @@ export default function ComparePage() {
                 Add up to 4 cards. See fees, rewards, and lounge access side by side.
               </p>
             </Reveal>
-            <SectionTabs />
           </div>
         </section>
 

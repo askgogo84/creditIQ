@@ -3,7 +3,6 @@ import { SectionHeader } from '@/components/design/SectionHeader';
 import { CopperCTA, GhostCTA } from '@/components/design/CTAs';
 import { DesignFooter } from '@/components/design/Footer';
 import { CardsClient } from './CardsClient';
-import { SectionTabs } from '@/components/ciq/SectionTabs';
 import { createClient } from '@supabase/supabase-js';
 
 export const revalidate = 300; // revalidate every 5 mins
@@ -45,7 +44,7 @@ export default async function CardsIndexPage() {
 
   return (
     <>
-      <div className="page-fade">
+      <div>
         {/* HERO */}
         <section style={{ position: 'relative', paddingTop: 'clamp(120px, 18vw, 160px)' }}>
           <div className="aurora" style={{ top: -120, right: -100, width: 540, height: 540,
@@ -60,7 +59,6 @@ export default async function CardsIndexPage() {
               <CopperCTA href="/smart-match">Find my perfect card</CopperCTA>
               <GhostCTA href="/compare">Compare side by side</GhostCTA>
             </div>
-            <SectionTabs />
           </div>
         </section>
 

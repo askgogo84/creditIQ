@@ -7,7 +7,6 @@ import { DesignFooter } from '@/components/design/Footer';
 import { SEED_CARDS } from '@/lib/data/seed-cards';
 import { getApplyUrl } from '@/lib/affiliate';
 import { authedFetch } from '@/lib/authed-fetch';
-import { SectionTabs } from '@/components/ciq/SectionTabs';
 
 type Step = 'current' | 'reason' | 'debt' | 'result';
 
@@ -144,8 +143,6 @@ export default function CardSwitchPage() {
             Tell us what&apos;s wrong with your current card. We&apos;ll find better options and calculate your balance transfer savings.
           </p>
         </div>
-
-        <SectionTabs />
 
         {/* Progress bar */}
         <div style={{ display: 'flex', gap: 6, marginBottom: 24 }}>

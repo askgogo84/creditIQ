@@ -65,7 +65,7 @@ export default async function ComparePage({ params }: { params: { slug: string }
 
   return (
     <>
-      <div className="page-fade" style={{ paddingTop: 'clamp(80px,12vw,100px)', paddingBottom: 80 }}>
+      <div style={{ paddingTop: 'clamp(80px,12vw,100px)', paddingBottom: 80 }}>
         <div className="shell" style={{ maxWidth: 900, margin: '0 auto', padding: '0 clamp(16px,4vw,24px)' }}>
 
           {/* Breadcrumb */}
