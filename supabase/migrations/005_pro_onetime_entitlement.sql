@@ -18,11 +18,18 @@ ALTER TABLE public.user_profiles
 
 -- 1a) Money columns must NEVER be end-user-writable. user_profiles carries a FOR ALL
 --     "update own profile" policy (auth.uid() = user_id), which would otherwise let a
---     signed-in user set their own pro_until via the client. RLS is row-scoped; column
---     privileges are the lock. Only the service role (webhook) grants Pro. SELECT stays,
---     so a user may READ their own entitlement.
-REVOKE INSERT (pro_until, pro_plan, pro_last_order_id) ON public.user_profiles FROM anon, authenticated;
-REVOKE UPDATE (pro_until, pro_plan, pro_last_order_id) ON public.user_profiles FROM anon, authenticated;
+--     signed-in user set their own pro_until via the client. RLS is row-scoped; the
+--     table privilege is the lock. Only the service role (webhook) grants Pro.
+--
+--     A COLUMN-SCOPED revoke here is a SILENT NO-OP: Postgres will not let a per-column
+--     REVOKE carve a hole out of Supabase's table-level INSERT/UPDATE grant to
+--     anon/authenticated, so `REVOKE INSERT (pro_until,...)` leaves the money columns
+--     writable. Revoke at the TABLE level instead. SELECT (and REFERENCES) are untouched,
+--     so a user may still READ their own entitlement; anon/authenticated hold no
+--     INSERT/UPDATE on user_profiles. Safe because every write to this table already
+--     goes through the service role (onboarding/user-city/pro routes), which bypasses
+--     grants — no client uses an authenticated-JWT write here.
+REVOKE INSERT, UPDATE ON public.user_profiles FROM anon, authenticated;
 
 -- ============================================================================
 -- 2) Order idempotency ledger. NEW table — subscription_events is the subscription
