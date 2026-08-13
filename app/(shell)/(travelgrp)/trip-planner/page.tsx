@@ -313,7 +313,7 @@ function TripPlannerPageInner() {
 
           {/* Origin city */}
           {showOriginPrompt && (
-            <div style={{ marginBottom: 16, padding: '12px 14px', background: 'rgba(140,95,18,0.08)', border: '1px solid rgba(140,95,18,0.2)', borderRadius: 12 }}>
+            <div style={{ marginBottom: 16, padding: '12px 14px', background: 'color-mix(in srgb, var(--copper) 8%, transparent)', border: '1px solid color-mix(in srgb, var(--copper) 20%, transparent)', borderRadius: 12 }}>
               <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--copper)', marginBottom: 8, textTransform: 'uppercase', letterSpacing: 1 }}>
                 Where do you usually fly from?
               </div>
@@ -358,7 +358,7 @@ function TripPlannerPageInner() {
                   Save
                 </button>
               </div>
-              <div style={{ fontSize: 11, color: 'rgba(140,95,18,0.7)', marginTop: 6 }}>
+              <div style={{ fontSize: 11, color: 'color-mix(in srgb, var(--copper) 70%, transparent)', marginTop: 6 }}>
                 We&rsquo;ll remember this for all your trip plans
               </div>
             </div>
@@ -387,7 +387,7 @@ function TripPlannerPageInner() {
               fontSize: 15, fontWeight: 800,
               cursor: loading || !query.trim() ? 'not-allowed' : 'pointer',
               transition: 'transform 0.12s, box-shadow 0.2s',
-              boxShadow: loading || !query.trim() ? 'none' : '0 6px 20px rgba(140,95,18,0.28)',
+              boxShadow: loading || !query.trim() ? 'none' : '0 6px 20px color-mix(in srgb, var(--copper) 28%, transparent)',
             }}
           >
             {loading ? 'Planning your trip\u2026' : 'Plan my trip with points \u2192'}
@@ -523,7 +523,7 @@ function TripPlannerPageInner() {
               <svg className="ttp-loader__track" viewBox="0 0 100 60" fill="none">
                 <path
                   d="M50,30 C50,15 25,15 25,30 C25,45 50,45 50,30 C50,15 75,15 75,30 C75,45 50,45 50,30 Z"
-                  stroke="rgba(140,95,18,0.22)" strokeWidth="1.5" strokeDasharray="3 4" strokeLinecap="round"
+                  stroke="color-mix(in srgb, var(--copper) 22%, transparent)" strokeWidth="1.5" strokeDasharray="3 4" strokeLinecap="round"
                 />
               </svg>
               <span className="ttp-loader__plane">
@@ -609,7 +609,7 @@ function TripPlannerPageInner() {
 
               {/* Points redemption CTA */}
               {result.flights?.[0] && (
-                <div style={{ background: 'rgba(140,95,18,0.06)', border: '1px solid rgba(140,95,18,0.15)', borderRadius: 16, padding: '16px 20px', marginTop: 16, marginBottom: 16 }}>
+                <div style={{ background: 'color-mix(in srgb, var(--copper) 6%, transparent)', border: '1px solid color-mix(in srgb, var(--copper) 15%, transparent)', borderRadius: 16, padding: '16px 20px', marginTop: 16, marginBottom: 16 }}>
                   <div style={{ fontSize: 10, fontWeight: 700, color: 'var(--copper)', letterSpacing: 1.5, textTransform: 'uppercase', marginBottom: 10 }}>
                     Redeem your points
                   </div>
