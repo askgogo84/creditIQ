@@ -187,7 +187,7 @@ Respond ONLY with valid JSON (no markdown, no code fences):
           <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
 
             {/* Card selector */}
-            <div style={{ background: 'var(--surface)', borderRadius: 18, padding: '18px 20px', border: '1px solid var(--line)', boxShadow: '0 1px 3px rgba(20,35,53,0.05)' }}>
+            <div style={{ background: 'var(--surface)', borderRadius: 18, padding: '18px 20px', border: '1px solid var(--line)', boxShadow: '0 1px 3px color-mix(in srgb, var(--ink) 5%, transparent)' }}>
               <p style={{ margin: '0 0 10px', fontSize: 11, fontWeight: 700, color: 'var(--ink-4)', textTransform: 'uppercase', letterSpacing: 1.2 }}>Your Card</p>
               <select
                 value={selectedCard}
@@ -211,7 +211,7 @@ Respond ONLY with valid JSON (no markdown, no code fences):
             </div>
 
             {/* Points input */}
-            <div style={{ background: 'var(--surface)', borderRadius: 18, padding: '18px 20px', border: '1px solid var(--line)', boxShadow: '0 1px 3px rgba(20,35,53,0.05)' }}>
+            <div style={{ background: 'var(--surface)', borderRadius: 18, padding: '18px 20px', border: '1px solid var(--line)', boxShadow: '0 1px 3px color-mix(in srgb, var(--ink) 5%, transparent)' }}>
               <p style={{ margin: '0 0 10px', fontSize: 11, fontWeight: 700, color: 'var(--ink-4)', textTransform: 'uppercase', letterSpacing: 1.2 }}>Points to Redeem</p>
               <input
                 type="number"
@@ -233,7 +233,7 @@ Respond ONLY with valid JSON (no markdown, no code fences):
             </div>
 
             {/* Goal selector — SVG icons, no emoji */}
-            <div style={{ background: 'var(--surface)', borderRadius: 18, padding: '18px 20px', border: '1px solid var(--line)', boxShadow: '0 1px 3px rgba(20,35,53,0.05)' }}>
+            <div style={{ background: 'var(--surface)', borderRadius: 18, padding: '18px 20px', border: '1px solid var(--line)', boxShadow: '0 1px 3px color-mix(in srgb, var(--ink) 5%, transparent)' }}>
               <p style={{ margin: '0 0 12px', fontSize: 11, fontWeight: 700, color: 'var(--ink-4)', textTransform: 'uppercase', letterSpacing: 1.2 }}>Optimize For</p>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                 {GOALS.map(g => {
@@ -296,7 +296,7 @@ Respond ONLY with valid JSON (no markdown, no code fences):
             {!result && !loading && (
               <div style={{
                 background: 'var(--surface)', borderRadius: 18, padding: '32px 24px',
-                border: '1px solid var(--line)', boxShadow: '0 1px 3px rgba(20,35,53,0.05)', textAlign: 'center',
+                border: '1px solid var(--line)', boxShadow: '0 1px 3px color-mix(in srgb, var(--ink) 5%, transparent)', textAlign: 'center',
                 display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
                 minHeight: 300,
               }}>
@@ -311,7 +311,7 @@ Respond ONLY with valid JSON (no markdown, no code fences):
             {loading && (
               <div style={{
                 background: 'var(--surface)', borderRadius: 18, padding: '32px 24px',
-                border: '1px solid var(--line)', boxShadow: '0 1px 3px rgba(20,35,53,0.05)', textAlign: 'center',
+                border: '1px solid var(--line)', boxShadow: '0 1px 3px color-mix(in srgb, var(--ink) 5%, transparent)', textAlign: 'center',
                 minHeight: 300, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
               }}>
                 <span style={{ width: 32, height: 32, border: '3px solid var(--line-strong)', borderTopColor: 'var(--copper)', borderRadius: '50%', display: 'inline-block', animation: 'spin 0.8s linear infinite', marginBottom: 16 }} />
@@ -337,8 +337,8 @@ Respond ONLY with valid JSON (no markdown, no code fences):
                   <div key={idx} style={{
                     background: 'var(--surface)', borderRadius: 16,
                     boxShadow: path.isTopPick
-                      ? '0 0 0 2px var(--copper), 0 4px 16px rgba(140,95,18,0.1)'
-                      : '0 1px 3px rgba(20,35,53,0.05)',
+                      ? '0 0 0 2px var(--copper), 0 4px 16px color-mix(in srgb, var(--copper) 10%, transparent)'
+                      : '0 1px 3px color-mix(in srgb, var(--ink) 5%, transparent)',
                     border: path.isTopPick ? 'none' : '1px solid var(--line)',
                     overflow: 'hidden',
                   }}>
@@ -401,6 +401,8 @@ Respond ONLY with valid JSON (no markdown, no code fences):
                 ))}
 
                 {result.warnings && result.warnings.length > 0 && (
+                  // Amber warning tint kept as an intentional literal (no on-system token
+                  // for info/warning states); one off-token shade isn't worth a new token.
                   <div style={{ background: 'rgba(212,163,115,0.12)', border: '1px solid rgba(212,163,115,0.30)', borderRadius: 12, padding: '12px 16px' }}>
                     {result.warnings.map((w, i) => (
                       <p key={i} style={{ margin: i > 0 ? '6px 0 0' : 0, fontSize: 12, color: 'var(--ink-2)' }}>Note: {w}</p>

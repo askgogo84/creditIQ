@@ -143,7 +143,7 @@ Respond ONLY with valid JSON (no markdown, no backticks, no explanation outside 
               {/* Input card */}
               <div style={{
                 background: 'var(--surface)', borderRadius: 20, border: '1px solid var(--line)',
-                boxShadow: '0 1px 3px rgba(20,35,53,0.06), 0 8px 24px rgba(20,35,53,0.04)',
+                boxShadow: '0 1px 3px color-mix(in srgb, var(--ink) 6%, transparent), 0 8px 24px color-mix(in srgb, var(--ink) 4%, transparent)',
                 overflow: 'hidden', marginBottom: 20,
               }}>
                 <div style={{ padding: '18px 24px 14px', borderBottom: '1px solid var(--line)' }}>
@@ -267,8 +267,8 @@ Respond ONLY with valid JSON (no markdown, no backticks, no explanation outside 
                   <div key={idx} style={{
                     background: 'var(--surface)', borderRadius: 20,
                     boxShadow: idx === 0
-                      ? '0 0 0 2px var(--copper), 0 8px 24px rgba(140,95,18,0.12)'
-                      : '0 1px 3px rgba(20,35,53,0.06), 0 4px 12px rgba(20,35,53,0.04)',
+                      ? '0 0 0 2px var(--copper), 0 8px 24px color-mix(in srgb, var(--copper) 12%, transparent)'
+                      : '0 1px 3px color-mix(in srgb, var(--ink) 6%, transparent), 0 4px 12px color-mix(in srgb, var(--ink) 4%, transparent)',
                     border: idx === 0 ? 'none' : '1px solid var(--line)',
                     overflow: 'hidden',
                   }}>
