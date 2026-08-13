@@ -58,7 +58,11 @@ export async function POST(req: NextRequest) {
         plan,
         months: String(months),
         user_id: userId,
-        product: 'CreditIQ Pro',
+        // Stable MACHINE id the webhook guard matches on — never a display string, so a
+        // dashboard copy edit can't silently break payments. product_label is the
+        // human-readable field for the Razorpay dashboard only.
+        product: 'creditiq',
+        product_label: 'CreditIQ Pro',
       },
     });
 

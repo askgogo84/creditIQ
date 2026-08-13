@@ -104,6 +104,13 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ ok: true, ignored: 'no order_id' });
     }
     const notes: any = payment?.notes || {};
+    // Fail CLOSED to OUR product. Only CreditIQ orders carry product==='creditiq' (a
+    // stable machine id stamped at order creation). Any other captured payment on this
+    // Razorpay account — e.g. AskGogo — is ignored here and never reaches extend_pro.
+    // This is the guard; extend_pro's auth.users check is only a backstop, not a substitute.
+    if (notes.product !== 'creditiq') {
+      return NextResponse.json({ ok: true, ignored: 'not a creditiq order' });
+    }
     const userId: string | null = notes.user_id || null;
     const plan: string =
       ['monthly', 'sixmonth', 'twelvemonth'].includes(notes.plan) ? notes.plan : 'monthly';
