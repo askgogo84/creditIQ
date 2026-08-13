@@ -100,6 +100,9 @@ Unrelated to each other and to the page pass. All self-contained. **Outcome:** #
 
 `app/(shell)/(travel)/layout.tsx`, `(spend)`, `(cards)`, `(wallet)`, `(you)` — header + `SectionTabs` + container live in the layout; siblings swap the panel only. This is non-negotiably first: converting any page before its group layout exists means converting it twice. Prefetch siblings so the panel is warm before the tap. Fixes the misaligned edges, the jumping strip and the switch flash in one structural change (one container wraps header **and** `{children}`; strip isn't re-rendered → 0px variance by construction).
 
+**`(wallet)` group layout — SHIPPED (13 Aug, `fix/wallet-group-layout` → main).** `SectionShell` + `SectionTabs` own the "Wallet" name + strip + column; `/dashboard` and `/statement-truth` are panel-only. Verified on preview at 375px: one strip, strip top **57.7** and identity top **145.7** identical on both tabs (the 10px jump was `WalletView`'s `paddingTop:10`, removed — never a SectionTabs variant mismatch, both render the mobile carousel). Gauge + all WalletView blocks now align to the shared column left edge (**20** at 375px) after dropping their redundant 20px gutter (SectionShell already pads `0 20px`). Clearance made safe-area-aware globally (`.ciq-shell-main` → `calc(76px + env(safe-area-inset-bottom))`); wallet reserve ~289px, clears the device bar with room.
+- **Known residual (not a bug):** on **desktop** the gauge card sits **8px** inboard of the strip/headline (676 vs 684) — the grid's `md:px-2`. Left as-is deliberately: removing `md:px-2` only trades it for an 8px shift of the right column. Resolves when **WalletView is revisited in the Spend/tokenise pass**. 375px is pixel-perfect; desktop went 28→8.
+
 ### The walk (grouped by route-group — hex counts from the audit)
 
 | Group | Pages (visit once each) | Notable on-visit work |
