@@ -26,9 +26,15 @@ export async function POST(req: NextRequest) {
     const { createClient } = await import('@supabase/supabase-js');
     const sb = createClient(sUrl, sKey, { auth: { persistSession: false } });
     const table = source === 'manual' ? 'manual_cards' : 'statement_imports';
+    // Hand-editing the balance of a statement card demotes it from Verified to
+    // Self-entered: the number is no longer the one we read from the statement, so
+    // the green "Verified" badge (the moat) must not stay next to a typed value.
+    // manual_cards is self-entered by definition and has no such column.
+    const patch: Record<string, unknown> = { points_balance: points, imported_at: new Date().toISOString() };
+    if (table === 'statement_imports') patch.self_entered = true;
     // Scoped to the VERIFIED caller id — never the request body.
     const { error } = await sb.from(table)
-      .update({ points_balance: points, imported_at: new Date().toISOString() })
+      .update(patch)
       .eq('id', cardId)
       .eq('user_id', userId);
     if (error) return NextResponse.json({ error: error.message }, { status: 500 });

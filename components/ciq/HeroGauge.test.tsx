@@ -29,7 +29,7 @@ describe('HeroGauge — honesty invariants', () => {
   it('splits verified vs estimated in POINTS', () => {
     render(<HeroGauge points={1240} verifiedPoints={900} estimatedPoints={340} estLow={310} estHigh={2232} cardCount={2} />);
     expect(screen.getByText('Verified')).toBeInTheDocument();
-    expect(screen.getByText('Estimated')).toBeInTheDocument();
+    expect(screen.getByText('Self-entered')).toBeInTheDocument();
     expect(screen.getByText('900')).toBeInTheDocument();
     expect(screen.getByText('340')).toBeInTheDocument();
   });

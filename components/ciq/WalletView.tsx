@@ -14,13 +14,13 @@ import { PageHeader } from './PageHeader';
 // is not toured; it moves to Home in Implementation-Plan Step 6.)
 const WALLET_TOUR: TourStep[] = [
   {
-    title: 'Your points, verified vs estimated',
-    body: 'The green slice is read straight from your statements. Grey is your own estimate. We never dress one up as the other.',
+    title: 'Your points, verified vs self-entered',
+    body: 'The green slice is read straight from your statements. Grey is what you entered yourself. We never dress one up as the other.',
     anchor: '#wallet-gauge',
   },
   {
     title: 'Add a card',
-    body: 'Enter a card by hand to keep an estimate in view, or upload a statement to add a verified one.',
+    body: 'Enter a card by hand to keep a self-entered balance in view, or upload a statement to add a verified one.',
     anchor: '#wallet-add',
   },
 ];
@@ -29,16 +29,17 @@ const TOUR_SEEN_KEY = 'ciq_wallet_tour_v1';
 type Card = {
   id: string; bank: string; card_name?: string; cardName?: string;
   card_last4?: string; points_balance: number; points_currency?: string;
-  source: 'statement' | 'manual';
+  source: 'statement' | 'manual'; self_entered?: boolean;
 };
 
 export function WalletView({
   displayName, email, cards, totalPoints, primaryBank,
-  onAddCard, onRefresh, refreshing,
+  onAddCard, onRefresh, refreshing, onEditPoints,
 }: {
   displayName: string; email?: string; cards: Card[];
   totalPoints: number; primaryBank: string;
   onAddCard: () => void; onRefresh: () => void; refreshing?: boolean;
+  onEditPoints?: (card: Card, points: number) => Promise<boolean>;
 }) {
   // Verified vs estimated split on REAL POINT COUNTS (statement vs manual).
   // Rupee figures are only ever an ESTIMATE RANGE, never a stated value:
@@ -47,8 +48,11 @@ export function WalletView({
   // See docs/dashboard-data-audit.md §1 — the point count is real; the ₹ is not.
   const LOW_RATE = 0.25;
   const HIGH_RATE = 1.8;
-  const vPoints = cards.filter(c => c.source === 'statement').reduce((s, c) => s + (c.points_balance || 0), 0);
-  const ePoints = cards.filter(c => c.source === 'manual').reduce((s, c) => s + (c.points_balance || 0), 0);
+  // Verified = read from a statement AND not since hand-edited. A hand-edited
+  // statement card (self_entered) moves to the estimated/self-entered side.
+  const isVerified = (c: Card) => c.source === 'statement' && !c.self_entered;
+  const vPoints = cards.filter(isVerified).reduce((s, c) => s + (c.points_balance || 0), 0);
+  const ePoints = cards.filter(c => !isVerified(c)).reduce((s, c) => s + (c.points_balance || 0), 0);
   const estLow = Math.round(totalPoints * LOW_RATE);
   const estHigh = Math.round(totalPoints * HIGH_RATE);
   const hasVerified = vPoints > 0;
@@ -143,7 +147,7 @@ export function WalletView({
               <path d="m9 12 2 2 4-4" stroke="var(--prov-verified)" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" />
             </svg>
             <p style={{ fontSize: 12.5, lineHeight: 1.5, color: 'var(--ink-2)' }}>
-              <b style={{ color: 'var(--prov-verified)' }}>We don&apos;t guess your money.</b> Verified values come from your real statements. Estimates are flagged — never inflated.
+              <b style={{ color: 'var(--prov-verified)' }}>We don&apos;t guess your money.</b> Verified values come from your real statements. Self-entered values are flagged — never inflated.
             </p>
           </div>
         </div>
@@ -205,7 +209,8 @@ export function WalletView({
             {cards.map(c => (
               <CardRow key={c.id} bank={c.bank} cardName={c.card_name || c.cardName || c.bank}
                 last4={c.card_last4} points={c.points_balance} currency={c.points_currency}
-                source={c.source} variant="light" />
+                source={c.source} selfEntered={c.self_entered} variant="light"
+                onSavePoints={onEditPoints ? (pts) => onEditPoints(c, pts) : undefined} />
             ))}
             <button id="wallet-add" onClick={onAddCard} style={{
               border: '1.5px dashed color-mix(in srgb,var(--copper-3) 40%, var(--line))', borderRadius: 18, padding: 15, display: 'flex',

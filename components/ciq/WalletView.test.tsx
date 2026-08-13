@@ -78,9 +78,9 @@ describe('WalletView — holdings ledger', () => {
     expect(screen.queryByText('Your best move')).not.toBeInTheDocument();
   });
 
-  it('all-estimated wallet nudges to verify', () => {
+  it('all-self-entered wallet nudges to verify', () => {
     renderWallet({ cards: [CARDS[2]], totalPoints: 40 }); // manual only
-    expect(screen.getByText(/All estimated/)).toBeInTheDocument();
+    expect(screen.getByText(/All self-entered/)).toBeInTheDocument();
     expect(screen.getByText('Get your verified points')).toBeInTheDocument();
   });
 

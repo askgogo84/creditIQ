@@ -31,6 +31,7 @@ interface SavedCard {
   statement_date?: string;
   imported_at: string;
   source?: 'statement' | 'manual';
+  self_entered?: boolean;
 }
 interface AddCardForm {
   bank: string;
@@ -54,9 +55,6 @@ export default function DashboardPage() {
   // Add-card picker (SEED_CARDS-backed, no free-text, no card numbers).
   const [cardQuery, setCardQuery] = useState('');
   const [selectedCardId, setSelectedCardId] = useState<string | null>(null);
-  const [editingCardId, setEditingCardId] = useState<string | null>(null);
-  const [editPoints, setEditPoints] = useState('');
-  const [editSaving, setEditSaving] = useState(false);
   const [wpLoading, setWpLoading] = useState(true);
   const [wp, setWp] = useState<{ linked: boolean; org_name?: string; org_id?: string }>({ linked: false });
   const [wpCode, setWpCode] = useState('');
@@ -173,7 +171,7 @@ export default function DashboardPage() {
 
   const handleAddCard = async () => {
     // Points balance is OPTIONAL — a new user often doesn't know it yet.
-    // Blank or 0 is valid; the card saves with 0 points (grey "Estimated").
+    // Blank or 0 is valid; the card saves with 0 points (grey "Self-entered").
     if (!user || !addForm.cardName) return;
     setAddLoading(true);
     try {
@@ -229,22 +227,27 @@ export default function DashboardPage() {
     await loadCards(user.id);
   };
 
-  const handleUpdatePoints = async (card: SavedCard) => {
-    const val = parseInt(editPoints);
-    if (!val || val <= 0) return;
-    setEditSaving(true);
+  // Inline points edit (CardRow owns the input; this owns the write + state).
+  // Optimistic: reflect the new balance immediately so the gauge and badge recompute,
+  // then reconcile — revert to the pre-edit snapshot if the server rejects. A
+  // hand-edited statement card also flips to self_entered (demotes off Verified).
+  const onEditPoints = async (card: SavedCard, points: number): Promise<boolean> => {
+    const prev = cards;
+    setCards(cs => cs.map(c => c.id === card.id
+      ? { ...c, points_balance: points, self_entered: c.source === 'statement' ? true : c.self_entered }
+      : c));
     try {
       const res = await authedFetch('/api/update-points', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ cardId: card.id, source: card.source, points: val }),
+        body: JSON.stringify({ cardId: card.id, source: card.source, points }),
       });
       if (!res.ok) throw new Error('Update failed');
-      setCards(cards.map(c => c.id === card.id ? { ...c, points_balance: val } : c));
-      setEditingCardId(null);
-      setEditPoints('');
-    } catch {}
-    setEditSaving(false);
+      return true;
+    } catch {
+      setCards(prev); // reconcile — undo the optimistic change
+      return false;
+    }
   };
 
   const totalPoints = cards.reduce((s, c) => s + (c.points_balance || 0), 0);
@@ -276,6 +279,7 @@ export default function DashboardPage() {
         onAddCard={() => setShowAddModal(true)}
         onRefresh={() => { setRefreshing(true); loadCards(user.id).then(() => setRefreshing(false)); }}
         refreshing={refreshing}
+        onEditPoints={onEditPoints as any}
       />
 
       {showAddModal && (
