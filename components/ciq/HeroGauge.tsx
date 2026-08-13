@@ -100,7 +100,7 @@ export function HeroGauge({
 
   return (
     <section className="w-rise d2" style={{
-      margin: '18px 20px 0', borderRadius: 24, padding: '24px 22px',
+      margin: '18px 0 0', borderRadius: 24, padding: '24px 22px',
       background: 'var(--surface)', border: '1px solid var(--line-strong)',
       position: 'relative', overflow: 'hidden', boxShadow: 'var(--shadow-lg)',
     }}>

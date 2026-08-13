@@ -102,7 +102,7 @@ export function WalletView({
           grid so the section tabs sit directly under it and span the full content width
           (docs/00-SIGNED-IN-IA.md §3a). Same eyebrow-pill + supporting-lines the header
           now models first-class, so dashboard is no longer bespoke. */}
-      <div style={{ paddingTop: 10 }}>
+      <div>
         <PageHeader
           eyebrow="Live · verified wallet"
           eyebrowPill
@@ -137,7 +137,7 @@ export function WalletView({
 
           {/* honesty credo */}
           <div className="w-rise d2" style={{
-            margin: '14px 20px 0', display: 'flex', gap: 10, alignItems: 'flex-start', padding: '13px 15px',
+            margin: '14px 0 0', display: 'flex', gap: 10, alignItems: 'flex-start', padding: '13px 15px',
             borderRadius: 16, background: 'color-mix(in srgb,var(--prov-verified) 7%,transparent)',
             border: '1px solid color-mix(in srgb,var(--prov-verified) 18%,transparent)',
           }}>
@@ -158,7 +158,7 @@ export function WalletView({
               text is legible in both themes. */}
           {totalPoints > 0 && (
             <div data-ciq data-theme={siteTheme} style={{ color: 'var(--ciq-ink)' }}>
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '26px 20px 12px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '26px 0 12px' }}>
                 <h2 className="ciq-display" style={{ fontSize: 18, fontWeight: 600, letterSpacing: '-.01em' }}>Your best move</h2>
               </div>
               <BestMove
@@ -177,7 +177,7 @@ export function WalletView({
               This is a COPPER ACTION (not verified data), so it uses copper, never green. */}
           {!hasVerified && (
             <div className="w-rise d3" style={{
-              margin: '26px 20px 0', padding: 18, borderRadius: 18,
+              margin: '26px 0 0', padding: 18, borderRadius: 18,
               background: 'color-mix(in srgb,var(--copper-3) 10%,transparent)', border: '1px solid color-mix(in srgb,var(--copper-3) 30%,transparent)',
             }}>
               <div className="mono" style={{ fontSize: 10, letterSpacing: '.12em', textTransform: 'uppercase', color: 'var(--copper)' }}>
@@ -198,13 +198,13 @@ export function WalletView({
           )}
 
           {/* cards */}
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '26px 20px 12px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '26px 0 12px' }}>
             <h2 className="w-display" style={{ fontSize: 18, fontWeight: 600, letterSpacing: '-.01em' }}>Your cards</h2>
             <button onClick={onRefresh} className="mono" style={{ fontSize: 11, color: 'var(--ink-3)', background: 'none', border: 'none', cursor: 'pointer' }}>
               {refreshing ? 'refreshing…' : 'refresh'}
             </button>
           </div>
-          <div className="w-rise d4" style={{ padding: '0 20px', display: 'flex', flexDirection: 'column', gap: 12 }}>
+          <div className="w-rise d4" style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
             {cards.map(c => (
               <CardRow key={c.id} bank={c.bank} cardName={c.card_name || c.cardName || c.bank}
                 last4={c.card_last4} points={c.points_balance} currency={c.points_currency}
