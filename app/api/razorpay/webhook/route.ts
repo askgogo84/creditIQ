@@ -94,24 +94,42 @@ export async function POST(req: NextRequest) {
 
   const sb = svcClient();
 
-  // 2.5) ONE-TIME ORDER ENTITLEMENT (STEP 2). Additive + gated; the subscription.*
-  //      handling below is untouched, and both models stay live during cutover.
-  //      INERT until RAZORPAY_MODE=orders. Order events have their own ledger
-  //      (pro_order_events, via extend_pro), so they never touch subscription_events.
-  if (process.env.RAZORPAY_MODE === 'orders' && eventType === 'payment.captured') {
-    const orderId: string | null = payment?.order_id || null;
-    if (!orderId) {
-      return NextResponse.json({ ok: true, ignored: 'no order_id' });
-    }
-    const notes: any = payment?.notes || {};
+  // 2.5) ONE-TIME ORDER ENTITLEMENT. Additive + gated; the subscription.* handling
+  //      below is untouched, and both models stay live during cutover. INERT until
+  //      RAZORPAY_MODE=orders. Order events have their own ledger (pro_order_events,
+  //      via extend_pro), so they never touch subscription_events.
+  //
+  //      Source event is ORDER.PAID, not payment.captured. Our notes live on the ORDER
+  //      entity (create-order stamps order.notes), and order.paid delivers
+  //      payload.order.entity (WITH notes) plus payload.payment.entity. payment.captured
+  //      carries payment.entity.notes — a DIFFERENT, empty bag — so reading it there saw
+  //      no product/user_id and silently ignored every real order (the bug that took the
+  //      first ₹149: captured, but pro_order_events stayed empty).
+  const order: any = payload?.payload?.order?.entity || null;
+  if (process.env.RAZORPAY_MODE === 'orders' && eventType === 'order.paid') {
+    const orderId: string | null = order?.id || null;
+    const notes: any = order?.notes || {};
+
     // Fail CLOSED to OUR product. Only CreditIQ orders carry product==='creditiq' (a
-    // stable machine id stamped at order creation). Any other captured payment on this
-    // Razorpay account — e.g. AskGogo — is ignored here and never reaches extend_pro.
-    // This is the guard; extend_pro's auth.users check is only a backstop, not a substitute.
+    // stable machine id stamped at order creation). Any other paid order on this Razorpay
+    // account — e.g. AskGogo — is quietly ignored and never reaches extend_pro. This is
+    // the guard; extend_pro's auth.users check is only a backstop, not a substitute.
     if (notes.product !== 'creditiq') {
       return NextResponse.json({ ok: true, ignored: 'not a creditiq order' });
     }
+
+    // From here the delivery IS ours. Any failure to grant must SHOUT ([RZP][ALERT]) —
+    // never a quiet 200. A paid CreditIQ order that entitles nobody is money taken with
+    // no product; last time the empty ledger was the only signal. The logs should be too.
+    if (!orderId) {
+      console.error('[RZP][ALERT] order.paid for a creditiq order with no order id — cannot grant or dedupe');
+      return NextResponse.json({ ok: true, alerted: 'no_order_id' });
+    }
     const userId: string | null = notes.user_id || null;
+    if (!userId) {
+      console.error(`[RZP][ALERT] creditiq order ${orderId} carries no user_id in notes — Pro NOT granted; needs manual bind + replay`);
+      return NextResponse.json({ ok: true, alerted: 'no_user_id' });
+    }
     const plan: string =
       ['monthly', 'sixmonth', 'twelvemonth'].includes(notes.plan) ? notes.plan : 'monthly';
     const months = Number(notes.months) || monthsForPlan(plan);
@@ -122,27 +140,38 @@ export async function POST(req: NextRequest) {
       p_plan: plan,
       p_months: months,
       p_payment_id: payment?.id || null,
-      p_amount_paise: typeof payment?.amount === 'number' ? payment.amount : null,
+      p_amount_paise:
+        typeof order?.amount_paid === 'number' ? order.amount_paid
+        : typeof order?.amount === 'number' ? order.amount
+        : typeof payment?.amount === 'number' ? payment.amount
+        : null,
       p_event_type: eventType,
       p_raw: payload,
     });
 
     if (rpcError) {
-      console.error('webhook: extend_pro failed', rpcError.message);
-      return NextResponse.json({ error: 'db write failed' }, { status: 500 }); // retryable
+      // Transient DB failure — 500 so Razorpay retries this (and only this).
+      console.error(`[RZP][ALERT] extend_pro failed for creditiq order ${orderId}: ${rpcError.message}`);
+      return NextResponse.json({ error: 'db write failed' }, { status: 500 });
     }
     if (result === 'no_such_user') {
       // A retry can't fix a bad binding (notes.user_id is fixed at order creation), so
       // return 200 and alert a human — do not spin Razorpay's retry schedule on it. The
       // order is left UN-recorded in the ledger, so a manual bind + replay can still grant.
-      console.error(
-        `[RZP][ALERT] paid order ${orderId} bound to unknown user ${userId ?? '(null)'} — ` +
-          `Pro NOT granted; needs manual bind + replay`,
-      );
+      console.error(`[RZP][ALERT] paid order ${orderId} bound to unknown user ${userId} — Pro NOT granted; needs manual bind + replay`);
       return NextResponse.json({ ok: true, alerted: 'no_such_user' });
     }
-    // 'applied' | 'already_applied'
+    // 'applied' | 'already_applied' — the only success paths.
+    console.log(`[RZP] creditiq order ${orderId} -> ${result} (${plan}, ${months}mo, user ${userId})`);
     return NextResponse.json({ ok: true, result });
+  }
+
+  // In orders mode, one-time entitlement comes from order.paid (above). A stray
+  // payment.captured (e.g. both events left subscribed during cutover) is a quiet no-op
+  // here — never alert, never 400-loop. In subscription mode this branch is skipped and
+  // the event falls through to the audit log + generic-ignore path below, unchanged.
+  if (process.env.RAZORPAY_MODE === 'orders' && eventType === 'payment.captured') {
+    return NextResponse.json({ ok: true, ignored: 'payment.captured no-op (orders use order.paid)' });
   }
 
   // 3) Audit log FIRST — even for events we don't handle.
