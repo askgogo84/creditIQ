@@ -34,12 +34,13 @@ type Card = {
 
 export function WalletView({
   displayName, email, cards, totalPoints, primaryBank,
-  onAddCard, onRefresh, refreshing, onEditPoints,
+  onAddCard, onRefresh, refreshing, onEditPoints, onDeleteCard,
 }: {
   displayName: string; email?: string; cards: Card[];
   totalPoints: number; primaryBank: string;
   onAddCard: () => void; onRefresh: () => void; refreshing?: boolean;
   onEditPoints?: (card: Card, points: number) => Promise<boolean>;
+  onDeleteCard?: (card: Card) => void;
 }) {
   // Verified vs estimated split on REAL POINT COUNTS (statement vs manual).
   // Rupee figures are only ever an ESTIMATE RANGE, never a stated value:
@@ -210,7 +211,8 @@ export function WalletView({
               <CardRow key={c.id} bank={c.bank} cardName={c.card_name || c.cardName || c.bank}
                 last4={c.card_last4} points={c.points_balance} currency={c.points_currency}
                 source={c.source} selfEntered={c.self_entered} variant="light"
-                onSavePoints={onEditPoints ? (pts) => onEditPoints(c, pts) : undefined} />
+                onSavePoints={onEditPoints ? (pts) => onEditPoints(c, pts) : undefined}
+                onDelete={onDeleteCard ? () => onDeleteCard(c) : undefined} />
             ))}
             <button id="wallet-add" onClick={onAddCard} style={{
               border: '1.5px dashed color-mix(in srgb,var(--copper-3) 40%, var(--line))', borderRadius: 18, padding: 15, display: 'flex',

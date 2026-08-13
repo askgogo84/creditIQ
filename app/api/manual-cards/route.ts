@@ -113,20 +113,5 @@ export async function POST(req: NextRequest) {
   }
 }
 
-export async function DELETE(req: NextRequest) {
-  const userId = await callerId(req);
-  if (!userId) return NextResponse.json({ error: 'unauthorized' }, { status: 401 });
-  try {
-    const { cardId } = await req.json();
-    if (!cardId) return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
-    const { error } = await svcClient()
-      .from('manual_cards')
-      .delete()
-      .eq('id', cardId)
-      .eq('user_id', userId); // can only delete own rows
-    if (error) return NextResponse.json({ error: error.message }, { status: 500 });
-    return NextResponse.json({ success: true });
-  } catch (err: any) {
-    return NextResponse.json({ error: err.message }, { status: 500 });
-  }
-}
+// DELETE moved to /api/delete-card — one endpoint now covers manual_cards AND
+// statement_imports (see that file). This route keeps GET + POST.

@@ -55,6 +55,7 @@ export default function DashboardPage() {
   // Add-card picker (SEED_CARDS-backed, no free-text, no card numbers).
   const [cardQuery, setCardQuery] = useState('');
   const [selectedCardId, setSelectedCardId] = useState<string | null>(null);
+  const [pendingDelete, setPendingDelete] = useState<{ card: SavedCard; prev: SavedCard[]; timer: ReturnType<typeof setTimeout> } | null>(null);
   const [wpLoading, setWpLoading] = useState(true);
   const [wp, setWp] = useState<{ linked: boolean; org_name?: string; org_id?: string }>({ linked: false });
   const [wpCode, setWpCode] = useState('');
@@ -216,15 +217,52 @@ export default function DashboardPage() {
     setAddForm(f => ({ ...f, bank: c.bank, cardName: c.name, pointsCurrency: currency }));
   };
 
-  const handleDeleteCard = async (cardId: string, source: string) => {
-    if (!user) return;
-    if (source === 'manual') {
-      await authedFetch('/api/manual-cards', {
+  // Delete a card with a ~5s UNDO window (deferred commit). Tap delete → the card
+  // hides immediately and the window opens; the server DELETE fires only when the
+  // window elapses. Undo restores the pre-delete snapshot with NO server call —
+  // nothing was destroyed. Deleting a statement card is irreversible (drops
+  // statement_date, points_expiry, provenance), which is exactly why the window exists.
+  //
+  // ⚠ INTENTIONAL FAIL-SAFE — DO NOT "FIX": close the tab mid-window and the timer
+  // never fires, so the delete never commits. On a money surface, losing a delete is
+  // the safe failure; losing the data is not. Do NOT add a pagehide/beacon flush to
+  // commit-on-close — it would destroy data the user may not have meant to lose. (SPA
+  // navigation still commits; only a real tab close kills the timer.)
+  const UNDO_MS = 5000;
+
+  const commitDelete = async (card: SavedCard) => {
+    // No setState — the row is already hidden, and this can run after unmount.
+    try {
+      await authedFetch('/api/delete-card', {
         method: 'DELETE',
-        body: JSON.stringify({ cardId })
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ cardId: card.id, source: card.source }),
       });
-    }
-    await loadCards(user.id);
+    } catch {}
+  };
+
+  // Any new mutation ends an open undo window by committing it, so at most one delete
+  // is ever pending and its restore snapshot can't go stale.
+  const flushPendingDelete = () => {
+    if (!pendingDelete) return;
+    clearTimeout(pendingDelete.timer);
+    void commitDelete(pendingDelete.card);
+    setPendingDelete(null);
+  };
+
+  const onDeleteCard = (card: SavedCard) => {
+    flushPendingDelete();
+    const prev = cards;
+    setCards(cs => cs.filter(c => c.id !== card.id)); // optimistic hide
+    const timer = setTimeout(() => { void commitDelete(card); setPendingDelete(null); }, UNDO_MS);
+    setPendingDelete({ card, prev, timer });
+  };
+
+  const undoDelete = () => {
+    if (!pendingDelete) return;
+    clearTimeout(pendingDelete.timer);
+    setCards(pendingDelete.prev); // restore exact pre-delete state/order; no server call
+    setPendingDelete(null);
   };
 
   // Inline points edit (CardRow owns the input; this owns the write + state).
@@ -232,6 +270,7 @@ export default function DashboardPage() {
   // then reconcile — revert to the pre-edit snapshot if the server rejects. A
   // hand-edited statement card also flips to self_entered (demotes off Verified).
   const onEditPoints = async (card: SavedCard, points: number): Promise<boolean> => {
+    flushPendingDelete(); // editing ends any open undo window so its snapshot can't go stale
     const prev = cards;
     setCards(cs => cs.map(c => c.id === card.id
       ? { ...c, points_balance: points, self_entered: c.source === 'statement' ? true : c.self_entered }
@@ -280,7 +319,25 @@ export default function DashboardPage() {
         onRefresh={() => { setRefreshing(true); loadCards(user.id).then(() => setRefreshing(false)); }}
         refreshing={refreshing}
         onEditPoints={onEditPoints as any}
+        onDeleteCard={onDeleteCard as any}
       />
+
+      {pendingDelete && (
+        <div role="status" aria-live="polite" style={{
+          position: 'fixed', left: '50%', transform: 'translateX(-50%)',
+          bottom: 'calc(90px + env(safe-area-inset-bottom))', zIndex: 60,
+          display: 'flex', alignItems: 'center', gap: 16, maxWidth: 'calc(100vw - 32px)',
+          background: 'var(--ink)', color: 'var(--surface)',
+          padding: '11px 16px', borderRadius: 12, boxShadow: '0 12px 30px rgba(0,0,0,0.28)',
+          fontSize: 13.5, fontWeight: 500,
+        }}>
+          <span>Card removed</span>
+          <button type="button" onClick={undoDelete} style={{
+            background: 'none', border: 'none', color: 'var(--copper-4, #F2C658)',
+            fontWeight: 700, fontSize: 13.5, cursor: 'pointer', padding: 0, letterSpacing: '.02em',
+          }}>Undo</button>
+        </div>
+      )}
 
       {showAddModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4"
