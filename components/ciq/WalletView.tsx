@@ -14,13 +14,13 @@ import { PageHeader } from './PageHeader';
 // is not toured; it moves to Home in Implementation-Plan Step 6.)
 const WALLET_TOUR: TourStep[] = [
   {
-    title: 'Your points, verified vs estimated',
-    body: 'The green slice is read straight from your statements. Grey is your own estimate. We never dress one up as the other.',
+    title: 'Your points, verified vs self-entered',
+    body: 'The green slice is read straight from your statements. Grey is what you entered yourself. We never dress one up as the other.',
     anchor: '#wallet-gauge',
   },
   {
     title: 'Add a card',
-    body: 'Enter a card by hand to keep an estimate in view, or upload a statement to add a verified one.',
+    body: 'Enter a card by hand to keep a self-entered balance in view, or upload a statement to add a verified one.',
     anchor: '#wallet-add',
   },
 ];
@@ -143,7 +143,7 @@ export function WalletView({
               <path d="m9 12 2 2 4-4" stroke="var(--prov-verified)" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" />
             </svg>
             <p style={{ fontSize: 12.5, lineHeight: 1.5, color: 'var(--ink-2)' }}>
-              <b style={{ color: 'var(--prov-verified)' }}>We don&apos;t guess your money.</b> Verified values come from your real statements. Estimates are flagged — never inflated.
+              <b style={{ color: 'var(--prov-verified)' }}>We don&apos;t guess your money.</b> Verified values come from your real statements. Self-entered values are flagged — never inflated.
             </p>
           </div>
         </div>

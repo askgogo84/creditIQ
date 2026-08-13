@@ -138,7 +138,7 @@ export function HeroGauge({
             <div>
               <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                 <span style={{ width: 9, height: 9, borderRadius: 3, background: 'var(--prov-estimated)', opacity: .55 }} />
-                <span className="mono" style={{ fontSize: 9.5, letterSpacing: '.05em', textTransform: 'uppercase', color: 'var(--ink-3)' }}>Estimated</span>
+                <span className="mono" style={{ fontSize: 9.5, letterSpacing: '.05em', textTransform: 'uppercase', color: 'var(--ink-3)' }}>Self-entered</span>
               </div>
               <div className="w-display" style={{ fontWeight: 600, fontSize: 20, marginTop: 5, color: 'var(--ink-2)', fontVariantNumeric: 'tabular-nums' }}>
                 {estimatedPoints.toLocaleString('en-IN')} <span style={{ fontSize: 12 }}>pts</span>
@@ -147,12 +147,12 @@ export function HeroGauge({
           </div>
         </div>
 
-        {/* All-estimated state: no verified points yet. Say so plainly and
+        {/* All-self-entered state: no verified points yet. Say so plainly and
             understated (grey, never dressed up) — the actionable upload CTA
             lives just below in WalletView. See PRD §7. */}
         {verifiedPoints === 0 && estimatedPoints > 0 && (
           <div className="mono" style={{ marginTop: 14, fontSize: 11, lineHeight: 1.45, color: 'var(--prov-estimated)' }}>
-            All estimated — upload a statement to verify.
+            All self-entered — upload a statement to verify.
           </div>
         )}
 

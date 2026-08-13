@@ -17,7 +17,7 @@
 export function EstimateRange({ low, high, variant = 'gold' }: { low: number; high: number; variant?: 'light' | 'gold' }) {
   const light = variant === 'light';
   const ink2 = light ? 'var(--ink-2)' : 'var(--ciq-ink-2)';
-  // Badge text: ink-2 (light) / --ciq-ink-2 (gold), matching CardRow's "Estimated"
+  // Badge text: ink-2 (light) / --ciq-ink-2 (gold), matching CardRow's "Self-entered"
   // badge and clearing AA on the badge's translucent wash in BOTH variants. The
   // understated greys (--prov-estimated / --ciq-estimated) drop to ~2.9–3.6:1 on
   // the panel + wash — too low for this honesty label.

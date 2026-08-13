@@ -58,7 +58,10 @@ export async function GET(req: Request) {
       last4: r.card_last4 ?? null,
       points: r.points_balance ?? 0,
       points_currency: r.points_currency ?? 'Points',
-      verified: false, // manual = self-reported (grey/"Estimated" in CreditIQ's honesty model)
+      verified: false, // manual = self-reported (grey/"Self-entered" in CreditIQ's honesty model).
+                       // NB: the user-facing WA label string lives in the AskGogo bot repo
+                       // (gogo-memory-os), not here — this route only returns the boolean.
+                       // Rename it there too or the bot still says "Estimated". See branch notes.
     })),
     ...linkedRows.map((r: any) => ({
       source: 'linked' as const,

@@ -2,7 +2,7 @@
 'use client';
 
 /**
- * A single held card row (bank monogram · name · verified/estimated badge · points).
+ * A single held card row (bank monogram · name · verified/self-entered badge · points).
  *
  * `variant` (wallet migration): 'light' = white/copper light system (the migrated
  * wallet). 'gold' (default) = the retired [data-ciq] gold tokens/classes, kept
@@ -62,7 +62,7 @@ export function CardRow({
             fontSize: 8.5, fontWeight: 700, letterSpacing: '.04em', padding: '2px 6px', borderRadius: 5,
             color: verified ? t.verified : t.ink2,
             background: verified ? t.verifiedBg : t.line,
-          }}>{verified ? 'Verified' : 'Estimated'}</span>
+          }}>{verified ? 'Verified' : 'Self-entered'}</span>
           {last4 ? `·${last4}` : ''} {verified ? '/ statement' : '/ manual'}
         </div>
       </div>
