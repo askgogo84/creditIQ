@@ -85,6 +85,8 @@ Unrelated to each other and to the page pass. All self-contained. **Outcome:** #
 
 ## BATCH 3 — The page-by-page pass (multiple sessions, ONE pass)
 
+> ⏸ **PAUSED (13 Aug) after Cards commit 2**, to pivot to user-facing priorities (Payments → first-run pricing modal → Wallet CRUD). Done so far: **(wallet)** layout, **Spend** + **Travel** tokenise, **Cards** layout + hero→panel (commits `e8a9f907`, `52ea0d5d` — the four pages are now left-aligned PageHeader panels, catalogue controls reachable in one screen at 375px; first card tile at ~1026px accepted, CardsClient trim deliberately NOT done). **Remaining when resumed:** card-switch's slate/gold token migration; `/card/[slug]` + the marketing-hero pages (`/banks`, `/bank`, `/best-cards`, glossary); the gold four (`[data-ciq]` deletion + wallet CRUD lands there); the global radius pass (rebuild the near-unadopted `--r-*` scale from real usage); the font cleanup (rides the gold-four commit). Re-scan every remaining page against live code first — the 2 Aug audit is confirmed obsolete.
+
 **This is the merged batch.** Every signed-in surface + `/card/[slug]` + the marketing-hero pages, each visited **once**. The old Cards-conversion, gold-four and hardcoded-hex batches are dissolved into this.
 
 ### Per-page checklist (every page gets all of this on its single visit)
