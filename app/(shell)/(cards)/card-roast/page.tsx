@@ -10,6 +10,7 @@ import { CopperCTA } from '@/components/design/CTAs'
 import { CreditCard3D, type CardVariant } from '@/components/design/CreditCard3D'
 import { SEED_CARDS, cardPageExists } from '@/lib/data/seed-cards'
 import { authedFetch } from '@/lib/authed-fetch'
+import { PageHeader } from '@/components/ciq/PageHeader'
 
 // Presets prefill an editable monthly-spend field (user can override).
 const PRESETS = {
@@ -115,26 +116,20 @@ export default function CardRoastPage() {
   return (
     <>
       <div>
-        <section style={{ position: 'relative', paddingTop: 'clamp(120px,18vw,150px)' }}>
-          <div className="aurora" style={{ top: -100, left: -100, width: 600, height: 500, background: 'radial-gradient(circle,rgba(196,106,82,0.35),transparent 60%)' }} />
-          <div className="aurora" style={{ bottom: -150, right: -100, width: 600, height: 600, background: 'radial-gradient(circle,rgba(212,163,115,0.35),transparent 60%)' }} />
-
-          <div className="shell" style={{ position: 'relative', zIndex: 2, paddingBottom: 60 }}>
-            <Reveal style={{ textAlign: 'center', marginBottom: 'clamp(40px,6vw,64px)', maxWidth: 880, margin: '0 auto clamp(40px,6vw,64px)' }}>
-              <div style={{ display: 'inline-flex', alignItems: 'center', gap: 10, padding: '8px 14px', borderRadius: 999, background: 'rgba(196,106,82,0.12)', border: '1px solid rgba(196,106,82,0.30)', marginBottom: 28 }}>
-                <span style={{ fontSize: 14 }}>&#128293;</span>
-                <span style={{ fontFamily: 'var(--font-mono,monospace)', fontSize: 11, letterSpacing: '0.16em', color: 'var(--terracotta,#C46A52)', textTransform: 'uppercase', fontWeight: 600 }}>AI TOOL - CARD ROAST</span>
-              </div>
-              <h1 style={{ fontSize: 'clamp(44px,8vw,108px)', letterSpacing: '-0.04em', lineHeight: 1.0, fontWeight: 800, color: 'var(--ink,#142950)' }}>
-                Is your card{' '}
-                <span style={{ fontFamily: 'var(--font-serif,Georgia,serif)', color: 'var(--terracotta,#C46A52)', fontStyle: 'italic', fontWeight: 400 }}>wasting</span>{' '}
-                your money?
-              </h1>
-              <p style={{ maxWidth: 580, margin: '24px auto 0', color: 'var(--ink-2,#2A3F6B)', fontSize: 'clamp(16px,1.4vw,19px)', lineHeight: 1.55 }}>
-                Pick your card and your monthly spend. We grade it brutally &mdash; and tell you exactly{' '}
-                <span style={{ fontFamily: 'var(--font-serif,Georgia,serif)', color: 'var(--ink,#142950)' }}>what you are losing</span>.
-              </p>
-            </Reveal>
+        <section style={{ position: 'relative' }}>
+          <div style={{ paddingBottom: 60 }}>
+            {/* Panel-only: left-aligned PageHeader replaces the centred hero (aurora dropped,
+                huge top-pad gone) so the tool is reachable in ~one screen. "wasting" is roman
+                terracotta emphasis (never italic). Display grade letter stays italic below. */}
+            <PageHeader
+              eyebrow="AI Tool · Card Roast"
+              eyebrowPill
+              pillDotColor="var(--terracotta,#C46A52)"
+              title={<>Is your card <span style={{ color: 'var(--terracotta,#C46A52)' }}>wasting</span> your money?</>}
+              subtitle={<>Pick your card and your monthly spend. We grade it brutally &mdash; and tell you exactly <span style={{ color: 'var(--ink,#142950)', fontWeight: 600 }}>what you are losing</span>.</>}
+              maxWidth={1100}
+              showTabs={false}
+            />
 
             {step === 'input' && (
               <Reveal>
@@ -301,7 +296,7 @@ export default function CardRoastPage() {
                       {betterLinkable ? (
                         <Link href={`/card/${result.betterCardId}`} style={{ display: 'inline-flex', alignItems: 'center', gap: 8, padding: '12px 22px', borderRadius: 999, background: 'var(--copper-3,#D89B2A)', color: 'var(--ink,#142950)', fontWeight: 700, fontSize: 15, textDecoration: 'none' }}>See full breakdown</Link>
                       ) : (
-                        <span style={{ fontSize: 13, color: 'var(--ink-3,#5A6A8A)', fontStyle: 'italic' }}>Consider {result.betterCard} for your spend pattern.</span>
+                        <span style={{ fontSize: 13, color: 'var(--ink-3,#5A6A8A)' }}>Consider {result.betterCard} for your spend pattern.</span>
                       )}
                     </div>
                   )}

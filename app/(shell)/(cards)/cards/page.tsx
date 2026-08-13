@@ -1,5 +1,5 @@
 import { Metadata } from 'next';
-import { SectionHeader } from '@/components/design/SectionHeader';
+import { PageHeader } from '@/components/ciq/PageHeader';
 import { CopperCTA, GhostCTA } from '@/components/design/CTAs';
 import { DesignFooter } from '@/components/design/Footer';
 import { CardsClient } from './CardsClient';
@@ -44,29 +44,27 @@ export default async function CardsIndexPage() {
 
   return (
     <>
-      <div>
-        {/* HERO */}
-        <section style={{ position: 'relative', paddingTop: 'clamp(120px, 18vw, 160px)' }}>
-          <div className="aurora" style={{ top: -120, right: -100, width: 540, height: 540,
-            background: 'radial-gradient(circle, rgba(212,163,115,0.55), transparent 60%)' }} />
-          <div className="shell" style={{ position: 'relative', zIndex: 2, paddingBottom: 8 }}>
-            <SectionHeader
-              label={`THE FULL CATALOG . ${totalCards} CARDS . ${banks.length} BANKS`}
-              title={<>Every card in India,<br /><em>ranked honestly.</em></>}
-              subtitle="Real annual value, live devaluation tracking and IQ scores for all cards. No affiliate bias -- no bank pays us to move a card up the list."
-            />
-            <div style={{ marginTop: 32, display: 'flex', gap: 14, justifyContent: 'center', flexWrap: 'wrap' }} className="stack-mobile">
-              <CopperCTA href="/smart-match">Find my perfect card</CopperCTA>
-              <GhostCTA href="/compare">Compare side by side</GhostCTA>
-            </div>
-          </div>
-        </section>
-
-        {/* CARDS GRID */}
-        <CardsClient initialCards={cards} />
-
-        <DesignFooter />
+      {/* Panel-only: the (cards) layout owns the "Cards" name + SectionTabs strip. A
+          left-aligned PageHeader replaces the centred marketing hero (aurora dropped) so the
+          catalogue is reachable in ~one screen at 375px. H1 wording unchanged; "ranked
+          honestly." is roman copper emphasis (DESIGN.md — never italic). The two acquisition
+          CTAs stay, left-aligned — they're the page's job. Metadata/OG untouched. */}
+      <PageHeader
+        eyebrow={`The full catalog · ${totalCards} cards · ${banks.length} banks`}
+        title={<>Every card in India, <span style={{ color: 'var(--copper)' }}>ranked honestly.</span></>}
+        subtitle="Real annual value, live devaluation tracking and IQ scores for all cards. No affiliate bias -- no bank pays us to move a card up the list."
+        maxWidth={1100}
+        showTabs={false}
+      />
+      <div style={{ marginTop: 20, display: 'flex', gap: 14, flexWrap: 'wrap' }} className="stack-mobile">
+        <CopperCTA href="/smart-match">Find my perfect card</CopperCTA>
+        <GhostCTA href="/compare">Compare side by side</GhostCTA>
       </div>
+
+      {/* CARDS GRID */}
+      <CardsClient initialCards={cards} />
+
+      <DesignFooter />
     </>
   );
 }

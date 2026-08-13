@@ -128,7 +128,10 @@ export default function CardSwitchPage() {
     : 0;
 
   return (
-    <div style={{ minHeight: '100vh', background: 'var(--bg, #08080E)' }}>
+    <div>
+      {/* Panel-only in the (cards) layout: dropped the redundant minHeight:100vh + near-black
+          --bg-fallback wrapper. Token migration (slate --text/--border, gold gradient) is
+          deferred — NOT done here. The 720 form measure is kept (matches /statement-truth). */}
       <main style={{ maxWidth: 720, margin: '0 auto', padding: '32px 20px 100px' }}>
 
         {/* Hero */}

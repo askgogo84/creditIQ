@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { DesignFooter } from '@/components/design/Footer';
-import { Reveal } from '@/components/design/Reveal';
+import { PageHeader } from '@/components/ciq/PageHeader';
 import { SEED_CARDS } from '@/lib/data/seed-cards';
 import { getApplyUrl } from '@/lib/affiliate';
 import { EstimatedValue } from '@/components/cards/Unverified';
@@ -45,24 +45,18 @@ export default function ComparePage() {
   return (
     <>
       <div>
-        <section style={{ position: 'relative', paddingTop: 'clamp(120px,18vw,150px)', paddingBottom: 40 }}>
-          <div className="aurora" style={{ top: -80, right: -100, width: 600, height: 500, background: 'radial-gradient(circle,rgba(212,163,115,0.20),transparent 60%)' }} />
-          <div className="shell" style={{ position: 'relative', zIndex: 2 }}>
-            <Reveal>
-              <div style={{ fontFamily: 'var(--font-mono,monospace)', fontSize: 10, letterSpacing: '0.18em', textTransform: 'uppercase', color: 'var(--copper,#8C5F12)', fontWeight: 700, marginBottom: 14 }}>Compare</div>
-              <h1 style={{ fontSize: 'clamp(32px,5vw,72px)', fontWeight: 800, color: 'var(--ink,#142950)', lineHeight: 1.0, letterSpacing: '-0.04em', margin: '0 0 12px' }}>
-                Pick cards to{' '}
-                <span style={{ fontFamily: 'var(--font-serif,Georgia,serif)', color: 'var(--copper-3,#D89B2A)', fontStyle: 'italic', fontWeight: 400 }}>compare</span>.
-              </h1>
-              <p style={{ fontSize: 'clamp(14px,1.3vw,17px)', color: 'var(--ink-2,#2A3F6B)', lineHeight: 1.65, margin: 0 }}>
-                Add up to 4 cards. See fees, rewards, and lounge access side by side.
-              </p>
-            </Reveal>
-          </div>
-        </section>
+        {/* Panel-only: (cards) layout owns the Cards name + strip. Left-aligned PageHeader
+            replaces the centred hero; "compare" is roman copper emphasis (never italic). */}
+        <PageHeader
+          eyebrow="Compare"
+          title={<>Pick cards to <span style={{ color: 'var(--copper-3)' }}>compare</span>.</>}
+          subtitle="Add up to 4 cards. See fees, rewards, and lounge access side by side."
+          maxWidth={1100}
+          showTabs={false}
+        />
 
-        <section style={{ paddingBottom: 60 }}>
-          <div className="shell">
+        <section style={{ paddingBottom: 60, marginTop: 24 }}>
+          <div>
             <div style={{ display: 'grid', gridTemplateColumns: `repeat(${Math.max(selected.length + (selected.length < 4 ? 1 : 0), 2)}, 1fr)`, gap: 12, marginBottom: 24 }} className="grid-2-mobile">
               {selectedCards.map(card => {
                 const { url, label } = getApplyUrl(card.id);
