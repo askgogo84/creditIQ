@@ -15,6 +15,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 import crypto from 'crypto';
+import { monthsForPlan } from '@/lib/plans';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -92,6 +93,57 @@ export async function POST(req: NextRequest) {
   const eventAtIso = unixToIso(payload?.created_at) || new Date().toISOString();
 
   const sb = svcClient();
+
+  // 2.5) ONE-TIME ORDER ENTITLEMENT (STEP 2). Additive + gated; the subscription.*
+  //      handling below is untouched, and both models stay live during cutover.
+  //      INERT until RAZORPAY_MODE=orders. Order events have their own ledger
+  //      (pro_order_events, via extend_pro), so they never touch subscription_events.
+  if (process.env.RAZORPAY_MODE === 'orders' && eventType === 'payment.captured') {
+    const orderId: string | null = payment?.order_id || null;
+    if (!orderId) {
+      return NextResponse.json({ ok: true, ignored: 'no order_id' });
+    }
+    const notes: any = payment?.notes || {};
+    // Fail CLOSED to OUR product. Only CreditIQ orders carry product==='creditiq' (a
+    // stable machine id stamped at order creation). Any other captured payment on this
+    // Razorpay account — e.g. AskGogo — is ignored here and never reaches extend_pro.
+    // This is the guard; extend_pro's auth.users check is only a backstop, not a substitute.
+    if (notes.product !== 'creditiq') {
+      return NextResponse.json({ ok: true, ignored: 'not a creditiq order' });
+    }
+    const userId: string | null = notes.user_id || null;
+    const plan: string =
+      ['monthly', 'sixmonth', 'twelvemonth'].includes(notes.plan) ? notes.plan : 'monthly';
+    const months = Number(notes.months) || monthsForPlan(plan);
+
+    const { data: result, error: rpcError } = await sb.rpc('extend_pro', {
+      p_order_id: orderId,
+      p_user_id: userId,
+      p_plan: plan,
+      p_months: months,
+      p_payment_id: payment?.id || null,
+      p_amount_paise: typeof payment?.amount === 'number' ? payment.amount : null,
+      p_event_type: eventType,
+      p_raw: payload,
+    });
+
+    if (rpcError) {
+      console.error('webhook: extend_pro failed', rpcError.message);
+      return NextResponse.json({ error: 'db write failed' }, { status: 500 }); // retryable
+    }
+    if (result === 'no_such_user') {
+      // A retry can't fix a bad binding (notes.user_id is fixed at order creation), so
+      // return 200 and alert a human — do not spin Razorpay's retry schedule on it. The
+      // order is left UN-recorded in the ledger, so a manual bind + replay can still grant.
+      console.error(
+        `[RZP][ALERT] paid order ${orderId} bound to unknown user ${userId ?? '(null)'} — ` +
+          `Pro NOT granted; needs manual bind + replay`,
+      );
+      return NextResponse.json({ ok: true, alerted: 'no_such_user' });
+    }
+    // 'applied' | 'already_applied'
+    return NextResponse.json({ ok: true, result });
+  }
 
   // 3) Audit log FIRST — even for events we don't handle.
   let auditId: number | null = null;

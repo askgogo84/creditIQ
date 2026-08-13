@@ -47,7 +47,32 @@ export async function getProStatus(userId: string): Promise<ProStatus> {
     const sb = serviceClient();
     if (!sb || !userId) return NOT_PRO;
 
-    // 1) Look for a currently-entitled subscription
+    // ── TEMPORARY DUAL-SOURCE (subscriptions → one-time-orders cutover) ──────────
+    // A user is Pro if EITHER source grants it:
+    //   Source 1 (authoritative going forward): user_profiles.pro_until  (one-time orders)
+    //   Source 2 (LEGACY): an entitled `subscriptions` row               (recurring mandates)
+    // Once the subscription path is retired and every live mandate has lapsed, DELETE the
+    // Source-2 blocks below so this collapses to pro_until alone. This must NOT become a
+    // permanent two-source entitlement check. See docs/PRICING-ONETIME-IMPLEMENTATION-PLAN.md.
+    // ────────────────────────────────────────────────────────────────────────────
+
+    // Source 1 — one-time order entitlement (pro_until > now()).
+    const { data: prof } = await sb
+      .from('user_profiles')
+      .select('pro_plan, pro_until')
+      .eq('user_id', userId)
+      .maybeSingle();
+    if (prof?.pro_until && new Date(prof.pro_until) > new Date()) {
+      return {
+        isPro: true,
+        plan: (prof.pro_plan as ProPlan) ?? null,
+        status: 'active',
+        current_period_end: prof.pro_until,
+        cancel_at_period_end: false,
+      };
+    }
+
+    // Source 2 (LEGACY, remove at cutover) — currently-entitled subscription.
     const { data: entitled, error } = await sb
       .from('subscriptions')
       .select('plan,status,current_period_end,cancel_at_period_end')

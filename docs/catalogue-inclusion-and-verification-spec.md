@@ -119,3 +119,101 @@ This is consumed, unit-blind, by:
 and `category_rewards` units (unrecoverable rows → `disputed`, verified against a primary source in §8c);
 add an `inr_per_point` reward-value field; make `rag.ts`/`engine.ts`/`rewards-calculator` unit-aware;
 recompute `iq_score`. Until then, cross-card earn-rate ranking is comparing incommensurable numbers.
+
+## 11. Interim ranking policy during earn-rate re-sourcing (DECISION: option C)
+Re-sourcing every card's earn rate from the issuer (§10) is not instant. Between now and a fully
+re-sourced catalogue, the IQ score and every rank position that derives from earn rate are computed from
+the unit-ambiguous input §10 describes — while the surfaces around them say "ranked *honestly*" and "ranked
+by effective reward rate." This section governs the interim. **Chosen: option C — re-source the top and
+most-searched cards first; show score + rank only for re-sourced cards; suppress both for the rest.**
+
+Rejected alternatives, for the record: (A) suppress every ordering catalogue-wide until fully re-sourced —
+honest but blanks the product's core surface for the whole re-sourcing window; (B) keep the orderings and
+label them "estimated" — **§8 already rules this out**: a rank is a property of the *whole ordering*, not of
+one row, so a neighbouring row inherits a shifted position with nothing on it to mark. You cannot honestly
+label a derived ordering; you can only show it or withhold it.
+
+### 11a. The suppression rule
+- **Re-sourced card** = its earn rate is re-sourced from the issuer, unit-tagged per §6, and `verified`.
+  Such a card shows its numeric `iq_score` and its rank position **normally**.
+- **Not-yet-re-sourced card** = the numeric IQ score **and** the rank position are **SUPPRESSED** — absent,
+  not rendered. **Not** labelled "estimated," not greyed, not asterisked. Gone. (§6's grey `unverified`
+  treatment is for a card's own *fields*; it does **not** apply to a cross-card *ordering*, per §8.)
+- **A rank is a property of the ordering, so it is suppressed at the ordering level, not the row level.** A
+  ranking surface may print positions only across a contiguous re-sourced block from the top: as soon as the
+  ranked set contains one not-yet-re-sourced card at or above the visible cut, **no** positions render on
+  that surface until its ranked population is clean. A surface never shows "#3 … #5" with #4 blanked — that
+  re-introduces exactly the shifted-neighbour lie §8 forbids.
+- **The card stays fully present throughout** — listed, searchable, filterable, statement-matchable, and its
+  own `verified`/`unverified` fields (fee, lounge, forex, welcome) render as normal per §5–§6. Only the
+  cross-card **score** and the cross-card **ordering** disappear. Suppression removes a comparison we can't
+  stand behind; it never removes a card.
+
+### 11b. Which surfaces this touches (inventory — three groups)
+Every surface that prints an `iq_score`, a rank position, or a "best/top" ordering falls into exactly one
+group. Only **Group 1** is governed by 11a.
+
+**Group 1 — earn-rate-derived (SUPPRESS score + rank per 11a until re-sourced).** Ordering traces to the
+§10 defect (`iq_score`, or `engine.calculateAnnualValue` which consumes `base_reward_rate/100` +
+`category_rewards`):
+- `app/(shell)/cards/page.tsx` + `CardsClient.tsx` — ordered by Supabase `iq_score`; prints a numeric
+  `IQ Score /100` on **every** tile (no rank badge). Hero: "ranked *honestly*."
+- `app/api/cards/route.ts`, `app/api/app-config/route.ts` (top-20 featured), `app/api/employee/corporate-card/route.ts`,
+  `lib/supabase.ts` (`getAllCards`) — all `.order('iq_score', …)`; feed the app home, the mobile config, and
+  corporate onboarding.
+- `app/smart-match/page.tsx` — ordered by `engine.matchCards` (earn-rate); rank badge 1–12 + numeric tile score.
+- `app/HomeCardRanks.tsx` — `matchCards` annual value; live positions 01–06 on the homepage.
+- `components/marketing/landing/CardRankings.tsx` — `matchCards` annual value; also prints `base_reward_rate%`.
+- `app/(shell)/(spend)/spend-optimizer/page.tsx` — AI ranking (via `rag.ts`) from earn rates; 🥇🥈🥉 + `netAnnualValue`.
+- `app/(shell)/card-roast/page.tsx` — `calculateAnnualValue` on a single card; suppress the annual-value
+  figure + letter grade until that card is re-sourced (no cross-card rank, but the number is earn-rate-derived).
+
+**Group 2 — editorial `expert_rating`, NOT earn-rate (do NOT suppress — but fix the false framing).** These
+sort by the hand-set `expert_rating` (0–10), unrelated to the §10 defect; re-sourcing earn rates neither
+fixes nor changes them. They are honest *as an editorial ranking* — but today they mislabel and overclaim:
+- `app/best-cards/[category]/page.tsx` — sorts by `expert_rating`; renders rank badge + `IQ Score /100`
+  (= `expert_rating × 10`) under copy that reads **"Ranked by effective reward rate."** That copy is false
+  (it's an editorial rating, not a reward-rate computation) and the number is **mislabelled** "IQ Score,"
+  conflatable with the Group-1 `iq_score`. *(Category membership is a separate axis: `fuel`/`forex`/`lounge`/
+  `lifetime_free` filter on unit-safe fields; `travel`/`cashback`/`shopping`/`dining` filter on `category[]`
+  tags — neither is earn-rate, so the filters stand; only the ordering copy + score label are wrong.)*
+- `app/(shell)/banks/[bank]/page.tsx`, `app/bank/[slug]/page.tsx` — `expert_rating` sort + rank + `IQ Score /100`.
+- `app/(shell)/card/[slug]` — single "CreditIQ Score /10" (= `expert_rating`), no ranking.
+- **Required fix (not suppression):** stop calling `expert_rating × 10` an "IQ Score" (rename to an
+  editorial label, e.g. "Editor rating," distinct from the earn-rate `iq_score`), and drop/soften the
+  "ranked by effective reward rate" claim to what it actually is until the earn-rate `iq_score` is live.
+
+**Group 3 — neither earn-rate nor tainted (leave untouched).**
+- `app/approval-odds/page.tsx` — orders by `approvalProbability` (income + CIBIL), not rewards.
+- `app/(shell)/compare/page.tsx` — user-chosen order; no score, no rank.
+- `app/(shell)/card/[slug]` redemption list — sorts by `value_per_point_inr`, and
+  `app/(shell)/(spend)/points-optimizer/page.tsx` — ranks *redemption paths* (not cards) by value-per-point.
+  Both depend on the reward-**value** (`inr_per_point`) field §10 flags as *missing*; that is a separate
+  estimated-value gap, tracked under §10, **not** suppressed here.
+
+### 11c. Re-sourcing priority order
+**"Most-searched" is not measurable today.** The `/cards` search box filters client-side only and logs
+nothing; there is no card-pageview tracking; `@vercel/analytics` is installed but unused; the one real
+demand signal — apply-clicks into the `applications` table — is **defined but not wired**
+(`app/api/apply/[cardId]/route.ts` still carries the `// TODO: log click` stub). So the priority list is a
+**judgement call**, not a data pull. (If we want it data-driven, wire search-query + apply-click logging
+first; that is a prerequisite for any future *data*-ordered version of this list, not a blocker for starting
+re-sourcing now.) The judgement list reuses the §8c demand ordering:
+
+1. **Tier 1 — unblocks the most Group-1 top slots (highest-demand held cards).** The §8c leaders first:
+   **Amazon Pay ICICI, Federal Scapia, OneCard, IndiGo 6E (HDFC), MakeMyTrip ICICI**, then the top-of-catalogue
+   premium/co-brand set that occupies the visible top of `/cards`, `HomeCardRanks`, the landing table and
+   `spend-optimizer` (Infinia, Regalia Gold, Axis Atlas/Magnus, SBI Cashback, Amex Platinum Travel/MRCC,
+   ICICI Emeralde, Tata Neu Infinity, IDFC First Wealth/Select).
+2. **Tier 2 — the remainder of the ~73 already-held cards (§8c).** Completing this set makes every Group-1
+   ranking surface's top-20 fully re-sourced, because those top slots are drawn almost entirely from the held
+   set. `smart-match` is spend-variable, so guaranteeing a clean top-12 for any plausible profile needs the
+   broader held base, not just the top-20 — Tier 2 supplies it.
+3. **Tier 3 — the IDENTITY-tier tail (§8e).** These never had a trustworthy earn rate; they ingest with score
+   + rank **already suppressed** by 11a and stay that way until re-sourced on demand. No separate action —
+   suppression is their default state, not a regression.
+
+**Exit condition.** 11a suppression lifts for a card the moment its earn rate is `verified` + unit-tagged;
+it lifts for a *surface* when every card at or above its visible cut is re-sourced. When the full held set
+(Tiers 1–2) is re-sourced and `iq_score` is recomputed under §8b, every Group-1 surface shows a complete,
+honest ordering and this section is retired.
