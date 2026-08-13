@@ -53,14 +53,11 @@ export function WalletView({
   const estHigh = Math.round(totalPoints * HIGH_RATE);
   const hasVerified = vPoints > 0;
 
-  // First-run walkthrough: auto-open once, remembered in localStorage. Always
-  // dismissable, and re-openable via the "Take a tour" affordance.
+  // Walkthrough is OPT-IN: it no longer auto-opens. A new user already meets the
+  // first-run pricing modal and the onboarding wizard; a third forced full-screen
+  // stop was too many. The Tour now opens only via the "Take a tour" affordance
+  // below; closeTour still records that it was seen (TOUR_SEEN_KEY).
   const [tourOpen, setTourOpen] = useState(false);
-  useEffect(() => {
-    try {
-      if (!localStorage.getItem(TOUR_SEEN_KEY)) setTourOpen(true);
-    } catch {}
-  }, []);
   // Final step's button is "Add a card" and OPENS the modal (IA §6): on 'done'
   // set the seen-flag AND fire onAddCard; on 'skip' just remember it was seen.
   const closeTour = (reason: 'skip' | 'done') => {

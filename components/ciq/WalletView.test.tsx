@@ -21,8 +21,6 @@ beforeAll(() => {
   })) as unknown as typeof window.matchMedia;
 });
 
-const TOUR_SEEN_KEY = 'ciq_wallet_tour_v1';
-
 beforeEach(() => { localStorage.clear(); });
 
 type C = React.ComponentProps<typeof WalletView>['cards'];
@@ -36,14 +34,15 @@ const CARDS: C = [
 function renderWallet(opts: { cards?: C; totalPoints?: number; openTour?: boolean } = {}) {
   const cards = opts.cards ?? CARDS;
   const totalPoints = opts.totalPoints ?? cards.reduce((s, c) => s + (c.points_balance || 0), 0);
-  // Suppress the first-run tour unless the test wants it, so it doesn't overlay.
-  if (!opts.openTour) localStorage.setItem(TOUR_SEEN_KEY, '1');
   const onAddCard = vi.fn();
   const onRefresh = vi.fn();
   render(
     <WalletView displayName="Gogo" email="g@x.com" cards={cards} totalPoints={totalPoints}
       primaryBank="HDFC" onAddCard={onAddCard} onRefresh={onRefresh} />,
   );
+  // The walkthrough is opt-in now (it no longer auto-opens). Tests that want it open
+  // it via the "Take a tour" affordance, exactly the way a user does.
+  if (opts.openTour) fireEvent.click(screen.getByRole('button', { name: /take a tour/i }));
   return { onAddCard, onRefresh };
 }
 
