@@ -161,6 +161,7 @@ Shared components (`CardRow`, `HeroGauge`, `EstimateRange`, `Tour`, `CardMockup`
 20. Prove it with a real ₹149 order and `pro_until` visible in the DB. Then drop the `RAZORPAY_MODE` gate and deactivate the three CreditIQ Razorpay plans.
 21. **First-run pricing modal** — not designed. Four cards, "Continue free" vs "Get this plan", Free first on mobile, escape applies Free and stamps `plan_chosen_at`. Build only after prices are real.
 22. **The meter.** Free 5+5 is unenforceable today; then the cap paywall.
+23. **⚖ LADDER DECISION NEEDED (Gogo, fresh eyes).** The first-run modal was rebuilt 13 Aug to **shape (a)** — ticks list only what code actually gates (`requirePro`: Statement Truth, Optimize, Points Optimizer). A consequence surfaced that the old "15/30/50 searches a day" copy was hiding: **with the meter unbuilt, the three paid tiers are feature-identical.** The ₹999/12mo's *only* differentiator over ₹499/6mo is **early mobile-app access** — while it costs **more per month** (₹83.25 vs ₹83.17; the ladder already inverts). So today a rational buyer picks ₹499 and there's no reason to climb. **Options to decide:** (a) ship the per-tier search caps (7-Aug 15/30/50, see `PRICING-METER-DECISIONS.md` §INTENDED-BUT-UNBUILT) so the tiers differ for real; (b) give ₹999 a genuine non-meter perk; (c) collapse to fewer tiers; (d) accept identical tiers and sell purely on period length. **Do not add tier-differentiating copy to the modal until this is decided** — it would restate limits we don't apply.
 
 ---
 

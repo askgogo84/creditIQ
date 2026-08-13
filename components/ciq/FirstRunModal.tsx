@@ -30,22 +30,45 @@ const rupees = (paise: number) => '₹' + (paise / 100).toLocaleString('en-IN');
 
 // Order matters: Free FIRST (375-first — "Continue free" reachable without scrolling;
 // desktop renders 2×2, so Free is top-left, never a 3+1 orphan).
+//
+// Ticks list ONLY what code enforces today (shape (a), decided 13 Aug). The paid tiers
+// are gated by requirePro → isProServer on exactly three routes: statement-truth,
+// optimize, points-optimizer. Everything on the Free card is genuinely free today
+// (abuse-rate-limited only, not paywalled). We deliberately do NOT print per-day search
+// limits ("15/30/50 a day", "5+5 free"): those were decided 7 Aug but the meter is
+// UNBUILT, so no such limit is applied to anyone. Do not re-add them until the meter
+// enforces them. See docs/PRICING-METER-DECISIONS.md (§INTENDED-BUT-UNBUILT).
+//
+// The three paid tiers are intentionally feature-IDENTICAL (only period/price differ),
+// except the 12-month adds early mobile-app access — because that is the truth of what
+// Pro unlocks in code right now. The ladder economics are an open decision (board B5 #24).
+const PRO_FEATURES = [
+  'Statement Truth — verified points from your real statement',
+  'Optimize — best redemption for your points balance',
+  'Points Optimizer — 3-path redemption plan',
+];
+const FREE_FEATURES = [
+  'Search and compare every card we track',
+  'CIRA — your AI credit-card assistant',
+  'Award-flight search',
+  'Card Roast, Card Switch & Spend Optimizer',
+];
 const CARDS: PlanCard[] = [
   {
     key: 'free', eyebrow: 'FREE', price: '₹0', caption: 'Always free', cta: 'Continue free', paid: false,
-    features: ['5 card searches a day', '5 flight searches a day'],
+    features: FREE_FEATURES,
   },
   {
     key: 'monthly', eyebrow: PLANS.monthly.label.toUpperCase(), price: rupees(PLANS.monthly.amount), caption: 'one-time', cta: 'Get this plan', paid: true,
-    features: ['Everything in Free', '15 searches a day'],
+    features: [...FREE_FEATURES, ...PRO_FEATURES],
   },
   {
     key: 'sixmonth', eyebrow: PLANS.sixmonth.label.toUpperCase(), price: rupees(PLANS.sixmonth.amount), caption: 'one-time', cta: 'Get this plan', paid: true,
-    features: ['Everything in Free', '30 searches a day'],
+    features: [...FREE_FEATURES, ...PRO_FEATURES],
   },
   {
     key: 'twelvemonth', eyebrow: PLANS.twelvemonth.label.toUpperCase(), price: rupees(PLANS.twelvemonth.amount), caption: 'one-time', cta: 'Get this plan', paid: true,
-    features: ['Everything in Free', '50 searches a day', 'All AI features', 'Early mobile-app access'],
+    features: [...FREE_FEATURES, ...PRO_FEATURES, 'Early mobile-app access'],
   },
 ];
 
