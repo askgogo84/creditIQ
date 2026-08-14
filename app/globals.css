@@ -788,6 +788,13 @@ a:hover .arrow,
   to { transform: rotate(360deg); }
 }
 
+/* Undo toast entrance — opacity only (no transform/width) so the transient toast
+   announces itself without tripping the documented pinned-transform issue. */
+@keyframes ciq-toast-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
 /* ============================================
    Scrollbar
    ============================================ */

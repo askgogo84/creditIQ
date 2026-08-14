@@ -5,7 +5,7 @@ import { createBrowserClient } from '@supabase/ssr';
 import { authedFetch } from '@/lib/authed-fetch';
 import { useRouter } from 'next/navigation';
 import { DesignFooter } from '@/components/design/Footer';
-import { Plus, TrendingUp, ArrowRight, Zap, RefreshCw, FileText, MessageSquare, LogOut, CreditCard, Upload, Trash2, X, Check, Building2, ChevronDown } from 'lucide-react';
+import { Plus, TrendingUp, ArrowRight, Zap, RefreshCw, FileText, MessageSquare, LogOut, CreditCard, Upload, Trash2, X, Check, Building2, ChevronDown, AlertTriangle } from 'lucide-react';
 import Link from 'next/link';
 import { WalletView } from '@/components/ciq/WalletView';
 import { SEED_CARDS } from '@/lib/data/seed-cards';
@@ -56,6 +56,7 @@ export default function DashboardPage() {
   const [cardQuery, setCardQuery] = useState('');
   const [selectedCardId, setSelectedCardId] = useState<string | null>(null);
   const [pendingDelete, setPendingDelete] = useState<{ card: SavedCard; prev: SavedCard[]; timer: ReturnType<typeof setTimeout> } | null>(null);
+  const [confirmDelete, setConfirmDelete] = useState<SavedCard | null>(null);
   const [wpLoading, setWpLoading] = useState(true);
   const [wp, setWp] = useState<{ linked: boolean; org_name?: string; org_id?: string }>({ linked: false });
   const [wpCode, setWpCode] = useState('');
@@ -250,7 +251,16 @@ export default function DashboardPage() {
     setPendingDelete(null);
   };
 
-  const onDeleteCard = (card: SavedCard) => {
+  // The trash icon does NOT delete — it opens a type-specific confirm dialog first.
+  // TWO deliberate gates on a money surface: the confirm makes the destruction
+  // intentional (a single tap must not destroy a card), and the undo window below
+  // still covers a mis-tap AFTER confirming. This overrides the earlier
+  // "undo toast, not a confirm dialog" call — a single tap was too easy.
+  const requestDelete = (card: SavedCard) => setConfirmDelete(card);
+
+  // Runs ONLY on explicit confirm: hide the row immediately and open the ~5s undo
+  // window; the server DELETE fires only when the window elapses (see commitDelete).
+  const performDelete = (card: SavedCard) => {
     flushPendingDelete();
     const prev = cards;
     setCards(cs => cs.filter(c => c.id !== card.id)); // optimistic hide
@@ -319,25 +329,96 @@ export default function DashboardPage() {
         onRefresh={() => { setRefreshing(true); loadCards(user.id).then(() => setRefreshing(false)); }}
         refreshing={refreshing}
         onEditPoints={onEditPoints as any}
-        onDeleteCard={onDeleteCard as any}
+        onDeleteCard={requestDelete as any}
       />
 
       {pendingDelete && (
+        // zIndex must clear the CIRA FAB (1000) + AppDownloadBanner (999) — a transient
+        // toast belongs ABOVE persistent chrome, or it hides behind them. Opacity-only
+        // fade-in (no transform/width animation) so it announces itself without tripping
+        // the documented pinned-transform issue.
         <div role="status" aria-live="polite" style={{
           position: 'fixed', left: '50%', transform: 'translateX(-50%)',
-          bottom: 'calc(90px + env(safe-area-inset-bottom))', zIndex: 60,
-          display: 'flex', alignItems: 'center', gap: 16, maxWidth: 'calc(100vw - 32px)',
+          bottom: 'calc(90px + env(safe-area-inset-bottom))', zIndex: 1100,
+          display: 'flex', alignItems: 'center', gap: 14, maxWidth: 'calc(100vw - 32px)',
           background: 'var(--ink)', color: 'var(--surface)',
-          padding: '11px 16px', borderRadius: 12, boxShadow: '0 12px 30px rgba(0,0,0,0.28)',
-          fontSize: 13.5, fontWeight: 500,
+          padding: '11px 12px 11px 16px', borderRadius: 12, boxShadow: '0 12px 30px rgba(0,0,0,0.32)',
+          fontSize: 13.5, fontWeight: 500, animation: 'ciq-toast-in 200ms ease-out both',
         }}>
           <span>Card removed</span>
           <button type="button" onClick={undoDelete} style={{
-            background: 'none', border: 'none', color: 'var(--copper-4, #F2C658)',
-            fontWeight: 700, fontSize: 13.5, cursor: 'pointer', padding: 0, letterSpacing: '.02em',
+            background: 'transparent',
+            border: '1px solid color-mix(in srgb, var(--copper-4, #F2C658) 45%, transparent)',
+            color: 'var(--copper-4, #F2C658)', fontWeight: 700, fontSize: 13,
+            cursor: 'pointer', padding: '5px 12px', borderRadius: 8, letterSpacing: '.02em',
           }}>Undo</button>
         </div>
       )}
+
+      {confirmDelete && (() => {
+        // Copy differs by provenance. A MANUAL card is just a self-entered number —
+        // calm, reversible. A STATEMENT card holds VERIFIED data (statement_date,
+        // points_expiry, provenance) that deleting destroys irreversibly — re-adding
+        // won't restore it, only re-uploading the statement will. Say that plainly.
+        const isStatement = confirmDelete.source === 'statement';
+        const name = confirmDelete.card_name || 'this card';
+        return (
+          <div
+            onClick={() => setConfirmDelete(null)}
+            style={{
+              position: 'fixed', inset: 0, zIndex: 2100, display: 'flex',
+              alignItems: 'center', justifyContent: 'center', padding: 16,
+              background: 'rgba(10,18,38,0.55)', backdropFilter: 'blur(6px)',
+            }}>
+            <div role="alertdialog" aria-modal="true" aria-labelledby="ciq-del-title"
+              onClick={e => e.stopPropagation()}
+              style={{
+                width: '100%', maxWidth: 380, borderRadius: 20, padding: 22,
+                background: 'var(--surface)', border: '1px solid var(--line-strong)',
+                color: 'var(--ink)', boxShadow: 'var(--shadow-xl)',
+              }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 11, marginBottom: 11 }}>
+                <span style={{
+                  width: 34, height: 34, borderRadius: 10, flex: '0 0 auto', display: 'flex',
+                  alignItems: 'center', justifyContent: 'center',
+                  background: 'var(--red-soft)', color: 'var(--red)',
+                }}>
+                  {isStatement ? <AlertTriangle size={18} /> : <Trash2 size={17} />}
+                </span>
+                <h3 id="ciq-del-title" className="w-display" style={{ fontWeight: 600, fontSize: 17, color: 'var(--ink)' }}>
+                  {isStatement ? 'Delete this verified card?' : 'Remove this card?'}
+                </h3>
+              </div>
+              <p style={{ fontSize: 13.5, lineHeight: 1.5, color: 'var(--ink-2)', margin: '0 0 18px' }}>
+                {isStatement ? (
+                  <>Deleting <strong style={{ color: 'var(--ink)', fontWeight: 600 }}>{name}</strong> is permanent. It destroys the data read from your statement — the statement date, the points-expiry, and the green Verified badge. Re-adding the card won&apos;t bring them back; only uploading the statement again will.</>
+                ) : (
+                  <>You entered <strong style={{ color: 'var(--ink)', fontWeight: 600 }}>{name}</strong> yourself, so removing it only deletes the number. You can add it back anytime.</>
+                )}
+              </p>
+              <div style={{ display: 'flex', gap: 10 }}>
+                <button type="button" onClick={() => setConfirmDelete(null)}
+                  style={{
+                    flex: 1, padding: '11px 12px', borderRadius: 12, background: 'transparent',
+                    border: '1px solid var(--line-strong)', color: 'var(--ink)', fontWeight: 600,
+                    fontSize: 14, cursor: 'pointer',
+                  }}>
+                  Cancel
+                </button>
+                <button type="button"
+                  onClick={() => { const c = confirmDelete; setConfirmDelete(null); performDelete(c); }}
+                  style={{
+                    flex: 1, padding: '11px 12px', borderRadius: 12, background: 'var(--red)',
+                    border: '1px solid var(--red)', color: 'var(--surface)', fontWeight: 700,
+                    fontSize: 14, cursor: 'pointer',
+                  }}>
+                  {isStatement ? 'Delete permanently' : 'Remove card'}
+                </button>
+              </div>
+            </div>
+          </div>
+        );
+      })()}
 
       {showAddModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4"
