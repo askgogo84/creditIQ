@@ -7,79 +7,16 @@
 // Condition B: the gate does NOTHING without a session — no fetch, no modal — so the
 // public crawlable shell pages (/cards, /compare, /transfer-partners, /sweet-spots)
 // and search crawlers never see it or generate a request.
+//
+// The plan cards + grid live in ./PricingCards (shared with the on-demand /profile
+// membership modal). This file owns the first-run FUNNEL: it can pick Free, stamps
+// plan_chosen on any resolution, and advances to /dashboard.
 import { useEffect, useRef, useState } from 'react';
 import { createBrowserClient } from '@supabase/ssr';
 import { authedFetch } from '@/lib/authed-fetch';
 import { startOrderCheckout, type CheckoutPlan } from '@/lib/checkout';
 import { PLANS } from '@/lib/plans';
-
-type CardKey = 'free' | CheckoutPlan;
-interface PlanCard {
-  key: CardKey;
-  eyebrow: string;
-  price: string;
-  caption: string;
-  cta: string;
-  paid: boolean;
-  features: string[];
-}
-
-// Free is NOT in lib/plans (paid-only source of truth); handle it separately. Paid
-// prices are derived from lib/plans so the shown price is the charged price.
-const rupees = (paise: number) => '₹' + (paise / 100).toLocaleString('en-IN');
-
-// Order matters: Free FIRST (375-first — "Continue free" reachable without scrolling;
-// desktop renders 2×2, so Free is top-left, never a 3+1 orphan).
-//
-// Ticks list ONLY what code enforces today (shape (a), decided 13 Aug). The paid tiers
-// are gated by requirePro → isProServer on exactly three routes: statement-truth,
-// optimize, points-optimizer. Everything on the Free card is genuinely free today
-// (abuse-rate-limited only, not paywalled). We deliberately do NOT print per-day search
-// limits ("15/30/50 a day", "5+5 free"): those were decided 7 Aug but the meter is
-// UNBUILT, so no such limit is applied to anyone. Do not re-add them until the meter
-// enforces them. See docs/PRICING-METER-DECISIONS.md (§INTENDED-BUT-UNBUILT).
-//
-// The three paid tiers are intentionally feature-IDENTICAL (only period/price differ),
-// except the 12-month adds early mobile-app access — because that is the truth of what
-// Pro unlocks in code right now. The ladder economics are an open decision (board B5 #24).
-const PRO_FEATURES = [
-  'Statement Truth — verified points from your real statement',
-  'Optimize — best redemption for your points balance',
-  'Points Optimizer — 3-path redemption plan',
-];
-const FREE_FEATURES = [
-  'Search and compare every card we track',
-  'CIRA — your AI credit-card assistant',
-  'Award-flight search',
-  'Card Roast, Card Switch & Spend Optimizer',
-];
-const CARDS: PlanCard[] = [
-  {
-    key: 'free', eyebrow: 'FREE', price: '₹0', caption: 'Always free', cta: 'Continue free', paid: false,
-    features: FREE_FEATURES,
-  },
-  {
-    key: 'monthly', eyebrow: PLANS.monthly.label.toUpperCase(), price: rupees(PLANS.monthly.amount), caption: 'one-time', cta: 'Get this plan', paid: true,
-    features: [...FREE_FEATURES, ...PRO_FEATURES],
-  },
-  {
-    key: 'sixmonth', eyebrow: PLANS.sixmonth.label.toUpperCase(), price: rupees(PLANS.sixmonth.amount), caption: 'one-time', cta: 'Get this plan', paid: true,
-    features: [...FREE_FEATURES, ...PRO_FEATURES],
-  },
-  {
-    key: 'twelvemonth', eyebrow: PLANS.twelvemonth.label.toUpperCase(), price: rupees(PLANS.twelvemonth.amount), caption: 'one-time', cta: 'Get this plan', paid: true,
-    features: [...FREE_FEATURES, ...PRO_FEATURES, 'Early mobile-app access'],
-  },
-];
-
-// Copper tick, not verified-green: CLAUDE.md reserves #4FBF87 for verified-from-statement.
-function Tick() {
-  return (
-    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" aria-hidden style={{ flexShrink: 0, marginTop: 2 }}>
-      <path d="m5 13 4 4L19 7" stroke="var(--copper)" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" />
-    </svg>
-  );
-}
+import { CARDS, PricingGrid } from './PricingCards';
 
 interface ModalProps {
   user: { email?: string; user_metadata?: Record<string, any> } | null;
@@ -206,57 +143,11 @@ function FirstRunModal({ user, token, onResolved }: ModalProps) {
           Start free — upgrade whenever you want. Pay once for a period, not a subscription.
         </p>
 
-        <div className="fr-grid" style={{ marginTop: 20, display: 'grid', gap: 12 }}>
-          {CARDS.map((card) => {
-            const label = card.paid ? PLANS[card.key as CheckoutPlan].label : '';
-            return (
-              <div
-                key={card.key}
-                className="fr-card"
-                style={{
-                  display: 'flex', flexDirection: 'column',
-                  background: 'var(--surface-2, #fff)', border: '1px solid var(--line-strong)',
-                  borderRadius: 14, padding: '18px 16px',
-                }}
-              >
-                <div className="mono" style={{ fontSize: 11, letterSpacing: '0.12em', color: 'var(--copper)' }}>
-                  {card.eyebrow}
-                </div>
-                <div style={{ display: 'flex', alignItems: 'baseline', gap: 6, marginTop: 8 }}>
-                  <span className="w-display" style={{ fontSize: 30, fontWeight: 600, letterSpacing: '-.03em', color: 'var(--ink)' }}>
-                    {card.price}
-                  </span>
-                  <span style={{ fontSize: 12, color: 'var(--ink-3)' }}>{card.caption}</span>
-                </div>
-
-                <ul style={{ listStyle: 'none', margin: '14px 0 0', padding: 0, display: 'flex', flexDirection: 'column', gap: 8, flex: 1 }}>
-                  {card.features.map((f, i) => (
-                    <li key={i} style={{ display: 'flex', gap: 8, fontSize: 13, lineHeight: 1.4, color: 'var(--ink-2)' }}>
-                      <Tick />
-                      <span>{f}</span>
-                    </li>
-                  ))}
-                </ul>
-
-                <button
-                  type="button"
-                  disabled={busy}
-                  onClick={() => (card.paid ? choosePaid(card.key as CheckoutPlan, label) : chooseFree())}
-                  style={{
-                    marginTop: 16, width: '100%', minHeight: 46, borderRadius: 11, cursor: busy ? 'default' : 'pointer',
-                    fontSize: 14, fontWeight: 600, letterSpacing: '-.01em',
-                    border: card.paid ? 'none' : '1px solid var(--copper)',
-                    background: card.paid ? 'var(--copper)' : 'transparent',
-                    color: card.paid ? 'var(--surface)' : 'var(--copper)',
-                    opacity: busy ? 0.6 : 1, transition: 'opacity 0.15s ease',
-                  }}
-                >
-                  {card.cta}
-                </button>
-              </div>
-            );
-          })}
-        </div>
+        <PricingGrid
+          cards={CARDS}
+          busy={busy}
+          onChoose={(card) => (card.paid ? choosePaid(card.key as CheckoutPlan, PLANS[card.key as CheckoutPlan].label) : chooseFree())}
+        />
 
         {msg ? (
           <div style={{ marginTop: 14, padding: '11px 13px', borderRadius: 11, background: 'var(--surface-2, #fff)', border: '1px solid var(--line-strong)', fontSize: 13, color: 'var(--ink)' }}>
@@ -270,7 +161,6 @@ function FirstRunModal({ user, token, onResolved }: ModalProps) {
         .fr-panel { animation: frRise 200ms cubic-bezier(0.22,1,0.36,1) both; }
         @keyframes frFade { from { opacity: 0; } to { opacity: 1; } }
         @keyframes frRise { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
-        @media (min-width: 640px) { .fr-grid { grid-template-columns: 1fr 1fr; } }
         @media (prefers-reduced-motion: reduce) { .fr-scrim, .fr-panel { animation: none !important; } }
       `}</style>
     </div>
