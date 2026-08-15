@@ -788,12 +788,10 @@ a:hover .arrow,
   to { transform: rotate(360deg); }
 }
 
-/* Undo toast entrance — opacity only (no transform/width) so the transient toast
-   announces itself without tripping the documented pinned-transform issue. */
-@keyframes ciq-toast-in {
-  from { opacity: 0; }
-  to   { opacity: 1; }
-}
+/* (Undo-toast entrance keyframe removed — the CSS `... both` fill stranded the toast at
+   opacity 0 whenever the animation clock was paused (hidden/backgrounded/throttled tab).
+   The toast now renders visible by default and fades in via a rAF-guarded layout effect;
+   see UndoToast in app/(shell)/(wallet)/dashboard/page.tsx.) */
 
 /* ============================================
    Scrollbar

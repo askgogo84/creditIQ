@@ -1,6 +1,6 @@
 ﻿'use client';
 export const dynamic = 'force-dynamic';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useLayoutEffect } from 'react';
 import { createBrowserClient } from '@supabase/ssr';
 import { authedFetch } from '@/lib/authed-fetch';
 import { useRouter } from 'next/navigation';
@@ -40,6 +40,58 @@ interface AddCardForm {
   pointsBalance: string;
   pointsCurrency: string;
 }
+const prefersReducedMotion = () =>
+  typeof window !== 'undefined' &&
+  window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+
+// Set the reveal up BEFORE paint on the client; fall back to useEffect on the server
+// where useLayoutEffect is a no-op and warns.
+const useIsomorphicLayoutEffect = typeof window !== 'undefined' ? useLayoutEffect : useEffect;
+
+// Undo toast — ANIMATION-GATED VISIBILITY, the same defect class as the HeroGauge
+// count-up stall (fix c24d1da6). The old `animation: ciq-toast-in ... both` held the
+// from{opacity:0} keyframe via backwards-fill until the animation clock advanced; a
+// hidden/backgrounded tab or a throttled device pauses that clock and strands the toast
+// INVISIBLE for its whole undo window (confirmed by a hidden MCP tab measuring the toast
+// fixed at opacity 0 while requestAnimationFrame was paused). So the FINAL visible state
+// (opacity 1) is now the rendered DEFAULT; the fade-in is progressive enhancement in a
+// layout effect, guarded by a setTimeout that snaps to visible if rAF never fires (timers
+// still run when frames don't). No-JS, reduced-motion and any rAF stall leave it on screen.
+function UndoToast({ onUndo }: { onUndo: () => void }) {
+  const [shown, setShown] = useState(true); // default = final visible state, never stranded
+  useIsomorphicLayoutEffect(() => {
+    if (prefersReducedMotion()) { setShown(true); return; }
+    let raf = 0;
+    const guard = setTimeout(() => setShown(true), 300); // rAF paused (hidden/throttled)? snap visible
+    setShown(false); // hidden start → fade in (pre-paint via layout effect)
+    raf = requestAnimationFrame(() => requestAnimationFrame(() => { clearTimeout(guard); setShown(true); }));
+    return () => { cancelAnimationFrame(raf); clearTimeout(guard); };
+  }, []);
+  return (
+    // zIndex must clear the CIRA FAB (1000) + AppDownloadBanner (999) — a transient toast
+    // belongs ABOVE persistent chrome, or it hides behind them. Opacity-only fade (no
+    // transform/width animation) so it announces itself without tripping the documented
+    // pinned-transform issue; translateX(-50%) stays static.
+    <div role="status" aria-live="polite" style={{
+      position: 'fixed', left: '50%', transform: 'translateX(-50%)',
+      bottom: 'calc(90px + env(safe-area-inset-bottom))', zIndex: 1100,
+      display: 'flex', alignItems: 'center', gap: 14, maxWidth: 'calc(100vw - 32px)',
+      background: 'var(--ink)', color: 'var(--surface)',
+      padding: '11px 12px 11px 16px', borderRadius: 12, boxShadow: '0 12px 30px rgba(0,0,0,0.32)',
+      fontSize: 13.5, fontWeight: 500,
+      opacity: shown ? 1 : 0, transition: 'opacity 200ms ease-out',
+    }}>
+      <span>Card removed</span>
+      <button type="button" onClick={onUndo} style={{
+        background: 'transparent',
+        border: '1px solid color-mix(in srgb, var(--copper-4, #F2C658) 45%, transparent)',
+        color: 'var(--copper-4, #F2C658)', fontWeight: 700, fontSize: 13,
+        cursor: 'pointer', padding: '5px 12px', borderRadius: 8, letterSpacing: '.02em',
+      }}>Undo</button>
+    </div>
+  );
+}
+
 export default function DashboardPage() {
   const [user, setUser] = useState<any>(null);
   const [loading, setLoading] = useState(true);
@@ -332,28 +384,7 @@ export default function DashboardPage() {
         onDeleteCard={requestDelete as any}
       />
 
-      {pendingDelete && (
-        // zIndex must clear the CIRA FAB (1000) + AppDownloadBanner (999) — a transient
-        // toast belongs ABOVE persistent chrome, or it hides behind them. Opacity-only
-        // fade-in (no transform/width animation) so it announces itself without tripping
-        // the documented pinned-transform issue.
-        <div role="status" aria-live="polite" style={{
-          position: 'fixed', left: '50%', transform: 'translateX(-50%)',
-          bottom: 'calc(90px + env(safe-area-inset-bottom))', zIndex: 1100,
-          display: 'flex', alignItems: 'center', gap: 14, maxWidth: 'calc(100vw - 32px)',
-          background: 'var(--ink)', color: 'var(--surface)',
-          padding: '11px 12px 11px 16px', borderRadius: 12, boxShadow: '0 12px 30px rgba(0,0,0,0.32)',
-          fontSize: 13.5, fontWeight: 500, animation: 'ciq-toast-in 200ms ease-out both',
-        }}>
-          <span>Card removed</span>
-          <button type="button" onClick={undoDelete} style={{
-            background: 'transparent',
-            border: '1px solid color-mix(in srgb, var(--copper-4, #F2C658) 45%, transparent)',
-            color: 'var(--copper-4, #F2C658)', fontWeight: 700, fontSize: 13,
-            cursor: 'pointer', padding: '5px 12px', borderRadius: 8, letterSpacing: '.02em',
-          }}>Undo</button>
-        </div>
-      )}
+      {pendingDelete && <UndoToast onUndo={undoDelete} />}
 
       {confirmDelete && (() => {
         // Copy differs by provenance. A MANUAL card is just a self-entered number —
