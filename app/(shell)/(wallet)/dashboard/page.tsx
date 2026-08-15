@@ -52,18 +52,27 @@ const useIsomorphicLayoutEffect = typeof window !== 'undefined' ? useLayoutEffec
 // count-up stall (fix c24d1da6). The old `animation: ciq-toast-in ... both` held the
 // from{opacity:0} keyframe via backwards-fill until the animation clock advanced; a
 // hidden/backgrounded tab or a throttled device pauses that clock and strands the toast
-// INVISIBLE for its whole undo window (confirmed by a hidden MCP tab measuring the toast
-// fixed at opacity 0 while requestAnimationFrame was paused). So the FINAL visible state
-// (opacity 1) is now the rendered DEFAULT; the fade-in is progressive enhancement in a
-// layout effect, guarded by a setTimeout that snaps to visible if rAF never fires (timers
-// still run when frames don't). No-JS, reduced-motion and any rAF stall leave it on screen.
+// INVISIBLE for its whole undo window (confirmed on a hidden preview tab: the toast
+// mounted fixed/on-screen/unclipped but frozen at opacity 0 with requestAnimationFrame
+// never ticking). So the FINAL visible state (opacity 1) is the rendered DEFAULT and the
+// fade-in is progressive enhancement in a layout effect.
+//
+// CRUCIAL: a CSS transition/animation is ITSELF driven by that same paused clock. A first
+// naive fix snapped state to opacity:1 via a setTimeout guard, but the `transition: opacity`
+// froze the COMPUTED value at its 0 start even though React had committed inline opacity:1
+// (measured: inline "1", computed 0 in the hidden tab). So the guard must ALSO drop the
+// transition (`snap`) — opacity:1 with transition:none applies instantly, no clock needed.
+// Visible tabs still get the smooth rAF-driven fade; hidden/throttled tabs snap to visible.
 function UndoToast({ onUndo }: { onUndo: () => void }) {
   const [shown, setShown] = useState(true); // default = final visible state, never stranded
+  const [snap, setSnap] = useState(false);  // guard path: apply opacity with NO (clock-gated) transition
   useIsomorphicLayoutEffect(() => {
-    if (prefersReducedMotion()) { setShown(true); return; }
+    if (prefersReducedMotion()) { setSnap(true); return; } // instant visible, no fade
     let raf = 0;
-    const guard = setTimeout(() => setShown(true), 300); // rAF paused (hidden/throttled)? snap visible
-    setShown(false); // hidden start → fade in (pre-paint via layout effect)
+    // rAF paused (hidden/backgrounded/throttled)? The guard snaps to visible WITHOUT a
+    // transition — a transition would re-freeze at opacity 0 on the same paused clock.
+    const guard = setTimeout(() => { setSnap(true); setShown(true); }, 300);
+    setShown(false); // hidden start → fade in (pre-paint via layout effect, so a visible tab has no flash)
     raf = requestAnimationFrame(() => requestAnimationFrame(() => { clearTimeout(guard); setShown(true); }));
     return () => { cancelAnimationFrame(raf); clearTimeout(guard); };
   }, []);
@@ -79,7 +88,7 @@ function UndoToast({ onUndo }: { onUndo: () => void }) {
       background: 'var(--ink)', color: 'var(--surface)',
       padding: '11px 12px 11px 16px', borderRadius: 12, boxShadow: '0 12px 30px rgba(0,0,0,0.32)',
       fontSize: 13.5, fontWeight: 500,
-      opacity: shown ? 1 : 0, transition: 'opacity 200ms ease-out',
+      opacity: shown ? 1 : 0, transition: snap ? 'none' : 'opacity 200ms ease-out',
     }}>
       <span>Card removed</span>
       <button type="button" onClick={onUndo} style={{
