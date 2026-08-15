@@ -193,9 +193,9 @@ Runs alongside everything above; touches data/lib files nothing else here touche
 34. **`/my-cards` is orphaned — leans RETIRE (own IA call, not this branch).** Its only inbound link is the "Build your real wallet →" CTA in `components/marketing/landing/ProductTabs.tsx`, and **ProductTabs is not mounted on any page** (grep: only its own definition + a docs mention). So `/my-cards` has NO live inbound link — reachable only by typing the URL. With the dashboard getting full CRUD (edit/delete), the read-only gold duplicate has no purpose. If retired, also delete the dead ProductTabs CTA (or mount ProductTabs and repoint it to `/dashboard`). Kept out of the CRUD branch per instruction.
 
 **Wallet-CRUD cluster — SHIPPED TO PROD (edit only), 13 Aug:**
-35. `feature/cards-crud-and-profile` merged to main (007 self_entered + provenance "Estimated"→"Self-entered" rename + inline points edit). **Two caveats live in prod:**
-    - ⚠ **The verified→Self-entered demotion (the 007 read model) was NOT walked on preview** — only a *manual*-card edit was tested. If the read model is wrong, a hand-edited *statement* card keeps its green "Verified" badge next to a typed number — the exact moat violation this was built to prevent. **Walk it in prod:** edit a statement card, confirm the badge flips green→Self-entered and the gauge's green slice shrinks by that card's points.
-    - **Delete is NOT in this branch** — prod has edit without delete. Step 4 (delete + undo, deferred-commit, fail-safe on tab-close) is still to come on a follow-up branch.
+35. `feature/cards-crud-and-profile` merged to main (007 self_entered + provenance "Estimated"→"Self-entered" rename + inline points edit).
+    - ✅ **The verified→Self-entered demotion (007 read model) is WALKED & PROVEN end-to-end** (preview, before merge): edited HDFC Regalia 52,164 → 55,000, badge flipped Verified → Self-entered, gauge green (verified) slice dropped 56,499 → 4,335. *(Corrects the earlier "NOT walked" caveat in this item and in the `9528e75e` merge-commit body — that note was wrong; the merge message can't be edited without a force-push to main and is left as-is.)*
+    - **Delete + undo is BUILT** (commit `71974301`, deferred-commit, fail-safe on tab-close) but **on the branch, not yet merged** — so prod still has edit without delete until step 4 merges.
 
 **Continues indefinitely:**
 30. Re-source earn rates, most-searched first (Amazon Pay ICICI, Scapia, OneCard, IndiGo 6E, MakeMyTrip ICICI).

@@ -1,11 +1,11 @@
 ﻿'use client';
 export const dynamic = 'force-dynamic';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useLayoutEffect } from 'react';
 import { createBrowserClient } from '@supabase/ssr';
 import { authedFetch } from '@/lib/authed-fetch';
 import { useRouter } from 'next/navigation';
 import { DesignFooter } from '@/components/design/Footer';
-import { Plus, TrendingUp, ArrowRight, Zap, RefreshCw, FileText, MessageSquare, LogOut, CreditCard, Upload, Trash2, X, Check, Building2, ChevronDown } from 'lucide-react';
+import { Plus, TrendingUp, ArrowRight, Zap, RefreshCw, FileText, MessageSquare, LogOut, CreditCard, Upload, Trash2, X, Check, Building2, ChevronDown, AlertTriangle } from 'lucide-react';
 import Link from 'next/link';
 import { WalletView } from '@/components/ciq/WalletView';
 import { SEED_CARDS } from '@/lib/data/seed-cards';
@@ -40,6 +40,67 @@ interface AddCardForm {
   pointsBalance: string;
   pointsCurrency: string;
 }
+const prefersReducedMotion = () =>
+  typeof window !== 'undefined' &&
+  window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+
+// Set the reveal up BEFORE paint on the client; fall back to useEffect on the server
+// where useLayoutEffect is a no-op and warns.
+const useIsomorphicLayoutEffect = typeof window !== 'undefined' ? useLayoutEffect : useEffect;
+
+// Undo toast — ANIMATION-GATED VISIBILITY, the same defect class as the HeroGauge
+// count-up stall (fix c24d1da6). The old `animation: ciq-toast-in ... both` held the
+// from{opacity:0} keyframe via backwards-fill until the animation clock advanced; a
+// hidden/backgrounded tab or a throttled device pauses that clock and strands the toast
+// INVISIBLE for its whole undo window (confirmed on a hidden preview tab: the toast
+// mounted fixed/on-screen/unclipped but frozen at opacity 0 with requestAnimationFrame
+// never ticking). So the FINAL visible state (opacity 1) is the rendered DEFAULT and the
+// fade-in is progressive enhancement in a layout effect.
+//
+// CRUCIAL: a CSS transition/animation is ITSELF driven by that same paused clock. A first
+// naive fix snapped state to opacity:1 via a setTimeout guard, but the `transition: opacity`
+// froze the COMPUTED value at its 0 start even though React had committed inline opacity:1
+// (measured: inline "1", computed 0 in the hidden tab). So the guard must ALSO drop the
+// transition (`snap`) — opacity:1 with transition:none applies instantly, no clock needed.
+// Visible tabs still get the smooth rAF-driven fade; hidden/throttled tabs snap to visible.
+function UndoToast({ onUndo }: { onUndo: () => void }) {
+  const [shown, setShown] = useState(true); // default = final visible state, never stranded
+  const [snap, setSnap] = useState(false);  // guard path: apply opacity with NO (clock-gated) transition
+  useIsomorphicLayoutEffect(() => {
+    if (prefersReducedMotion()) { setSnap(true); return; } // instant visible, no fade
+    let raf = 0;
+    // rAF paused (hidden/backgrounded/throttled)? The guard snaps to visible WITHOUT a
+    // transition — a transition would re-freeze at opacity 0 on the same paused clock.
+    const guard = setTimeout(() => { setSnap(true); setShown(true); }, 300);
+    setShown(false); // hidden start → fade in (pre-paint via layout effect, so a visible tab has no flash)
+    raf = requestAnimationFrame(() => requestAnimationFrame(() => { clearTimeout(guard); setShown(true); }));
+    return () => { cancelAnimationFrame(raf); clearTimeout(guard); };
+  }, []);
+  return (
+    // zIndex must clear the CIRA FAB (1000) + AppDownloadBanner (999) — a transient toast
+    // belongs ABOVE persistent chrome, or it hides behind them. Opacity-only fade (no
+    // transform/width animation) so it announces itself without tripping the documented
+    // pinned-transform issue; translateX(-50%) stays static.
+    <div role="status" aria-live="polite" style={{
+      position: 'fixed', left: '50%', transform: 'translateX(-50%)',
+      bottom: 'calc(90px + env(safe-area-inset-bottom))', zIndex: 1100,
+      display: 'flex', alignItems: 'center', gap: 14, maxWidth: 'calc(100vw - 32px)',
+      background: 'var(--ink)', color: 'var(--surface)',
+      padding: '11px 12px 11px 16px', borderRadius: 12, boxShadow: '0 12px 30px rgba(0,0,0,0.32)',
+      fontSize: 13.5, fontWeight: 500,
+      opacity: shown ? 1 : 0, transition: snap ? 'none' : 'opacity 200ms ease-out',
+    }}>
+      <span>Card removed</span>
+      <button type="button" onClick={onUndo} style={{
+        background: 'transparent',
+        border: '1px solid color-mix(in srgb, var(--copper-4, #F2C658) 45%, transparent)',
+        color: 'var(--copper-4, #F2C658)', fontWeight: 700, fontSize: 13,
+        cursor: 'pointer', padding: '5px 12px', borderRadius: 8, letterSpacing: '.02em',
+      }}>Undo</button>
+    </div>
+  );
+}
+
 export default function DashboardPage() {
   const [user, setUser] = useState<any>(null);
   const [loading, setLoading] = useState(true);
@@ -55,6 +116,8 @@ export default function DashboardPage() {
   // Add-card picker (SEED_CARDS-backed, no free-text, no card numbers).
   const [cardQuery, setCardQuery] = useState('');
   const [selectedCardId, setSelectedCardId] = useState<string | null>(null);
+  const [pendingDelete, setPendingDelete] = useState<{ card: SavedCard; prev: SavedCard[]; timer: ReturnType<typeof setTimeout> } | null>(null);
+  const [confirmDelete, setConfirmDelete] = useState<SavedCard | null>(null);
   const [wpLoading, setWpLoading] = useState(true);
   const [wp, setWp] = useState<{ linked: boolean; org_name?: string; org_id?: string }>({ linked: false });
   const [wpCode, setWpCode] = useState('');
@@ -216,15 +279,61 @@ export default function DashboardPage() {
     setAddForm(f => ({ ...f, bank: c.bank, cardName: c.name, pointsCurrency: currency }));
   };
 
-  const handleDeleteCard = async (cardId: string, source: string) => {
-    if (!user) return;
-    if (source === 'manual') {
-      await authedFetch('/api/manual-cards', {
+  // Delete a card with a ~5s UNDO window (deferred commit). Tap delete → the card
+  // hides immediately and the window opens; the server DELETE fires only when the
+  // window elapses. Undo restores the pre-delete snapshot with NO server call —
+  // nothing was destroyed. Deleting a statement card is irreversible (drops
+  // statement_date, points_expiry, provenance), which is exactly why the window exists.
+  //
+  // ⚠ INTENTIONAL FAIL-SAFE — DO NOT "FIX": close the tab mid-window and the timer
+  // never fires, so the delete never commits. On a money surface, losing a delete is
+  // the safe failure; losing the data is not. Do NOT add a pagehide/beacon flush to
+  // commit-on-close — it would destroy data the user may not have meant to lose. (SPA
+  // navigation still commits; only a real tab close kills the timer.)
+  const UNDO_MS = 5000;
+
+  const commitDelete = async (card: SavedCard) => {
+    // No setState — the row is already hidden, and this can run after unmount.
+    try {
+      await authedFetch('/api/delete-card', {
         method: 'DELETE',
-        body: JSON.stringify({ cardId })
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ cardId: card.id, source: card.source }),
       });
-    }
-    await loadCards(user.id);
+    } catch {}
+  };
+
+  // Any new mutation ends an open undo window by committing it, so at most one delete
+  // is ever pending and its restore snapshot can't go stale.
+  const flushPendingDelete = () => {
+    if (!pendingDelete) return;
+    clearTimeout(pendingDelete.timer);
+    void commitDelete(pendingDelete.card);
+    setPendingDelete(null);
+  };
+
+  // The trash icon does NOT delete — it opens a type-specific confirm dialog first.
+  // TWO deliberate gates on a money surface: the confirm makes the destruction
+  // intentional (a single tap must not destroy a card), and the undo window below
+  // still covers a mis-tap AFTER confirming. This overrides the earlier
+  // "undo toast, not a confirm dialog" call — a single tap was too easy.
+  const requestDelete = (card: SavedCard) => setConfirmDelete(card);
+
+  // Runs ONLY on explicit confirm: hide the row immediately and open the ~5s undo
+  // window; the server DELETE fires only when the window elapses (see commitDelete).
+  const performDelete = (card: SavedCard) => {
+    flushPendingDelete();
+    const prev = cards;
+    setCards(cs => cs.filter(c => c.id !== card.id)); // optimistic hide
+    const timer = setTimeout(() => { void commitDelete(card); setPendingDelete(null); }, UNDO_MS);
+    setPendingDelete({ card, prev, timer });
+  };
+
+  const undoDelete = () => {
+    if (!pendingDelete) return;
+    clearTimeout(pendingDelete.timer);
+    setCards(pendingDelete.prev); // restore exact pre-delete state/order; no server call
+    setPendingDelete(null);
   };
 
   // Inline points edit (CardRow owns the input; this owns the write + state).
@@ -232,6 +341,7 @@ export default function DashboardPage() {
   // then reconcile — revert to the pre-edit snapshot if the server rejects. A
   // hand-edited statement card also flips to self_entered (demotes off Verified).
   const onEditPoints = async (card: SavedCard, points: number): Promise<boolean> => {
+    flushPendingDelete(); // editing ends any open undo window so its snapshot can't go stale
     const prev = cards;
     setCards(cs => cs.map(c => c.id === card.id
       ? { ...c, points_balance: points, self_entered: c.source === 'statement' ? true : c.self_entered }
@@ -280,7 +390,75 @@ export default function DashboardPage() {
         onRefresh={() => { setRefreshing(true); loadCards(user.id).then(() => setRefreshing(false)); }}
         refreshing={refreshing}
         onEditPoints={onEditPoints as any}
+        onDeleteCard={requestDelete as any}
       />
+
+      {pendingDelete && <UndoToast onUndo={undoDelete} />}
+
+      {confirmDelete && (() => {
+        // Copy differs by provenance. A MANUAL card is just a self-entered number —
+        // calm, reversible. A STATEMENT card holds VERIFIED data (statement_date,
+        // points_expiry, provenance) that deleting destroys irreversibly — re-adding
+        // won't restore it, only re-uploading the statement will. Say that plainly.
+        const isStatement = confirmDelete.source === 'statement';
+        const name = confirmDelete.card_name || 'this card';
+        return (
+          <div
+            onClick={() => setConfirmDelete(null)}
+            style={{
+              position: 'fixed', inset: 0, zIndex: 2100, display: 'flex',
+              alignItems: 'center', justifyContent: 'center', padding: 16,
+              background: 'rgba(10,18,38,0.55)', backdropFilter: 'blur(6px)',
+            }}>
+            <div role="alertdialog" aria-modal="true" aria-labelledby="ciq-del-title"
+              onClick={e => e.stopPropagation()}
+              style={{
+                width: '100%', maxWidth: 380, borderRadius: 20, padding: 22,
+                background: 'var(--surface)', border: '1px solid var(--line-strong)',
+                color: 'var(--ink)', boxShadow: 'var(--shadow-xl)',
+              }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 11, marginBottom: 11 }}>
+                <span style={{
+                  width: 34, height: 34, borderRadius: 10, flex: '0 0 auto', display: 'flex',
+                  alignItems: 'center', justifyContent: 'center',
+                  background: 'var(--red-soft)', color: 'var(--red)',
+                }}>
+                  {isStatement ? <AlertTriangle size={18} /> : <Trash2 size={17} />}
+                </span>
+                <h3 id="ciq-del-title" className="w-display" style={{ fontWeight: 600, fontSize: 17, color: 'var(--ink)' }}>
+                  {isStatement ? 'Delete this verified card?' : 'Remove this card?'}
+                </h3>
+              </div>
+              <p style={{ fontSize: 13.5, lineHeight: 1.5, color: 'var(--ink-2)', margin: '0 0 18px' }}>
+                {isStatement ? (
+                  <>Deleting <strong style={{ color: 'var(--ink)', fontWeight: 600 }}>{name}</strong> is permanent. It destroys the data read from your statement — the statement date, the points-expiry, and the green Verified badge. Re-adding the card won&apos;t bring them back; only uploading the statement again will.</>
+                ) : (
+                  <>You entered <strong style={{ color: 'var(--ink)', fontWeight: 600 }}>{name}</strong> yourself, so removing it only deletes the number. You can add it back anytime.</>
+                )}
+              </p>
+              <div style={{ display: 'flex', gap: 10 }}>
+                <button type="button" onClick={() => setConfirmDelete(null)}
+                  style={{
+                    flex: 1, padding: '11px 12px', borderRadius: 12, background: 'transparent',
+                    border: '1px solid var(--line-strong)', color: 'var(--ink)', fontWeight: 600,
+                    fontSize: 14, cursor: 'pointer',
+                  }}>
+                  Cancel
+                </button>
+                <button type="button"
+                  onClick={() => { const c = confirmDelete; setConfirmDelete(null); performDelete(c); }}
+                  style={{
+                    flex: 1, padding: '11px 12px', borderRadius: 12, background: 'var(--red)',
+                    border: '1px solid var(--red)', color: 'var(--surface)', fontWeight: 700,
+                    fontSize: 14, cursor: 'pointer',
+                  }}>
+                  {isStatement ? 'Delete permanently' : 'Remove card'}
+                </button>
+              </div>
+            </div>
+          </div>
+        );
+      })()}
 
       {showAddModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4"

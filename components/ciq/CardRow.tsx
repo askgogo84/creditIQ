@@ -14,12 +14,12 @@ import { useState } from 'react';
  */
 export function CardRow({
   bank, cardName, last4, points, currency, source, monogram, onClick, variant = 'gold',
-  selfEntered, onSavePoints,
+  selfEntered, onSavePoints, onDelete,
 }: {
   bank: string; cardName: string; last4?: string; points: number;
   currency?: string; source: 'statement' | 'manual'; monogram?: string;
   onClick?: () => void; variant?: 'light' | 'gold';
-  selfEntered?: boolean; onSavePoints?: (points: number) => Promise<boolean>;
+  selfEntered?: boolean; onSavePoints?: (points: number) => Promise<boolean>; onDelete?: () => void;
 }) {
   const verified = source === 'statement' && !selfEntered;
   const mono = monogram || bank.slice(0, 2).toUpperCase();
@@ -122,13 +122,25 @@ export function CardRow({
               <div className={t.displayCls} style={{ fontWeight: 600, fontSize: 18, color: t.ink }}>{points.toLocaleString('en-IN')}</div>
               <div className={t.monoCls} style={{ fontSize: 9, color: t.ink3, marginTop: 1 }}>{currency || 'Reward Pts'}</div>
             </div>
-            {onSavePoints && (
-              <button type="button" onClick={(e) => { e.stopPropagation(); beginEdit(); }} aria-label="Edit points"
-                style={{ border: 'none', background: 'transparent', padding: 4, cursor: 'pointer', lineHeight: 0, flex: '0 0 auto' }}>
-                <svg width="15" height="15" viewBox="0 0 24 24" fill="none">
-                  <path d="m14.5 5.5 4 4M4 20l1-4L16 5a2.1 2.1 0 0 1 3 3L8 19l-4 1Z" stroke={t.ink3} strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" />
-                </svg>
-              </button>
+            {(onSavePoints || onDelete) && (
+              <div style={{ display: 'flex', alignItems: 'center', gap: 2, flex: '0 0 auto' }}>
+                {onSavePoints && (
+                  <button type="button" onClick={(e) => { e.stopPropagation(); beginEdit(); }} aria-label="Edit points"
+                    style={{ border: 'none', background: 'transparent', padding: 4, cursor: 'pointer', lineHeight: 0 }}>
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none">
+                      <path d="m14.5 5.5 4 4M4 20l1-4L16 5a2.1 2.1 0 0 1 3 3L8 19l-4 1Z" stroke={t.ink3} strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" />
+                    </svg>
+                  </button>
+                )}
+                {onDelete && (
+                  <button type="button" onClick={(e) => { e.stopPropagation(); onDelete(); }} aria-label="Delete card"
+                    style={{ border: 'none', background: 'transparent', padding: 4, cursor: 'pointer', lineHeight: 0 }}>
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none">
+                      <path d="M4 7h16M9 7V5a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2M6 8l1 12a1 1 0 0 0 1 .92h8a1 1 0 0 0 1-.92l1-12" stroke={t.ink3} strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
+                    </svg>
+                  </button>
+                )}
+              </div>
             )}
           </>
         )}
