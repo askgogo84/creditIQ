@@ -15,7 +15,6 @@ import { createServerClient } from '@supabase/ssr';
 
 const GATED_PREFIXES = [
   '/dashboard',
-  '/my-cards',
   '/statement-truth',
   '/spend-optimizer',
   '/points-optimizer',
@@ -74,8 +73,6 @@ export const config = {
   matcher: [
     '/dashboard',
     '/dashboard/:path*',
-    '/my-cards',
-    '/my-cards/:path*',
     '/statement-truth',
     '/statement-truth/:path*',
     '/spend-optimizer',

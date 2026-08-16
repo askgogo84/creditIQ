@@ -1,5 +1,7 @@
-// Smart redemption calculator based on actual points balance
-// Used by dashboard / my-cards to show what the user CAN actually afford.
+// Smart redemption calculator based on actual points balance.
+// PARKED (16 Aug 2026): the only live consumer was /my-cards, now retired. This is kept
+// for a candidate port of its "What your points unlock" list into /dashboard — see
+// docs/CLEAR-THE-BOARD.md. No live page calls getSmartRedemptions after that.
 //
 // HONESTY RULES (do not violate — this is the brand):
 // 1. cashValue = conservative estimate of the cash fare/stay the redemption replaces,
