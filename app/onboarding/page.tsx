@@ -24,7 +24,6 @@ export default function OnboardingPage() {
   const [step, setStep] = useState(0);
   const [saving, setSaving] = useState(false);
   const [name, setName] = useState('');
-  const [dob, setDob] = useState('');
   const [q, setQ] = useState('');
   const [results, setResults] = useState<CatalogCard[]>([]);
   const [wallet, setWallet] = useState<WalletPick[]>([]);
@@ -84,8 +83,8 @@ export default function OnboardingPage() {
     if (!user || saving) return;
     setSaving(true);
     // Save cards and profile independently, and ALWAYS enter the wallet afterwards.
-    // A profile write can fail (e.g. a stray NOT NULL on date_of_birth in the DB) — that
-    // must never strand a new user on this screen, so it can't block navigation.
+    // A profile write can fail (network / a DB constraint) — that must never strand a
+    // new user on this screen, so it can't block navigation.
     try {
       for (const c of wallet) {
         await authedFetch('/api/manual-cards', {
@@ -97,7 +96,7 @@ export default function OnboardingPage() {
     try {
       await authedFetch('/api/onboarding', {
         method: 'POST',
-        body: JSON.stringify({ displayName: name, dateOfBirth: dob || null, homeAirport: airport || null, complete: true }),
+        body: JSON.stringify({ displayName: name, homeAirport: airport || null, complete: true }),
       });
     } catch {}
     router.replace('/dashboard');
@@ -156,10 +155,6 @@ export default function OnboardingPage() {
               <div style={{ marginTop: 28 }}>
                 <label style={label}>What should we call you?</label>
                 <input style={inputStyle} value={name} onChange={e => setName(e.target.value)} placeholder="Your name" />
-              </div>
-              <div style={{ marginTop: 18 }}>
-                <label style={label}>Date of birth <span style={{ color: 'var(--ciq-ink-3)', fontWeight: 400 }}>· optional, for statement auto-import</span></label>
-                <input style={inputStyle} type="date" value={dob} onChange={e => setDob(e.target.value)} />
               </div>
             </div>
           )}

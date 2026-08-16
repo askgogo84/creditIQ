@@ -33,7 +33,7 @@ export async function GET(req: NextRequest) {
 
   const { data, error } = await admin()
     .from('user_profiles')
-    .select('user_id, display_name, date_of_birth, home_airport, home_city, onboarding_complete')
+    .select('user_id, display_name, home_airport, home_city, onboarding_complete')
     .eq('user_id', userId)
     .maybeSingle();
 
@@ -41,7 +41,9 @@ export async function GET(req: NextRequest) {
   return NextResponse.json({ profile: data ?? null, onboarding_complete: !!data?.onboarding_complete });
 }
 
-// POST { displayName, dateOfBirth, homeAirport, complete? } -> upsert own profile
+// POST { displayName, homeAirport, complete? } -> upsert own profile.
+// NB: date_of_birth is intentionally NOT collected or written — it had no consumer in
+// the product (DPDP purpose limitation). Do not re-add it without a stated purpose.
 export async function POST(req: NextRequest) {
   try {
     const userId = await callerId(req);
@@ -51,7 +53,6 @@ export async function POST(req: NextRequest) {
     const row = {
       user_id: userId, // from token, never from body
       display_name: body?.displayName != null ? String(body.displayName).slice(0, 80) : null,
-      date_of_birth: body?.dateOfBirth ? String(body.dateOfBirth).slice(0, 10) : null,
       home_airport: body?.homeAirport ? String(body.homeAirport).toUpperCase().slice(0, 4) : null,
       onboarding_complete: body?.complete !== false,
       updated_at: new Date().toISOString(),
