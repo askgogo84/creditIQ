@@ -120,7 +120,7 @@ Unrelated to each other and to the page pass. All self-contained. **Outcome:** #
 
 ### The gold four (their visit = the `[data-ciq]` migration + wallet CRUD)
 
-`/my-cards`, `/feed`, `/profile`, `/pro`, plus onboarding and `Tour.tsx`. **One branch, not four** — the `ciq-theme` dual-write only stops when the last surface migrates. Landing these:
+Remaining: `/pro`, `/feed`, plus onboarding and `Tour.tsx`. (`/profile` migrated 15 Aug 2026; `/my-cards` **retired** 16 Aug 2026 — unreachable legacy dup of `/dashboard`, see the parked-feature note below.) **One branch** — the `ciq-theme` dual-write only stops when the last surface migrates. Landing these:
 - deletes `[data-ciq]`, the `ciq-theme` key, the Instrument Serif / Space Grotesk declarations, and `CiqTheme`/`ThemeProvider.tsx`;
 - **⚠ Strip the dead `var(--token, #cream)` fallbacks in THIS commit, not before.** Travel (and likely Cards) pages carry stale cream fallbacks like `var(--paper,#FAF5EB)` that are inert *only while the token exists*. This is the commit that deletes tokens — if a deletion removes a token a fallback still names, the cream/gold value resurrects silently. So the fallback strip belongs here, where the token deletions are visible and greppable, and the two stay in sync. (~125 inert edits across Travel alone — deliberately NOT done during the Travel visit: zero visual change, five pages of risk, safe only alongside the deletions that make them matter.)
 - **kills the gold dark-flash for free** — the flash is `ThemeProvider` defaulting to `dark` with no pre-paint; when the wrapper dies these surfaces inherit the single `<html>` pre-paint. (Deliberately *not* patched separately — don't harden a system you're deleting.)
@@ -140,7 +140,7 @@ Unrelated to each other and to the page pass. All self-contained. **Outcome:** #
 
 Shared components (`CardRow`, `HeroGauge`, `EstimateRange`, `Tour`, `CardMockup`) default `variant='gold'` — flipping defaults touches every consumer. `globals.css:231` points every heading at `--ink`, which breaks in **partial** states; a dark panel maps to `--navy`, never `--ink`. The injected-`<style>` → CSS-module conversion (19 files, `HARDCODED-PALETTE-AUDIT.md`) rides along per file as each page is visited — not a global codemod.
 
-*If you want wallet CRUD before its group's turn, it can be pulled onto the current gold `/my-cards` standalone — slight duplicate effort, but it's the feature you keep asking for.*
+**PARKED FEATURE — `getSmartRedemptions` "What your points unlock" (rescued from the retired `/my-cards`, 16 Aug 2026).** Retiring `/my-cards` (an unreachable legacy dup of `/dashboard`) left one genuinely unique surface with no live home: an affordability-aware redemption list — `getSmartRedemptions(totalPoints, primaryBank)` → per-item cash value, "can afford" vs points-short, each deep-linked to `/trip-planner`. `/dashboard` today has only the single static "Your best move". **Candidate port into `/dashboard`** — NOT work now; logged so it isn't silently lost. Source lives in git history (`app/(shell)/my-cards/page.tsx` pre-removal) + `lib/redemptions.ts → getSmartRedemptions` (still present, unused by any live page after this).
 
 ---
 

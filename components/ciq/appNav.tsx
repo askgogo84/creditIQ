@@ -48,11 +48,11 @@ export const APP_NAV: AppNavItem[] = [
     key: 'wallet', label: 'Wallet', href: '/dashboard',
     Icon: Wallet,
     // Holdings ledger — the real, shipped wallet (WalletView / HeroGauge / CardRow /
-    // 2-step tour). Folds: /my-cards (legacy gold card-list, not yet migrated),
-    // /statement-truth (verification happens inside Wallet, IA §3), and /feed +
-    // /intelligence (Feed → Home's "what changed" column; Home unbuilt, so these
-    // fold onto the /dashboard surface they'll grow from — move to Home when it ships).
-    match: p => p.startsWith('/dashboard') || p.startsWith('/my-cards') || p.startsWith('/statement-truth') || p.startsWith('/feed') || p.startsWith('/intelligence'),
+    // 2-step tour). Folds: /statement-truth (verification happens inside Wallet, IA §3),
+    // and /feed + /intelligence (Feed → Home's "what changed" column; Home unbuilt, so
+    // these fold onto the /dashboard surface they'll grow from — move to Home when it
+    // ships). (/my-cards retired — it was an unreachable legacy dup of /dashboard.)
+    match: p => p.startsWith('/dashboard') || p.startsWith('/statement-truth') || p.startsWith('/feed') || p.startsWith('/intelligence'),
   },
   {
     key: 'spend', label: 'Spend', href: '/spend-optimizer',

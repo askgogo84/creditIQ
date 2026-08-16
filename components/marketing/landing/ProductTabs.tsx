@@ -390,8 +390,6 @@ function MyWalletPanel() {
           <span style={{ fontFamily: MO, fontSize: 20, fontWeight: 500, color: '#142335', fontVariantNumeric: 'tabular-nums' }}>{INR(floorTotal)}</span>
         </div>
       </div>
-
-      <Link href="/my-cards" style={panelCta}>Build your real wallet <span style={{ fontFamily: MO }}>→</span></Link>
     </div>
   );
 }

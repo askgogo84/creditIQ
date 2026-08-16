@@ -5,7 +5,6 @@ export const runtime = 'edge';
 const SURFACES = new Set([
   'cards',
   'compare',
-  'my-cards',
   'optimize',
   'card-switch',
   'card-detail',
