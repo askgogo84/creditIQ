@@ -53,10 +53,6 @@ export function Header() {
   const [discoverOpen, setDiscoverOpen] = useState(false)
   const [mobileOpen, setMobileOpen] = useState(false)
   const [scrolled, setScrolled] = useState(false)
-  // Mirror the wallet's theme choice so the injected gold ciq TabBar looks
-  // identical here to what /dashboard shows (CiqTheme persists 'ciq-theme',
-  // defaults dark).
-  const [ciqTheme, setCiqTheme] = useState<'light' | 'dark'>('dark')
   // Theme flips route through the single writer in lib/store.ts (applyTheme),
   // never inline here — see lib/theme-single-writer.test.ts.
   const toggleTheme = useTheme((s) => s.toggle)
@@ -96,30 +92,6 @@ export function Header() {
   useEffect(() => { reassertTheme() }, [])
 
   useEffect(() => { setMobileOpen(false); setAiOpen(false); setDiscoverOpen(false); setCardsOpen(false); setTravelOpen(false) }, [pathname])
-
-  useEffect(() => {
-    try {
-      const saved = window.localStorage.getItem('ciq-theme')
-      if (saved === 'light' || saved === 'dark') setCiqTheme(saved)
-    } catch {}
-  }, [])
-
-  // Keep the injected ciq TabBar wrapper in sync when the theme is flipped from
-  // the TabBar "More" sheet (or another tab) — it broadcasts 'ciq-theme-change'.
-  useEffect(() => {
-    const sync = () => {
-      try {
-        const saved = window.localStorage.getItem('ciq-theme')
-        if (saved === 'light' || saved === 'dark') setCiqTheme(saved)
-      } catch {}
-    }
-    window.addEventListener('ciq-theme-change', sync)
-    window.addEventListener('storage', sync)
-    return () => {
-      window.removeEventListener('ciq-theme-change', sync)
-      window.removeEventListener('storage', sync)
-    }
-  }, [])
 
   const signOut = async () => {
     const sb = createBrowserClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!)
@@ -378,7 +350,7 @@ export function Header() {
           pages too (the fixed bar inherits them; the wrapper is zero-height).
           Signed out -> the marketing tabs. */}
       {user ? (
-        <div data-ciq data-theme={ciqTheme} className="md:hidden">
+        <div className="md:hidden">
           <TabBar />
         </div>
       ) : (
