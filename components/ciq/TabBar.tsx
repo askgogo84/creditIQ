@@ -16,12 +16,11 @@ import { useTheme } from '@/lib/store';
 const ICON_SIZE = 21;
 const ICON_STROKE = 1.8;
 
-// Logged-in bottom bar: 4 primary destinations + a "More" sheet that is the "You"
-// account surface (Profile, Pro, theme, sign out). The four tabs are pulled by key
-// from APP_NAV (the shared app-nav source, IA §2) so their route, label, icon and
-// active-matcher stay in lockstep with the rail and Header. Cards is now a primary
-// tab (was in the More sheet). The 6th IA slot, Home, is deferred until its surface
-// ships — it becomes the 5th tab then (see appNav.tsx).
+// White/copper light system — the SAME active/inactive treatment as the desktop
+// AppRail (copper active, --ink-2 inactive) so the rail and this bar are one
+// navigation at two breakpoints, never two colour systems. No [data-ciq] tokens:
+// these read on :root and follow the site theme, so the bar no longer needs a
+// [data-ciq] wrapper (removed from NavShell/Header in the same commit).
 const TABS = ['wallet', 'spend', 'travel', 'cards'].map(k => APP_NAV.find(i => i.key === k)!);
 
 // "More" sheet = the "You" surface — account destinations (all confirmed routes).
@@ -37,10 +36,11 @@ const ACCOUNT_LINKS = [
   },
 ];
 
+// Active = copper, inactive = --ink-2 (mirrors AppRail's navRow).
 const tabItem = (active: boolean): React.CSSProperties => ({
   display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3,
   fontSize: 9.5, fontWeight: 600, flex: 1, padding: '5px 0', textDecoration: 'none',
-  whiteSpace: 'nowrap', color: active ? 'var(--ciq-ink)' : 'var(--ciq-ink-3)',
+  whiteSpace: 'nowrap', color: active ? 'var(--copper)' : 'var(--ink-2)',
   background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'inherit',
 });
 
@@ -48,13 +48,13 @@ const tabItem = (active: boolean): React.CSSProperties => ({
 const sheetRow: React.CSSProperties = {
   display: 'flex', alignItems: 'center', gap: 13, width: '100%', minHeight: 56,
   padding: '12px 14px', borderRadius: 14, textDecoration: 'none', textAlign: 'left',
-  background: 'var(--ciq-panel)', border: '1px solid var(--ciq-line)',
+  background: 'var(--surface-2)', border: '1px solid var(--line)',
   cursor: 'pointer', fontFamily: 'inherit', marginTop: 10,
 };
 const sheetIconTile: React.CSSProperties = {
   width: 40, height: 40, borderRadius: 12, flexShrink: 0,
   display: 'flex', alignItems: 'center', justifyContent: 'center',
-  background: 'var(--ciq-gold-soft)', border: '1px solid var(--ciq-gold-line)', color: 'var(--ciq-gold-2)',
+  background: 'var(--bg-2)', border: '1px solid var(--line)', color: 'var(--copper)',
 };
 
 export function TabBar() {
@@ -88,8 +88,8 @@ export function TabBar() {
     <>
       <nav style={{
         position: 'fixed', left: 0, right: 0, bottom: 0, maxWidth: 420, margin: '0 auto',
-        background: 'color-mix(in srgb, var(--ciq-bg) 84%, transparent)', backdropFilter: 'blur(18px)',
-        borderTop: '1px solid var(--ciq-line)', display: 'flex', justifyContent: 'space-around',
+        background: 'color-mix(in srgb, var(--surface) 84%, transparent)', backdropFilter: 'blur(18px)',
+        borderTop: '1px solid var(--line)', display: 'flex', justifyContent: 'space-around',
         padding: '9px 4px calc(9px + env(safe-area-inset-bottom))', zIndex: 40,
       }}>
         {TABS.map(t => {
@@ -97,18 +97,18 @@ export function TabBar() {
           const Icon = t.Icon;
           return (
             <Link key={t.href} href={t.href} style={tabItem(active)}>
-              <Icon size={ICON_SIZE} strokeWidth={ICON_STROKE} color={active ? 'var(--ciq-gold-2)' : 'currentColor'} aria-hidden />
+              <Icon size={ICON_SIZE} strokeWidth={ICON_STROKE} color={active ? 'var(--copper)' : 'currentColor'} aria-hidden />
               {t.label}
-              {/* active marker — gold dot, matching the logged-out Home tab */}
-              {active && <span style={{ width: 4, height: 4, borderRadius: '50%', background: 'var(--ciq-gold-2)' }} />}
+              {/* active marker — copper dot, matching the rail's copper active accent */}
+              {active && <span style={{ width: 4, height: 4, borderRadius: '50%', background: 'var(--copper)' }} />}
             </Link>
           );
         })}
         {/* "More" — opens the full-screen sheet, never a link itself. */}
         <button type="button" onClick={() => setMoreOpen(true)} aria-label="More" aria-expanded={moreOpen} style={tabItem(moreOpen)}>
-          <MoreHorizontal size={ICON_SIZE} strokeWidth={ICON_STROKE} color={moreOpen ? 'var(--ciq-gold-2)' : 'currentColor'} aria-hidden />
+          <MoreHorizontal size={ICON_SIZE} strokeWidth={ICON_STROKE} color={moreOpen ? 'var(--copper)' : 'currentColor'} aria-hidden />
           More
-          {moreOpen && <span style={{ width: 4, height: 4, borderRadius: '50%', background: 'var(--ciq-gold-2)' }} />}
+          {moreOpen && <span style={{ width: 4, height: 4, borderRadius: '50%', background: 'var(--copper)' }} />}
         </button>
       </nav>
 
@@ -118,21 +118,21 @@ export function TabBar() {
           aria-modal="true"
           aria-label="More navigation"
           style={{
-            position: 'fixed', inset: 0, zIndex: 2000, background: 'var(--ciq-bg)',
-            display: 'flex', flexDirection: 'column', animation: 'ciqMoreIn 0.22s ease',
+            position: 'fixed', inset: 0, zIndex: 2000, background: 'var(--surface)',
+            display: 'flex', flexDirection: 'column', animation: 'moreSheetIn 0.22s ease',
           }}
         >
-          <style>{`@keyframes ciqMoreIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }`}</style>
+          <style>{`@keyframes moreSheetIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }`}</style>
 
           {/* Sheet header */}
           <div style={{
             display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-            padding: 'calc(16px + env(safe-area-inset-top)) 20px 14px', borderBottom: '1px solid var(--ciq-line)',
+            padding: 'calc(16px + env(safe-area-inset-top)) 20px 14px', borderBottom: '1px solid var(--line)',
           }}>
-            <span style={{ fontSize: 17, fontWeight: 700, color: 'var(--ciq-ink)', letterSpacing: '-0.3px' }}>More</span>
+            <span style={{ fontSize: 17, fontWeight: 700, color: 'var(--ink)', letterSpacing: '-0.3px' }}>More</span>
             <button type="button" onClick={() => setMoreOpen(false)} aria-label="Close" style={{
-              width: 34, height: 34, borderRadius: '50%', border: '1px solid var(--ciq-line-2)',
-              background: 'transparent', color: 'var(--ciq-ink)', cursor: 'pointer',
+              width: 34, height: 34, borderRadius: '50%', border: '1px solid var(--line-strong)',
+              background: 'transparent', color: 'var(--ink)', cursor: 'pointer',
               display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
             }}>
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
@@ -146,7 +146,7 @@ export function TabBar() {
 
             {/* Account destinations */}
             <div style={{
-              fontSize: 10, fontWeight: 700, color: 'var(--ciq-gold-2)',
+              fontSize: 10, fontWeight: 700, color: 'var(--copper)',
               letterSpacing: '1.6px', textTransform: 'uppercase', padding: '8px 4px 0',
             }}>Account</div>
             {ACCOUNT_LINKS.map(link => {
@@ -154,16 +154,16 @@ export function TabBar() {
               return (
                 <Link key={link.href} href={link.href} onClick={() => setMoreOpen(false)} style={{
                   ...sheetRow,
-                  borderColor: active ? 'var(--ciq-gold-line)' : 'var(--ciq-line)',
+                  borderColor: active ? 'var(--copper)' : 'var(--line)',
                 }}>
                   <span style={sheetIconTile}>
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none">{link.icon}</svg>
                   </span>
                   <span style={{ flex: 1, minWidth: 0 }}>
-                    <span style={{ display: 'block', fontSize: 15, fontWeight: 600, color: active ? 'var(--ciq-gold-2)' : 'var(--ciq-ink)' }}>{link.label}</span>
-                    <span style={{ display: 'block', fontSize: 11.5, color: 'var(--ciq-ink-3)', marginTop: 1 }}>{link.desc}</span>
+                    <span style={{ display: 'block', fontSize: 15, fontWeight: 600, color: active ? 'var(--copper)' : 'var(--ink)' }}>{link.label}</span>
+                    <span style={{ display: 'block', fontSize: 11.5, color: 'var(--ink-3)', marginTop: 1 }}>{link.desc}</span>
                   </span>
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--ciq-ink-3)" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--ink-3)" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
                     <path d="M9 6l6 6-6 6" />
                   </svg>
                 </Link>
@@ -172,7 +172,7 @@ export function TabBar() {
 
             {/* Settings — theme toggle lives here (no dedicated /settings page) */}
             <div style={{
-              fontSize: 10, fontWeight: 700, color: 'var(--ciq-gold-2)',
+              fontSize: 10, fontWeight: 700, color: 'var(--copper)',
               letterSpacing: '1.6px', textTransform: 'uppercase', padding: '22px 4px 0',
             }}>Settings</div>
             <div style={{ ...sheetRow, cursor: 'default' }}>
@@ -182,16 +182,16 @@ export function TabBar() {
                 </svg>
               </span>
               <span style={{ flex: 1, minWidth: 0 }}>
-                <span style={{ display: 'block', fontSize: 15, fontWeight: 600, color: 'var(--ciq-ink)' }}>Appearance</span>
-                <span style={{ display: 'block', fontSize: 11.5, color: 'var(--ciq-ink-3)', marginTop: 1 }}>{theme === 'light' ? 'Light mode' : 'Dark mode'}</span>
+                <span style={{ display: 'block', fontSize: 15, fontWeight: 600, color: 'var(--ink)' }}>Appearance</span>
+                <span style={{ display: 'block', fontSize: 11.5, color: 'var(--ink-3)', marginTop: 1 }}>{theme === 'light' ? 'Light mode' : 'Dark mode'}</span>
               </span>
               <button type="button" onClick={toggleTheme} aria-label="Toggle theme" style={{
                 width: 48, height: 27, borderRadius: 999, position: 'relative', cursor: 'pointer', flexShrink: 0,
-                border: '1.5px solid var(--ciq-line-2)', background: 'var(--ciq-panel-2)',
+                border: '1.5px solid var(--line-strong)', background: 'var(--surface-2)',
               }}>
                 <span style={{
                   position: 'absolute', top: 2, left: 2, width: 20, height: 20, borderRadius: '50%',
-                  background: 'linear-gradient(135deg,var(--ciq-gold-2),var(--ciq-gold))',
+                  background: 'var(--copper)',
                   transform: theme === 'light' ? 'translateX(21px)' : 'none',
                   transition: 'transform .3s cubic-bezier(.34,1.56,.64,1)',
                 }} />
@@ -201,14 +201,14 @@ export function TabBar() {
             {/* Sign out */}
             <button type="button" onClick={signOut} style={{
               ...sheetRow, justifyContent: 'flex-start', marginTop: 22,
-              borderColor: 'var(--ciq-line-2)',
+              borderColor: 'var(--line-strong)',
             }}>
-              <span style={{ ...sheetIconTile, background: 'var(--ciq-line)', borderColor: 'var(--ciq-line-2)', color: 'var(--ciq-ink-2)' }}>
+              <span style={{ ...sheetIconTile, background: 'var(--surface-2)', borderColor: 'var(--line)', color: 'var(--ink-2)' }}>
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
                   <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9" />
                 </svg>
               </span>
-              <span style={{ fontSize: 15, fontWeight: 600, color: 'var(--ciq-ink)' }}>Sign out</span>
+              <span style={{ fontSize: 15, fontWeight: 600, color: 'var(--ink)' }}>Sign out</span>
             </button>
 
           </div>

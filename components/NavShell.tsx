@@ -71,9 +71,6 @@ function hasSupabaseAuthCookie(): boolean {
 export function NavShell({ children }: { children: React.ReactNode }) {
   // undefined = auth not resolved yet (matches the server render -> Header).
   const [user, setUser] = useState<any>(undefined)
-  // Mirror the wallet's ciq theme so the injected gold TabBar looks identical to
-  // what /dashboard shows (same pattern the Header uses for its mobile TabBar).
-  const [ciqTheme, setCiqTheme] = useState<'light' | 'dark'>('dark')
 
   // Re-assert the saved theme after hydration for every (shell) route. Signed-in
   // /card/[slug] no longer renders <Header>, so this — not the Header — is what
@@ -119,22 +116,6 @@ export function NavShell({ children }: { children: React.ReactNode }) {
     return () => subscription.unsubscribe()
   }, [])
 
-  useEffect(() => {
-    const sync = () => {
-      try {
-        const saved = window.localStorage.getItem('ciq-theme')
-        if (saved === 'light' || saved === 'dark') setCiqTheme(saved)
-      } catch {}
-    }
-    sync()
-    window.addEventListener('ciq-theme-change', sync)
-    window.addEventListener('storage', sync)
-    return () => {
-      window.removeEventListener('ciq-theme-change', sync)
-      window.removeEventListener('storage', sync)
-    }
-  }, [])
-
   // Loading or signed out -> today's Header, byte-for-byte unchanged.
   if (!user) {
     return (
@@ -150,7 +131,7 @@ export function NavShell({ children }: { children: React.ReactNode }) {
     <>
       <style>{SHELL_CSS}</style>
       <AppRail />
-      <div data-ciq data-theme={ciqTheme} className="ciq-shell-tabbar">
+      <div className="ciq-shell-tabbar">
         <TabBar />
       </div>
       <div className="ciq-shell-main">{children}</div>
