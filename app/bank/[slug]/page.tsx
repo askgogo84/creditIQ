@@ -51,10 +51,14 @@ export default function BankPage({ params }: { params: { slug: string } }) {
   return (
     <main className="min-h-screen">
       <Header />
-      <section className="pt-28 pb-12 grain relative" style={{ overflow: 'hidden' }}>
-        <div className="absolute inset-0 pointer-events-none" style={{ background: `radial-gradient(circle at 30% 50%, ${bank.color}20 0%, transparent 60%)` }} />
+      <section className="pt-28 pb-12 relative" style={{ overflow: 'hidden' }}>
+        {/* Copper aurora — same hero glow as the sibling light pages (/banks, /glossary). */}
+        <div className="aurora" style={{ top: -80, right: -100, width: 600, height: 500, background: 'radial-gradient(circle,rgba(212,163,115,0.22),transparent 60%)' }} />
+        {/* Subtle per-bank brand tint, layered UNDER the copper aurora and dialled down
+            for the light ground (was bank.color@0x20/12.5% on a dark ground — a smudge on cream). */}
+        <div className="absolute inset-0 pointer-events-none" style={{ background: `radial-gradient(circle at 28% 45%, ${bank.color}14 0%, transparent 52%)` }} />
         <div className="max-w-7xl mx-auto px-4 sm:px-6">
-          <Link href="/banks" className="inline-flex items-center gap-2 text-sm text-ink-400 hover:text-copper-400 mb-6 transition-colors">
+          <Link href="/banks" className="inline-flex items-center gap-2 text-sm mb-6 transition-colors" style={{ color: 'var(--ink-3)' }}>
             <ArrowLeft className="w-4 h-4" /> All banks
           </Link>
           <div className="flex items-start gap-6">
@@ -62,8 +66,8 @@ export default function BankPage({ params }: { params: { slug: string } }) {
               {params.slug.slice(0, 2)}
             </div>
             <div>
-              <h1 className="font-display text-4xl sm:text-5xl text-ink-50 leading-tight">{bank.name}</h1>
-              <p className="text-ink-300 mt-2 max-w-2xl">{bank.desc}</p>
+              <h1 className="font-display text-4xl sm:text-5xl leading-tight" style={{ color: 'var(--ink)' }}>{bank.name}</h1>
+              <p className="mt-2 max-w-2xl" style={{ color: 'var(--ink-2)' }}>{bank.desc}</p>
             </div>
           </div>
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mt-8">
@@ -73,9 +77,9 @@ export default function BankPage({ params }: { params: { slug: string } }) {
               { l: 'Cards issued', v: bank.cards_issued },
               { l: 'Cards on CreditIQ', v: `${cards.length}` },
             ].map(s => (
-              <div key={s.l} className="bg-ink-900/40 border border-white/10 rounded-lg p-3">
-                <div className="text-[10px] font-mono uppercase tracking-widest text-ink-400">{s.l}</div>
-                <div className="font-display text-xl text-ink-50 mt-1">{s.v}</div>
+              <div key={s.l} className="rounded-lg p-3" style={{ background: 'var(--surface-2)', border: '1px solid var(--line)' }}>
+                <div className="text-[10px] font-mono uppercase tracking-widest" style={{ color: 'var(--ink-3)' }}>{s.l}</div>
+                <div className="font-display text-xl mt-1" style={{ color: 'var(--ink)' }}>{s.v}</div>
               </div>
             ))}
           </div>
@@ -83,12 +87,12 @@ export default function BankPage({ params }: { params: { slug: string } }) {
       </section>
       <section className="pb-24">
         <div className="max-w-7xl mx-auto px-4 sm:px-6">
-          <div className="divider-rule mb-8 max-w-xs">-- {cards.length} cards tracked</div>
+          <div className="mb-8" style={{ fontFamily: 'var(--font-mono,monospace)', fontSize: 11, letterSpacing: '0.12em', textTransform: 'uppercase', color: 'var(--ink-3)' }}>{cards.length} cards tracked</div>
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
             {cards.map((card, i) => <CardTile key={card.id} card={toTileCard(card, i)} rank={i + 1} href={`/card/${card.slug}`} scoreLabel="Our rating" scoreMax={10} />)}
           </div>
           {cards.length === 0 && (
-            <div className="text-center py-20 text-ink-400 font-display italic">No cards tracked yet for this bank.</div>
+            <div className="text-center py-20 font-display italic" style={{ color: 'var(--ink-3)' }}>No cards tracked yet for this bank.</div>
           )}
         </div>
       </section>
