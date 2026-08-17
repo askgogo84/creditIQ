@@ -158,14 +158,47 @@ export async function POST(req: NextRequest) {
     if (sUrl && sKey && userId && parsed.points_balance) {
       const { createClient } = await import('@supabase/supabase-js');
       const sb = createClient(sUrl, sKey);
-      await sb.from('statement_imports').upsert({
-        user_id: userId, bank: parsed.bank || bank, card_name: parsed.card_name,
-        card_last4: parsed.card_last4, points_balance: parsed.points_balance,
-        points_currency: parsed.points_currency, cashback_balance: parsed.cashback_balance,
-        statement_date: parsed.statement_date, points_expiry: parsed.points_expiry,
-        points_earned: parsed.points_earned_this_month, confidence: parsed.confidence,
+      // A re-upload must UPDATE the card in place and RE-VERIFY it (self_entered:false) so a
+      // previously hand-edited (demoted) row earns back the green Verified badge (migration 007).
+      // We CAN'T use upsert(onConflict:'user_id,card_last4'): the unique index idx_stmt_user_card
+      // is PARTIAL (WHERE user_id IS NOT NULL AND card_last4 IS NOT NULL), and PostgREST emits no
+      // matching WHERE predicate, so ON CONFLICT can't infer the arbiter — Postgres raises 42P10,
+      // which (with the error check below) would 502 EVERY upload. So do it in code: SELECT by the
+      // natural key, then UPDATE if present else INSERT. The race for one user uploading their own
+      // statement is negligible, and NO schema/DDL change is needed.
+      const shared = {
+        bank: parsed.bank || bank, card_name: parsed.card_name,
+        points_balance: parsed.points_balance, points_currency: parsed.points_currency,
+        cashback_balance: parsed.cashback_balance, statement_date: parsed.statement_date,
+        points_expiry: parsed.points_expiry, points_earned: parsed.points_earned_this_month,
+        confidence: parsed.confidence, self_entered: false,
         imported_at: new Date().toISOString(),
-      });
+      };
+      let saveErr: any = null;
+      // The natural key needs a non-null card_last4 (it's what the partial index keys on). Without
+      // one we can't dedupe, so fall through to a plain insert.
+      let existingId: string | null = null;
+      if (parsed.card_last4) {
+        const found = await sb.from('statement_imports').select('id')
+          .eq('user_id', userId).eq('card_last4', parsed.card_last4).limit(1);
+        if (found.error) saveErr = found.error;
+        else existingId = found.data?.[0]?.id ?? null;
+      }
+      if (!saveErr) {
+        ({ error: saveErr } = existingId
+          ? await sb.from('statement_imports').update(shared).eq('id', existingId)
+          : await sb.from('statement_imports').insert({ user_id: userId, card_last4: parsed.card_last4, ...shared }));
+      }
+      // A SWALLOWED save error is the worst failure on a money surface: the UI would show
+      // "Saved · <confidence> · <points>" while nothing persisted. If the write fails, SAY so —
+      // never claim success for a save that didn't happen. The client (upload-statement) shows
+      // this as an error and does NOT render the "Saved" badge on a non-ok response.
+      if (saveErr) {
+        console.error('parse-statement save error:', saveErr.code, saveErr.message);
+        return NextResponse.json({
+          error: "We read your statement, but couldn't save it just now. Please try again in a moment.",
+        }, { status: 502 });
+      }
     }
 
     return NextResponse.json({ success: true, data: parsed });
