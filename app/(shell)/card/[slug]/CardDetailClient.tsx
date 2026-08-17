@@ -151,7 +151,7 @@ export function CardDetailClient({ card }: { card: CreditCard }) {
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 12, paddingTop: 16, borderTop: '1px solid var(--line,rgba(20,41,80,0.08))' }}>
                   {[
                     { label: 'Gross rewards', value: formatINRFull(annualCalc.gross_rewards_inr), color: 'var(--ink,#142950)' },
-                    { label: 'Annual fee', value: `-${formatINRFull(annualCalc.fee_inr)}`, color: '#B84230' },
+                    { label: 'Annual fee', value: `-${formatINRFull(annualCalc.fee_inr)}`, color: 'var(--red)' },
                   ].map((row) => (
                     <div key={row.label} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
                       <span style={{ fontSize: 14, color: 'var(--ink-2,#2A3F6B)' }}>{row.label}</span>
@@ -162,7 +162,7 @@ export function CardDetailClient({ card }: { card: CreditCard }) {
                     <span style={{ fontSize: 14, fontWeight: 600, color: 'var(--ink,#142950)' }}>Net annual value</span>
                     <EstimatedValue
                       slug={card.slug}
-                      baseColor={annualCalc.net_value_inr > 0 ? '#2d7a56' : '#B84230'}
+                      baseColor={annualCalc.net_value_inr > 0 ? 'var(--green)' : 'var(--red)'}
                       mark={false}
                       style={{ fontSize: 28, fontWeight: 800, fontVariantNumeric: 'tabular-nums' }}
                     >
@@ -190,7 +190,7 @@ export function CardDetailClient({ card }: { card: CreditCard }) {
                   {Object.entries(annualCalc.breakdown).map(([k, v]) => (
                     <div key={k} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px 16px', background: 'var(--surface,#fff)', border: '1px solid var(--line,rgba(20,41,80,0.08))', borderRadius: 10 }}>
                       <span style={{ fontSize: 14, color: 'var(--ink,#142950)' }}>{k}</span>
-                      <span style={{ fontSize: 16, fontWeight: 700, color: (v as number) < 0 ? '#B84230' : '#2d7a56', fontVariantNumeric: 'tabular-nums' }}>
+                      <span style={{ fontSize: 16, fontWeight: 700, color: (v as number) < 0 ? 'var(--red)' : 'var(--green)', fontVariantNumeric: 'tabular-nums' }}>
                         {(v as number) < 0 ? '' : '+'}Rs.{Math.abs(v as number).toLocaleString('en-IN')}
                       </span>
                     </div>
@@ -212,7 +212,7 @@ export function CardDetailClient({ card }: { card: CreditCard }) {
                 <ul style={{ margin: 0, padding: 0, listStyle: 'none', display: 'flex', flexDirection: 'column', gap: 12 }}>
                   {card.highlights.map((h, i) => (
                     <li key={i} style={{ display: 'flex', gap: 10, alignItems: 'flex-start', fontSize: 14, color: 'var(--ink-2,#2A3F6B)', lineHeight: 1.65 }}>
-                      <Award style={{ width: 14, height: 14, color: '#2d7a56', flexShrink: 0, marginTop: 3 }} />
+                      <Award style={{ width: 14, height: 14, color: 'var(--green)', flexShrink: 0, marginTop: 3 }} />
                       {h}
                     </li>
                   ))}
@@ -224,7 +224,7 @@ export function CardDetailClient({ card }: { card: CreditCard }) {
                   <ul style={{ margin: 0, padding: 0, listStyle: 'none', display: 'flex', flexDirection: 'column', gap: 12 }}>
                     {card.drawbacks.map((d, i) => (
                       <li key={i} style={{ display: 'flex', gap: 10, alignItems: 'flex-start', fontSize: 14, color: 'var(--ink-2,#2A3F6B)', lineHeight: 1.65 }}>
-                        <AlertTriangle style={{ width: 14, height: 14, color: '#B84230', flexShrink: 0, marginTop: 3 }} />
+                        <AlertTriangle style={{ width: 14, height: 14, color: 'var(--red)', flexShrink: 0, marginTop: 3 }} />
                         {d}
                       </li>
                     ))}
@@ -266,7 +266,7 @@ export function CardDetailClient({ card }: { card: CreditCard }) {
                         )}
                       </div>
                       <div style={{ textAlign: 'right' }}>
-                        <div style={{ fontSize: 18, fontWeight: 800, color: isTop ? 'var(--copper,#8C5F12)' : '#2d7a56', fontVariantNumeric: 'tabular-nums' }}>
+                        <div style={{ fontSize: 18, fontWeight: 800, color: isTop ? 'var(--copper,#8C5F12)' : 'var(--green)', fontVariantNumeric: 'tabular-nums' }}>
                           Rs.{r.value_per_point_inr.toFixed(2)}
                         </div>
                         <div style={{ fontFamily: 'var(--font-mono,monospace)', fontSize: 9, textTransform: 'uppercase', letterSpacing: '0.12em', color: 'var(--ink-3,#5A6A8A)' }}>per point</div>
@@ -297,7 +297,7 @@ export function CardDetailClient({ card }: { card: CreditCard }) {
                       {cr.rate}<span style={{ fontSize: 16, color: 'var(--ink-2,#2A3F6B)' }}>{cr.unit === 'percent' ? '%' : 'X'}</span>
                     </div>
                     {cr.cap_inr_monthly && (
-                      <div style={{ fontSize: 11, color: '#B84230', marginTop: 6 }}>Cap: {formatINR(cr.cap_inr_monthly)}/mo</div>
+                      <div style={{ fontSize: 11, color: 'var(--red)', marginTop: 6 }}>Cap: {formatINR(cr.cap_inr_monthly)}/mo</div>
                     )}
                     {cr.notes && (
                       <div style={{ fontSize: 12, color: 'var(--ink-3,#5A6A8A)', marginTop: 6, lineHeight: 1.5 }}>{cr.notes}</div>
@@ -312,15 +312,15 @@ export function CardDetailClient({ card }: { card: CreditCard }) {
 
       {/* ── Devaluations ── */}
       {card.devaluations && card.devaluations.length > 0 && (
-        <section style={{ padding: 'clamp(40px,6vw,64px) 0', background: 'rgba(184,66,48,0.03)', borderTop: '1px solid rgba(184,66,48,0.10)', borderBottom: '1px solid rgba(184,66,48,0.10)' }}>
+        <section style={{ padding: 'clamp(40px,6vw,64px) 0', background: 'color-mix(in srgb, var(--red) 3%, transparent)', borderTop: '1px solid color-mix(in srgb, var(--red) 10%, transparent)', borderBottom: '1px solid color-mix(in srgb, var(--red) 10%, transparent)' }}>
           <div className="shell">
             <Reveal>
               <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12 }}>
-                <TrendingUp style={{ width: 18, height: 18, color: '#B84230', transform: 'rotate(180deg)' }} />
-                <div style={{ fontFamily: 'var(--font-mono,monospace)', fontSize: 9, fontWeight: 700, letterSpacing: '0.16em', textTransform: 'uppercase', color: '#B84230' }}>Devaluation History</div>
+                <TrendingUp style={{ width: 18, height: 18, color: 'var(--red)', transform: 'rotate(180deg)' }} />
+                <div style={{ fontFamily: 'var(--font-mono,monospace)', fontSize: 9, fontWeight: 700, letterSpacing: '0.16em', textTransform: 'uppercase', color: 'var(--red)' }}>Devaluation History</div>
               </div>
               <h2 style={{ fontSize: 'clamp(22px,3vw,34px)', fontWeight: 800, color: 'var(--ink,#142950)', margin: '0 0 24px', letterSpacing: '-0.02em' }}>
-                <span style={{ fontFamily: 'var(--font-serif,Georgia,serif)', color: '#B84230', fontStyle: 'italic', fontWeight: 400 }}>Beware</span> — this card has been devalued
+                <span style={{ fontFamily: 'var(--font-serif,Georgia,serif)', color: 'var(--red)', fontStyle: 'italic', fontWeight: 400 }}>Beware</span> — this card has been devalued
               </h2>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                 {card.devaluations.map((d, i) => (
@@ -333,7 +333,7 @@ export function CardDetailClient({ card }: { card: CreditCard }) {
                       <div style={{ fontSize: 14, color: 'var(--ink,#142950)' }}>{d.description}</div>
                       <div style={{ fontFamily: 'var(--font-mono,monospace)', fontSize: 9, textTransform: 'uppercase', letterSpacing: '0.12em', color: 'var(--ink-3,#5A6A8A)', marginTop: 3 }}>{d.category.replace('-', ' ')}</div>
                     </div>
-                    <span style={{ fontFamily: 'var(--font-mono,monospace)', fontSize: 9, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.12em', padding: '3px 10px', borderRadius: 100, background: d.impact === 'high' ? 'rgba(184,66,48,0.10)' : d.impact === 'medium' ? 'rgba(212,163,115,0.15)' : 'rgba(20,41,80,0.06)', color: d.impact === 'high' ? '#B84230' : d.impact === 'medium' ? 'var(--copper,#8C5F12)' : 'var(--ink-3,#5A6A8A)' }}>
+                    <span style={{ fontFamily: 'var(--font-mono,monospace)', fontSize: 9, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.12em', padding: '3px 10px', borderRadius: 100, background: d.impact === 'high' ? 'color-mix(in srgb, var(--red) 10%, transparent)' : d.impact === 'medium' ? 'rgba(212,163,115,0.15)' : 'rgba(20,41,80,0.06)', color: d.impact === 'high' ? 'var(--red)' : d.impact === 'medium' ? 'var(--copper,#8C5F12)' : 'var(--ink-3,#5A6A8A)' }}>
                       {d.impact} impact
                     </span>
                   </div>
