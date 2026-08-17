@@ -97,21 +97,40 @@ export async function POST(req: NextRequest) {
       if (sUrl && sKey) {
         const { createClient } = await import('@supabase/supabase-js');
         const sb = createClient(sUrl, sKey);
+        // Same partial-index constraint as parse-statement: idx_stmt_user_card is PARTIAL, so
+        // PostgREST onConflict can't arbiter it (42P10) — it was silently 42P10-ing here, which
+        // is why the swallowed error mattered. SELECT by the natural key, then UPDATE in place
+        // (self_entered:false re-verifies) if present, else INSERT. Surface a real failure
+        // instead of a phantom success. Same shape as app/api/parse-statement/route.ts.
+        let saveErr: any = null;
         for (const card of cards) {
-          await sb.from('statement_imports').upsert({
-            user_id: userId,
+          const shared = {
             bank: card.bank,
             card_name: `${card.bank} Credit Card`,
-            card_last4: card.card_last4,
             points_balance: card.points_balance,
             points_currency: card.points_currency,
             points_earned: card.points_earned,
             confidence: 'medium',
+            self_entered: false,
             imported_at: new Date().toISOString(),
-          }, {
-            onConflict: 'user_id,card_last4',
-            ignoreDuplicates: false,
-          });
+          };
+          let existingId: string | null = null;
+          if (card.card_last4) {
+            const found = await sb.from('statement_imports').select('id')
+              .eq('user_id', userId).eq('card_last4', card.card_last4).limit(1);
+            if (found.error) { saveErr = found.error; break; }
+            existingId = found.data?.[0]?.id ?? null;
+          }
+          ({ error: saveErr } = existingId
+            ? await sb.from('statement_imports').update(shared).eq('id', existingId)
+            : await sb.from('statement_imports').insert({ user_id: userId, card_last4: card.card_last4, ...shared }));
+          if (saveErr) break;
+        }
+        if (saveErr) {
+          console.error('sms-parse save error:', saveErr.code, saveErr.message);
+          return NextResponse.json({
+            error: "We read your messages, but couldn't save them just now. Please try again in a moment.",
+          }, { status: 502 });
         }
       }
     }
