@@ -2,6 +2,7 @@
 
 import { cn } from '@/lib/utils';
 import type { CreditCard } from '@/lib/types';
+import { faceInk } from '@/lib/face-ink';
 
 interface CardMockupProps {
   card: CreditCard;
@@ -10,20 +11,9 @@ interface CardMockupProps {
   interactive?: boolean;
 }
 
-// Face text base colour by card-colour luminance. Threshold is the exact
-// black/white crossover (L≈0.179): above it black wins, below it white wins, so
-// the picked ink at full opacity clears ≥4.58:1 on ANY card colour. (Face text
-// was previously hardcoded white and vanished on light cards.)
-function faceInk(hex: string): '0,0,0' | '255,255,255' {
-  const h = (hex || '').replace('#', '');
-  const n = h.length === 3 ? h.split('').map((c) => c + c).join('') : h;
-  if (n.length < 6) return '255,255,255';
-  const ch = (i: number) => parseInt(n.slice(i, i + 2), 16) / 255;
-  const lin = (c: number) => (c <= 0.03928 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4));
-  const L = 0.2126 * lin(ch(0)) + 0.7152 * lin(ch(2)) + 0.0722 * lin(ch(4));
-  return L > 0.1791 ? '0,0,0' : '255,255,255';
-}
-
+// Face text base colour comes from the shared lib/face-ink (WCAG-linear, 0.1791
+// crossover) so it can't diverge from CreditCard3D. (Face text was previously
+// hardcoded white and vanished on light cards.)
 export function CardMockup({ card, size = 'md', className, interactive = true }: CardMockupProps) {
   const isSmall = size === 'sm';
   const isLarge = size === 'lg';

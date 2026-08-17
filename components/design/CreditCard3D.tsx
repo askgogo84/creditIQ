@@ -1,6 +1,7 @@
 'use client';
 
 import { useRef, type MouseEvent as ReactMouseEvent } from 'react';
+import { faceIsLight } from '@/lib/face-ink';
 
 export type CardVariant = 'obsidian' | 'gold' | 'mint' | 'iris' | 'navy' | 'plum' | 'cream';
 
@@ -27,17 +28,6 @@ interface CreditCard3DProps {
   number?: string;
   small?: boolean;
   interactive?: boolean;
-}
-
-// Perceived luminance of a #rrggbb hex, 0 (black) .. 1 (white).
-function hexLuma(hex: string): number {
-  const m = /^#?([0-9a-f]{6})$/i.exec(hex.trim());
-  if (!m) return 0;
-  const n = parseInt(m[1], 16);
-  const r = (n >> 16) & 255;
-  const g = (n >> 8) & 255;
-  const b = n & 255;
-  return (0.299 * r + 0.587 * g + 0.114 * b) / 255;
 }
 
 export function CreditCard3D({
@@ -74,7 +64,9 @@ export function CreditCard3D({
   // A real brand colour depicts the physical card, so it drives the surface
   // in both themes; only fall back to the variant gradient when absent.
   const surface = color ?? (CARD_SURFACES[variant] || CARD_SURFACES.obsidian);
-  const isLight = color ? hexLuma(color) > 0.6 : variant === 'cream';
+  // Shared WCAG-linear decision (lib/face-ink), unified with CardMockup — replaces the
+  // old diverged YIQ luma (>0.6) that stranded white ink on some light card faces.
+  const isLight = color ? faceIsLight(color) : variant === 'cream';
   const textColor = isLight ? '#1A1612' : '#FFF';
   const subColor = isLight ? 'rgba(26,22,18,0.6)' : 'rgba(255,255,255,0.6)';
   const lowColor = isLight ? 'rgba(26,22,18,0.4)' : 'rgba(255,255,255,0.45)';
