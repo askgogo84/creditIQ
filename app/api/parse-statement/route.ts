@@ -158,14 +158,31 @@ export async function POST(req: NextRequest) {
     if (sUrl && sKey && userId && parsed.points_balance) {
       const { createClient } = await import('@supabase/supabase-js');
       const sb = createClient(sUrl, sKey);
-      await sb.from('statement_imports').upsert({
+      // Upsert on the card's natural key (user_id, card_last4) so a RE-UPLOAD UPDATES the
+      // existing row instead of inserting a duplicate that then collides with the unique
+      // constraint. self_entered: false RE-VERIFIES the card — a fresh statement is
+      // statement-truth again, so a previously hand-edited (demoted) row earns back the green
+      // Verified badge (migration 007). Without BOTH, "upload to verify" is a dead end: the
+      // write can't land and the demotion is permanent. (Same onConflict as sms-parse.)
+      const { error: saveErr } = await sb.from('statement_imports').upsert({
         user_id: userId, bank: parsed.bank || bank, card_name: parsed.card_name,
         card_last4: parsed.card_last4, points_balance: parsed.points_balance,
         points_currency: parsed.points_currency, cashback_balance: parsed.cashback_balance,
         statement_date: parsed.statement_date, points_expiry: parsed.points_expiry,
         points_earned: parsed.points_earned_this_month, confidence: parsed.confidence,
+        self_entered: false,
         imported_at: new Date().toISOString(),
-      });
+      }, { onConflict: 'user_id,card_last4' });
+      // A SWALLOWED save error is the worst failure on a money surface: the UI would show
+      // "Saved · <confidence> · <points>" while nothing persisted. If the write fails, SAY so —
+      // never claim success for a save that didn't happen. The client (upload-statement) shows
+      // this as an error and does NOT render the "Saved" badge on a non-ok response.
+      if (saveErr) {
+        console.error('parse-statement save error:', saveErr.code, saveErr.message);
+        return NextResponse.json({
+          error: "We read your statement, but couldn't save it just now. Please try again in a moment.",
+        }, { status: 502 });
+      }
     }
 
     return NextResponse.json({ success: true, data: parsed });
