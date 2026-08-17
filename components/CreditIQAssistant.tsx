@@ -110,22 +110,28 @@ export function CreditIQAssistant() {
           style={{
             width: 56, height: 56,
             borderRadius: '50%',
-            background: 'linear-gradient(135deg, #1B3A5C, #C9972E)',
+            // Copper fill matching the chrome (was a navy→gold gradient — a hardcoded-hex
+            // gold orphan the [data-ciq] deletion would never catch). Icon uses --surface
+            // via currentColor: it's inversely paired with --copper across themes (white on
+            // dark copper in light, dark on light copper in dark), so contrast holds both ways
+            // without a runtime faceInk call.
+            background: 'var(--copper)',
+            color: 'var(--surface)',
             border: 'none',
             cursor: 'pointer',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
-            boxShadow: '0 4px 20px rgba(201,151,46,0.4)',
+            boxShadow: '0 4px 20px color-mix(in srgb, var(--copper) 35%, transparent)',
             transition: 'transform 0.2s',
           }}
           onMouseEnter={e => (e.currentTarget.style.transform = 'scale(1.08)')}
           onMouseLeave={e => (e.currentTarget.style.transform = 'scale(1)')}
         >
           {open ? (
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
               <path d="M18 6L6 18M6 6l12 12"/>
             </svg>
           ) : (
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
               <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
             </svg>
           )}
