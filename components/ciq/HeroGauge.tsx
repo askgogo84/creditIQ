@@ -62,10 +62,15 @@ function useCountUp(target: number, ms = 1400) {
  * Copper is an accent only, never a data colour.
  */
 export function HeroGauge({
-  points, verifiedPoints, estimatedPoints, estLow, estHigh, cardCount,
+  points, verifiedPoints, estimatedPoints, estLow, estHigh, cardCount, flat = false,
 }: {
   points: number; verifiedPoints: number; estimatedPoints: number;
   estLow: number; estHigh: number; cardCount: number;
+  // `flat` (wallet hero band): suppress this component's OWN frame — border,
+  // radius, shadow, padding and the decorative copper edge/glow — so it renders
+  // flush inside a parent band that owns the single frame. Defaults to today's
+  // stand-alone card so every other caller is byte-identical.
+  flat?: boolean;
 }) {
   const counted = useCountUp(points);
   // Bars default to their TRUE width (fill=true): SSR, no-JS, reduced-motion and any rAF
@@ -100,14 +105,14 @@ export function HeroGauge({
 
   return (
     <section className="w-rise d2" style={{
-      margin: '18px 0 0', borderRadius: 24, padding: '24px 22px',
-      background: 'var(--surface)', border: '1px solid var(--line-strong)',
-      position: 'relative', overflow: 'hidden', boxShadow: 'var(--shadow-lg)',
+      margin: flat ? 0 : '18px 0 0', borderRadius: flat ? 0 : 24, padding: flat ? 0 : '24px 22px',
+      background: flat ? 'transparent' : 'var(--surface)', border: flat ? 'none' : '1px solid var(--line-strong)',
+      position: 'relative', overflow: 'hidden', boxShadow: flat ? 'none' : 'var(--shadow-lg)',
     }}>
-      <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 1,
-        background: 'linear-gradient(90deg,transparent,var(--copper-3),transparent)', opacity: .6 }} />
-      <div style={{ position: 'absolute', inset: 0,
-        background: 'radial-gradient(120% 90% at 100% 0,color-mix(in srgb,var(--copper-3) 12%,transparent),transparent 55%)' }} />
+      {!flat && <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 1,
+        background: 'linear-gradient(90deg,transparent,var(--copper-3),transparent)', opacity: .6 }} />}
+      {!flat && <div style={{ position: 'absolute', inset: 0,
+        background: 'radial-gradient(120% 90% at 100% 0,color-mix(in srgb,var(--copper-3) 12%,transparent),transparent 55%)' }} />}
 
       <div style={{ position: 'relative' }}>
         <div className="mono" style={{ fontSize: 10.5, letterSpacing: '.1em', textTransform: 'uppercase', color: 'var(--ink-3)' }}>
