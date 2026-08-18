@@ -14,12 +14,17 @@ import { useState } from 'react';
  */
 export function CardRow({
   bank, cardName, last4, points, currency, source, monogram, onClick, variant = 'gold',
-  selfEntered, onSavePoints, onDelete,
+  selfEntered, onSavePoints, onDelete, flat = false,
 }: {
   bank: string; cardName: string; last4?: string; points: number;
   currency?: string; source: 'statement' | 'manual'; monogram?: string;
   onClick?: () => void; variant?: 'light' | 'gold';
   selfEntered?: boolean; onSavePoints?: (points: number) => Promise<boolean>; onDelete?: () => void;
+  // `flat` (wallet cards panel): suppress this row's OWN frame — border, radius and
+  // its card padding become a flush 18px list row — so many rows stack inside ONE
+  // parent panel separated by hairlines. Defaults to today's stand-alone card so
+  // my-cards and every other caller stay byte-identical.
+  flat?: boolean;
 }) {
   const verified = source === 'statement' && !selfEntered;
   const mono = monogram || bank.slice(0, 2).toUpperCase();
@@ -61,8 +66,8 @@ export function CardRow({
 
   return (
     <div onClick={onClick} style={{
-      borderRadius: 18, padding: '15px 16px', background: t.panel,
-      border: `1px solid ${t.line}`, display: 'flex', alignItems: 'center', gap: 13,
+      borderRadius: flat ? 0 : 18, padding: flat ? 18 : '15px 16px', background: flat ? 'transparent' : t.panel,
+      border: flat ? 'none' : `1px solid ${t.line}`, display: 'flex', alignItems: 'center', gap: 13,
       transition: 'transform .18s cubic-bezier(.34,1.56,.64,1)', cursor: onClick ? 'pointer' : 'default',
     }}
     onMouseDown={e => (e.currentTarget.style.transform = 'scale(.98)')}
