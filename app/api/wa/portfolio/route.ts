@@ -32,7 +32,28 @@ export async function GET(req: Request) {
     .eq('user_id', uid)
     .order('imported_at', { ascending: false });
 
-  // 2) AA-linked cards: resolve this user's consent handles, then pull linked rows.
+  // 2) Statement-imported cards (direct user_id) — the VERIFIED source (the moat).
+  //    This mirrors /api/user-cards EXACTLY (same table, same select *, same order, and the
+  //    same intra-statement dedupe key `${bank}-${card_last4 || 'unknown'}`, user-cards/
+  //    route.ts:34-40) so the WA wallet and the web wallet read the same rows and can't
+  //    diverge. The web then concatenates statement + manual with NO cross-table dedupe
+  //    (dashboard/page.tsx:151-153), so we concat below too rather than dropping a manual
+  //    card that also appears as a statement — matching the web is the whole point.
+  const { data: stmtRows } = await b
+    .from('statement_imports')
+    .select('*')
+    .eq('user_id', uid)
+    .order('imported_at', { ascending: false });
+
+  const stmtSeen = new Set<string>();
+  const statementRows = (stmtRows ?? []).filter((row: any) => {
+    const key = `${row.bank}-${row.card_last4 || 'unknown'}`;
+    if (stmtSeen.has(key)) return false;
+    stmtSeen.add(key);
+    return true;
+  });
+
+  // 3) AA-linked cards: resolve this user's consent handles, then pull linked rows.
   const { data: consents } = await b
     .from('aa_consents')
     .select('consent_handle')
@@ -63,6 +84,18 @@ export async function GET(req: Request) {
                        // (gogo-memory-os), not here — this route only returns the boolean.
                        // Rename it there too or the bot still says "Estimated". See branch notes.
     })),
+    ...statementRows.map((r: any) => ({
+      source: 'statement' as const,
+      bank: r.bank,
+      name: r.card_name,
+      last4: r.card_last4 ?? null,
+      points: r.points_balance ?? 0,
+      points_currency: r.points_currency ?? 'Points',
+      verified: !r.self_entered, // read from a statement AND not since hand-edited
+                                 // (self_entered demotes to grey) — same rule as
+                                 // WalletView.tsx:53. Default self_entered=false => verified.
+      statement_date: r.statement_date ?? null,
+    })),
     ...linkedRows.map((r: any) => ({
       source: 'linked' as const,
       bank: r.bank,
@@ -76,5 +109,8 @@ export async function GET(req: Request) {
     })),
   ];
 
-  return NextResponse.json({ uid, count: cards.length, cards });
+  // Server-side total so the bot never sums client-side (and can't drift from this figure).
+  const total_points = cards.reduce((s, c) => s + (c.points ?? 0), 0);
+
+  return NextResponse.json({ uid, count: cards.length, total_points, cards });
 }
