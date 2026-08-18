@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CreditIQ — Fly on Points, redesigned</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300;9..144,500&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --cream:#FBF8F3; --sand:#F1ECE4; --white:#FFFFFF;
+    --ink:#142335; --ink-2:#4A5568; --ink-3:#6B6357;
+    --line:#E6DFD3; --line-2:#EFE9DF;
+    --copper:#D89B2A; --copper-dk:#B57F17;
+    --verified:#1B6B42; --estimated:#635C51; --alert:#B84230;
+    --r-lg:22px; --r-md:14px; --r-sm:8px;
+    --pad:18px; --pad-lg:24px; --gap:24px;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:#E9E4DA;font-family:Inter,system-ui,-apple-system,sans-serif;color:var(--ink);-webkit-font-smoothing:antialiased}
+  .mono{font-family:'JetBrains Mono',ui-monospace,monospace;font-variant-numeric:tabular-nums}
+
+  /* ---- harness ---- */
+  .tp-bar{position:sticky;top:0;z-index:20;display:flex;gap:10px;align-items:center;
+    padding:12px 18px;background:var(--ink);color:#fff;font-size:13px;font-weight:500}
+  .tp-bar span{opacity:.65;margin-right:auto}
+  .tp-bar button{font:inherit;font-weight:600;border:1px solid rgba(255,255,255,.25);
+    background:transparent;color:#fff;padding:6px 14px;border-radius:999px;cursor:pointer}
+  .tp-bar button[aria-pressed="true"]{background:var(--copper);border-color:var(--copper);color:#22160a}
+  .tp-stage{padding:26px 16px 60px;display:flex;justify-content:center}
+  .tp-page{background:var(--cream);width:100%;max-width:1100px;border-radius:var(--r-lg);
+    padding:26px 22px 40px;box-shadow:0 18px 44px rgba(20,35,53,.13)}
+  [data-view="phone"] .tp-page{max-width:375px;padding:18px 16px 34px}
+
+  /* ---- section header ---- */
+  .tp-eyebrow{font-size:14px;font-weight:600;color:var(--ink-2);margin:0 0 12px}
+  .tp-tabs{display:flex;gap:4px;background:var(--sand);border-radius:999px;padding:4px;
+    margin:0 0 22px;overflow-x:auto;scrollbar-width:none}
+  .tp-tabs::-webkit-scrollbar{display:none}
+  .tp-tabs button{font:inherit;font-size:14px;font-weight:600;white-space:nowrap;border:0;
+    background:transparent;color:var(--ink-2);padding:9px 16px;border-radius:999px;cursor:pointer}
+  .tp-tabs button[aria-pressed="true"]{background:var(--ink);color:#fff}
+
+  /* ---- search band ---- */
+  .tp-search{background:var(--white);border:1px solid var(--line);border-radius:var(--r-lg);
+    padding:var(--pad-lg);display:grid;gap:14px;
+    grid-template-columns:1fr auto 1fr .8fr .6fr .7fr auto;align-items:end}
+  [data-view="phone"] .tp-search{grid-template-columns:1fr 1fr;padding:var(--pad)}
+  .fld{display:flex;flex-direction:column;gap:6px;min-width:0}
+  [data-view="phone"] .fld.wide{grid-column:1 / -1}
+  .fld label{font-size:11px;font-weight:700;letter-spacing:.09em;color:var(--ink-3)}
+  .fld .val{border:1px solid var(--line);border-radius:var(--r-md);padding:11px 12px;
+    background:var(--cream);font-size:15px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .swap{border:1px solid var(--line);background:var(--white);width:38px;height:38px;border-radius:50%;
+    cursor:pointer;font-size:15px;color:var(--ink-2);margin-bottom:3px}
+  [data-view="phone"] .swap{display:none}
+  .btn{font:inherit;border:0;cursor:pointer;border-radius:999px;font-weight:700;font-size:15px;
+    padding:13px 26px;background:var(--copper);color:#22160a;min-height:44px}
+  .btn:hover{background:var(--copper-dk);color:#fff}
+  [data-view="phone"] .tp-search .btn{grid-column:1 / -1;width:100%}
+  .btn-quiet{background:transparent;border:1px solid var(--line);color:var(--ink);
+    font-weight:600;padding:10px 18px;font-size:14px}
+  .btn-quiet:hover{background:var(--sand);color:var(--ink)}
+
+  /* ---- filters ---- */
+  .tp-filters{display:flex;gap:8px;align-items:center;margin:20px 0 6px;overflow-x:auto;
+    padding-bottom:4px;scrollbar-width:none}
+  .tp-filters::-webkit-scrollbar{display:none}
+  .chip{border:1px solid var(--line);background:var(--white);border-radius:999px;
+    padding:8px 15px;font-size:13px;font-weight:600;color:var(--ink-2);white-space:nowrap;cursor:pointer}
+  .chip[aria-pressed="true"]{background:var(--ink);color:#fff;border-color:var(--ink)}
+  .chip.right{margin-left:auto}
+  [data-view="phone"] .chip.right{margin-left:0}
+
+  /* ---- progress ---- */
+  .tp-progress{margin:16px 0 4px;padding:14px var(--pad);background:var(--white);
+    border:1px solid var(--line);border-radius:var(--r-lg)}
+  .tp-progress .lbl{font-size:13px;font-weight:600;color:var(--ink-2);margin-bottom:9px}
+  .track{height:6px;border-radius:99px;background:var(--sand);overflow:hidden}
+  .track i{display:block;height:100%;width:38%;background:var(--copper);border-radius:99px}
+
+  /* ---- results ---- */
+  .tp-count{font-size:13px;color:var(--ink-3);margin:18px 2px 10px}
+  .tp-list{background:var(--white);border:1px solid var(--line);border-radius:var(--r-lg);overflow:hidden}
+  .tp-head{display:grid;grid-template-columns:92px 1fr 92px 92px 168px;gap:12px;
+    padding:12px var(--pad);border-bottom:1px solid var(--line);
+    font-size:11px;font-weight:700;letter-spacing:.08em;color:var(--ink-3)}
+  [data-view="phone"] .tp-head{display:none}
+  .tp-row{display:grid;grid-template-columns:92px 1fr 92px 92px 168px;gap:12px;
+    padding:var(--pad);border-bottom:1px solid var(--line-2);cursor:pointer;align-items:center;
+    background:var(--white);text-align:left;width:100%;border-left:0;border-right:0;border-top:0;font:inherit;color:inherit}
+  .tp-row:hover{background:#FCFAF6}
+  .tp-row[aria-expanded="true"]{background:var(--cream)}
+  .tp-date{font-size:14px;font-weight:700}
+  .tp-date small{display:block;font-size:11px;font-weight:500;color:var(--ink-3)}
+  .tp-prog{font-size:15px;font-weight:700;margin-bottom:3px}
+  .tp-leg{font-size:12.5px;color:var(--ink-2)}
+  .tp-cabin{font-size:15px;font-weight:700;text-align:right}
+  .tp-cabin.none{color:var(--line);font-weight:500}
+  .tp-cost{text-align:right}
+  .tp-cost b{font-size:16px;font-weight:700;display:block}
+  .tp-cost .tax{font-size:12px;color:var(--ink-3)}
+  .tp-card{font-size:12px;color:var(--ink-2);margin-top:5px}
+  .pill{display:inline-block;font-size:10.5px;font-weight:700;letter-spacing:.05em;
+    padding:2px 7px;border-radius:999px;vertical-align:1px}
+  .pill.wallet{background:#E4F0E8;color:var(--verified)}
+  .pill.self{background:var(--sand);color:var(--estimated)}
+
+  /* phone row */
+  [data-view="phone"] .tp-row{display:block;padding:var(--pad)}
+  [data-view="phone"] .tp-date{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:6px}
+  [data-view="phone"] .tp-date small{display:inline;font-size:12px}
+  [data-view="phone"] .tp-cabins-m{display:flex;gap:22px;margin:12px 0 12px}
+  [data-view="phone"] .tp-cabins-m div{font-size:11px;font-weight:700;letter-spacing:.06em;color:var(--ink-3)}
+  [data-view="phone"] .tp-cabins-m b{display:block;font-size:16px;color:var(--ink);letter-spacing:0;margin-top:3px}
+  [data-view="phone"] .tp-cost{text-align:left;border-top:1px solid var(--line-2);padding-top:12px}
+  .tp-cabins-m{display:none}
+  [data-view="phone"] .tp-cabin{display:none}
+
+  /* ---- expanded ---- */
+  .tp-detail{display:none;padding:2px var(--pad) var(--pad);background:var(--cream);
+    border-bottom:1px solid var(--line-2)}
+  .tp-detail.open{display:block}
+  .blk{padding:18px 0;border-top:1px solid var(--line)}
+  .blk:first-child{border-top:0}
+  .blk h4{margin:0 0 12px;font-size:11px;font-weight:700;letter-spacing:.09em;color:var(--ink-3)}
+  .cost-row{display:flex;justify-content:space-between;align-items:baseline;gap:12px;flex-wrap:wrap}
+  .cost-row .big{font-size:26px;font-weight:700}
+  .cost-row .sub{font-size:13px;color:var(--ink-2)}
+
+  .verdict{font-size:15px;line-height:1.55}
+  .verdict .keep{color:var(--verified);font-weight:700}
+  .vpp{font-size:12px;font-weight:700;letter-spacing:.05em;color:var(--ink-3);margin-top:8px}
+
+  /* signature: the transfer ladder */
+  .ladder{display:flex;flex-direction:column;gap:0}
+  .rung{display:grid;grid-template-columns:1fr 108px 92px;gap:14px;align-items:center;
+    padding:13px 0;border-top:1px solid var(--line-2)}
+  .rung:first-child{border-top:0}
+  .rung .path{font-size:14px;font-weight:600;line-height:1.5}
+  .rung .path .arw{color:var(--copper);font-weight:700;margin:0 5px}
+  .rung .meta{font-size:11.5px;color:var(--ink-3);margin-top:3px}
+  .rung .days{font-size:12.5px;font-weight:700;letter-spacing:.02em}
+  .rung .days.ok{color:var(--verified)}
+  .rung .days.risk{color:var(--alert)}
+  .rung .pts{text-align:right;font-size:15px;font-weight:700}
+  .rung.best{background:#FDF8EE;margin:0 -12px;padding:13px 12px;border-radius:var(--r-md);border-top:0}
+  .risknote{font-size:12.5px;color:var(--alert);margin-top:10px;line-height:1.5}
+  [data-view="phone"] .rung{grid-template-columns:1fr 84px}
+  [data-view="phone"] .rung .pts{grid-column:1 / -1;text-align:left;font-size:14px}
+
+  .act{margin-top:18px;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+  [data-view="phone"] .act .btn{width:100%}
+  .warn{margin-top:14px;padding:13px 15px;background:#FBF0E6;border:1px solid #EBC9A3;
+    border-radius:var(--r-md);font-size:13px;line-height:1.55}
+  .warn b{color:var(--alert)}
+
+  .foot{font-size:12px;color:var(--ink-3);margin-top:16px;line-height:1.6}
+  .note{margin:14px 2px 0;font-size:12.5px;color:var(--ink-3)}
+</style>
+</head>
+<body>
+
+<div class="tp-bar">
+  <span>CreditIQ · Fly on Points — proposed redesign · tap any flight row</span>
+  <button id="bDesk" aria-pressed="true">Desktop</button>
+  <button id="bPhone" aria-pressed="false">Phone 375</button>
+</div>
+
+<div class="tp-stage" data-view="desktop" id="stage">
+<div class="tp-page">
+
+  <p class="tp-eyebrow">Travel</p>
+  <div class="tp-tabs">
+    <button aria-pressed="true">Fly on Points</button>
+    <button aria-pressed="false">Ask AI</button>
+    <button aria-pressed="false">Sweet Spots</button>
+    <button aria-pressed="false">Transfer Partners</button>
+    <button aria-pressed="false">Lounges</button>
+  </div>
+
+  <!-- ONE search band -->
+  <div class="tp-search">
+    <div class="fld wide"><label>FROM</label><div class="val">Bengaluru (BLR)</div></div>
+    <button class="swap" title="Swap">⇄</button>
+    <div class="fld wide"><label>TO</label><div class="val">Dubai (DXB)</div></div>
+    <div class="fld"><label>DATE</label><div class="val mono">22 Aug 26</div></div>
+    <div class="fld"><label>FLEX</label><div class="val mono">±3 days</div></div>
+    <div class="fld"><label>CABIN</label><div class="val">All</div></div>
+    <button class="btn">Search</button>
+  </div>
+
+  <!-- honest progress -->
+  <div class="tp-progress">
+    <div class="lbl">Searching · Air India · Maharaja Club · 3 of 8 programmes · 38%</div>
+    <div class="track"><i></i></div>
+  </div>
+
+  <div class="tp-filters">
+    <button class="chip" aria-pressed="true">All stops</button>
+    <button class="chip" aria-pressed="false">Non-stop</button>
+    <button class="chip" aria-pressed="false">Economy</button>
+    <button class="chip" aria-pressed="false">Business</button>
+    <button class="chip right" aria-pressed="false">All cards</button>
+    <button class="chip" aria-pressed="true">My cards</button>
+  </div>
+
+  <p class="tp-count">14 options found so far · 19–25 Aug · using the 3 cards in your wallet</p>
+
+  <div class="tp-list">
+    <div class="tp-head">
+      <div>DATE</div><div>PROGRAMME &amp; ROUTE</div>
+      <div style="text-align:right">ECONOMY</div><div style="text-align:right">BUSINESS</div>
+      <div style="text-align:right">YOU PAY</div>
+    </div>
+
+    <!-- ROW 1 -->
+    <button class="tp-row" aria-expanded="false" data-t="d1">
+      <div class="tp-date">22 Aug <small>Sat</small></div>
+      <div>
+        <div class="tp-prog">Air India · Maharaja Club</div>
+        <div class="tp-leg">BLR → DXB · 10:30 → 13:30 · 4h 30m · non-stop</div>
+      </div>
+      <div class="tp-cabin mono">20,000</div>
+      <div class="tp-cabin mono">45,000</div>
+      <div class="tp-cabins-m">
+        <div>ECONOMY<b class="mono">20,000</b></div>
+        <div>BUSINESS<b class="mono">45,000</b></div>
+      </div>
+      <div class="tp-cost">
+        <b class="mono">40,000 pts</b>
+        <span class="tax mono">+ ₹3,116 taxes</span>
+        <div class="tp-card">HDFC Regalia <span class="pill wallet">IN WALLET</span></div>
+      </div>
+    </button>
+
+    <div class="tp-detail" id="d1">
+      <div class="blk">
+        <h4>WHAT IT COSTS · ECONOMY RETURN</h4>
+        <div class="cost-row">
+          <div><span class="big mono">40,000</span> <span class="sub">Maharaja Club miles</span></div>
+          <div class="sub">plus <b class="mono">₹3,116</b> paid in cash for taxes</div>
+        </div>
+      </div>
+
+      <div class="blk">
+        <h4>POINTS VS CASH</h4>
+        <div id="cashHidden">
+          <button class="btn btn-quiet" onclick="showCash()">Show cash price</button>
+          <p class="foot">Fetched live when you ask. We don't show an estimate next to a real points figure.</p>
+        </div>
+        <div id="cashShown" style="display:none">
+          <p class="verdict">This flight costs <b class="mono">₹22,900</b> in cash.
+            With points you pay <b class="mono">₹3,116</b> in taxes and
+            <span class="keep">keep ₹19,784</span>.</p>
+          <p class="vpp mono">VALUE PER POINT ₹0.49 · vs ₹0.30 in the HDFC portal</p>
+        </div>
+      </div>
+
+      <div class="blk">
+        <h4>HOW TO GET 40,000 MAHARAJA CLUB MILES</h4>
+        <div class="ladder">
+          <div class="rung best">
+            <div>
+              <div class="path">HDFC Regalia <span class="arw">→</span> Maharaja Club</div>
+              <div class="meta">Direct · 1:1 · minimum 1,000 pts</div>
+            </div>
+            <div class="days ok mono">0–3 DAYS</div>
+            <div class="pts mono">40,000 pts</div>
+          </div>
+          <div class="rung">
+            <div>
+              <div class="path">HDFC Regalia <span class="arw">→</span> Accor <span class="arw">→</span> Maharaja Club</div>
+              <div class="meta">2 hops · combined 4:1 · community-reported, not verified</div>
+            </div>
+            <div class="days risk mono">UP TO 13 DAYS</div>
+            <div class="pts mono">1,60,000 pts</div>
+          </div>
+        </div>
+        <p class="risknote">The 13-day route can't hold this seat — it will almost certainly be gone before your miles arrive.</p>
+      </div>
+
+      <div class="act">
+        <button class="btn">Book on Air India →</button>
+        <span class="foot">You have 71,118 pts. This leaves 31,118.</span>
+      </div>
+
+      <div class="warn">
+        <b>Check the seat is still there before you transfer.</b>
+        Transfers out of your bank can't be undone — if the seat goes, the miles stay in Maharaja Club.
+      </div>
+    </div>
+
+    <!-- ROW 2 — the honest don't-redeem case -->
+    <button class="tp-row" aria-expanded="false" data-t="d2">
+      <div class="tp-date">23 Aug <small>Sun</small></div>
+      <div>
+        <div class="tp-prog">Singapore KrisFlyer</div>
+        <div class="tp-leg">BLR → DXB · 21:05 → 23:40 · 4h 05m · non-stop</div>
+      </div>
+      <div class="tp-cabin mono">28,000</div>
+      <div class="tp-cabin none">—</div>
+      <div class="tp-cabins-m">
+        <div>ECONOMY<b class="mono">28,000</b></div>
+        <div>BUSINESS<b class="mono" style="color:var(--line)">—</b></div>
+      </div>
+      <div class="tp-cost">
+        <b class="mono">56,000 pts</b>
+        <span class="tax mono">+ ₹4,480 taxes</span>
+        <div class="tp-card">Amex Platinum Travel <span class="pill self">SELF-ENTERED</span></div>
+      </div>
+    </button>
+
+    <div class="tp-detail" id="d2">
+      <div class="blk">
+        <h4>POINTS VS CASH</h4>
+        <p class="verdict"><b style="color:var(--alert)">Book this one with cash.</b>
+          It costs <b class="mono">₹12,400</b> in cash. Spending 56,000 points to avoid
+          ₹7,920 values each point at <b class="mono">₹0.14</b> — less than half what the
+          HDFC portal gives you.</p>
+        <p class="vpp mono">VALUE PER POINT ₹0.14 · portal floor ₹0.30</p>
+      </div>
+      <div class="blk">
+        <h4>ONE THING TO KNOW</h4>
+        <p class="foot">This row is priced off a balance you entered yourself, not a
+          statement. Upload a statement and we'll verify it.</p>
+      </div>
+      <div class="act"><button class="btn btn-quiet">See cash fares →</button></div>
+    </div>
+
+    <!-- ROW 3 -->
+    <button class="tp-row" aria-expanded="false" data-t="d3">
+      <div class="tp-date">25 Aug <small>Tue</small></div>
+      <div>
+        <div class="tp-prog">Etihad Guest</div>
+        <div class="tp-leg">BLR → AUH → DXB · 03:40 → 09:15 · 7h 05m · 1 stop</div>
+      </div>
+      <div class="tp-cabin mono">22,000</div>
+      <div class="tp-cabin mono">62,000</div>
+      <div class="tp-cabins-m">
+        <div>ECONOMY<b class="mono">22,000</b></div>
+        <div>BUSINESS<b class="mono">62,000</b></div>
+      </div>
+      <div class="tp-cost">
+        <b class="mono">44,000 pts</b>
+        <span class="tax mono">+ ₹5,240 taxes</span>
+        <div class="tp-card">HDFC Infinia <span class="pill wallet">IN WALLET</span></div>
+      </div>
+    </button>
+    <div class="tp-detail" id="d3">
+      <div class="blk"><p class="verdict">Same three blocks as above — cost, points vs cash, transfer ladder — then one action.</p></div>
+    </div>
+  </div>
+
+  <p class="note">3 of 8 programmes didn't respond: Flying Blue, Velocity, Virgin Atlantic.
+    We'd rather say so than quietly leave them out.</p>
+
+</div>
+</div>
+
+<script>
+  const stage=document.getElementById('stage'), bD=document.getElementById('bDesk'), bP=document.getElementById('bPhone');
+  bD.onclick=()=>{stage.dataset.view='desktop';bD.setAttribute('aria-pressed','true');bP.setAttribute('aria-pressed','false');};
+  bP.onclick=()=>{stage.dataset.view='phone';bP.setAttribute('aria-pressed','true');bD.setAttribute('aria-pressed','false');};
+
+  document.querySelectorAll('.tp-row').forEach(row=>{
+    row.addEventListener('click',()=>{
+      const panel=document.getElementById(row.dataset.t);
+      const open=panel.classList.contains('open');
+      document.querySelectorAll('.tp-detail').forEach(p=>p.classList.remove('open'));
+      document.querySelectorAll('.tp-row').forEach(r=>r.setAttribute('aria-expanded','false'));
+      if(!open){panel.classList.add('open');row.setAttribute('aria-expanded','true');}
+    });
+  });
+
+  function showCash(){
+    document.getElementById('cashHidden').style.display='none';
+    document.getElementById('cashShown').style.display='block';
+  }
+</script>
+</body>
+</html>
