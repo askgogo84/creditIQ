@@ -77,13 +77,17 @@ async function fetchUserCards(userId: string): Promise<UserCard[]> {
     const sb = createClient(URL_ENV(), SVC(), { auth: { persistSession: false } });
     const [stmt, manual] = await Promise.all([
       sb.from('statement_imports')
-        .select('bank, card_name, card_last4, points_balance, points_currency')
+        .select('bank, card_name, card_last4, points_balance, points_currency, self_entered')
         .eq('user_id', userId),
       sb.from('manual_cards')
         .select('bank, card_name, card_last4, points_balance, points_currency')
         .eq('user_id', userId),
     ]);
-    const rows = [...(stmt.data || []), ...(manual.data || [])] as UserCard[];
+    // Provenance: statement cards are verified ("In wallet" green) UNLESS the balance
+    // was hand-edited (self_entered); every manual card is self-entered by definition.
+    const stmtRows = (stmt.data || []).map((r: any) => ({ ...r, selfEntered: r.self_entered === true }));
+    const manualRows = (manual.data || []).map((r: any) => ({ ...r, selfEntered: true }));
+    const rows = [...stmtRows, ...manualRows] as UserCard[];
     // dedupe by bank + last4 + name
     const seen = new Set<string>();
     const cards: UserCard[] = [];
@@ -114,7 +118,9 @@ function awardKey(a: SeatsAeroResult): string {
 
 interface AwardView {
   program: string;
-  mileageCost: number;
+  mileageCost: number;       // searched-cabin cost (drives "you pay")
+  economyMiles: number;      // economy award miles for this record (0 = not priced)
+  businessMiles: number;     // business award miles for this record (0 = not priced)
   seats: number;
   source: string;
   airlineCode: string;
@@ -138,6 +144,8 @@ function buildAwardView(a: SeatsAeroResult, trip: SeatsAeroTrip | null, cabin: C
   return {
     program: programLabel(a.source),
     mileageCost: a.mileageCost,
+    economyMiles: a.yMileageCost || (cabin === 'economy' ? a.mileageCost : 0),
+    businessMiles: a.jMileageCost || (cabin === 'business' ? a.mileageCost : 0),
     seats: a.remainingSeats,
     source: a.source,
     airlineCode: a.airlines,

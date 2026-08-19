@@ -10,11 +10,9 @@
 
 import { type SeatsAeroResult, type SeatsAeroTrip } from '@/lib/seats-aero';
 import type { LiveDestinationPrice } from '@/lib/types';
-import {
-  resolveCardCurrency,
-  partnersForSource,
-  cardPointsFor,
-} from '@/lib/transfer-map';
+import { resolveCardCurrency } from '@/lib/transfer-map';
+import { findTransferRoutes, type Route } from '@/lib/transfer-ladder';
+import { TRANSFER_EDGES } from '@/lib/data/transfer-graph';
 
 // Human labels for the canonical seats.aero source slugs we support.
 const SOURCE_PROGRAM_LABEL: Record<string, string> = {
@@ -45,6 +43,10 @@ export interface UserCard {
   card_last4: string | null;
   points_balance: number;
   points_currency: string | null;
+  // Provenance for the row pill: true when the balance was hand-typed (manual card,
+  // or a statement card whose balance was later edited) — renders "Self-entered"
+  // grey. false/undefined = statement-verified, renders "In wallet" green (the moat).
+  selfEntered?: boolean;
 }
 
 // ── award matching ───────────────────────────────────────────────────────────
@@ -94,12 +96,31 @@ export interface RedemptionOption {
   status: 'ok' | 'currency-unknown' | 'not-transferable';
   currency?: string;
   transferPartner?: string;
-  ratio?: [number, number];
-  cardPointsNeeded?: number;
+  ratio?: [number, number];        // nominalRatio of the best route — DISPLAY ONLY,
+                                    // never the payable figure (see cardPointsNeeded)
+  cardPointsNeeded?: number;        // TRUTH: best route's pointsRequired
   yourPoints?: number;
   canAfford?: boolean;
   verified: false;
+  selfEntered?: boolean;            // drives the In-wallet / Self-entered pill
+  // Every viable transfer path from this card into the award programme, best-first
+  // (from lib/transfer-ladder). Carried for the Phase-4 disclosure ladder; the
+  // collapsed row uses only cardPointsNeeded.
+  routes?: Route[];
   rating?: { valuePerPointInr: number | null; label: string };
+}
+
+// Card reward currency + issuer bank -> transfer-graph edge `from_currency` slug.
+// The edge slugs follow a `${bank}_${currency}` convention (hdfc_reward_points,
+// axis_edge, axis_miles, amex_membership_rewards), so we normalise both parts and
+// join. An unmapped pair returns a slug that simply matches no edge -> no route ->
+// "not transferable" (honest: we never fabricate a ratio for an unknown pair).
+function currencyToEdgeSlug(currency: string, bank?: string): string | null {
+  const norm = (s: string) => (s || '').toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_|_$/g, '');
+  const b = norm(bank || '');
+  const c = norm(currency);
+  if (!b || !c) return null;
+  return `${b}_${c}`;
 }
 
 export function buildRedemption(
@@ -120,13 +141,19 @@ export function buildRedemption(
       };
     }
 
-    // Does this currency transfer into this award source?
-    const partners = partnersForSource(award.source);
-    const est = partners.length
-      ? cardPointsFor(award.source, resolved.currency, resolved.bank, award.mileageCost, resolved.matchedCardName)
-      : null;
+    // Every viable transfer path from this card's currency into this award source,
+    // via the transfer-ladder engine (direct + 2-hop, best-first). Replaces the old
+    // single-hop cardPointsFor lookup. For the current all-direct edge set this
+    // yields the same pointsRequired, but it also carries the full ladder + honest
+    // duration/provenance for the Phase-4 disclosure.
+    const slug = currencyToEdgeSlug(resolved.currency, resolved.bank);
+    const routes = slug
+      ? findTransferRoutes(TRANSFER_EDGES, slug, award.source, award.mileageCost, {
+          cardName: resolved.matchedCardName,
+        })
+      : [];
 
-    if (!est) {
+    if (!routes.length) {
       return {
         cardName: card.card_name,
         bank: card.bank,
@@ -136,9 +163,10 @@ export function buildRedemption(
       };
     }
 
+    const best = routes[0]; // sorted pointsRequired asc — the payable truth
     const yourPoints = Number(card.points_balance) || 0;
-    const canAfford = yourPoints >= est.cardPoints;
-    const vpp = cashPrice > 0 ? cashPrice / est.cardPoints : null;
+    const canAfford = yourPoints >= best.pointsRequired;
+    const vpp = cashPrice > 0 ? cashPrice / best.pointsRequired : null;
 
     return {
       cardName: card.card_name,
@@ -146,11 +174,13 @@ export function buildRedemption(
       status: 'ok',
       currency: resolved.currency,
       transferPartner: programLabel(award.source),
-      ratio: est.ratio,
-      cardPointsNeeded: est.cardPoints,
+      ratio: best.nominalRatio, // display only
+      cardPointsNeeded: best.pointsRequired,
       yourPoints,
       canAfford,
       verified: false,
+      selfEntered: card.selfEntered ?? false,
+      routes,
       rating: { valuePerPointInr: vpp, label: vpp != null ? valueLabel(vpp) : 'unknown' },
     };
   });

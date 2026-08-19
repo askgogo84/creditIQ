@@ -68,7 +68,7 @@ export const APP_NAV: AppNavItem[] = [
     Icon: Plane,
     // Travel AI = the search itself; Sweet Spots / Transfer Partners / Lounges /
     // Trip Planner = tabs & modes within Travel (IA §3).
-    match: p => p.startsWith('/trip-planner') || p.startsWith('/travel') || p.startsWith('/flights') || p.startsWith('/lounge-tracker') || p.startsWith('/sweet-spots') || p.startsWith('/transfer-partners'),
+    match: p => p.startsWith('/trip-planner') || p.startsWith('/fly-points') || p.startsWith('/travel') || p.startsWith('/flights') || p.startsWith('/lounge-tracker') || p.startsWith('/sweet-spots') || p.startsWith('/transfer-partners'),
   },
   {
     key: 'cards', label: 'Cards', href: '/cards',

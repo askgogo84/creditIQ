@@ -1,0 +1,149 @@
+/* Fly-on-Points board — Phase 3. Styles map the approved mockup
+   (docs/travel-redesign/travel-redesign-mockup.html) onto EXISTING design tokens
+   only (globals.css). No raw palette, no italics, no width transitions. One frame
+   per group: a bordered element never nests inside another bordered element. */
+
+.fp-root { max-width: 1100px; }
+.fp-mono { font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
+
+/* ── page identity ── */
+.fp-title { font-family: var(--font-serif); font-weight: 300; font-size: 30px;
+  letter-spacing: -0.01em; color: var(--ink); margin: 8px 0 6px; }
+.fp-sub { font-size: 14px; color: var(--ink-3); margin: 0 0 20px; line-height: 1.5; }
+
+/* ── search band (24px pad, the one allowed shadow) ── */
+.fp-search { background: var(--surface); border: 1px solid var(--line);
+  border-radius: var(--r-lg); padding: 24px; display: grid; gap: 14px;
+  grid-template-columns: 1fr auto 1fr .8fr .6fr .8fr auto; align-items: end;
+  box-shadow: var(--shadow-md); }
+.fp-fld { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+.fp-fld-label { font-size: 11px; font-weight: 700; letter-spacing: 0.09em;
+  color: var(--ink-3); text-transform: uppercase; }
+.fp-fld-val { border: 1px solid var(--line); border-radius: var(--r-md);
+  padding: 11px 12px; background: var(--surface-2); font-size: 15px; font-weight: 600;
+  color: var(--ink); font-family: inherit; width: 100%; min-height: 44px;
+  outline: none; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.fp-fld-val:focus { border-color: var(--copper-3); }
+select.fp-fld-val { cursor: pointer; }
+input.fp-fld-val::placeholder { color: var(--ink-4); font-weight: 500; }
+
+.fp-swap { border: 1px solid var(--line); background: var(--surface); width: 38px;
+  height: 38px; border-radius: 50%; cursor: pointer; font-size: 15px;
+  color: var(--ink-2); margin-bottom: 3px; flex-shrink: 0; }
+.fp-swap:hover { background: var(--surface-2); }
+
+.fp-btn { font: inherit; border: 0; cursor: pointer; border-radius: 999px;
+  font-weight: 700; font-size: 15px; padding: 13px 26px; background: var(--copper-3);
+  color: #22160a; min-height: 44px; }
+.fp-btn:hover { background: var(--copper-2); color: #fff; }
+.fp-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+.fp-btn-quiet { background: transparent; border: 1px solid var(--line); color: var(--ink);
+  font-weight: 600; padding: 10px 18px; font-size: 14px; }
+.fp-btn-quiet:hover { background: var(--surface-2); color: var(--ink); }
+
+/* ── combobox popup ── */
+.fp-ap-list { position: absolute; top: 100%; left: 0; right: 0; z-index: 30;
+  margin: 6px 0 0; padding: 6px; list-style: none; max-height: 280px; overflow-y: auto;
+  background: var(--surface); border: 1px solid var(--line); border-radius: var(--r-md);
+  box-shadow: var(--shadow-lg); }
+.fp-ap-opt { display: flex; justify-content: space-between; align-items: center;
+  gap: 12px; padding: 10px 12px; border-radius: var(--r-sm); cursor: pointer;
+  font-size: 14px; color: var(--ink); }
+.fp-ap-opt.active { background: var(--surface-2); }
+.fp-ap-opt[aria-selected="true"] { font-weight: 700; }
+.fp-ap-code { font-size: 12px; color: var(--ink-3); }
+.fp-ap-empty { padding: 12px; font-size: 13px; color: var(--ink-3); }
+
+/* ── collapsed summary (in place; not viewport-sticky — overflow-x:hidden here
+      silently breaks position:sticky, see SectionTabs) ── */
+.fp-summary { display: flex; align-items: center; gap: 12px; background: var(--surface);
+  border: 1px solid var(--line); border-radius: var(--r-lg); padding: 14px 18px;
+  width: 100%; cursor: pointer; text-align: left; font: inherit; color: var(--ink); }
+.fp-summary-txt { font-size: 15px; font-weight: 600; }
+.fp-summary-edit { margin-left: auto; font-size: 13px; font-weight: 600;
+  color: var(--copper); }
+
+/* ── filters ── */
+.fp-filters { display: flex; gap: 8px; align-items: center; margin: 20px 0 6px;
+  overflow-x: auto; padding-bottom: 4px; scrollbar-width: none; }
+.fp-filters::-webkit-scrollbar { display: none; }
+.fp-chip { border: 1px solid var(--line); background: var(--surface); border-radius: 999px;
+  padding: 8px 15px; font-size: 13px; font-weight: 600; color: var(--ink-2);
+  white-space: nowrap; cursor: pointer; min-height: 36px; }
+.fp-chip[aria-pressed="true"] { background: var(--ink); color: var(--paper);
+  border-color: var(--ink); }
+.fp-chip-right { margin-left: auto; }
+
+/* ── loading / count ── */
+.fp-loading { margin: 18px 0 4px; padding: 16px 18px; background: var(--surface);
+  border: 1px solid var(--line); border-radius: var(--r-lg); font-size: 14px;
+  font-weight: 600; color: var(--ink-2); display: flex; align-items: center; gap: 10px; }
+.fp-spinner { width: 16px; height: 16px; border: 2px solid var(--line-strong);
+  border-top-color: var(--copper-3); border-radius: 50%; animation: fp-spin 0.7s linear infinite; }
+@keyframes fp-spin { to { transform: rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) { .fp-spinner { animation: none; } }
+.fp-count { font-size: 13px; color: var(--ink-3); margin: 18px 2px 10px; }
+.fp-empty { padding: 26px 18px; background: var(--surface); border: 1px solid var(--line);
+  border-radius: var(--r-lg); font-size: 14px; color: var(--ink-2); line-height: 1.6; }
+.fp-error { padding: 14px 18px; background: var(--red-soft); border: 1px solid var(--red);
+  border-radius: var(--r-md); font-size: 14px; color: var(--red); }
+
+/* ── results list ── */
+.fp-list { background: var(--surface); border: 1px solid var(--line);
+  border-radius: var(--r-lg); overflow: hidden; }
+.fp-head { display: grid; grid-template-columns: 92px 1fr 92px 92px 176px; gap: 12px;
+  padding: 12px 18px; border-bottom: 1px solid var(--line);
+  font-size: 11px; font-weight: 700; letter-spacing: 0.08em; color: var(--ink-3);
+  text-transform: uppercase; }
+.fp-row { display: grid; grid-template-columns: 92px 1fr 92px 92px 176px; gap: 12px;
+  padding: 18px; border-bottom: 1px solid var(--line-soft); cursor: pointer;
+  align-items: center; background: var(--surface); text-align: left; width: 100%;
+  border-left: 0; border-right: 0; border-top: 0; font: inherit; color: inherit; }
+.fp-row:last-child { border-bottom: 0; }
+.fp-row:hover { background: var(--surface-2); }
+.fp-row:focus-visible { outline: 2px solid var(--copper-3); outline-offset: -2px; }
+
+.fp-date { font-size: 14px; font-weight: 700; color: var(--ink); }
+.fp-date small { display: block; font-size: 11px; font-weight: 500; color: var(--ink-3); }
+.fp-prog { font-size: 15px; font-weight: 700; margin-bottom: 3px; color: var(--ink); }
+.fp-leg { font-size: 12.5px; color: var(--ink-2); }
+.fp-cabin { font-size: 15px; font-weight: 700; text-align: right; color: var(--ink); }
+.fp-cabin.none { color: var(--ink-5); font-weight: 500; }
+.fp-cost { text-align: right; }
+.fp-cost b { font-size: 16px; font-weight: 700; display: block; color: var(--ink); }
+.fp-cost .fp-tax { font-size: 12px; color: var(--ink-3); }
+.fp-cost .fp-card { font-size: 12px; color: var(--ink-2); margin-top: 5px; }
+.fp-noprice { font-size: 12.5px; font-weight: 600; color: var(--ink-3); text-align: right;
+  line-height: 1.45; }
+
+.fp-pill { display: inline-block; font-size: 10.5px; font-weight: 700;
+  letter-spacing: 0.05em; padding: 2px 7px; border-radius: 999px; vertical-align: 1px;
+  text-transform: uppercase; }
+.fp-pill.wallet { background: var(--green-soft); color: var(--prov-verified); }
+.fp-pill.self { background: var(--surface-2); color: var(--prov-estimated); }
+
+/* mobile cabin block (hidden on desktop) */
+.fp-cabins-m { display: none; }
+.fp-note { margin: 14px 2px 0; font-size: 12.5px; color: var(--ink-3); line-height: 1.5; }
+
+/* ── 375px: search stacks, rows become cards ── */
+@media (max-width: 640px) {
+  .fp-search { grid-template-columns: 1fr 1fr; padding: 18px; }
+  .fp-fld.wide { grid-column: 1 / -1; }
+  .fp-swap { display: none; }
+  .fp-search .fp-btn { grid-column: 1 / -1; width: 100%; }
+  .fp-chip-right { margin-left: 0; }
+
+  .fp-head { display: none; }
+  .fp-row { display: block; padding: 18px; }
+  .fp-date { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 6px; }
+  .fp-date small { display: inline; font-size: 12px; }
+  .fp-cabin { display: none; }
+  .fp-cabins-m { display: flex; gap: 22px; margin: 12px 0; }
+  .fp-cabins-m div { font-size: 11px; font-weight: 700; letter-spacing: 0.06em;
+    color: var(--ink-3); text-transform: uppercase; }
+  .fp-cabins-m b { display: block; font-size: 16px; color: var(--ink); letter-spacing: 0; margin-top: 3px; }
+  .fp-cabins-m b.none { color: var(--ink-5); font-weight: 500; }
+  .fp-cost { text-align: left; border-top: 1px solid var(--line-soft); padding-top: 12px; }
+  .fp-noprice { text-align: left; border-top: 1px solid var(--line-soft); padding-top: 12px; }
+}
