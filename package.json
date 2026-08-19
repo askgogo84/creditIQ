@@ -4,12 +4,14 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
+    "prebuild": "npm run check:card-links && npm run check:transfer-graph",
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
     "seed": "tsx scripts/seed.ts",
     "scrape": "tsx scripts/scrape-all.ts",
     "check:card-links": "tsx scripts/validate-card-links.ts",
+    "check:transfer-graph": "tsx scripts/validate-transfer-graph.ts",
     "gen:card-art": "tsx scripts/gen-card-art-manifest.ts",
     "test": "vitest run"
   },

@@ -48,6 +48,23 @@ CreditIQ's own data.
 an award seat. A null duration renders as "transfer time unknown — confirm before you
 transfer", never as instant.
 
+**Deferred, not abandoned (Phase 2 status).** This table is not created yet. Phase 2 ships
+the identical field shape as a build-gated TypeScript constant — `lib/data/transfer-graph.ts`,
+guarded by `scripts/validate-transfer-graph.ts` (`npm run check:transfer-graph`). Reason: the
+v1 edge set is tiny (~5 direct edges), changes rarely, has no per-user rows, and needs no RLS
+— a table would be ceremony without benefit. It migrates to this table the moment it needs
+editorial writes, versioned history, or non-engineer edits. The build gate enforces the same
+invariants the SQL does: the `(from_currency, to_programme)` uniqueness (→ `transfer_partners_pair`),
+mandatory `state`/`source`/`as_of`, and two-integer ratios.
+
+**One field the code carries beyond this table: `card_name_allowlist`.** The TS edge type has an
+optional `card_name_allowlist: string[] | null` that this table does not. It exists because a
+flat `(from_currency, to_programme)` row cannot express HDFC's per-card exception — reward-points
+→ KrisFlyer applies to Infinia + Diners Black only, **not** Regalia Gold — and a currency-wide
+edge would misfire that route onto every HDFC card (a moat violation). When this table is created,
+it needs the equivalent (a nullable `card_name_allowlist text[]`, or a join table) or the same
+defect returns. Flagged here so the doc and the code do not silently disagree.
+
 ## 2. `saved_searches`
 
 ```sql
