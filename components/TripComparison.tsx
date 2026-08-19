@@ -271,13 +271,25 @@ export function TripComparison({ destination, origin = 'Bangalore', nights = 3, 
           borderRadius: 16, padding: '16px 20px',
         }}>
           {[
-            { label: 'Cheapest total', val: `Rs.${data.tripSummary.cheapestTotal.toLocaleString('en-IN')}` },
-            { label: 'Best value total', val: `Rs.${data.tripSummary.bestValueTotal.toLocaleString('en-IN')}` },
-            { label: 'Points can cover', val: `${data.tripSummary.pointsCoveragePercent}%` },
+            { label: 'Cheapest total', val: `Rs.${data.tripSummary.cheapestTotal.toLocaleString('en-IN')}`, ai: false },
+            { label: 'Best value total', val: `Rs.${data.tripSummary.bestValueTotal.toLocaleString('en-IN')}`, ai: false },
+            // LLM (/api/trip-compare). A percentage reads as a calculation even
+            // more than a points figure does — "points cover 100%" looks computed.
+            // Was rendered in confident green; now marked as an AI suggestion.
+            { label: 'Points can cover', val: `${data.tripSummary.pointsCoveragePercent}%`, ai: true },
           ].map((s, i) => (
             <div key={i}>
               <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.45)', marginBottom: 4, textTransform: 'uppercase' as const, letterSpacing: 1 }}>{s.label}</div>
-              <div style={{ fontSize: 20, fontWeight: 800, color: i === 2 ? '#4ade80' : '#fff' }}>{s.val}</div>
+              <div style={{ fontSize: 20, fontWeight: 800, color: s.ai ? 'rgba(255,255,255,0.72)' : '#fff' }}>{s.val}</div>
+              {s.ai && (
+                // Same outlined "AI suggestion · not computed" treatment as the rows.
+                // Colour/border adapted to white-alpha ONLY because this pill sits on
+                // the dark navy strip where --prov-estimated is illegible — shape,
+                // label and semantic (muted, unverified) are identical.
+                <span title={AI_SUGGESTION_TITLE} style={{ ...aiSuggestionPill, marginTop: 5, color: 'rgba(255,255,255,0.82)', borderColor: 'rgba(255,255,255,0.4)' }}>
+                  AI suggestion · not computed
+                </span>
+              )}
             </div>
           ))}
           <div>
@@ -290,8 +302,13 @@ export function TripComparison({ destination, origin = 'Bangalore', nights = 3, 
       {/* Points vs Cash guide */}
       <div className="compare-guide-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginBottom: 20 }}>
         <div style={{ background: 'rgba(201,151,46,0.07)', border: '1px solid rgba(201,151,46,0.2)', borderRadius: 14, padding: '14px 16px' }}>
-          <div style={{ fontSize: 10, fontWeight: 700, color: '#C9972E', letterSpacing: 1.5, textTransform: 'uppercase' as const, marginBottom: 8 }}>
-            Redeem with points
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' as const, marginBottom: 8 }}>
+            <div style={{ fontSize: 10, fontWeight: 700, color: '#C9972E', letterSpacing: 1.5, textTransform: 'uppercase' as const }}>
+              Redeem with points
+            </div>
+            {/* Same unmarked confident points claim as the rows/strip — the steps
+                and "3x more than cashback" are unverified. Same AI-suggestion mark. */}
+            <span title={AI_SUGGESTION_TITLE} style={aiSuggestionPill}>AI suggestion · not computed</span>
           </div>
           {[
             { n: '1', text: 'Transfer ' + cardBank + ' points to loyalty program (HDFC SmartBuy)' },
@@ -303,7 +320,7 @@ export function TripComparison({ destination, origin = 'Bangalore', nights = 3, 
               <span style={{ fontSize: 12, color: 'var(--text-muted, #64748b)', lineHeight: 1.4 }}>{s.text}</span>
             </div>
           ))}
-          <div style={{ marginTop: 8, fontSize: 11, color: '#C9972E', fontWeight: 600 }}>
+          <div style={{ marginTop: 8, fontSize: 11, color: 'var(--prov-estimated)', fontWeight: 600 }}>
             Best value . up to 3x more than cashback
           </div>
         </div>
