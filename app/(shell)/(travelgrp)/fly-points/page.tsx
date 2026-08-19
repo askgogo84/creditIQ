@@ -130,7 +130,10 @@ export default function FlyPointsPage() {
   // Filters — all re-filter the fetched set; none re-query.
   const [nonStop, setNonStop] = useState(false);
   const [cabinFilter, setCabinFilter] = useState<'' | 'economy' | 'business'>('');
-  const [cardsScope, setCardsScope] = useState<'mine' | 'all'>('mine');
+  // Default ALL CARDS: the first search shows the user what award seats EXIST, then
+  // they narrow to what their wallet can fund. My cards is the deliberate narrowing,
+  // not the starting point.
+  const [cardsScope, setCardsScope] = useState<'mine' | 'all'>('all');
 
   const dateFrom = flex > 0 ? shiftISO(date, -flex) : date;
   const dateTo = flex > 0 ? shiftISO(date, flex) : date;
@@ -168,8 +171,11 @@ export default function FlyPointsPage() {
 
   const swap = () => { setFrom(to); setTo(from); };
 
-  // Apply filters to the fetched rows (pure, no network).
-  const shown = useMemo(() => {
+  // Filtering is two stages so the empty state can tell them apart (stop/cabin chips
+  // vs the cards narrowing). Neither stage re-queries. The list is NEVER filtered by
+  // whether we have a transfer route — an unpriceable seat still renders, honestly,
+  // as "Not priced".
+  const base = useMemo(() => {
     if (!rows) return [];
     return rows.filter((r) => {
       const a = r.award!;
@@ -179,11 +185,16 @@ export default function FlyPointsPage() {
       }
       if (cabinFilter === 'economy' && !(a.economyMiles > 0)) return false;
       if (cabinFilter === 'business' && !(a.businessMiles > 0)) return false;
-      // My cards = only rows a held card can reach (affordable or not).
-      if (cardsScope === 'mine' && !pickDisplayOption(r.redemption)) return false;
       return true;
     });
-  }, [rows, nonStop, cabinFilter, cardsScope]);
+  }, [rows, nonStop, cabinFilter]);
+
+  // My cards = only rows a held card can reach (affordable or not). All cards = every
+  // seat, unreachable ones shown as "Not priced".
+  const shown = useMemo(
+    () => (cardsScope === 'mine' ? base.filter((r) => pickDisplayOption(r.redemption)) : base),
+    [base, cardsScope],
+  );
 
   const summaryLine = `${labelFor(from).split(' (')[1]?.replace(')', '') || from} → ${
     labelFor(to).split(' (')[1]?.replace(')', '') || to
@@ -295,9 +306,25 @@ export default function FlyPointsPage() {
 
           {shown.length === 0 ? (
             <div className="fp-empty">
-              No award seats to show for {from} → {to} on {dateRangeLabel}
-              {cardsScope === 'mine' ? ' that your wallet cards can reach' : ''}. An empty
-              award search is a real answer — try widening the dates or switching to All cards.
+              {rows.length === 0 ? (
+                // Genuinely no award seats for the route/dates.
+                <>No award seats found for {from} → {to} on {dateRangeLabel}. An empty
+                award search is a real answer — try widening the dates.</>
+              ) : base.length === 0 ? (
+                // Seats exist; the stop/cabin chips hid them.
+                <>{rows.length} award seat{rows.length === 1 ? '' : 's'} found, but none match
+                the current stop or cabin filter — clear a filter to see {rows.length === 1 ? 'it' : 'them'}.</>
+              ) : (
+                // Seats exist and pass the chips, but the wallet can't reach any of them.
+                <>
+                  {base.length} award seat{base.length === 1 ? '' : 's'} found for {from} → {to}, but
+                  none can be booked with the cards in your wallet.{' '}
+                  <button className="fp-inline-link" onClick={() => setCardsScope('all')}>
+                    Show all cards
+                  </button>{' '}
+                  to see them.
+                </>
+              )}
             </div>
           ) : (
             <div className="fp-list">
