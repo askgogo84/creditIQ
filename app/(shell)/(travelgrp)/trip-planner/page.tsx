@@ -543,46 +543,13 @@ function TripPlannerPageInner() {
 
         {result && (
           <div style={{ marginTop: 8 }}>
-            {/* Summary (FREE) */}
-            <div style={{ background: 'var(--navy)', borderRadius: 20, padding: '28px', marginBottom: 20, border: '1px solid rgba(216,155,42,0.22)' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: 16, marginBottom: 16 }}>
-                <div>
-                  <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--copper-3)', textTransform: 'uppercase', letterSpacing: 1.5, marginBottom: 6 }}>
-                    {result.destination} &middot; {result.duration} &middot; {result.tripType}
-                  </div>
-                  <div style={{ fontSize: 20, fontWeight: 800, color: '#fff', marginBottom: 4, lineHeight: 1.4 }}>{result.summary}</div>
-                  <div style={{ fontSize: 13, color: 'rgba(255,255,255,0.4)' }}>{result.dates}</div>
-                </div>
-                <div style={{ textAlign: 'right' }}>
-                  <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.4)', marginBottom: 4 }}>You save vs cash</div>
-                  <div style={{ fontSize: 32, fontWeight: 900, color: 'var(--copper-3)' }}>&#8377;{result.totalSaving.toLocaleString('en-IN')}</div>
-                </div>
-              </div>
-
-              <div style={{ background: result.canAfford ? 'rgba(34,197,94,0.15)' : 'rgba(239,68,68,0.15)', border: `1px solid ${result.canAfford ? 'rgba(34,197,94,0.3)' : 'rgba(239,68,68,0.3)'}`, borderRadius: 12, padding: '12px 16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 8 }}>
-                <div>
-                  <div style={{ fontSize: 13, fontWeight: 700, color: result.canAfford ? '#22c55e' : '#ef4444' }}>
-                    {result.canAfford ? '\u2713 Your points cover this trip' : `Need ${result.pointsGap.toLocaleString('en-IN')} more points`}
-                  </div>
-                  <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.4)', marginTop: 2 }}>
-                    Need {result.totalPointsNeeded.toLocaleString('en-IN')} pts &middot; You have {(parseInt(points.replace(/,/g, '')) || 0).toLocaleString('en-IN')} pts
-                  </div>
-                </div>
-                {!result.canAfford && (
-                  cardPageExists(result.bestCardId) ? (
-                    <Link href={`/card/${result.bestCardId}`} style={{ padding: '8px 16px', background: 'var(--copper)', color: 'var(--paper)', borderRadius: 10, fontSize: 12, fontWeight: 700, textDecoration: 'none' }}>
-                      Get {result.bestCard} &rarr;
-                    </Link>
-                  ) : (
-                    <span style={{ padding: '8px 16px', color: 'var(--copper-3)', fontSize: 12, fontWeight: 700 }}>
-                      Consider {result.bestCard}
-                    </span>
-                  )
-                )}
-              </div>
-
-              {result.proTip && <div style={{ marginTop: 12, fontSize: 13, color: 'rgba(255,255,255,0.55)', lineHeight: 1.6 }}>&ldquo;{result.proTip}&rdquo;</div>}
-            </div>
+            {/* Navy summary card removed: its trip/flight/points figures were
+                LLM-authored (/api/trip-planner) and unverified \u2014 including the
+                "You save vs cash" figure, which came back Rs.0 while the flight
+                rows showed real savings (top-level totalSaving is a model field,
+                not derived). Deleting it removes that Rs.0 defect and the date
+                mismatch with the search form by removal. The real-data surface
+                (TripComparison, below) is the single recommendation now. */}
 
             <SavePromptBanner feature='trip' />
 
@@ -607,30 +574,10 @@ function TripPlannerPageInner() {
                 cardBank={cardBank}
               />
 
-              {/* Points redemption CTA */}
-              {result.flights?.[0] && (
-                <div style={{ background: 'color-mix(in srgb, var(--copper) 6%, transparent)', border: '1px solid color-mix(in srgb, var(--copper) 15%, transparent)', borderRadius: 16, padding: '16px 20px', marginTop: 16, marginBottom: 16 }}>
-                  <div style={{ fontSize: 10, fontWeight: 700, color: 'var(--copper)', letterSpacing: 1.5, textTransform: 'uppercase', marginBottom: 10 }}>
-                    Redeem your points
-                  </div>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 12 }}>
-                    <div>
-                      <div style={{ fontSize: 14, fontWeight: 700, color: 'var(--ink)', marginBottom: 2 }}>
-                        {result.flights[0].airline} via {result.flights[0].transferPartner}
-                      </div>
-                      <div style={{ fontSize: 12, color: 'var(--ink-3)' }}>
-                        {result.flights[0].pointsNeeded.toLocaleString('en-IN')} pts needed &middot; Best card: {result.flights[0].cardNeeded}
-                      </div>
-                    </div>
-                    <button
-                      onClick={() => { setModalFlight(result.flights[0]); setModalHotel(result.hotels[0] || null); setModalOpen(true); }}
-                      style={{ padding: '10px 20px', background: 'linear-gradient(135deg, var(--copper), var(--copper-3))', color: 'var(--paper)', border: 'none', borderRadius: 10, fontSize: 13, fontWeight: 800, cursor: 'pointer', whiteSpace: 'nowrap' }}
-                    >
-                      How to redeem points
-                    </button>
-                  </div>
-                </div>
-              )}
+              {/* "Redeem your points" panel removed: airline / points / best-card
+                  were LLM-authored (result.flights[0] from /api/trip-planner),
+                  presented as confident advice. Same defect as the deleted summary
+                  card. TripComparison above is the surviving surface. */}
             </ProGate>
 
             <div style={{ textAlign: 'center', marginTop: 24 }}>

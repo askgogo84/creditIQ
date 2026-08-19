@@ -103,6 +103,26 @@ interface TripComparisonProps {
 const GOLD = '#C9972E';
 const NAVY = '#1B3A5C';
 
+// The per-row points figures below come from the LLM (/api/trip-compare), NOT
+// computed by CreditIQ — unlike the cash fare on row #1, which is a real cached
+// Travelpayouts price rendered through <Figure provenance="cached">. Left
+// unlabelled, the invented points number looks exactly as sourced as the real
+// fare. So the points route is rendered in the product's EXISTING unverified
+// treatment — the neutral --prov-estimated token — in an OUTLINED pill (the same
+// vocabulary as components/cards/Unverified.tsx), deliberately distinct from
+// <Figure>'s FILLED cached/estimated pill so the two never read as equally sourced.
+// INTERIM: Phase 3 replaces these figures with findTransferRoutes() output, which
+// is computed and sourced; this label is not a permanent design decision.
+const AI_SUGGESTION_TITLE =
+  'This points figure is an AI suggestion — not computed or sourced by CreditIQ. Unlike the cash fare, it is not verified. Confirm the transfer ratio before you transfer.';
+const aiSuggestionPill: React.CSSProperties = {
+  display: 'inline-flex', alignItems: 'center',
+  fontFamily: 'var(--font-mono, monospace)',
+  fontSize: 9, fontWeight: 700, letterSpacing: '0.06em', textTransform: 'uppercase',
+  color: 'var(--prov-estimated)', border: '1px solid var(--prov-estimated)',
+  borderRadius: 999, padding: '2px 7px', whiteSpace: 'nowrap', lineHeight: 1.3,
+};
+
 function Stars({ count }: { count: number }) {
   return (
     <span style={{ color: GOLD, fontSize: 11 }}>
@@ -354,9 +374,16 @@ export function TripComparison({ destination, origin = 'Bangalore', nights = 3, 
                 </div>
               )}
               {f.pointsOption && (
-                <div style={{ fontSize: 12, color: f.canAfford ? '#16a34a' : '#f59e0b', marginBottom: 8 }}>
-                  {f.canAfford ? '(ok)' : '(!!)'} {f.pointsNeeded.toLocaleString('en-IN')} {cardBank} pts via {f.pointsPartner}
-                  {f.pointsSaving > 0 && <span style={{ color: '#16a34a' }}> . Save Rs.{f.pointsSaving.toLocaleString('en-IN')}</span>}
+                <div style={{ marginBottom: 8 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' as const }}>
+                    <span style={{ fontSize: 12, color: 'var(--prov-estimated)', fontWeight: 600 }}>
+                      ~{f.pointsNeeded.toLocaleString('en-IN')} {cardBank} pts via {f.pointsPartner}
+                    </span>
+                    <span title={AI_SUGGESTION_TITLE} style={aiSuggestionPill}>AI suggestion · not computed</span>
+                  </div>
+                  <div style={{ fontSize: 10.5, color: 'var(--prov-estimated)', marginTop: 3, lineHeight: 1.4 }}>
+                    CreditIQ hasn{'’'}t computed this points route {'—'} it{'’'}s an AI suggestion, not the verified figure the cash fare is.
+                  </div>
                 </div>
               )}
               <div style={{ fontSize: 11, color: 'var(--text-muted, #94a3b8)', marginBottom: 12, fontStyle: 'italic' as const }}>
@@ -371,8 +398,8 @@ export function TripComparison({ destination, origin = 'Bangalore', nights = 3, 
                 {platformBtn(f.urls.googleFlights, 'Google Flights')}
               </div>
               {f.pointsOption && (
-                <div style={{ marginTop: 8, padding: '8px 12px', background: 'rgba(201,151,46,0.08)', border: '1px solid rgba(201,151,46,0.2)', borderRadius: 8, fontSize: 11, color: '#C9972E' }}>
-                  To redeem {f.pointsNeeded.toLocaleString('en-IN')} pts: transfer from {cardBank} SmartBuy to {f.pointsPartner}, then book directly on {f.pointsPartner} site
+                <div style={{ marginTop: 8, padding: '8px 12px', background: 'color-mix(in srgb, var(--prov-estimated) 8%, transparent)', border: '1px solid color-mix(in srgb, var(--prov-estimated) 25%, transparent)', borderRadius: 8, fontSize: 11, color: 'var(--prov-estimated)' }}>
+                  <b style={{ fontWeight: 700 }}>AI suggestion (not computed):</b> transfer ~{f.pointsNeeded.toLocaleString('en-IN')} pts from {cardBank} SmartBuy to {f.pointsPartner}, then book on {f.pointsPartner}. Confirm the transfer ratio before you transfer.
                 </div>
               )}
             </div>
@@ -405,8 +432,8 @@ export function TripComparison({ destination, origin = 'Bangalore', nights = 3, 
                 </>
               )}
               {f.pointsOption && (
-                <div style={{ fontSize: 12, color: GOLD, marginTop: 4, fontWeight: 700 }}>
-                  or {f.pointsNeeded.toLocaleString('en-IN')} pts
+                <div style={{ fontSize: 12, color: 'var(--prov-estimated)', marginTop: 4, fontWeight: 700 }}>
+                  or ~{f.pointsNeeded.toLocaleString('en-IN')} pts <span style={{ fontFamily: 'var(--font-mono, monospace)', fontSize: 9, fontWeight: 800, letterSpacing: '0.06em' }} title={AI_SUGGESTION_TITLE}>· AI EST</span>
                 </div>
               )}
             </div>
