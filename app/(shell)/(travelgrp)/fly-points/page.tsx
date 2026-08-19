@@ -15,7 +15,7 @@ import { useMemo, useState } from 'react';
 import { authedFetch } from '@/lib/authed-fetch';
 import { AirportSelect, labelFor } from '@/components/ciq/fly-points/AirportSelect';
 import type { RedemptionOption } from '@/lib/fusion-core';
-import './fly-points.css';
+import '@/components/ciq/fly-points/fly-points.css';
 
 // ── shape of a fusion row (see app/api/flights/fusion/route.ts) ──
 interface AwardView {
