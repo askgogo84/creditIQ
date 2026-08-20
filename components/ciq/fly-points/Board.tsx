@@ -504,23 +504,31 @@ function RowDetail({ row, id }: { row: FusionRow; id: string }) {
   const sel = cabins.find((c) => c.cabin === cabin) ?? cabins[0];
   const selBest = sel?.best ?? null;
 
-  // Cash is fetched live only on request — never shown beside a points figure until asked.
-  const [cash, setCash] = useState<{ state: 'idle' | 'loading' | 'done' | 'error'; price: number | null }>(
-    { state: 'idle', price: null },
-  );
+  // Cash is fetched live only on request — never shown beside a points figure until
+  // asked. scope tells us whether we got a SAME-DATE fare or fell back to route-level.
+  const rowDate = (a.date || row.departure || '').slice(0, 10);
+  const [cash, setCash] = useState<{
+    state: 'idle' | 'loading' | 'done' | 'error';
+    price: number | null;
+    scope: 'date' | 'route' | null;
+  }>({ state: 'idle', price: null, scope: null });
   const fetchCash = async () => {
-    setCash({ state: 'loading', price: null });
+    setCash({ state: 'loading', price: null, scope: null });
     try {
       const res = await authedFetch('/api/flights/cash-price', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ from: row.from, to: row.to }),
+        body: JSON.stringify({ from: row.from, to: row.to, date: rowDate }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error('failed');
-      setCash({ state: 'done', price: typeof data.cashPrice === 'number' ? data.cashPrice : null });
+      setCash({
+        state: 'done',
+        price: typeof data.cashPrice === 'number' ? data.cashPrice : null,
+        scope: data.scope === 'date' || data.scope === 'route' ? data.scope : null,
+      });
     } catch {
-      setCash({ state: 'error', price: null });
+      setCash({ state: 'error', price: null, scope: null });
     }
   };
 
@@ -633,15 +641,15 @@ function RowDetail({ row, id }: { row: FusionRow; id: string }) {
 
 // Points-vs-cash body — the "Show cash price" gate + the verdict once fetched.
 //
-// SCOPE HONESTY: the fetched fare is the cheapest on the ROUTE (Travelpayouts
-// prices/cheap), not a quote for THIS DATE's award. The real date-fare is >= this
-// floor, so keep/value-per-point computed here are LOWER BOUNDS on the true trip.
-// That lets us say points look poor value at the floor — but NOT assert "book with
-// cash", because a pricier date fare could tilt it back to points.
+// SCOPE: cash.scope === 'date' is a SAME-DATE, same-trip fare, so the verdict is a
+// clean like-for-like — below the ₹0.30 floor it can say "book this one with cash".
+// scope === 'route' is the EXPLICIT fallback (per-date had no fare): a route-level
+// floor, which makes keep/value a LOWER BOUND, so we soften — points can "look poor
+// value" but we don't assert cash — and we label the weaker comparison.
 function CashBlock({
   cash, onFetch, taxes, need,
 }: {
-  cash: { state: 'idle' | 'loading' | 'done' | 'error'; price: number | null };
+  cash: { state: 'idle' | 'loading' | 'done' | 'error'; price: number | null; scope: 'date' | 'route' | null };
   onFetch: () => void;
   taxes: Taxes;
   need: number | null;      // card points for the selected cabin, or null (not priced)
@@ -660,9 +668,12 @@ function CashBlock({
   }
 
   const cashFare = cash.price;
-  const routeNote = (
-    <p className="fp-foot">Cheapest fare on this route, not a quote for this date — check the exact date’s fare before deciding.</p>
-  );
+  const routeLevel = cash.scope !== 'date'; // fell back to route-level cheapest
+  // Only when we fell back: label the weaker comparison. On a same-date fare there
+  // is nothing to hedge, so no caveat.
+  const scopeNote = routeLevel ? (
+    <p className="fp-foot">No fare found for this exact date — this is the cheapest on the route, not this date. Check the date’s fare before deciding.</p>
+  ) : null;
 
   // No rupee tax figure (foreign currency we won't convert), or no priced points
   // route: show the fare plainly, no keep/value math.
@@ -670,14 +681,15 @@ function CashBlock({
     return (
       <div>
         <p className="fp-verdict">
-          The cheapest cash fare on this route is <b className="fp-mono">₹{cashFare.toLocaleString('en-IN')}</b>.
+          {routeLevel ? 'The cheapest cash fare on this route is ' : 'The cash fare on this date is '}
+          <b className="fp-mono">₹{cashFare.toLocaleString('en-IN')}</b>.
           {need == null
             ? ' No priced points route to compare it against.'
             : taxes.inr == null
               ? ` Taxes are in ${taxes.native} — we won’t convert them on a guess to compare.`
               : ''}
         </p>
-        {routeNote}
+        {scopeNote}
       </div>
     );
   }
@@ -685,36 +697,58 @@ function CashBlock({
   const approx = !taxes.exact;              // taxes converted via the manual FX estimate
   const a = approx ? '≈' : '';
   const keep = Math.max(0, cashFare - taxes.inr);
-  const vpp = need > 0 ? keep / need : 0;   // LOWER BOUND (cash is the route floor)
-  const poorAtFloor = vpp < 0.30;
+  const vpp = need > 0 ? keep / need : 0;
+  const poor = vpp < 0.30;
 
   return (
     <div>
-      {poorAtFloor ? (
-        <p className="fp-verdict">
-          Against this route’s cheapest fare — <b className="fp-mono">₹{cashFare.toLocaleString('en-IN')}</b>,
-          the route floor, not this date — points look <b className="fp-alert">poor value</b> here:{' '}
-          <b className="fp-mono">{need.toLocaleString('en-IN')}</b> points save {a}
-          <b className="fp-mono">₹{keep.toLocaleString('en-IN')}</b>, about {a}
-          <b className="fp-mono">₹{vpp.toFixed(2)}</b> per point, below the ₹0.30 portal floor. Your date
-          may cost more, which would tilt it back toward points — check the date’s fare before you burn them.
-        </p>
+      {routeLevel ? (
+        // Route-level fallback — bound-aware, no "book with cash" assertion.
+        poor ? (
+          <p className="fp-verdict">
+            Against this route’s cheapest fare — <b className="fp-mono">₹{cashFare.toLocaleString('en-IN')}</b>,
+            the route floor, not this date — points look <b className="fp-alert">poor value</b> here:{' '}
+            <b className="fp-mono">{need.toLocaleString('en-IN')}</b> points save {a}
+            <b className="fp-mono">₹{keep.toLocaleString('en-IN')}</b>, about {a}
+            <b className="fp-mono">₹{vpp.toFixed(2)}</b> per point, below the ₹0.30 portal floor. Your date
+            may cost more, which would tilt it back toward points — check the date’s fare before you burn them.
+          </p>
+        ) : (
+          <p className="fp-verdict">
+            The cheapest cash fare on this route is <b className="fp-mono">₹{cashFare.toLocaleString('en-IN')}</b>{' '}
+            (the route floor, not this date). Against even that, with points you pay {a}
+            <b className="fp-mono">₹{taxes.inr.toLocaleString('en-IN')}</b> in taxes and{' '}
+            <span className="fp-keep">keep at least {a}₹{keep.toLocaleString('en-IN')}</span> — {a}₹{vpp.toFixed(2)} per
+            point, at or above the ₹0.30 floor. A pricier date fare only helps points.
+          </p>
+        )
       ) : (
-        <p className="fp-verdict">
-          The cheapest cash fare on this route is <b className="fp-mono">₹{cashFare.toLocaleString('en-IN')}</b>{' '}
-          (the route floor, not this date). Against even that, with points you pay {a}
-          <b className="fp-mono">₹{taxes.inr.toLocaleString('en-IN')}</b> in taxes and{' '}
-          <span className="fp-keep">keep at least {a}₹{keep.toLocaleString('en-IN')}</span> — {a}₹{vpp.toFixed(2)} per
-          point, at or above the ₹0.30 floor. A pricier date fare only helps points.
-        </p>
+        // Same-date fare — clean verdict in both directions.
+        poor ? (
+          <p className="fp-verdict">
+            <b className="fp-alert">Book this one with cash.</b> It costs{' '}
+            <b className="fp-mono">₹{cashFare.toLocaleString('en-IN')}</b> in cash on this date. Spending{' '}
+            <b className="fp-mono">{need.toLocaleString('en-IN')}</b> points to avoid {a}
+            <b className="fp-mono">₹{keep.toLocaleString('en-IN')}</b> values each point at {a}
+            <b className="fp-mono">₹{vpp.toFixed(2)}</b> — below the ₹0.30 the HDFC portal floor gives you.
+          </p>
+        ) : (
+          <p className="fp-verdict">
+            This flight costs <b className="fp-mono">₹{cashFare.toLocaleString('en-IN')}</b> in cash on this date.
+            With points you pay {a}<b className="fp-mono">₹{taxes.inr.toLocaleString('en-IN')}</b> in taxes and{' '}
+            <span className="fp-keep">keep {a}₹{keep.toLocaleString('en-IN')}</span>.
+          </p>
+        )
       )}
-      <p className="fp-vpp fp-mono">VALUE PER POINT {a}₹{vpp.toFixed(2)} · portal floor ₹0.30 · vs route-cheapest fare</p>
+      <p className="fp-vpp fp-mono">
+        VALUE PER POINT {a}₹{vpp.toFixed(2)} · portal floor ₹0.30{routeLevel ? ' · vs route-cheapest fare' : ''}
+      </p>
       {approx && (
         <p className="fp-estnote">
           Taxes converted from {taxes.native} at $1=₹{USD_INR_ESTIMATE}, set {USD_INR_SET} — manual estimate, not a live rate.
         </p>
       )}
-      {routeNote}
+      {scopeNote}
     </div>
   );
 }
