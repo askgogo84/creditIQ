@@ -164,6 +164,9 @@ input.fp-fld-val::placeholder { color: var(--ink-4); font-weight: 500; }
 .fp-alert { color: var(--red); font-weight: 700; }
 .fp-vpp { font-size: 12px; font-weight: 700; letter-spacing: 0.05em; color: var(--ink-3); margin: 8px 0 0; }
 .fp-foot { font-size: 12.5px; color: var(--ink-3); margin: 10px 0 0; line-height: 1.55; }
+/* estimated-figure caveat (manual FX) — estimated-grey, understated so a converted
+   number never reads as solid as an exact one. */
+.fp-estnote { font-size: 11.5px; color: var(--prov-estimated); margin: 6px 0 0; line-height: 1.45; }
 
 /* transfer ladder — plain stacked list, one route per line, no nested frame */
 .fp-ladder { display: flex; flex-direction: column; }

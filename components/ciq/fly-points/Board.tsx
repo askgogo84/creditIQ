@@ -73,16 +73,28 @@ function rowReachable(row: FusionRow): boolean {
 
 type BandCabin = 'all' | 'economy' | 'business';
 
-// ── taxes → rupees (for the points-vs-cash "keep" math). seats.aero taxes are
-// minor units of taxesCurrency. INR is exact; USD converts at the house rate
-// ($1=₹90). Any other currency -> null: we won't state a rupee figure we can't
-// stand behind. 0 taxes -> 0 rupees (so "keep" = full cash fare). ──
-function taxesInInr(trip: AwardView['trip']): number | null {
-  if (!trip || !(trip.totalTaxes > 0)) return 0;
-  const major = trip.totalTaxes / 100;
-  if (trip.taxesCurrency === 'INR') return Math.round(major);
-  if (trip.taxesCurrency === 'USD') return Math.round(major * 90);
-  return null;
+// MANUAL FX ESTIMATE — not a live or sourced rate. This is the house convenience
+// rate; it WILL drift from the market and must be replaced by a sourced/live rate
+// (RBI reference rate or an FX feed) before any converted figure is treated as
+// solid. Any converted tax is rendered with "≈" and this rate + date, never as an
+// exact number. Bump USD_INR_SET whenever the rate is touched.
+const USD_INR_ESTIMATE = 90;
+const USD_INR_SET = '20 Aug 2026';
+
+// ── taxes for the detail. seats.aero taxes are minor units of taxesCurrency.
+//   exact  = the rupee figure is real (INR, or zero taxes).
+//   !exact = converted from a foreign currency via the manual estimate above —
+//            the UI must flag it as approximate and name the rate.
+//   inr:null = a currency we don't convert; show it natively, no rupee claim. ──
+interface Taxes { inr: number | null; exact: boolean; native: string | null; }
+function taxesFor(trip: AwardView['trip']): Taxes {
+  if (!trip || !(trip.totalTaxes > 0)) return { inr: 0, exact: true, native: null };
+  const major = Math.round(trip.totalTaxes / 100);
+  if (trip.taxesCurrency === 'INR') return { inr: major, exact: true, native: null };
+  if (trip.taxesCurrency === 'USD') {
+    return { inr: major * USD_INR_ESTIMATE, exact: false, native: `US$${major.toLocaleString('en-US')}` };
+  }
+  return { inr: null, exact: false, native: `${trip.taxesCurrency} ${major.toLocaleString('en-IN')}` };
 }
 
 // Best-effort award-search deep links. Most programmes don't accept award-search
@@ -513,7 +525,7 @@ function RowDetail({ row, id }: { row: FusionRow; id: string }) {
     }
   };
 
-  const taxInr = taxesInInr(a.trip);
+  const taxes = taxesFor(a.trip);
   const programme = a.program;
 
   return (
@@ -529,7 +541,7 @@ function RowDetail({ row, id }: { row: FusionRow; id: string }) {
               it. We’d rather say that than guess a ratio.
             </p>
           </div>
-          <CashBlock cash={cash} onFetch={fetchCash} taxInr={taxInr} need={null} trip={a.trip} />
+          <CashBlock cash={cash} onFetch={fetchCash} taxes={taxes} need={null} />
         </>
       ) : (
         <>
@@ -558,13 +570,17 @@ function RowDetail({ row, id }: { row: FusionRow; id: string }) {
                 <span className="fp-costsub">{programme} miles</span>
               </div>
               <div className="fp-costsub">
-                {taxInr === 0
-                  ? 'no cash taxes on this fare'
-                  : taxInr != null
-                    ? <>plus <b className="fp-mono">₹{taxInr.toLocaleString('en-IN')}</b> paid in cash for taxes</>
-                    : <>plus {a.trip?.taxesCurrency}{' '}
-                        <b className="fp-mono">{Math.round((a.trip?.totalTaxes ?? 0) / 100).toLocaleString('en-IN')}</b>{' '}
-                        in cash for taxes</>}
+                {taxes.inr === 0 && taxes.exact ? (
+                  'no cash taxes on this fare'
+                ) : taxes.exact && taxes.inr != null ? (
+                  <>plus <b className="fp-mono">₹{taxes.inr.toLocaleString('en-IN')}</b> paid in cash for taxes</>
+                ) : taxes.inr != null ? (
+                  // converted from a foreign currency — flag it, name the rate + date
+                  <>plus <b className="fp-mono">{taxes.native}</b> in cash for taxes{' '}
+                    <span className="fp-estnote">≈ ₹{taxes.inr.toLocaleString('en-IN')} at $1=₹{USD_INR_ESTIMATE}, set {USD_INR_SET} — estimate</span></>
+                ) : (
+                  <>plus <b className="fp-mono">{taxes.native}</b> in cash for taxes</>
+                )}
               </div>
             </div>
           </div>
@@ -575,9 +591,8 @@ function RowDetail({ row, id }: { row: FusionRow; id: string }) {
             <CashBlock
               cash={cash}
               onFetch={fetchCash}
-              taxInr={taxInr}
+              taxes={taxes}
               need={selBest?.cardPointsNeeded ?? null}
-              trip={a.trip}
             />
           </div>
 
@@ -618,14 +633,19 @@ function RowDetail({ row, id }: { row: FusionRow; id: string }) {
 }
 
 // Points-vs-cash body — the "Show cash price" gate + the verdict once fetched.
+//
+// SCOPE HONESTY: the fetched fare is the cheapest on the ROUTE (Travelpayouts
+// prices/cheap), not a quote for THIS DATE's award. The real date-fare is >= this
+// floor, so keep/value-per-point computed here are LOWER BOUNDS on the true trip.
+// That lets us say points look poor value at the floor — but NOT assert "book with
+// cash", because a pricier date fare could tilt it back to points.
 function CashBlock({
-  cash, onFetch, taxInr, need, trip,
+  cash, onFetch, taxes, need,
 }: {
   cash: { state: 'idle' | 'loading' | 'done' | 'error'; price: number | null };
   onFetch: () => void;
-  taxInr: number | null;
+  taxes: Taxes;
   need: number | null;      // card points for the selected cabin, or null (not priced)
-  trip: AwardView['trip'];
 }) {
   if (cash.state === 'idle') {
     return (
@@ -641,38 +661,61 @@ function CashBlock({
   }
 
   const cashFare = cash.price;
-  // Where taxes aren't expressible in rupees, we can't do the keep/vpp math honestly.
-  if (taxInr == null || need == null) {
+  const routeNote = (
+    <p className="fp-foot">Cheapest fare on this route, not a quote for this date — check the exact date’s fare before deciding.</p>
+  );
+
+  // No rupee tax figure (foreign currency we won't convert), or no priced points
+  // route: show the fare plainly, no keep/value math.
+  if (taxes.inr == null || need == null) {
     return (
-      <p className="fp-verdict">
-        This route’s cheapest cash fare is <b className="fp-mono">₹{cashFare.toLocaleString('en-IN')}</b>.
-        {need == null && ' No priced points route to compare it against.'}
-      </p>
+      <div>
+        <p className="fp-verdict">
+          The cheapest cash fare on this route is <b className="fp-mono">₹{cashFare.toLocaleString('en-IN')}</b>.
+          {need == null
+            ? ' No priced points route to compare it against.'
+            : taxes.inr == null
+              ? ` Taxes are in ${taxes.native} — we won’t convert them on a guess to compare.`
+              : ''}
+        </p>
+        {routeNote}
+      </div>
     );
   }
 
-  const keep = Math.max(0, cashFare - taxInr);
-  const vpp = need > 0 ? keep / need : 0;
-  const cashWins = vpp < 0.30; // below the ~30p portal floor, points are the wrong call
+  const approx = !taxes.exact;              // taxes converted via the manual FX estimate
+  const a = approx ? '≈' : '';
+  const keep = Math.max(0, cashFare - taxes.inr);
+  const vpp = need > 0 ? keep / need : 0;   // LOWER BOUND (cash is the route floor)
+  const poorAtFloor = vpp < 0.30;
 
   return (
     <div>
-      {cashWins ? (
+      {poorAtFloor ? (
         <p className="fp-verdict">
-          <b className="fp-alert">Book this one with cash.</b> It costs{' '}
-          <b className="fp-mono">₹{cashFare.toLocaleString('en-IN')}</b> in cash. Spending{' '}
-          <b className="fp-mono">{need.toLocaleString('en-IN')}</b> points to avoid{' '}
-          <b className="fp-mono">₹{keep.toLocaleString('en-IN')}</b> values each point at{' '}
-          <b className="fp-mono">₹{vpp.toFixed(2)}</b> — below the ₹0.30 the HDFC portal floor gives you.
+          Against this route’s cheapest fare — <b className="fp-mono">₹{cashFare.toLocaleString('en-IN')}</b>,
+          the route floor, not this date — points look <b className="fp-alert">poor value</b> here:{' '}
+          <b className="fp-mono">{need.toLocaleString('en-IN')}</b> points save {a}
+          <b className="fp-mono">₹{keep.toLocaleString('en-IN')}</b>, about {a}
+          <b className="fp-mono">₹{vpp.toFixed(2)}</b> per point, below the ₹0.30 portal floor. Your date
+          may cost more, which would tilt it back toward points — check the date’s fare before you burn them.
         </p>
       ) : (
         <p className="fp-verdict">
-          This flight costs <b className="fp-mono">₹{cashFare.toLocaleString('en-IN')}</b> in cash.
-          With points you pay <b className="fp-mono">₹{taxInr.toLocaleString('en-IN')}</b> in taxes and{' '}
-          <span className="fp-keep">keep ₹{keep.toLocaleString('en-IN')}</span>.
+          The cheapest cash fare on this route is <b className="fp-mono">₹{cashFare.toLocaleString('en-IN')}</b>{' '}
+          (the route floor, not this date). Against even that, with points you pay {a}
+          <b className="fp-mono">₹{taxes.inr.toLocaleString('en-IN')}</b> in taxes and{' '}
+          <span className="fp-keep">keep at least {a}₹{keep.toLocaleString('en-IN')}</span> — {a}₹{vpp.toFixed(2)} per
+          point, at or above the ₹0.30 floor. A pricier date fare only helps points.
         </p>
       )}
-      <p className="fp-vpp fp-mono">VALUE PER POINT ₹{vpp.toFixed(2)} · portal floor ₹0.30</p>
+      <p className="fp-vpp fp-mono">VALUE PER POINT {a}₹{vpp.toFixed(2)} · portal floor ₹0.30 · vs route-cheapest fare</p>
+      {approx && (
+        <p className="fp-estnote">
+          Taxes converted from {taxes.native} at $1=₹{USD_INR_ESTIMATE}, set {USD_INR_SET} — manual estimate, not a live rate.
+        </p>
+      )}
+      {routeNote}
     </div>
   );
 }
