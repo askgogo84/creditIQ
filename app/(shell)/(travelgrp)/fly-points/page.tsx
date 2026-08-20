@@ -1,20 +1,23 @@
 'use client';
 
-// Fly on Points — Phase 3 board (NEW route; /trip-planner is untouched, Phase 5
-// does the swap). Builds the approved mockup at docs/travel-redesign/
-// travel-redesign-mockup.html against real /api/flights/fusion data.
+// Fly on Points board (NEW route; /trip-planner swap is Phase 5). Builds the
+// approved mockup at docs/travel-redesign/travel-redesign-mockup.html against real
+// /api/flights/fusion data.
 //
-// Deliberate deviations from the mockup, per the Phase-3 brief:
-//   - No determinate progress bar. Fusion is ONE blocking call; a per-programme bar
-//     would be the fake progress we are removing. Plain honest loading state instead.
-//   - Rows are keyboard-focusable buttons, ready to become disclosure controls in
-//     Phase 4. The expanded detail panel (cost / points-vs-cash / transfer ladder)
-//     is Phase 4 and not built here.
+// Deliberate deviation from the mockup: no determinate progress bar. Fusion is ONE
+// blocking call; a per-programme bar would be the fake progress we are removing.
+//
+// Phase 4: each row is a real disclosure control (one open at a time). The inline
+// detail carries three blocks — cost by cabin, points-vs-cash (cash fetched live on
+// demand), and the transfer ladder — plus one Book action and the irreversible-
+// transfer warning. Not-priced rows expand into an honest "why not" block.
 
 import { useMemo, useState } from 'react';
 import { authedFetch } from '@/lib/authed-fetch';
 import { AirportSelect, labelFor } from '@/components/ciq/fly-points/AirportSelect';
-import type { RedemptionOption } from '@/lib/fusion-core';
+import type { RedemptionOption, CabinBest } from '@/lib/fusion-core';
+import type { Route } from '@/lib/transfer-ladder';
+import { describeDuration } from '@/lib/transfer-ladder';
 import '@/components/ciq/fly-points/fly-points.css';
 
 // ── shape of a fusion row (see app/api/flights/fusion/route.ts) ──
@@ -48,22 +51,57 @@ interface FusionRow {
   award: AwardView | null;
   redemption: RedemptionOption[];
   bestOption: RedemptionOption | null;
+  cabins: CabinBest[]; // per-cabin best option (ladder + pointsRequired), server-computed
 }
 
-// The card we surface on the collapsed row. Fusion's `bestOption` drops rows a held
-// card can't AFFORD (pickBest gates on affordability), but the app-flow says those
-// rows still show with the shortfall named — so we pick from the full redemption set:
-// a reachable ('ok') option, cheapest first, affordable preferred. null = no held card
-// can reach this award -> the honest "Not priced" line.
-function pickDisplayOption(redemption: RedemptionOption[]): RedemptionOption | null {
-  const ok = (redemption || []).filter((o) => o.status === 'ok' && o.cardPointsNeeded != null);
-  if (!ok.length) return null;
-  const affordable = ok.filter((o) => o.canAfford);
-  const pool = affordable.length ? affordable : ok;
-  return pool.reduce((b, o) => (o.cardPointsNeeded! < b.cardPointsNeeded! ? o : b));
+// Primary cabin for the collapsed row = economy when priced/available, else the
+// first cabin the record carries. The collapsed "you pay" reflects this cabin.
+function primaryCabin(row: FusionRow): CabinBest | undefined {
+  return row.cabins?.find((c) => c.cabin === 'economy') ?? row.cabins?.[0];
+}
+// A row is reachable ("My cards") if ANY cabin has a priced option.
+function rowReachable(row: FusionRow): boolean {
+  return !!row.cabins?.some((c) => c.best);
 }
 
 type BandCabin = 'all' | 'economy' | 'business';
+
+// ── taxes → rupees (for the points-vs-cash "keep" math). seats.aero taxes are
+// minor units of taxesCurrency. INR is exact; USD converts at the house rate
+// ($1=₹90). Any other currency -> null: we won't state a rupee figure we can't
+// stand behind. 0 taxes -> 0 rupees (so "keep" = full cash fare). ──
+function taxesInInr(trip: AwardView['trip']): number | null {
+  if (!trip || !(trip.totalTaxes > 0)) return 0;
+  const major = trip.totalTaxes / 100;
+  if (trip.taxesCurrency === 'INR') return Math.round(major);
+  if (trip.taxesCurrency === 'USD') return Math.round(major * 90);
+  return null;
+}
+
+// Best-effort award-search deep links. Most programmes don't accept award-search
+// prefill via querystring, so these are landing pages into the redemption flow;
+// unknown sources fall back to a search rather than a fabricated deep link.
+const BOOKING_LANDING: Record<string, string> = {
+  singapore: 'https://www.singaporeair.com/en_UK/us/ppsclub-krisflyer/use-miles/',
+  'air-india': 'https://www.airindia.com/in/en/loyalty/flying-returns.html',
+  ba: 'https://www.britishairways.com/travel/redeem/execclub/',
+  united: 'https://www.united.com/en/us/book-flight/united-award',
+  aeroplan: 'https://www.aircanada.com/aeroplan/redeem/',
+  alaska: 'https://www.alaskaair.com/booking/award',
+  velocity: 'https://experience.velocityfrequentflyer.com/',
+  aadvantage: 'https://www.aa.com/booking/find-flights',
+  delta: 'https://www.delta.com/flight-search/book-a-flight',
+  emirates: 'https://www.emirates.com/us/english/skywards/',
+  etihad: 'https://www.etihad.com/en-us/etihad-guest',
+  flyingblue: 'https://www.flyingblue.com/en/spend/flights',
+  virginatlantic: 'https://www.virginatlantic.com/flying-club/spend-miles',
+};
+function bookingUrl(source: string, programme: string): string {
+  return (
+    BOOKING_LANDING[source] ||
+    `https://www.google.com/search?q=${encodeURIComponent(programme + ' award booking')}`
+  );
+}
 
 // ── date helpers (client-side; new Date is fine in the browser) ──
 function todayISO(): string { return new Date().toISOString().slice(0, 10); }
@@ -126,6 +164,7 @@ export default function FlyPointsPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [collapsed, setCollapsed] = useState(false);
+  const [expandedId, setExpandedId] = useState<string | null>(null); // one row open at a time
 
   // Filters — all re-filter the fetched set; none re-query.
   const [nonStop, setNonStop] = useState(false);
@@ -192,7 +231,7 @@ export default function FlyPointsPage() {
   // My cards = only rows a held card can reach (affordable or not). All cards = every
   // seat, unreachable ones shown as "Not priced".
   const shown = useMemo(
-    () => (cardsScope === 'mine' ? base.filter((r) => pickDisplayOption(r.redemption)) : base),
+    () => (cardsScope === 'mine' ? base.filter(rowReachable) : base),
     [base, cardsScope],
   );
 
@@ -336,7 +375,12 @@ export default function FlyPointsPage() {
                 <div style={{ textAlign: 'right' }}>You pay</div>
               </div>
               {shown.map((r) => (
-                <ResultRow key={r.id} row={r} />
+                <ResultRow
+                  key={r.id}
+                  row={r}
+                  open={expandedId === r.id}
+                  onToggle={() => setExpandedId((id) => (id === r.id ? null : r.id))}
+                />
               ))}
             </div>
           )}
@@ -346,7 +390,7 @@ export default function FlyPointsPage() {
   );
 }
 
-function ResultRow({ row }: { row: FusionRow }) {
+function ResultRow({ row, open, onToggle }: { row: FusionRow; open: boolean; onToggle: () => void }) {
   const a = row.award!;
   const dateISO = a.date || row.departure;
   const { d, wd } = fmtDate(dateISO);
@@ -363,54 +407,305 @@ function ResultRow({ row }: { row: FusionRow }) {
 
   const econ = fmtMiles(a.economyMiles);
   const biz = fmtMiles(a.businessMiles);
-  const best = pickDisplayOption(row.redemption);
+  const best = primaryCabin(row)?.best ?? null;
   // Shortfall = what the transfer needs minus what the card holds. 03-APP-FLOW:
   // the row still shows, with the gap named. yourPoints is the display card's balance.
   const need = best?.cardPointsNeeded ?? 0;
   const shortfall = best ? Math.max(0, need - (best.yourPoints ?? 0)) : 0;
+  const detailId = `fp-d-${row.id}`;
 
   return (
-    <button className="fp-row" aria-expanded="false">
-      <div className="fp-date">{d} <small>{wd}</small></div>
+    <>
+      <button
+        className="fp-row"
+        aria-expanded={open}
+        aria-controls={detailId}
+        onClick={onToggle}
+      >
+        <div className="fp-date">{d} <small>{wd}</small></div>
 
-      <div>
-        <div className="fp-prog">{a.program}</div>
-        <div className="fp-leg">{legParts.join(' · ')}</div>
-      </div>
+        <div>
+          <div className="fp-prog">{a.program}</div>
+          <div className="fp-leg">{legParts.join(' · ')}</div>
+        </div>
 
-      {/* desktop cabin columns */}
-      <div className={`fp-cabin fp-mono${econ ? '' : ' none'}`}>{econ || '—'}</div>
-      <div className={`fp-cabin fp-mono${biz ? '' : ' none'}`}>{biz || '—'}</div>
+        {/* desktop cabin columns */}
+        <div className={`fp-cabin fp-mono${econ ? '' : ' none'}`}>{econ || '—'}</div>
+        <div className={`fp-cabin fp-mono${biz ? '' : ' none'}`}>{biz || '—'}</div>
 
-      {/* mobile cabin block */}
-      <div className="fp-cabins-m">
-        <div>Economy<b className={`fp-mono${econ ? '' : ' none'}`}>{econ || '—'}</b></div>
-        <div>Business<b className={`fp-mono${biz ? '' : ' none'}`}>{biz || '—'}</b></div>
-      </div>
+        {/* mobile cabin block */}
+        <div className="fp-cabins-m">
+          <div>Economy<b className={`fp-mono${econ ? '' : ' none'}`}>{econ || '—'}</b></div>
+          <div>Business<b className={`fp-mono${biz ? '' : ' none'}`}>{biz || '—'}</b></div>
+        </div>
 
-      {/* you pay — the ladder's pointsRequired + shortfall, or the honest no-route line */}
-      {best && best.cardPointsNeeded != null ? (
-        <div className="fp-cost">
-          <div className="fp-payline">
-            <b className="fp-mono">{need.toLocaleString('en-IN')} pts</b>
-            {shortfall > 0 && (
-              <span className="fp-short fp-mono"> · {shortfall.toLocaleString('en-IN')} short</span>
+        {/* you pay — the ladder's pointsRequired + shortfall, or the honest no-route line */}
+        {best && best.cardPointsNeeded != null ? (
+          <div className="fp-cost">
+            <div className="fp-payline">
+              <span className="fp-pay fp-mono">{need.toLocaleString('en-IN')} pts</span>
+              {shortfall > 0 && (
+                <span className="fp-short fp-mono">· {shortfall.toLocaleString('en-IN')} short</span>
+              )}
+            </div>
+            {shortfall > 0 && best.selfEntered && (
+              <div className="fp-short-note">based on the balance you entered</div>
+            )}
+            {fmtTaxes(a.trip) && <span className="fp-tax fp-mono">{fmtTaxes(a.trip)}</span>}
+            <div className="fp-card">
+              {best.cardName}{' '}
+              <span className={`fp-pill ${best.selfEntered ? 'self' : 'wallet'}`}>
+                {best.selfEntered ? 'Self-entered' : 'In wallet'}
+              </span>
+            </div>
+          </div>
+        ) : (
+          <div className="fp-noprice">Not priced · no known route from your cards</div>
+        )}
+      </button>
+
+      {open && <RowDetail row={row} id={detailId} />}
+    </>
+  );
+}
+
+// ── expanded row — inline, one open at a time (03-APP-FLOW S4/S5) ──
+function RowDetail({ row, id }: { row: FusionRow; id: string }) {
+  const a = row.award!;
+  const reachable = rowReachable(row);
+  // Cabin selector spans the cabins the record actually prices.
+  const cabins = row.cabins || [];
+  const [cabin, setCabin] = useState<CabinBest['cabin']>(
+    (primaryCabin(row)?.cabin ?? cabins[0]?.cabin ?? 'economy') as CabinBest['cabin'],
+  );
+  const sel = cabins.find((c) => c.cabin === cabin) ?? cabins[0];
+  const selBest = sel?.best ?? null;
+
+  // Cash is fetched live only on request — never shown beside a points figure until asked.
+  const [cash, setCash] = useState<{ state: 'idle' | 'loading' | 'done' | 'error'; price: number | null }>(
+    { state: 'idle', price: null },
+  );
+  const fetchCash = async () => {
+    setCash({ state: 'loading', price: null });
+    try {
+      const res = await authedFetch('/api/flights/cash-price', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ from: row.from, to: row.to }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error('failed');
+      setCash({ state: 'done', price: typeof data.cashPrice === 'number' ? data.cashPrice : null });
+    } catch {
+      setCash({ state: 'error', price: null });
+    }
+  };
+
+  const taxInr = taxesInInr(a.trip);
+  const programme = a.program;
+
+  return (
+    <div className="fp-detail" id={id} role="region">
+      {/* NOT PRICED — honest "why not" (still lets them price cash) */}
+      {!reachable ? (
+        <>
+          <div className="fp-blk">
+            <h4>Not priced</h4>
+            <p className="fp-verdict">
+              This seat is real — {programme} has it. We have no verified transfer route
+              from the cards in your wallet into {programme}, so we won’t put a number on
+              it. We’d rather say that than guess a ratio.
+            </p>
+          </div>
+          <CashBlock cash={cash} onFetch={fetchCash} taxInr={taxInr} need={null} trip={a.trip} />
+        </>
+      ) : (
+        <>
+          {/* 1 · WHAT IT COSTS — miles + taxes, cabin selectable */}
+          <div className="fp-blk">
+            <div className="fp-blk-head">
+              <h4>What it costs</h4>
+              {cabins.length > 1 && (
+                <div className="fp-cabtabs" role="group" aria-label="Cabin">
+                  {cabins.map((c) => (
+                    <button
+                      key={c.cabin}
+                      className="fp-cabtab"
+                      aria-pressed={c.cabin === cabin}
+                      onClick={() => setCabin(c.cabin)}
+                    >
+                      {c.cabin === 'economy' ? 'Economy' : 'Business'}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+            <div className="fp-costrow">
+              <div>
+                <span className="fp-costbig fp-mono">{(sel?.miles ?? 0).toLocaleString('en-IN')}</span>{' '}
+                <span className="fp-costsub">{programme} miles</span>
+              </div>
+              <div className="fp-costsub">
+                {taxInr === 0
+                  ? 'no cash taxes on this fare'
+                  : taxInr != null
+                    ? <>plus <b className="fp-mono">₹{taxInr.toLocaleString('en-IN')}</b> paid in cash for taxes</>
+                    : <>plus {a.trip?.taxesCurrency}{' '}
+                        <b className="fp-mono">{Math.round((a.trip?.totalTaxes ?? 0) / 100).toLocaleString('en-IN')}</b>{' '}
+                        in cash for taxes</>}
+              </div>
+            </div>
+          </div>
+
+          {/* 2 · POINTS VS CASH — cash fetched live on demand */}
+          <div className="fp-blk">
+            <h4>Points vs cash</h4>
+            <CashBlock
+              cash={cash}
+              onFetch={fetchCash}
+              taxInr={taxInr}
+              need={selBest?.cardPointsNeeded ?? null}
+              trip={a.trip}
+            />
+          </div>
+
+          {/* 3 · HOW TO GET THE MILES — the transfer ladder */}
+          <div className="fp-blk">
+            <h4>How to get {(sel?.miles ?? 0).toLocaleString('en-IN')} {programme} miles</h4>
+            {selBest?.routes?.length ? (
+              <Ladder routes={selBest.routes} cardName={selBest.cardName} programme={programme} />
+            ) : (
+              <p className="fp-foot">
+                No known route from your cards into {programme} for {cabin}. The other cabin
+                may still price.
+              </p>
+            )}
+            {selBest && (
+              <div className="fp-act">
+                <a
+                  className="fp-btn"
+                  href={bookingUrl(a.source, programme)}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  Book on {programme} →
+                </a>
+              </div>
+            )}
+            {selBest && (
+              <div className="fp-warn">
+                <b>Check the seat is still there before you transfer.</b> Transfers out of
+                your bank can’t be undone — if the seat goes, the miles stay in {programme}.
+              </div>
             )}
           </div>
-          {shortfall > 0 && best.selfEntered && (
-            <div className="fp-short-note">based on the balance you entered</div>
-          )}
-          {fmtTaxes(a.trip) && <span className="fp-tax fp-mono">{fmtTaxes(a.trip)}</span>}
-          <div className="fp-card">
-            {best.cardName}{' '}
-            <span className={`fp-pill ${best.selfEntered ? 'self' : 'wallet'}`}>
-              {best.selfEntered ? 'Self-entered' : 'In wallet'}
-            </span>
-          </div>
-        </div>
-      ) : (
-        <div className="fp-noprice">Not priced · no known route from your cards</div>
+        </>
       )}
-    </button>
+    </div>
+  );
+}
+
+// Points-vs-cash body — the "Show cash price" gate + the verdict once fetched.
+function CashBlock({
+  cash, onFetch, taxInr, need, trip,
+}: {
+  cash: { state: 'idle' | 'loading' | 'done' | 'error'; price: number | null };
+  onFetch: () => void;
+  taxInr: number | null;
+  need: number | null;      // card points for the selected cabin, or null (not priced)
+  trip: AwardView['trip'];
+}) {
+  if (cash.state === 'idle') {
+    return (
+      <div>
+        <button className="fp-btn-quiet" onClick={onFetch}>Show cash price</button>
+        <p className="fp-foot">Fetched live when you ask. We don’t show an estimate next to a real points figure.</p>
+      </div>
+    );
+  }
+  if (cash.state === 'loading') return <p className="fp-foot">Fetching the live cash fare…</p>;
+  if (cash.state === 'error' || cash.price == null) {
+    return <p className="fp-foot">Couldn’t fetch a live cash fare for this route just now — no number invented.</p>;
+  }
+
+  const cashFare = cash.price;
+  // Where taxes aren't expressible in rupees, we can't do the keep/vpp math honestly.
+  if (taxInr == null || need == null) {
+    return (
+      <p className="fp-verdict">
+        This route’s cheapest cash fare is <b className="fp-mono">₹{cashFare.toLocaleString('en-IN')}</b>.
+        {need == null && ' No priced points route to compare it against.'}
+      </p>
+    );
+  }
+
+  const keep = Math.max(0, cashFare - taxInr);
+  const vpp = need > 0 ? keep / need : 0;
+  const cashWins = vpp < 0.30; // below the ~30p portal floor, points are the wrong call
+
+  return (
+    <div>
+      {cashWins ? (
+        <p className="fp-verdict">
+          <b className="fp-alert">Book this one with cash.</b> It costs{' '}
+          <b className="fp-mono">₹{cashFare.toLocaleString('en-IN')}</b> in cash. Spending{' '}
+          <b className="fp-mono">{need.toLocaleString('en-IN')}</b> points to avoid{' '}
+          <b className="fp-mono">₹{keep.toLocaleString('en-IN')}</b> values each point at{' '}
+          <b className="fp-mono">₹{vpp.toFixed(2)}</b> — below the ₹0.30 the HDFC portal floor gives you.
+        </p>
+      ) : (
+        <p className="fp-verdict">
+          This flight costs <b className="fp-mono">₹{cashFare.toLocaleString('en-IN')}</b> in cash.
+          With points you pay <b className="fp-mono">₹{taxInr.toLocaleString('en-IN')}</b> in taxes and{' '}
+          <span className="fp-keep">keep ₹{keep.toLocaleString('en-IN')}</span>.
+        </p>
+      )}
+      <p className="fp-vpp fp-mono">VALUE PER POINT ₹{vpp.toFixed(2)} · portal floor ₹0.30</p>
+    </div>
+  );
+}
+
+// The transfer ladder — one route per line: path, ratio (nominal), hops, DAYS, and
+// the payable pointsRequired (the truth). Long/unknown durations are flagged.
+function Ladder({ routes, cardName, programme }: { routes: Route[]; cardName: string; programme: string }) {
+  return (
+    <div className="fp-ladder">
+      {routes.map((r, i) => {
+        const days = describeDuration(r);
+        const risky = r.durationDaysMax != null && r.durationDaysMax > 7; // can't hold a live seat
+        const unknown = r.durationUnknown;
+        const hops = r.hops.length === 1 ? 'Direct' : `${r.hops.length} hops`;
+        const [nf, nt] = r.nominalRatio;
+        return (
+          <div key={i} className={`fp-rung${i === 0 ? ' best' : ''}`}>
+            <div>
+              <div className="fp-path">
+                {cardName} <span className="fp-arw">→</span> {programme}
+              </div>
+              <div className="fp-rmeta">
+                {hops} · nominal {nf}:{nt}
+                {r.minTransferIncrement ? ` · min ${r.minTransferIncrement.toLocaleString('en-IN')}` : ''}
+                {r.state !== 'verified' ? ' · estimated, not issuer-confirmed' : ''}
+              </div>
+              {r.roundingInflated && (
+                <div className="fp-rmeta">
+                  rounded up to a {(r.minTransferIncrement ?? 0).toLocaleString('en-IN')}-mile transfer minimum
+                </div>
+              )}
+            </div>
+            <div className={`fp-days fp-mono${risky ? ' risk' : unknown ? ' warn' : ' ok'}`}>
+              {unknown ? 'time unknown' : days}
+            </div>
+            <div className="fp-pts fp-mono">{r.pointsRequired.toLocaleString('en-IN')} pts</div>
+          </div>
+        );
+      })}
+      {routes.some((r) => r.durationDaysMax != null && r.durationDaysMax > 7) && (
+        <p className="fp-risknote">
+          A route that takes this long can’t hold a seat that’s available today — it will very
+          likely be gone before your miles arrive.
+        </p>
+      )}
+    </div>
   );
 }

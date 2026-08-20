@@ -34,6 +34,7 @@ import {
   programLabel,
   matchAward,
   buildRedemption,
+  buildCabinBests,
   pickBest,
   pickBestAwardOnly,
 } from '@/lib/fusion-core';
@@ -236,8 +237,9 @@ export async function POST(req: NextRequest) {
       const award = buildAwardView(awardMatch, tripByKey.get(key) ?? null, cabin);
       const redemption = buildRedemption(cards, awardMatch, flight.price);
       const bestOption = pickBest(redemption);
+      const cabins = buildCabinBests(cards, awardMatch);
 
-      return { ...flight, cashUnavailable: false, award, redemption, bestOption };
+      return { ...flight, cashUnavailable: false, award, redemption, bestOption, cabins };
     });
 
     // AWARD-FIRST: awards with no cash match become points-only cards. When the
@@ -251,6 +253,7 @@ export async function POST(req: NextRequest) {
         const award = buildAwardView(a, trip, cabin);
         const redemption = buildRedemption(cards, a, 0); // no cash price -> value/point stays null
         const bestOption = pickBestAwardOnly(redemption);
+        const cabins = buildCabinBests(cards, a);
 
         return {
           id: `award-${key}`,
@@ -267,6 +270,7 @@ export async function POST(req: NextRequest) {
           award,
           redemption,
           bestOption,
+          cabins,
         };
       });
 

@@ -115,11 +115,14 @@ input.fp-fld-val::placeholder { color: var(--ink-4); font-weight: 500; }
 .fp-cost b { font-size: 16px; font-weight: 700; display: block; color: var(--ink); }
 .fp-cost .fp-tax { font-size: 12px; color: var(--ink-3); }
 .fp-cost .fp-card { font-size: 12px; color: var(--ink-2); margin-top: 5px; }
-/* cost + shortfall on one line; inherits .fp-cost's text-align (right desktop /
-   left mobile). Gap named in muted ink; the self-entered caveat in estimated grey
-   — existing provenance vocabulary, no new colour. */
-.fp-payline b { display: inline; }
-.fp-short { font-size: 12.5px; font-weight: 600; color: var(--ink-3); }
+/* cost + shortfall wrap AS ONE UNIT: the payline is an inline-flex chip that keeps
+   "19,000 pts" and "· 14,665 short" together and breaks as a block, so the gap never
+   splits "14,665" from "short". Inherits .fp-cost's text-align (right desktop / left
+   mobile). Gap in muted ink; self-entered caveat in estimated grey — existing
+   provenance vocabulary, no new colour. */
+.fp-payline { display: inline-flex; flex-wrap: wrap; align-items: baseline; gap: 5px; }
+.fp-pay { font-size: 16px; font-weight: 700; color: var(--ink); white-space: nowrap; }
+.fp-short { font-size: 12.5px; font-weight: 600; color: var(--ink-3); white-space: nowrap; }
 .fp-short-note { font-size: 11.5px; color: var(--prov-estimated); margin-top: 3px; line-height: 1.4; }
 .fp-noprice { font-size: 12.5px; font-weight: 600; color: var(--ink-3); text-align: right;
   line-height: 1.45; }
@@ -133,6 +136,57 @@ input.fp-fld-val::placeholder { color: var(--ink-4); font-weight: 500; }
 /* mobile cabin block (hidden on desktop) */
 .fp-cabins-m { display: none; }
 .fp-note { margin: 14px 2px 0; font-size: 12.5px; color: var(--ink-3); line-height: 1.5; }
+
+/* ── expanded row — inline, pushes the list down. One frame (the list); blocks
+   inside are separated by a hairline, never nested frames. ── */
+.fp-detail { padding: 2px 18px 18px; background: var(--surface-2);
+  border-bottom: 1px solid var(--line-soft); }
+.fp-blk { padding: 18px 0; border-top: 1px solid var(--line); }
+.fp-blk:first-child { border-top: 0; }
+.fp-blk h4 { margin: 0 0 12px; font-size: 11px; font-weight: 700; letter-spacing: 0.09em;
+  color: var(--ink-3); text-transform: uppercase; }
+.fp-blk-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.fp-blk-head h4 { margin-bottom: 0; }
+
+.fp-cabtabs { display: inline-flex; gap: 4px; background: var(--surface); border: 1px solid var(--line);
+  border-radius: 999px; padding: 3px; }
+.fp-cabtab { font: inherit; font-size: 12px; font-weight: 600; border: 0; background: transparent;
+  color: var(--ink-2); padding: 5px 12px; border-radius: 999px; cursor: pointer; min-height: 32px; }
+.fp-cabtab[aria-pressed="true"] { background: var(--ink); color: var(--paper); }
+
+.fp-costrow { display: flex; justify-content: space-between; align-items: baseline; gap: 12px;
+  flex-wrap: wrap; margin-top: 12px; }
+.fp-costbig { font-size: 26px; font-weight: 700; color: var(--ink); }
+.fp-costsub { font-size: 13px; color: var(--ink-2); }
+
+.fp-verdict { font-size: 15px; line-height: 1.55; color: var(--ink); margin: 0; }
+.fp-keep { color: var(--prov-verified); font-weight: 700; }
+.fp-alert { color: var(--red); font-weight: 700; }
+.fp-vpp { font-size: 12px; font-weight: 700; letter-spacing: 0.05em; color: var(--ink-3); margin: 8px 0 0; }
+.fp-foot { font-size: 12.5px; color: var(--ink-3); margin: 10px 0 0; line-height: 1.55; }
+
+/* transfer ladder — plain stacked list, one route per line, no nested frame */
+.fp-ladder { display: flex; flex-direction: column; }
+.fp-rung { display: grid; grid-template-columns: 1fr 112px 96px; gap: 14px; align-items: center;
+  padding: 13px 0; border-top: 1px solid var(--line-soft); }
+.fp-rung:first-child { border-top: 0; }
+.fp-rung.best { background: var(--bg-2); margin: 0 -12px; padding: 13px 12px;
+  border-radius: var(--r-md); border-top: 0; }
+.fp-path { font-size: 14px; font-weight: 600; line-height: 1.5; color: var(--ink); }
+.fp-arw { color: var(--copper-3); font-weight: 700; margin: 0 4px; }
+.fp-rmeta { font-size: 11.5px; color: var(--ink-3); margin-top: 3px; line-height: 1.45; }
+.fp-days { font-size: 12.5px; font-weight: 700; letter-spacing: 0.02em; }
+.fp-days.ok { color: var(--prov-verified); }
+.fp-days.warn { color: var(--prov-estimated); }
+.fp-days.risk { color: var(--red); }
+.fp-pts { text-align: right; font-size: 15px; font-weight: 700; color: var(--ink); }
+.fp-risknote { font-size: 12.5px; color: var(--red); margin: 10px 0 0; line-height: 1.5; }
+
+.fp-act { margin-top: 18px; display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+.fp-warn { margin-top: 14px; padding: 13px 15px; background: var(--amber-soft);
+  border: 1px solid var(--amber); border-radius: var(--r-md); font-size: 13px; line-height: 1.55;
+  color: var(--ink-2); }
+.fp-warn b { color: var(--ink); }
 
 /* ── 375px: search stacks, rows become cards ── */
 @media (max-width: 640px) {
@@ -154,4 +208,12 @@ input.fp-fld-val::placeholder { color: var(--ink-4); font-weight: 500; }
   .fp-cabins-m b.none { color: var(--ink-5); font-weight: 500; }
   .fp-cost { text-align: left; border-top: 1px solid var(--line-soft); padding-top: 12px; }
   .fp-noprice { text-align: left; border-top: 1px solid var(--line-soft); padding-top: 12px; }
+
+  /* detail at 375: ladder rung stacks the points under the path; cabin tabs + book
+     button go full-run. */
+  .fp-detail { padding: 2px 16px 16px; }
+  .fp-rung { grid-template-columns: 1fr 96px; }
+  .fp-rung .fp-pts { grid-column: 1 / -1; text-align: left; font-size: 14px; margin-top: 2px; }
+  .fp-act .fp-btn { width: 100%; }
+  .fp-costrow { flex-direction: column; gap: 4px; }
 }

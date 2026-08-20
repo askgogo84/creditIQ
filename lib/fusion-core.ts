@@ -234,6 +234,35 @@ export function pickBestAwardOnly(options: RedemptionOption[]): RedemptionOption
   return pool.reduce((best, o) => (o.cardPointsNeeded! < best.cardPointsNeeded! ? o : best));
 }
 
+// Per-cabin best redemption for the expanded row's cabin selector. Each cabin's
+// ladder MUST be computed server-side (not recomputed in the client) because
+// pointsRequired and the card-name allowlist depend on the resolver's matched
+// seed name, which the client doesn't carry. One entry per cabin the record
+// actually prices (miles > 0).
+export interface CabinBest {
+  cabin: 'economy' | 'business';
+  miles: number;                     // award miles for this cabin (seats.aero)
+  best: RedemptionOption | null;     // cheapest reachable option, or null (not priced)
+}
+export function buildCabinBests(
+  cards: UserCard[],
+  award: SeatsAeroResult,
+): CabinBest[] {
+  const pairs: Array<[CabinBest['cabin'], number]> = [
+    ['economy', award.yMileageCost || 0],
+    ['business', award.jMileageCost || 0],
+  ];
+  const out: CabinBest[] = [];
+  for (const [cabin, miles] of pairs) {
+    if (!(miles > 0)) continue;
+    // cashPrice 0: value-per-point is a client concern (computed after the live
+    // "Show cash price" fetch); here we only need the ladder + pointsRequired.
+    const redemption = buildRedemption(cards, { ...award, mileageCost: miles }, 0);
+    out.push({ cabin, miles, best: pickBestAwardOnly(redemption) });
+  }
+  return out;
+}
+
 // ── live-price assembly (POST /api/trip-planner/live-price) ────────────────────
 // Kept here (not in the route file) because Next.js App Router route modules may
 // only export HTTP handlers + config — extra exports fail `next build`. Pure +
