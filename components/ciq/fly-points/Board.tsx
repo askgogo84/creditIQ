@@ -23,8 +23,7 @@ import { authedFetch } from '@/lib/authed-fetch';
 import { AirportSelect, labelFor } from '@/components/ciq/fly-points/AirportSelect';
 import { detectIataFromText } from '@/components/design/FlightSearch';
 import type { RedemptionOption, CabinBest } from '@/lib/fusion-core';
-import type { Route } from '@/lib/transfer-ladder';
-import { describeDuration } from '@/lib/transfer-ladder';
+import { Ladder } from '@/components/ciq/fly-points/Ladder';
 import '@/components/ciq/fly-points/fly-points.css';
 
 // ── shape of a fusion row (see app/api/flights/fusion/route.ts) ──
@@ -720,47 +719,3 @@ function CashBlock({
   );
 }
 
-// The transfer ladder — one route per line: path, ratio (nominal), hops, DAYS, and
-// the payable pointsRequired (the truth). Long/unknown durations are flagged.
-function Ladder({ routes, cardName, programme }: { routes: Route[]; cardName: string; programme: string }) {
-  return (
-    <div className="fp-ladder">
-      {routes.map((r, i) => {
-        const days = describeDuration(r);
-        const risky = r.durationDaysMax != null && r.durationDaysMax > 7; // can't hold a live seat
-        const unknown = r.durationUnknown;
-        const hops = r.hops.length === 1 ? 'Direct' : `${r.hops.length} hops`;
-        const [nf, nt] = r.nominalRatio;
-        return (
-          <div key={i} className={`fp-rung${i === 0 ? ' best' : ''}`}>
-            <div>
-              <div className="fp-path">
-                {cardName} <span className="fp-arw">→</span> {programme}
-              </div>
-              <div className="fp-rmeta">
-                {hops} · nominal {nf}:{nt}
-                {r.minTransferIncrement ? ` · min ${r.minTransferIncrement.toLocaleString('en-IN')}` : ''}
-                {r.state !== 'verified' ? ' · estimated, not issuer-confirmed' : ''}
-              </div>
-              {r.roundingInflated && (
-                <div className="fp-rmeta">
-                  rounded up to a {(r.minTransferIncrement ?? 0).toLocaleString('en-IN')}-mile transfer minimum
-                </div>
-              )}
-            </div>
-            <div className={`fp-days fp-mono${risky ? ' risk' : unknown ? ' warn' : ' ok'}`}>
-              {unknown ? 'time unknown' : days}
-            </div>
-            <div className="fp-pts fp-mono">{r.pointsRequired.toLocaleString('en-IN')} pts</div>
-          </div>
-        );
-      })}
-      {routes.some((r) => r.durationDaysMax != null && r.durationDaysMax > 7) && (
-        <p className="fp-risknote">
-          A route that takes this long can’t hold a seat that’s available today — it will very
-          likely be gone before your miles arrive.
-        </p>
-      )}
-    </div>
-  );
-}

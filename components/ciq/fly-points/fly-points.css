@@ -137,6 +137,14 @@ input.fp-fld-val::placeholder { color: var(--ink-4); font-weight: 500; }
 .fp-cabins-m { display: none; }
 .fp-note { margin: 14px 2px 0; font-size: 12.5px; color: var(--ink-3); line-height: 1.5; }
 
+/* ── /transfer-partners calculator — reuses the search-band frame + fields and the
+   shared Ladder. Own 3-up grid (the board's 7-up band grid doesn't fit). ── */
+.fp-search.fp-tc-controls { grid-template-columns: 1fr 1fr 1fr; }
+.fp-tc-balance { margin: 14px 2px 0; font-size: 13px; color: var(--ink-2); }
+.fp-tc-afford { margin: 0 0 14px; font-size: 13.5px; color: var(--ink-2); line-height: 1.5; }
+.fp-result { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r-lg);
+  padding: 18px; margin-top: 18px; }
+
 /* ── expanded row — inline, pushes the list down. One frame (the list); blocks
    inside are separated by a hairline, never nested frames. ── */
 .fp-detail { padding: 2px 18px 18px; background: var(--surface-2);

@@ -141,7 +141,7 @@ export interface RedemptionOption {
 // axis_edge, axis_miles, amex_membership_rewards), so we normalise both parts and
 // join. An unmapped pair returns a slug that simply matches no edge -> no route ->
 // "not transferable" (honest: we never fabricate a ratio for an unknown pair).
-function currencyToEdgeSlug(currency: string, bank?: string): string | null {
+export function currencyToEdgeSlug(currency: string, bank?: string): string | null {
   const norm = (s: string) => (s || '').toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_|_$/g, '');
   const b = norm(bank || '');
   const c = norm(currency);
