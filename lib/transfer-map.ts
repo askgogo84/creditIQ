@@ -151,6 +151,36 @@ function normalize(s: string): string {
   return (s || '').toLowerCase().replace(/[^a-z0-9]+/g, '');
 }
 
+// ── issuer-string reconciliation ────────────────────────────────────────────
+// Statement banks are routinely INFLATED vs the catalogue's short label — the
+// same defect that leaves "HDFC Bank" != "HDFC" and blanks the KrisFlyer price.
+// Two kinds of mismatch, handled here so there is ONE place to reconcile them:
+//   - Suffix inflation: "HDFC Bank" / "SBI Card" — strip trailing qualifier words.
+//   - Aliases: "American Express" vs "AmEx", "Bank of Baroda" vs "BOB" — these are
+//     NOT suffixes, so they need an explicit (short) map applied before stripping.
+const BANK_ALIASES: Record<string, string> = {
+  americanexpress: 'amex',
+  amex: 'amex',
+  bankofbaroda: 'bob',
+  bob: 'bob',
+};
+
+/** Canonical issuer token: alias first (so "bank of baroda" isn't mangled by the
+ *  suffix strip), else drop trailing qualifier words. "HDFC Bank"->"hdfc",
+ *  "SBI Card"->"sbi", "American Express"->"amex", "Bank of Baroda"->"bob". */
+function canonicalBank(s: string): string {
+  const raw = (s || '').toLowerCase().replace(/[^a-z0-9]+/g, '');
+  if (BANK_ALIASES[raw]) return BANK_ALIASES[raw];
+  return raw.replace(/(bank|cards|card|limited|ltd)+$/g, '');
+}
+
+/** Same issuer, tolerating inflated labels and known aliases. Empty either side
+ *  is NOT a match — callers keep their own `!bank ||` permissive guard. */
+function sameBank(a: string, b: string): boolean {
+  const ca = canonicalBank(a);
+  return !!ca && ca === canonicalBank(b);
+}
+
 // Generic/issuer words that carry no product identity — dropped before
 // token-overlap matching so only the DISTINCTIVE brand token (e.g. "infinia",
 // "regalia", "magnus", "atlas") drives a match. Bank tokens are here too: the
@@ -198,7 +228,7 @@ export function resolveCardCurrency(
     match = SEED_CARDS.find((c) => {
       const n = normalize(c.name);
       const nameHit = n.includes(target) || target.includes(n);
-      const bankHit = !bank || normalize(c.bank) === normalize(bank);
+      const bankHit = !bank || sameBank(c.bank, bank);
       return nameHit && bankHit;
     });
   }
@@ -212,7 +242,7 @@ export function resolveCardCurrency(
     const targetTokens = significantTokens(cardName);
     if (targetTokens.length) {
       const candidates = SEED_CARDS.filter((c) => {
-        const bankHit = !bank || normalize(c.bank) === normalize(bank);
+        const bankHit = !bank || sameBank(c.bank, bank);
         if (!bankHit) return false;
         const seedTokens = new Set(significantTokens(c.name));
         return targetTokens.some((t) => seedTokens.has(t));
