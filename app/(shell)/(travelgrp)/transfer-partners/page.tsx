@@ -1,222 +1,278 @@
-import { DesignFooter } from '@/components/design/Footer';
-import { Reveal } from '@/components/design/Reveal';
-import Link from 'next/link';
-import type { Metadata } from 'next';
-import { PageHeader } from '@/components/ciq/PageHeader';
+'use client';
 
-export const metadata: Metadata = {
-  title: 'Credit Card Transfer Partners India 2026 | CreditIQ',
-  description: 'All airline and hotel transfer partners for Indian credit cards — HDFC, Axis, Amex, HSBC. Ratios, timelines, and best-value transfers verified May 2026.',
+// /transfer-partners — a LIVE transfer calculator on findTransferRoutes
+// (lib/transfer-ladder.ts). Replaces the old hardcoded PARTNERS marketing table
+// (unsourced ratio/timeline/sweet-spot strings keyed by bank name) — those were
+// deliberately NOT migrated: any figure worth keeping goes through transfer-graph
+// with a real source + state (the separate issuer-sourcing task), never a display
+// string here.
+//
+// Two directions off the SAME engine (findTransferRoutes keeps its signature):
+//   FORWARD (default) — "I have these points, what do they become?" miles received,
+//     via milesReceivedFor (rounds DOWN to the transfer minimum). From-currency
+//     defaults to a wallet card with its real balance prefilled.
+//   REVERSE (toggle)  — "I need these miles, what does it cost?" the payable
+//     pointsRequired. Same path the board's expanded row uses.
+// Both render the SAME Ladder component: path, nominal ratio, hops, days ("time
+// unknown" where unknown), provenance state. No route -> we say so, never a guess.
+
+import { useEffect, useMemo, useState } from 'react';
+import { authedFetch } from '@/lib/authed-fetch';
+import { Ladder } from '@/components/ciq/fly-points/Ladder';
+import { findTransferRoutes, milesReceivedFor } from '@/lib/transfer-ladder';
+import { TRANSFER_EDGES } from '@/lib/data/transfer-graph';
+import { resolveCardCurrency } from '@/lib/transfer-map';
+import { currencyToEdgeSlug, programLabel } from '@/lib/fusion-core';
+import '@/components/ciq/fly-points/fly-points.css';
+
+const CURRENCY_LABEL: Record<string, string> = {
+  hdfc_reward_points: 'HDFC Reward Points',
+  axis_edge: 'Axis EDGE Rewards',
+  axis_miles: 'Axis EDGE Miles',
+  amex_membership_rewards: 'Amex Membership Rewards',
 };
+function prettySlug(slug: string): string {
+  return CURRENCY_LABEL[slug] || slug.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
+}
 
-const PARTNERS = [
-  {
-    bank: 'HDFC Bank',
-    bankColor: '#004C8F',
-    cards: ['Infinia', 'Diners Black', 'Regalia Gold (select)'],
-    currency: 'Reward Points',
-    partners: [
-      { name: 'Singapore KrisFlyer', type: 'airline', ratio: '1:1', timeline: '24-48 hours', value: 'Rs.1.6-2.0/pt', sweet_spot: 'DEL-SIN business class for 45,000 miles', rating: 5 },
-      { name: 'Turkish Miles&Smiles', type: 'airline', ratio: '1:1', timeline: '24-48 hours', value: 'Rs.1.0-1.5/pt', sweet_spot: 'DEL-IST-NRT J class — fixed zone pricing', rating: 5 },
-      { name: 'Marriott Bonvoy', type: 'hotel', ratio: '1:1', timeline: '3-5 days', value: 'Rs.0.8-1.2/pt', sweet_spot: 'Cat 1-4 India hotels — 7,500-25,000 pts', rating: 4 },
-      { name: 'Air France KLM Flying Blue', type: 'airline', ratio: '1:1', timeline: '24-48 hours', value: 'Rs.0.8-1.2/pt', sweet_spot: 'India-Europe via CDG/AMS promo awards', rating: 3 },
-      { name: 'Taj InnerCircle', type: 'hotel', ratio: '1:1', timeline: '3-5 days', value: 'Rs.0.6-1.0/pt', sweet_spot: 'Taj Safaris and resort properties', rating: 3 },
-    ],
-  },
-  {
-    bank: 'Axis Bank',
-    bankColor: '#97144D',
-    cards: ['Magnus Burgundy', 'Reserve', 'Atlas'],
-    currency: 'EDGE Miles',
-    partners: [
-      { name: 'Singapore KrisFlyer', type: 'airline', ratio: '1.33:1', timeline: '24-48 hours', value: 'Rs.1.2-1.5/pt', sweet_spot: 'DEL-SIN business (less efficient than HDFC due to ratio)', rating: 4 },
-      { name: 'Turkish Miles&Smiles', type: 'airline', ratio: '1:1', timeline: '24-48 hours', value: 'Rs.1.0-1.5/pt', sweet_spot: 'DEL-IST zone pricing — same sweet spot as HDFC', rating: 5 },
-      { name: 'Air France KLM Flying Blue', type: 'airline', ratio: '1:1', timeline: '24-48 hours', value: 'Rs.0.8-1.2/pt', sweet_spot: 'Paris/Amsterdam routes — check monthly promo awards', rating: 3 },
-      { name: 'Air India Flying Returns', type: 'airline', ratio: '1:1', timeline: '24-48 hours', value: 'Rs.0.5-0.8/pt', sweet_spot: 'Post-Vistara merger — Air India domestic and international', rating: 2 },
-      { name: 'British Airways Avios', type: 'airline', ratio: '2:1', timeline: '24-48 hours', value: 'Rs.0.6-1.0/pt', sweet_spot: 'Short-haul European hops from London', rating: 3 },
-      { name: 'Vietnam Airlines Lotusmiles', type: 'airline', ratio: '2:1', timeline: '3-5 days', value: 'Rs.0.5-0.8/pt', sweet_spot: 'Star Alliance partner awards — niche use', rating: 2 },
-    ],
-    note: 'Axis removed Accor, Marriott Bonvoy, and Qatar Airways on April 2, 2026.',
-  },
-  {
-    bank: 'American Express',
-    bankColor: '#006FCF',
-    cards: ['Platinum Travel', 'MRCC', 'Gold Charge'],
-    currency: 'Membership Rewards',
-    partners: [
-      { name: 'British Airways Avios', type: 'airline', ratio: '1:1', timeline: '2-3 days', value: 'Rs.1.2-1.8/pt', sweet_spot: 'India-UK via BA partner awards — strong value', rating: 4 },
-      { name: 'Marriott Bonvoy', type: 'hotel', ratio: '1:1', timeline: '3-5 days', value: 'Rs.0.7-1.2/pt', sweet_spot: 'Then transfer Marriott to Air India at 3:1 with 25% bonus', rating: 3 },
-      { name: 'Taj InnerCircle', type: 'hotel', ratio: '1:1', timeline: '3-5 days', value: 'Rs.0.6-1.0/pt', sweet_spot: 'Taj luxury properties and Safaris', rating: 3 },
-      { name: 'Air Canada Aeroplan', type: 'airline', ratio: '1:1', timeline: '2-3 days', value: 'Rs.1.0-1.5/pt', sweet_spot: 'Star Alliance awards including Singapore Airlines', rating: 4 },
-      { name: 'Hilton Honors', type: 'hotel', ratio: '1:3', timeline: '3-5 days', value: 'Rs.0.4-0.6/pt', sweet_spot: 'Cat 1-3 Hilton properties in India + Asia', rating: 2 },
-    ],
-  },
-  {
-    bank: 'HSBC',
-    bankColor: '#c41e3a',
-    cards: ['TravelOne', 'Premier'],
-    currency: 'Reward Points',
-    partners: [
-      { name: 'Singapore KrisFlyer', type: 'airline', ratio: '1:1', timeline: '24-48 hours', value: 'Rs.1.6-2.0/pt', sweet_spot: 'Best value transfer — same as HDFC without ratio penalty', rating: 5 },
-      { name: 'British Airways Avios', type: 'airline', ratio: '1:1', timeline: '24-48 hours', value: 'Rs.1.2-1.8/pt', sweet_spot: 'India-UK routing and partner awards', rating: 4 },
-      { name: 'Cathay Pacific Asia Miles', type: 'airline', ratio: '1:1', timeline: '24-48 hours', value: 'Rs.1.2-1.6/pt', sweet_spot: 'Hong Kong hub — good for Asia travel', rating: 4 },
-      { name: 'Air France KLM Flying Blue', type: 'airline', ratio: '1:1', timeline: '24-48 hours', value: 'Rs.0.8-1.2/pt', sweet_spot: 'Monthly promo awards on Europe routes', rating: 3 },
-      { name: 'Malaysia Airlines Enrich', type: 'airline', ratio: '1:1', timeline: '2-3 days', value: 'Rs.0.8-1.2/pt', sweet_spot: 'KL hub — good for Southeast Asia travel', rating: 3 },
-      { name: 'Marriott Bonvoy', type: 'hotel', ratio: '1:1', timeline: '3-5 days', value: 'Rs.0.8-1.2/pt', sweet_spot: 'Cat 1-4 India Marriott properties', rating: 4 },
-      { name: 'IHG Rewards', type: 'hotel', ratio: '1:1', timeline: '3-5 days', value: 'Rs.0.5-0.8/pt', sweet_spot: 'InterContinental and Holiday Inn properties', rating: 2 },
-    ],
-  },
-];
+interface FromOption {
+  key: string;
+  label: string;
+  slug: string;
+  matchedCardName?: string;
+  balance?: number;
+  selfEntered?: boolean;
+  wallet: boolean;
+}
 
-const TYPE_COLOR = { airline: '#0ea5e9', hotel: '#c9972e' };
-const STARS = (n: number) => '★'.repeat(n) + '☆'.repeat(5 - n);
+const TO_PROGRAMMES = Array.from(new Set(TRANSFER_EDGES.map((e) => e.to_programme)))
+  .map((slug) => ({ slug, label: programLabel(slug) }))
+  .sort((a, b) => a.label.localeCompare(b.label));
 
-export default function TransferPartnersPage() {
-  return (
-    <>
-      {/* Responsive split for the partner list: the 7-column table overflowed at
-          375px (ratio column clipped, type badge wrapped). Below 768px we drop the
-          table and render each partner as a stacked card (name; then type + ratio;
-          then value / timeline / rating / sweet spot) so nothing clips and there is
-          no horizontal scroll. The table stays on desktop where it fits. */}
-      <style>{`
-        .tp-table-wrap { display: none; }
-        .tp-stack { display: flex; flex-direction: column; }
-        @media (min-width: 768px) {
-          .tp-table-wrap { display: block; }
-          .tp-stack { display: none; }
+const GENERIC_FROM: FromOption[] = Array.from(new Set(TRANSFER_EDGES.map((e) => e.from_currency)))
+  .sort()
+  .map((slug) => ({ key: `cur:${slug}`, label: prettySlug(slug), slug, wallet: false }));
+
+type Direction = 'forward' | 'reverse';
+const REVERSE_DEFAULT_MILES = 40000;
+
+export default function TransferCalculatorPage() {
+  const [walletFrom, setWalletFrom] = useState<FromOption[]>([]);
+  const [loadingCards, setLoadingCards] = useState(true);
+  const [direction, setDirection] = useState<Direction>('forward');
+  const [fromKey, setFromKey] = useState<string>('');
+  const [toSlug, setToSlug] = useState<string>(TO_PROGRAMMES[0]?.slug ?? '');
+  const [amount, setAmount] = useState<number>(REVERSE_DEFAULT_MILES); // points-to-send (fwd) or miles-needed (rev)
+
+  const allFrom = useMemo(() => [...walletFrom, ...GENERIC_FROM], [walletFrom]);
+  const from = allFrom.find((o) => o.key === fromKey) ?? null;
+  const toLabel = TO_PROGRAMMES.find((p) => p.slug === toSlug)?.label ?? toSlug;
+
+  // Load wallet cards -> from-currency options (resolvable cards only), balances
+  // inline with the wallet's own provenance. On first load, forward mode prefills
+  // the amount with the first card's real balance.
+  useEffect(() => {
+    (async () => {
+      try {
+        const [stmtRes, manualRes] = await Promise.all([
+          authedFetch('/api/user-cards'),
+          authedFetch('/api/manual-cards'),
+        ]);
+        const stmt = stmtRes.ok ? (await stmtRes.json()).cards || [] : [];
+        const manual = manualRes.ok ? (await manualRes.json()).cards || [] : [];
+        const rows = [
+          ...stmt.map((r: any) => ({ ...r, _self: r.self_entered === true })),
+          ...manual.map((r: any) => ({ ...r, _self: true })),
+        ];
+        const seen = new Set<string>();
+        const opts: FromOption[] = [];
+        rows.forEach((r: any, i: number) => {
+          if (!r?.card_name) return;
+          const dedupe = `${(r.bank || '').toLowerCase()}-${r.card_last4 || 'x'}-${r.card_name.toLowerCase()}`;
+          if (seen.has(dedupe)) return;
+          seen.add(dedupe);
+          const resolved = resolveCardCurrency(r.bank, r.card_name);
+          if (!resolved) return;
+          const slug = currencyToEdgeSlug(resolved.currency, resolved.bank);
+          if (!slug) return;
+          opts.push({
+            key: `w:${i}`,
+            label: r.card_name,
+            slug,
+            matchedCardName: resolved.matchedCardName,
+            balance: Number(r.points_balance) || 0,
+            selfEntered: r._self,
+            wallet: true,
+          });
+        });
+        setWalletFrom(opts);
+        if (opts.length) {
+          setFromKey(opts[0].key);
+          setAmount(opts[0].balance || 0); // forward default: prefill real balance
+        } else {
+          setFromKey(GENERIC_FROM[0]?.key ?? '');
         }
-      `}</style>
-      {/* Section name + SectionTabs live in the (travelgrp) layout above this panel;
-          this panel owns the display headline + subtitle (eyebrow dropped as redundant
-          with the section name) and the partner list, in the shared 1100 container. */}
-      <PageHeader
-        title="Transfer Partners"
-        subtitle="Every airline and hotel transfer partner for Indian cards — ratios, timelines and value."
-        maxWidth={1100}
-        showTabs={false}
-      />
-      <div style={{ marginTop: 24, display: 'flex', flexDirection: 'column', gap: 40 }}>
-            {PARTNERS.map((bank, bi) => (
-              <Reveal key={bi} style={{ animationDelay: `${bi * 80}ms` }}>
-                <div style={{ background: 'var(--paper,#FAF5EB)', borderRadius: 20, border: '1px solid var(--line,rgba(20,41,80,0.08))', overflow: 'hidden' }}>
-                  {/* Bank header */}
-                  <div style={{ background: 'var(--navy,#142950)', padding: '16px 24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 12 }}>
-                    <div>
-                      <div style={{ fontFamily: 'var(--font-mono,monospace)', fontSize: 9, fontWeight: 700, letterSpacing: '0.18em', color: 'var(--copper-3,#D89B2A)', textTransform: 'uppercase', marginBottom: 4 }}>{bank.currency}</div>
-                      <h2 style={{ fontSize: 20, fontWeight: 800, color: '#fff', margin: 0, letterSpacing: '-0.02em' }}>{bank.bank}</h2>
-                    </div>
-                    <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-                      {bank.cards.map(c => (
-                        <span key={c} style={{ padding: '4px 12px', borderRadius: 100, background: 'rgba(255,255,255,0.10)', fontSize: 11, color: 'rgba(255,255,255,0.65)', fontWeight: 600 }}>{c}</span>
-                      ))}
-                    </div>
-                  </div>
+      } catch {
+        setFromKey(GENERIC_FROM[0]?.key ?? '');
+      } finally {
+        setLoadingCards(false);
+      }
+    })();
+  }, []);
 
-                  {bank.note && (
-                    <div style={{ background: 'rgba(184,66,48,0.08)', borderBottom: '1px solid rgba(184,66,48,0.15)', padding: '10px 24px', fontSize: 12, color: '#B84230', fontWeight: 600 }}>
-                      ⚠ {bank.note}
-                    </div>
-                  )}
+  // Changing the from-currency in forward mode re-prefills the new card's balance.
+  const onFromChange = (key: string) => {
+    setFromKey(key);
+    if (direction === 'forward') {
+      const opt = allFrom.find((o) => o.key === key);
+      if (opt?.wallet) setAmount(opt.balance || 0);
+    }
+  };
+  // Switching direction resets the amount to that direction's sensible default.
+  const switchDirection = (dir: Direction) => {
+    setDirection(dir);
+    if (dir === 'forward') setAmount(from?.wallet ? from.balance || 0 : amount || 0);
+    else setAmount(REVERSE_DEFAULT_MILES);
+  };
 
-                  {/* Partners table — desktop (>=768px). overflowX kept as a safety
-                      net for the 768-900 tablet band. */}
-                  <div className="tp-table-wrap" style={{ overflowX: 'auto' }}>
-                    <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-                      <thead>
-                        <tr style={{ background: 'var(--surface,#fff)' }}>
-                          {['Partner', 'Type', 'Ratio', 'Timeline', 'Value', 'Sweet Spot', 'Rating'].map(h => (
-                            <th key={h} style={{ padding: '10px 16px', fontFamily: 'var(--font-mono,monospace)', fontSize: 9, fontWeight: 700, letterSpacing: '0.12em', color: 'var(--ink-3,#5A6A8A)', textTransform: 'uppercase', textAlign: 'left', whiteSpace: 'nowrap', borderBottom: '1px solid var(--line,rgba(20,41,80,0.08))' }}>{h}</th>
-                          ))}
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {bank.partners.map((p, pi) => (
-                          <tr key={pi} style={{ borderBottom: pi < bank.partners.length - 1 ? '1px solid var(--line,rgba(20,41,80,0.06))' : 'none', background: pi % 2 === 0 ? 'var(--paper,#FAF5EB)' : 'var(--surface,#fff)' }}>
-                            <td style={{ padding: '12px 16px', fontSize: 14, fontWeight: 700, color: 'var(--ink,#142950)', whiteSpace: 'nowrap' }}>{p.name}</td>
-                            <td style={{ padding: '12px 16px' }}>
-                              <span style={{ padding: '2px 8px', borderRadius: 100, fontSize: 10, fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', background: p.type === 'airline' ? 'rgba(14,165,233,0.12)' : 'rgba(201,151,46,0.12)', color: p.type === 'airline' ? '#0369a1' : 'var(--copper,#8C5F12)' }}>
-                                {p.type === 'airline' ? '✈ Airline' : '🏨 Hotel'}
-                              </span>
-                            </td>
-                            <td style={{ padding: '12px 16px', fontFamily: 'var(--font-mono,monospace)', fontSize: 13, fontWeight: 700, color: 'var(--ink,#142950)' }}>{p.ratio}</td>
-                            <td style={{ padding: '12px 16px', fontFamily: 'var(--font-mono,monospace)', fontSize: 11, color: 'var(--ink-3,#5A6A8A)', whiteSpace: 'nowrap' }}>{p.timeline}</td>
-                            <td style={{ padding: '12px 16px', fontSize: 13, fontWeight: 700, color: '#2d7a56', whiteSpace: 'nowrap' }}>{p.value}</td>
-                            <td style={{ padding: '12px 16px', fontSize: 12, color: 'var(--ink-2,#2A3F6B)', maxWidth: 220, lineHeight: 1.5 }}>{p.sweet_spot}</td>
-                            <td style={{ padding: '12px 16px', fontSize: 13, color: 'var(--copper-3,#D89B2A)', whiteSpace: 'nowrap' }}>{STARS(p.rating)}</td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
+  const routes = useMemo(() => {
+    if (!from || !toSlug) return [];
+    // Reverse enumerates FOR the target miles; forward enumerates once (route set is
+    // amount-independent) then orders by miles received.
+    const milesNeeded = direction === 'reverse' ? amount : 1;
+    if (!(milesNeeded > 0)) return [];
+    const rs = findTransferRoutes(
+      TRANSFER_EDGES,
+      from.slug,
+      toSlug,
+      milesNeeded,
+      from.matchedCardName ? { cardName: from.matchedCardName } : undefined,
+    );
+    return direction === 'forward'
+      ? [...rs].sort((x, y) => milesReceivedFor(y, amount) - milesReceivedFor(x, amount))
+      : rs;
+  }, [from, toSlug, amount, direction]);
 
-                  {/* Partners stack — mobile (<768px). Each partner is a stacked card:
-                      name (+ rating), then type badge + ratio on one line, then the
-                      remaining fields. No table, no horizontal scroll, nothing clipped. */}
-                  <div className="tp-stack">
-                    {bank.partners.map((p, pi) => (
-                      <div key={pi} style={{ padding: '14px 20px', borderTop: pi > 0 ? '1px solid var(--line,rgba(20,41,80,0.06))' : 'none', background: pi % 2 === 0 ? 'var(--paper,#FAF5EB)' : 'var(--surface,#fff)' }}>
-                        {/* Line 1 — partner name + rating */}
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', gap: 10 }}>
-                          <span style={{ fontSize: 15, fontWeight: 700, color: 'var(--ink,#142950)' }}>{p.name}</span>
-                          <span style={{ fontSize: 12, color: 'var(--copper-3,#D89B2A)', whiteSpace: 'nowrap', flexShrink: 0 }}>{STARS(p.rating)}</span>
-                        </div>
-                        {/* Line 2 — type badge + ratio (both fully visible, no wrap) */}
-                        <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginTop: 6 }}>
-                          <span style={{ padding: '2px 8px', borderRadius: 100, fontSize: 10, fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', whiteSpace: 'nowrap', background: p.type === 'airline' ? 'rgba(14,165,233,0.12)' : 'rgba(201,151,46,0.12)', color: p.type === 'airline' ? '#0369a1' : 'var(--copper,#8C5F12)' }}>
-                            {p.type === 'airline' ? '✈ Airline' : '🏨 Hotel'}
-                          </span>
-                          <span style={{ fontFamily: 'var(--font-mono,monospace)', fontSize: 13, fontWeight: 700, color: 'var(--ink,#142950)' }}>{p.ratio}</span>
-                        </div>
-                        {/* Value + timeline */}
-                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px 20px', marginTop: 8 }}>
-                          <span style={{ fontSize: 12 }}><span style={{ color: 'var(--ink-3,#5A6A8A)' }}>Value </span><span style={{ fontWeight: 700, color: '#2d7a56' }}>{p.value}</span></span>
-                          <span style={{ fontSize: 12 }}><span style={{ color: 'var(--ink-3,#5A6A8A)' }}>Timeline </span><span style={{ fontFamily: 'var(--font-mono,monospace)', color: 'var(--ink-2,#2A3F6B)' }}>{p.timeline}</span></span>
-                        </div>
-                        {/* Sweet spot — wraps full width */}
-                        <div style={{ fontSize: 12, color: 'var(--ink-2,#2A3F6B)', lineHeight: 1.5, marginTop: 6 }}>{p.sweet_spot}</div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </Reveal>
+  const holds = from?.wallet ? from.balance ?? 0 : null;
+  const revNeed = direction === 'reverse' ? routes[0]?.pointsRequired ?? null : null;
+  const revShort = holds != null && revNeed != null ? Math.max(0, revNeed - holds) : 0;
+  const fwdBestMiles = direction === 'forward' && routes.length ? milesReceivedFor(routes[0], amount) : 0;
+
+  return (
+    <div className="fp-root">
+      <h1 className="fp-title">Transfer calculator</h1>
+      <p className="fp-sub">
+        See what your points become — the real miles after the ratio and any transfer
+        minimum, the days, the provenance, and where there’s no route rather than a
+        guessed ratio.
+      </p>
+
+      {/* direction toggle */}
+      <div className="fp-filters" role="group" aria-label="Direction">
+        <button className="fp-chip" aria-pressed={direction === 'forward'} onClick={() => switchDirection('forward')}>
+          Points → miles
+        </button>
+        <button className="fp-chip" aria-pressed={direction === 'reverse'} onClick={() => switchDirection('reverse')}>
+          Miles → cost
+        </button>
+      </div>
+
+      {/* CONTROLS — one frame */}
+      <div className="fp-search fp-tc-controls">
+        <div className="fp-fld wide">
+          <label className="fp-fld-label" htmlFor="tc-from">From</label>
+          <select id="tc-from" className="fp-fld-val" value={fromKey} onChange={(e) => onFromChange(e.target.value)}>
+            {walletFrom.length > 0 && (
+              <optgroup label="Your cards">
+                {walletFrom.map((o) => (
+                  <option key={o.key} value={o.key}>
+                    {o.label} · {(o.balance ?? 0).toLocaleString('en-IN')} pts
+                  </option>
+                ))}
+              </optgroup>
+            )}
+            <optgroup label="All currencies">
+              {GENERIC_FROM.map((o) => (
+                <option key={o.key} value={o.key}>{o.label}</option>
+              ))}
+            </optgroup>
+          </select>
+        </div>
+
+        <div className="fp-fld wide">
+          <label className="fp-fld-label" htmlFor="tc-to">To programme</label>
+          <select id="tc-to" className="fp-fld-val" value={toSlug} onChange={(e) => setToSlug(e.target.value)}>
+            {TO_PROGRAMMES.map((p) => (
+              <option key={p.slug} value={p.slug}>{p.label}</option>
             ))}
+          </select>
+        </div>
 
-            {/* Key rules */}
-            <Reveal>
-              <div style={{ background: 'var(--navy,#142950)', borderRadius: 20, padding: 'clamp(24px,4vw,40px)', position: 'relative', overflow: 'hidden' }}>
-                <div className="aurora" style={{ top: -40, right: -40, width: 300, height: 300, background: 'radial-gradient(circle,rgba(212,163,115,0.18),transparent 60%)' }} />
-                <div style={{ position: 'relative', zIndex: 2 }}>
-                  <h2 style={{ fontSize: 'clamp(18px,2.5vw,24px)', fontWeight: 700, color: '#fff', margin: '0 0 20px', letterSpacing: '-0.01em' }}>
-                    5 rules before you transfer
-                  </h2>
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-                    {[
-                      ['Never transfer speculatively', 'Only transfer when you have confirmed award space. Transfers are one-way and irreversible. Seats disappear — miles don\'t return.'],
-                      ['Check award availability first', 'Search the airline\'s website for availability before transferring. For partner awards, call the airline directly.'],
-                      ['Wait for transfer bonuses', 'Banks run 20-30% transfer bonus promotions 2-4x per year. Waiting can be worth thousands of extra miles.'],
-                      ['HDFC 1:1 to KrisFlyer beats Axis 1.33:1', 'To earn 1 KrisFlyer mile, you need 1 HDFC Reward Point or 1.33 Axis EDGE Miles. HDFC is more efficient for KrisFlyer specifically.'],
-                      ['Transfers take 24-96 hours', 'Airlines credit instantly sometimes, sometimes up to 5 days. Factor this in for time-sensitive bookings.'],
-                    ].map(([title, desc]) => (
-                      <div key={title as string} style={{ display: 'flex', gap: 12, alignItems: 'flex-start' }}>
-                        <div style={{ width: 6, height: 6, borderRadius: '50%', background: 'var(--copper-3,#D89B2A)', flexShrink: 0, marginTop: 7 }} />
-                        <div>
-                          <span style={{ fontSize: 14, fontWeight: 700, color: '#fff' }}>{title}: </span>
-                          <span style={{ fontSize: 14, color: 'rgba(255,255,255,0.6)', lineHeight: 1.65 }}>{desc}</span>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                  <div style={{ marginTop: 24 }}>
-                    <Link href="/points-optimizer" style={{ display: 'inline-block', background: 'var(--copper-3,#D89B2A)', color: '#fff', padding: '12px 24px', borderRadius: 10, fontWeight: 700, fontSize: 14, textDecoration: 'none' }}>
-                      Optimise my points →
-                    </Link>
-                  </div>
-                </div>
-              </div>
-            </Reveal>
-          </div>
-      <DesignFooter />
-    </>
+        <div className="fp-fld wide">
+          <label className="fp-fld-label" htmlFor="tc-amount">
+            {direction === 'forward' ? 'Points to transfer' : 'Miles you need'}
+          </label>
+          <input
+            id="tc-amount"
+            type="number"
+            min={0}
+            step={1000}
+            className="fp-fld-val fp-mono"
+            value={amount || ''}
+            onChange={(e) => setAmount(Math.max(0, Number(e.target.value) || 0))}
+          />
+        </div>
+      </div>
+
+      {/* balance context — the wallet way (verified / self-entered) */}
+      {from?.wallet && (
+        <p className="fp-tc-balance">
+          You hold <b className="fp-mono">{(from.balance ?? 0).toLocaleString('en-IN')}</b> in {from.label}{' '}
+          <span className={`fp-pill ${from.selfEntered ? 'self' : 'wallet'}`}>
+            {from.selfEntered ? 'Self-entered' : 'In wallet'}
+          </span>
+        </p>
+      )}
+
+      {/* RESULT — one frame; the shared Ladder sits inside it */}
+      {loadingCards && !from ? (
+        <div className="fp-empty" style={{ marginTop: 18 }}>Loading your cards…</div>
+      ) : routes.length ? (
+        <div className="fp-result">
+          {direction === 'forward' ? (
+            <p className="fp-tc-afford">
+              {amount > 0 ? (
+                <><b className="fp-mono">{amount.toLocaleString('en-IN')}</b> {from?.label ?? 'points'} become up to{' '}
+                  <b className="fp-mono">{fwdBestMiles.toLocaleString('en-IN')}</b> {toLabel} miles on the best route
+                  {from?.selfEntered && ' (based on the balance you entered)'}.</>
+              ) : (
+                'Enter the points you want to transfer.'
+              )}
+            </p>
+          ) : holds != null && revNeed != null ? (
+            <p className="fp-tc-afford">
+              {revShort > 0 ? (
+                <>Best route needs <b className="fp-mono">{revNeed.toLocaleString('en-IN')}</b> — you’re{' '}
+                  <b className="fp-mono">{revShort.toLocaleString('en-IN')} short</b>.
+                  {from?.selfEntered && ' Based on the balance you entered.'}</>
+              ) : (
+                <>Your balance covers the best route (<b className="fp-mono">{revNeed.toLocaleString('en-IN')}</b> needed).</>
+              )}
+            </p>
+          ) : null}
+          <Ladder
+            routes={routes}
+            cardName={from?.label ?? 'Your points'}
+            programme={toLabel}
+            receive={direction === 'forward' ? amount : undefined}
+          />
+        </div>
+      ) : from ? (
+        <div className="fp-empty" style={{ marginTop: 18 }}>
+          No known route from {from.label} into {toLabel}. We won’t guess a ratio — a
+          route only appears here once it’s in the transfer graph with a source and a state.
+        </div>
+      ) : null}
+    </div>
   );
 }

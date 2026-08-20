@@ -20,8 +20,8 @@ const PROGRAM_TO_SOURCE: Record<string, string> = {
 
 export interface SeatsAeroResult {
   available: boolean;
-  mileageCost: number;       // J (business) mileage cost
-  remainingSeats: number;    // J remaining seats
+  mileageCost: number;       // mileage cost for the SEARCHED cabin (primary)
+  remainingSeats: number;    // remaining seats for the searched cabin
   airlines: string;          // e.g. "SQ"
   isDirect: boolean;
   source: string;            // e.g. "krisflyer"
@@ -30,6 +30,12 @@ export interface SeatsAeroResult {
   originAirport: string;
   destinationAirport: string;
   dataSource: 'seats.aero (live)' | 'estimated';
+  // Both cabins carried alongside the searched one — the cached-search item holds
+  // Y and J costs together, so we surface both rather than discard the other cabin
+  // (lets a single fusion call show economy AND business on one row). 0 = that
+  // cabin not priced/available on this record.
+  yMileageCost: number;      // economy mileage cost
+  jMileageCost: number;      // business mileage cost
 }
 
 // Per-flight detail for ONE availability record. The cached-search endpoint does
@@ -135,6 +141,9 @@ export async function searchAwardAvailability(
           originAirport: item.Route?.OriginAirport || item.OriginAirport || '',
           destinationAirport: item.Route?.DestinationAirport || item.DestinationAirport || '',
           dataSource: 'seats.aero (live)',
+          // Both cabins from the same record (0 when that cabin isn't priced here).
+          yMileageCost: parseInt(item.YMileageCost || '0') || 0,
+          jMileageCost: parseInt(item.JMileageCost || '0') || 0,
         });
       }
     }

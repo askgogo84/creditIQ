@@ -114,7 +114,7 @@ export const SECTION_TABS: Record<string, SectionTab[]> = {
     { label: 'Points Optimizer', href: '/points-optimizer', Icon: Star },
   ],
   travel: [
-    { label: 'Trip Planner', href: '/trip-planner', Icon: Map },
+    { label: 'Fly on Points', href: '/trip-planner', Icon: Map },
     { label: 'Ask AI', href: '/travel', Icon: Sparkles },
     { label: 'Sweet Spots', href: '/sweet-spots', Icon: Target },
     { label: 'Transfer Partners', href: '/transfer-partners', Icon: ArrowLeftRight },
