@@ -1,20 +1,27 @@
 'use client';
 
-// Fly on Points board (NEW route; /trip-planner swap is Phase 5). Builds the
-// approved mockup at docs/travel-redesign/travel-redesign-mockup.html against real
-// /api/flights/fusion data.
+// Fly on Points board — the Travel section's primary surface, served at
+// /trip-planner (Phase 5 swap; the AI planner is retired, free-text lives on the
+// Ask AI tab). Builds the approved mockup at docs/travel-redesign/
+// travel-redesign-mockup.html against real /api/flights/fusion data.
 //
 // Deliberate deviation from the mockup: no determinate progress bar. Fusion is ONE
 // blocking call; a per-programme bar would be the fake progress we are removing.
 //
-// Phase 4: each row is a real disclosure control (one open at a time). The inline
-// detail carries three blocks — cost by cabin, points-vs-cash (cash fetched live on
+// The row is a real disclosure control (one open at a time). The inline detail
+// carries three blocks — cost by cabin, points-vs-cash (cash fetched live on
 // demand), and the transfer ladder — plus one Book action and the irreversible-
 // transfer warning. Not-priced rows expand into an honest "why not" block.
+//
+// Inbound deep links land here: ?q=Trip to <city> prefills the destination;
+// ?points=/&bank= (legacy planner params) are harmless no-ops — the board prices
+// from the user's actual wallet cards, not a typed points total.
 
 import { useMemo, useState } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { authedFetch } from '@/lib/authed-fetch';
 import { AirportSelect, labelFor } from '@/components/ciq/fly-points/AirportSelect';
+import { detectIataFromText } from '@/components/design/FlightSearch';
 import type { RedemptionOption, CabinBest } from '@/lib/fusion-core';
 import type { Route } from '@/lib/transfer-ladder';
 import { describeDuration } from '@/lib/transfer-ladder';
@@ -153,9 +160,14 @@ function fmtTaxes(trip: AwardView['trip']): string {
   return `+ ${sym}${amount.toLocaleString('en-IN')} taxes`;
 }
 
-export default function FlyPointsPage() {
+export function Board() {
+  const params = useSearchParams();
+  // ?q=Trip to <city> (from /explore etc.) prefills the destination. No city match
+  // -> default DXB. ?points=/&bank= are ignored: the board prices from wallet cards.
+  const qTo = detectIataFromText(params.get('q') || '') || 'DXB';
+
   const [from, setFrom] = useState('BLR');
-  const [to, setTo] = useState('DXB');
+  const [to, setTo] = useState(qTo);
   const [date, setDate] = useState(isoPlusDays(21));
   const [flex, setFlex] = useState(3);
   const [cabin, setCabin] = useState<BandCabin>('all');

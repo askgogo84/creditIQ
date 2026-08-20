@@ -68,7 +68,7 @@ export const APP_NAV: AppNavItem[] = [
     Icon: Plane,
     // Travel AI = the search itself; Sweet Spots / Transfer Partners / Lounges /
     // Trip Planner = tabs & modes within Travel (IA §3).
-    match: p => p.startsWith('/trip-planner') || p.startsWith('/fly-points') || p.startsWith('/travel') || p.startsWith('/flights') || p.startsWith('/lounge-tracker') || p.startsWith('/sweet-spots') || p.startsWith('/transfer-partners'),
+    match: p => p.startsWith('/trip-planner') || p.startsWith('/travel') || p.startsWith('/flights') || p.startsWith('/lounge-tracker') || p.startsWith('/sweet-spots') || p.startsWith('/transfer-partners'),
   },
   {
     key: 'cards', label: 'Cards', href: '/cards',
@@ -114,7 +114,7 @@ export const SECTION_TABS: Record<string, SectionTab[]> = {
     { label: 'Points Optimizer', href: '/points-optimizer', Icon: Star },
   ],
   travel: [
-    { label: 'Trip Planner', href: '/trip-planner', Icon: Map },
+    { label: 'Fly on Points', href: '/trip-planner', Icon: Map },
     { label: 'Ask AI', href: '/travel', Icon: Sparkles },
     { label: 'Sweet Spots', href: '/sweet-spots', Icon: Target },
     { label: 'Transfer Partners', href: '/transfer-partners', Icon: ArrowLeftRight },
