@@ -14,11 +14,37 @@ import { resolveCardCurrency } from '@/lib/transfer-map';
 import { findTransferRoutes, type Route } from '@/lib/transfer-ladder';
 import { TRANSFER_EDGES } from '@/lib/data/transfer-graph';
 
-// Human labels for the canonical seats.aero source slugs we support.
+// Human labels for seats.aero source slugs. DISPLAY ONLY — the slug itself
+// (award.source) is what drives transfer-route lookup, and is never derived from
+// this map. Any slug not listed falls back to the raw slug (honest: a visible
+// unknown, not a fabricated name). Covers every source the live cached-search
+// returns for our routes; extend as new sources appear.
 const SOURCE_PROGRAM_LABEL: Record<string, string> = {
   singapore: 'Singapore Airlines KrisFlyer',
   'air-india': 'Air India',
   ba: 'British Airways Avios',
+  united: 'United MileagePlus',
+  aeroplan: 'Air Canada Aeroplan',
+  alaska: 'Alaska Atmos Rewards',
+  velocity: 'Virgin Australia Velocity',
+  aadvantage: 'American AAdvantage',
+  delta: 'Delta SkyMiles',
+  emirates: 'Emirates Skywards',
+  etihad: 'Etihad Guest',
+  flyingblue: 'Air France-KLM Flying Blue',
+  virginatlantic: 'Virgin Atlantic Flying Club',
+  jetblue: 'JetBlue TrueBlue',
+  lifemiles: 'Avianca LifeMiles',
+  qantas: 'Qantas Frequent Flyer',
+  turkish: 'Turkish Miles&Smiles',
+  qatar: 'Qatar Privilege Club',
+  saudia: 'Saudia AlFursan',
+  smiles: 'GOL Smiles',
+  connectmiles: 'Copa ConnectMiles',
+  azul: 'Azul TudoAzul',
+  ethiopian: 'Ethiopian ShebaMiles',
+  eurobonus: 'SAS EuroBonus',
+  finnair: 'Finnair Plus',
 };
 export function programLabel(source: string): string {
   return SOURCE_PROGRAM_LABEL[source] || source;

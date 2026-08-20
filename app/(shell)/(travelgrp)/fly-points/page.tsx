@@ -364,6 +364,10 @@ function ResultRow({ row }: { row: FusionRow }) {
   const econ = fmtMiles(a.economyMiles);
   const biz = fmtMiles(a.businessMiles);
   const best = pickDisplayOption(row.redemption);
+  // Shortfall = what the transfer needs minus what the card holds. 03-APP-FLOW:
+  // the row still shows, with the gap named. yourPoints is the display card's balance.
+  const need = best?.cardPointsNeeded ?? 0;
+  const shortfall = best ? Math.max(0, need - (best.yourPoints ?? 0)) : 0;
 
   return (
     <button className="fp-row" aria-expanded="false">
@@ -384,10 +388,18 @@ function ResultRow({ row }: { row: FusionRow }) {
         <div>Business<b className={`fp-mono${biz ? '' : ' none'}`}>{biz || '—'}</b></div>
       </div>
 
-      {/* you pay — the ladder's pointsRequired, or the honest no-route line */}
+      {/* you pay — the ladder's pointsRequired + shortfall, or the honest no-route line */}
       {best && best.cardPointsNeeded != null ? (
         <div className="fp-cost">
-          <b className="fp-mono">{best.cardPointsNeeded.toLocaleString('en-IN')} pts</b>
+          <div className="fp-payline">
+            <b className="fp-mono">{need.toLocaleString('en-IN')} pts</b>
+            {shortfall > 0 && (
+              <span className="fp-short fp-mono"> · {shortfall.toLocaleString('en-IN')} short</span>
+            )}
+          </div>
+          {shortfall > 0 && best.selfEntered && (
+            <div className="fp-short-note">based on the balance you entered</div>
+          )}
           {fmtTaxes(a.trip) && <span className="fp-tax fp-mono">{fmtTaxes(a.trip)}</span>}
           <div className="fp-card">
             {best.cardName}{' '}
