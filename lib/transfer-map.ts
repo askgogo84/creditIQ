@@ -185,6 +185,17 @@ function sameBank(a: string, b: string): boolean {
 // token-overlap matching so only the DISTINCTIVE brand token (e.g. "infinia",
 // "regalia", "magnus", "atlas") drives a match. Bank tokens are here too: the
 // `bank` field already carries the issuer, so its name-token is noise here.
+//
+// ⚠ UNVERIFIED ASSERTION, NOT A DESIGN CHOICE: dropping 'metal' and 'edition'
+// here makes the matcher treat "Infinia" and "HDFC Infinia Metal Edition" as ONE
+// card. That is the INVERSE of the tier-mismatch bug the subset guard below
+// fixes — instead of ADDING a distinguishing token, we DELETE one. The catalogue
+// inclusion/verification spec found the Infinia / Infinia Metal Edition pair
+// INDETERMINATE and made that collapse verification-gated; our pricing only keeps
+// working because of that collapse. Removing 'metal'/'edition' now would break a
+// currently-correct Infinia pricing, so they stay — but they are an unverified
+// equivalence claim living in a drop-list, and belong in the catalogue's
+// verified-collapse table, not here.
 const GENERIC_NAME_TOKENS = new Set([
   'credit', 'card', 'cards', 'the', 'edition', 'metal', 'club', 'bank',
   'plus', 'for', 'and', 'signature', 'co', 'branded',
@@ -200,6 +211,20 @@ function significantTokens(name: string): string[] {
     .toLowerCase()
     .split(/[^a-z0-9]+/)
     .filter((t) => t.length >= 3 && !GENERIC_NAME_TOKENS.has(t));
+}
+
+/**
+ * May `seedName` be matched to `inputName` without ASSERTING a tier/variant the
+ * user never typed? True only when every distinctive seed token is present in the
+ * input — i.e. the seed adds no distinguishing token ("gold", "plus", "reserve",
+ * "burgundy"…). This is what stops base "Regalia" resolving to "HDFC Regalia
+ * Gold": the seed's extra "gold" is not in the input, so the match is refused and
+ * the caller honestly returns null. (Input carrying EXTRA tokens beyond the seed
+ * is fine — that resolves a more-specific name to its base catalogue entry.)
+ */
+function seedAddsNoToken(seedName: string, inputName: string): boolean {
+  const inSig = new Set(significantTokens(inputName));
+  return significantTokens(seedName).every((t) => inSig.has(t));
 }
 
 export interface ResolvedCard {
@@ -223,29 +248,35 @@ export function resolveCardCurrency(
   // 1) exact normalized name match
   let match = SEED_CARDS.find((c) => normalize(c.name) === target);
 
-  // 2) conservative containment, guarded by bank agreement + min length
+  // 2) conservative containment, guarded by bank agreement + min length. The
+  // subset guard forbids a match that ADDS a distinguishing token — so base
+  // "Regalia" (contained in "HDFC Regalia Gold") is refused, not upgraded.
   if (!match && target.length >= 5) {
     match = SEED_CARDS.find((c) => {
       const n = normalize(c.name);
       const nameHit = n.includes(target) || target.includes(n);
       const bankHit = !bank || sameBank(c.bank, bank);
-      return nameHit && bankHit;
+      return nameHit && bankHit && seedAddsNoToken(c.name, cardName);
     });
   }
 
   // 3) token-overlap fallback — catches user names that carry extra generic
   // words on BOTH sides (e.g. "Infinia Credit Card" vs "HDFC Infinia Metal
   // Edition"), where containment can't see the shared brand token. Guarded by
-  // bank agreement AND uniqueness: if the tokens match more than one seed card
-  // it is ambiguous, so we return null rather than guess (honesty rule).
+  // bank agreement, the subset rule (seed adds no distinguishing token) AND
+  // uniqueness: more than one candidate is ambiguous, so we return null rather
+  // than guess (honesty rule).
   if (!match) {
     const targetTokens = significantTokens(cardName);
     if (targetTokens.length) {
       const candidates = SEED_CARDS.filter((c) => {
         const bankHit = !bank || sameBank(c.bank, bank);
         if (!bankHit) return false;
-        const seedTokens = new Set(significantTokens(c.name));
-        return targetTokens.some((t) => seedTokens.has(t));
+        const seedTokens = significantTokens(c.name);
+        if (!seedTokens.length) return false;
+        // Every seed token must be in the input (subset) — this both links the
+        // two names and refuses any tier the input didn't carry.
+        return seedAddsNoToken(c.name, cardName) && seedTokens.some((t) => targetTokens.includes(t));
       });
       if (candidates.length === 1) match = candidates[0];
     }
