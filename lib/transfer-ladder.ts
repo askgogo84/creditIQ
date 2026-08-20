@@ -247,3 +247,25 @@ export function describeDuration(route: Route): string {
   const max = route.durationDaysMax as number;
   return min === max ? `${max} days` : `${min}–${max} days`;
 }
+
+/**
+ * FORWARD: how many miles land at the target from `points` in the source currency.
+ * The inverse view of `pointsRequired`, DERIVED from the same route (its hop chain)
+ * — NOT a second engine. Walks each hop in order, first rounding the amount DOWN to
+ * that hop's transfer minimum (you can only send whole increments), then applying
+ * the ratio and truncating (airlines don't credit fractional miles). Returns 0 when
+ * the amount can't clear a hop's minimum — the caller renders "below the N minimum"
+ * rather than a misleading zero.
+ */
+export function milesReceivedFor(route: Route, points: number): number {
+  let amount = Math.max(0, Math.floor(points));
+  for (const hop of route.hops) {
+    if (hop.minTransfer && hop.minTransfer > 0) {
+      amount = Math.floor(amount / hop.minTransfer) * hop.minTransfer; // round DOWN to increment
+    }
+    if (amount <= 0) return 0;
+    const [rf, rt] = hop.ratio;
+    amount = Math.floor((amount * rt) / rf);
+  }
+  return amount;
+}
