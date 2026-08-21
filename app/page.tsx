@@ -11,7 +11,7 @@ import { HeroProof } from '@/components/marketing/landing/HeroProof';
 import { FaresBoard } from '@/components/marketing/landing/FaresBoard';
 import { SEED_CARDS } from '@/lib/data/seed-cards';
 import { getRedemptionOptions } from '@/lib/redemption';
-import { HomeHeroBg } from './HomeHeroBg';
+import { HomeGlobeBg } from './HomeGlobeBg';
 import { HomePointsMedia } from './HomePointsMedia';
 import { AskCiraEntry } from './AskCiraEntry';
 import { SmartCardMatch } from './SmartCardMatch';
@@ -167,6 +167,10 @@ export default function HomePage() {
         <div aria-hidden="true" style={{ position: 'fixed', inset: 0, zIndex: 9999, background: 'var(--bg,#fff)' }} />
       )}
 
+      {/* Hero globe poster — the LCP element of the §01 band. Preloaded so it lands in
+          the first paint; the WebGL engine + texture are code-split and load after. */}
+      <link rel="preload" as="image" href="/globe/globe-poster.jpg" fetchPriority="high" />
+
       {/* Type A fonts — Fraunces (display, roman only) · Inter (body) · JetBrains Mono (figures) */}
       <link rel="preconnect" href="https://fonts.googleapis.com" />
       <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
@@ -205,12 +209,13 @@ export default function HomePage() {
         </div>
 
         <SpendProvider>
-          {/* ── 01 · HERO (full-bleed dark; the clip is the background of the whole
-              section, copy + slider + proof card sit ON it — matches /landing). The
-              rest of the page stays white/cream/teal; dark hero above a light body is
-              intentional. HomeHeroBg carries the clip + scrim at z-index 0. ── */}
+          {/* ── 01 · HERO (full-bleed dark; the WebGL earth-night globe is the background
+              of the whole section, copy + slider + proof card sit ON it). The rest of the
+              page stays white/cream/teal; dark hero above a light body is intentional —
+              earth-night needs the dark band. HomeGlobeBg carries the poster + globe +
+              scrim at z-index 0 (poster-first; 3D hydrates desktop/good-connection only). ── */}
           <div className={cx('hm-hero')}>
-            <HomeHeroBg />
+            <HomeGlobeBg />
             <div className={cx('hm-wrap', 'hm-herogrid')}>
               <div>
                 <div className={cx('hm-kicker')}>Live<span className={cx('hm-rule')} />India</div>
