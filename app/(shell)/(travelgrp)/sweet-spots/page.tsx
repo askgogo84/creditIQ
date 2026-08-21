@@ -22,7 +22,6 @@ export default async function SweetSpotsPage() {
     .select('id, insight_type, title, content, creator_handle, card_mentions, trust_score, source, source_url, scraped_at')
     .eq('active', true)
     .in('insight_type', ['sweet_spot', 'transfer_hack'])
-    .order('trust_score', { ascending: false })
     .order('scraped_at', { ascending: false })
     .limit(30)
 
@@ -62,8 +61,10 @@ export default async function SweetSpotsPage() {
                       {spot.card_mentions?.slice(0, 3).map((c: string, j: number) => (
                         <span key={j} style={{ fontSize: 11, padding: '2px 8px', borderRadius: 4, background: 'rgba(124,58,237,0.08)', color: '#7c3aed', fontWeight: 600 }}>{c}</span>
                       ))}
-                      {spot.creator_handle && <span style={{ fontSize: 11, color: 'var(--ink-3,#5A6A8A)' }}>via @{spot.creator_handle}</span>}
-                      {spot.source_url && <a href={spot.source_url} target="_blank" rel="noopener noreferrer" style={{ fontSize: 12, color: '#0369a1', marginLeft: 'auto', textDecoration: 'none' }}>Source &rarr;</a>}
+                      {/* Discovery is not provenance (§13): a creator handle / post URL never sits in a
+                          Source position on Sweet Spots. Until a claim is verified against the programme's
+                          own award chart, it carries no source line — the panel disclaimer marks it as an
+                          unverified community claim. Verified rates + chart citations land here in Track 2. */}
                     </div>
                   </div>
                 ))}
@@ -86,8 +87,10 @@ export default async function SweetSpotsPage() {
                       {spot.card_mentions?.slice(0, 3).map((c: string, j: number) => (
                         <span key={j} style={{ fontSize: 11, padding: '2px 8px', borderRadius: 4, background: 'rgba(22,163,74,0.08)', color: '#16a34a', fontWeight: 600 }}>{c}</span>
                       ))}
-                      {spot.creator_handle && <span style={{ fontSize: 11, color: 'var(--ink-3,#5A6A8A)' }}>via @{spot.creator_handle}</span>}
-                      {spot.source_url && <a href={spot.source_url} target="_blank" rel="noopener noreferrer" style={{ fontSize: 12, color: '#0369a1', marginLeft: 'auto', textDecoration: 'none' }}>Source &rarr;</a>}
+                      {/* Discovery is not provenance (§13): a creator handle / post URL never sits in a
+                          Source position on Sweet Spots. Until a claim is verified against the programme's
+                          own award chart, it carries no source line — the panel disclaimer marks it as an
+                          unverified community claim. Verified rates + chart citations land here in Track 2. */}
                     </div>
                   </div>
                 ))}

@@ -217,3 +217,69 @@ re-sourcing now.) The judgement list reuses the §8c demand ordering:
 it lifts for a *surface* when every card at or above its visible cut is re-sourced. When the full held set
 (Tiers 1–2) is re-sourced and `iq_score` is recomputed under §8b, every Group-1 surface shows a complete,
 honest ordering and this section is retired.
+
+## 12. Issuer evidence log — HDFC Infinia/Diners collapse (2026-08-20)
+
+**Source:** HDFC SmartBuy Savings Calculator — `https://offers.reward360.in/v1/savings_calculator`
+(61 captured rows, zero variance). Feeds the §2 verification-gated collapse rule for the four `disputed`
+HDFC Infinia/Diners rows.
+
+**Finding — the two pairs resolve in OPPOSITE directions, on the issuer's own data:**
+- **Infinia vs Infinia Metal Edition — IDENTICAL** across all six SmartBuy earn categories. Issuer evidence
+  that the pair is a cosmetic (material-only) variant → **collapse candidate** under §2: one canonical record
+  + `variant`, *once the six core terms (§2) are also `verified`-equal.* This note supplies the earn-category
+  half of that evidence; the fee/waiver/lounge/milestone half still needs the same source treatment before the merge.
+- **Diners Club Black vs Diners Club Black Metal Edition — DIFFERENT** in all six categories, in **both**
+  directions (each wins some, loses others). Issuer evidence that these are **distinct products** → **keep as
+  two records** under §2 (`verified`-different ⇒ never collapse); collapsing them would break statement-matching
+  for holders of either form.
+
+**Caveat — value ≠ earn.** All four cards return the same per-point *redemption value* ceiling (Rs 1.00/pt) in
+the same calculator (recorded in `lib/data/point-values.ts`). Equal redemption value does **not** imply equal
+earn structure — the collapse decision rides on the six earn categories above, not on the shared Rs 1.00 value.
+
+**Status:** evidence filed, not acted on. No row is merged or split until the §2 six-core-terms gate is run
+against this and the fee/benefit sources.
+
+## 13. Discovery gate — a creator tells us where to look, not what is true (DRAFT)
+
+**The load-bearing distinction: DISCOVERY and PROVENANCE are different fields and must never collapse into
+one.** A creator (Instagram/YouTube/Reddit handle) is a *demand signal* — evidence that a redemption is worth
+checking. The programme's own award chart / issuer page is *provenance* — evidence of what the number is. The
+first tells us **where to look**; the second tells us **what is true**. Conflating them is how an unverified
+claim inherits a source's authority. This section forbids the collapse at the schema level.
+
+### 13a. `source` is reserved; discovery gets its own field
+- **`source` + `asOf` keep exactly the meaning they carry in `lib/data/point-values.ts` and
+  `lib/data/transfer-graph.ts`: a PRIMARY DOCUMENT** — the programme's award chart, the issuer's own page, or
+  a user's statement — plus the date it was read. A field is `verified` (green-eligible) only when `source`
+  points at such a document, per §6. **A creator handle or a social post URL is NEVER a valid `source`.**
+- **Discovery is a separate field — `discovered_via = { handle, platform, url, seen_at }`** — carrying who
+  surfaced the lead and when. It is INTERNAL queue metadata. It **can never be rendered in a position where a
+  `source` belongs** — no "Source →" link, no "via @handle" byline that implies the creator vouches for the
+  number. The creator is how we found it; the creator is not why it's true.
+- **Schema debt this creates (see reconcile plan):** the live `intelligence_kb.source` column holds the
+  *platform we scraped* (`'youtube'|'reddit'|'instagram'`) and `source_url` holds the *creator's post*. That
+  column is a discovery field wearing the reserved name. It must be renamed (`discovery_platform`) so the word
+  `source` can only ever mean a primary document, here as everywhere else.
+
+### 13b. The lead queue and the gate
+- A named property or redemption enters a **queue as a LEAD** — `discovered_via` populated, `source` NULL,
+  state `lead`. A lead is NOT a Sweet Spot and does not publish.
+- A lead becomes a Sweet Spot **only** when someone checks the programme's own award chart, records a real
+  `source` + `asOf`, and the rate is stated as a field per §6 — **the same gate as every other number in this
+  spec.** No shortcut, no "creator trust" substitute for reading the chart.
+- **An unverified lead does not appear on any public surface — not behind a disclaimer, not greyed, absent.**
+  (Per §8/§11a's principle: honesty is achieved by withholding a claim we can't stand behind, not by labelling
+  it. A disclaimer on a published unverified claim is the pattern this section retires.) Sweet Spots gets
+  SMALLER before it gets bigger: it becomes a list of programme-verified redemptions only, and the creator
+  stream becomes an internal verification queue.
+
+### 13c. No popularity proxy for truth
+Engagement (subscribers, upvotes, likes) is a **demand signal** — legitimate input to *which leads to verify
+first*, and nothing more. It **must not be rendered, stored, or named as a measure of correctness** (no
+`trust_score`). A redemption is `verified` against a primary source or it is a `lead`; there is no "0.7 true."
+Consensus among creators raises priority, never provenance — a repeated rumour is still a rumour.
+
+**Status:** DRAFT — approve before build. Lands BEFORE any Accor/hotel redemption content enters Sweet Spots,
+so hotel award-chart claims arrive through the gate rather than inheriting the current source-slot leak.

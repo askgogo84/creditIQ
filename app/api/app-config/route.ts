@@ -13,7 +13,7 @@ export async function GET() {
     // Fetch latest intelligence for home feed
     const { data: intel } = await supabase
       .from('intelligence_kb')
-      .select('id, source, creator_handle, title, content, insight_type, trust_score, card_mentions')
+      .select('id, source, creator_handle, title, content, insight_type, card_mentions')
       .eq('active', true)
       .order('scraped_at', { ascending: false })
       .limit(10)

@@ -95,10 +95,10 @@ export function WhatCreatorsSay({ cardSlug }: { cardSlug: string }) {
               <p style={{ fontSize: 14, color: 'var(--ink-2)', lineHeight: 1.6, margin: 0 }}>
                 {item.content}
               </p>
-              <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 10 }}>
-                <span style={{ fontSize: 11, color: 'var(--ink-3)' }}>
-                  Trust score: {Math.round((item.trust_score || 0.5) * 100)}%
-                </span>
+              {/* No "Trust score: N%" — that rendered a popularity figure (subs/upvotes/likes) as a
+                  measured confidence, inventing "50%" for rows missing it. Attribution (the @handle above)
+                  is honest; a fabricated trust rate is not. The @handle stays; the fake statistic goes. */}
+              <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: 10 }}>
                 <span style={{ fontSize: 11, color: 'var(--ink-3)' }}>
                   {new Date(item.published_at).toLocaleDateString('en-IN')}
                 </span>

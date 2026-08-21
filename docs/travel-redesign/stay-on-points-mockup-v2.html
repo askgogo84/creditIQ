@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Stay on Points v2 — cards + globe</title>
+<style>
+:root{
+  --paper:#FBF9F5; --card:#FFFFFF; --ink-1:#16263B; --ink-2:#4A5A6E; --ink-3:#8A97A6;
+  --rule:#E4E0D8; --gold:#B0812F; --gold-soft:#F4EBD9;
+  --ok-bg:#E4EFE6; --ok-ink:#245B33;
+  --flat-bg:#F1EFEA; --flat-ink:#5A5344;
+  --none-bg:#F4F2EE; --none-ink:#8A97A6;
+  --warn-line:#DEC489;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--paper);color:var(--ink-1);font-size:15px;line-height:1.5;
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  -webkit-font-smoothing:antialiased}
+.mono{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-variant-numeric:tabular-nums}
+.wrap{max-width:1180px;margin:0 auto;padding:18px 16px 70px}
+
+.viewtoggle{display:flex;gap:6px;margin-bottom:18px}
+.vt{padding:8px 16px;border:1px solid var(--rule);background:var(--card);border-radius:999px;
+  font-family:inherit;font-size:13.5px;cursor:pointer;color:var(--ink-2)}
+.vt[aria-pressed="true"]{background:var(--ink-1);color:#fff;border-color:var(--ink-1);font-weight:600}
+
+h1{font-size:28px;margin:0 0 6px;font-weight:600;letter-spacing:-.02em}
+.sub{color:var(--ink-2);margin:0 0 18px;max-width:60ch}
+
+.band{background:var(--card);border:1px solid var(--rule);border-radius:12px;padding:13px 16px;
+  display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:12px}
+.edit{color:var(--gold);font-weight:600;background:none;border:none;font-family:inherit;font-size:14px;cursor:pointer}
+.chips{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:16px}
+.chip{padding:7px 14px;border-radius:999px;border:1px solid var(--rule);background:var(--card);
+  font-size:13.5px;color:var(--ink-2);cursor:pointer;font-family:inherit}
+.chip[aria-pressed="true"]{background:var(--ink-1);color:#fff;border-color:var(--ink-1);font-weight:600}
+.count{color:var(--ink-2);font-size:14px;margin-bottom:14px}
+
+/* ---- split layout ---- */
+.split{display:grid;grid-template-columns:1fr;gap:20px}
+@media(min-width:900px){.split{grid-template-columns:1.15fr .85fr;align-items:start}}
+
+.grid{display:grid;grid-template-columns:1fr;gap:16px}
+@media(min-width:560px){.grid{grid-template-columns:1fr 1fr}}
+
+.hcard{background:var(--card);border:1px solid var(--rule);border-radius:14px;overflow:hidden;
+  cursor:pointer;text-align:left;font-family:inherit;font-size:inherit;color:inherit;padding:0;
+  display:flex;flex-direction:column}
+.hcard:hover{border-color:var(--ink-3)}
+.hcard:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
+.ph{position:relative;aspect-ratio:4/3;background:
+  repeating-linear-gradient(135deg,#EFEBE3 0 12px,#F5F2EC 12px 24px);
+  display:flex;align-items:center;justify-content:center}
+.phtext{color:var(--ink-3);font-size:11.5px;letter-spacing:.08em;text-transform:uppercase;text-align:center;padding:0 14px}
+.badge{position:absolute;top:10px;left:10px;font-size:11px;font-weight:700;letter-spacing:.04em;
+  padding:5px 9px;border-radius:6px}
+.b-ok{background:var(--ok-bg);color:var(--ok-ink)}
+.b-flat{background:var(--flat-bg);color:var(--flat-ink)}
+.b-none{background:var(--none-bg);color:var(--none-ink)}
+.body{padding:13px 14px 15px;flex:1;display:flex;flex-direction:column}
+.hname{font-weight:600;font-size:15.5px;line-height:1.3}
+.hmeta{color:var(--ink-2);font-size:13px;margin-top:3px}
+.prices{margin-top:11px;padding-top:11px;border-top:1px solid var(--rule)}
+.ppts{font-size:15px;font-weight:600}
+.pcash{color:var(--ink-2);font-size:13.5px;margin-top:2px}
+.yours{margin-top:9px;font-size:13.5px}
+.yours b{font-weight:700}
+.dim{color:var(--ink-3)}
+
+/* ---- globe ---- */
+.stage{background:var(--card);border:1px solid var(--rule);border-radius:14px;padding:18px;
+  position:sticky;top:16px}
+canvas{display:block;width:100%;height:auto;border-radius:10px;background:#FCFAF6}
+.legend{margin-top:14px;font-size:13px;color:var(--ink-2)}
+.legend .k{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:6px;vertical-align:middle}
+
+/* ---- searching view ---- */
+.searching{display:none;text-align:center;padding:30px 0 10px}
+.searching.on{display:block}
+.results.off{display:none}
+.searchline{font-size:19px;font-weight:600;margin-top:22px;min-height:28px}
+.searchsub{color:var(--ink-2);font-size:14px;margin-top:6px}
+.ticks{margin:22px auto 0;max-width:420px;text-align:left}
+.tick{display:flex;gap:10px;align-items:baseline;padding:7px 0;color:var(--ink-3);font-size:14px;
+  border-top:1px solid var(--rule);opacity:.35;transition:opacity .4s}
+.tick.done{opacity:1;color:var(--ink-1)}
+.tick .mark{color:var(--gold);font-weight:700;width:14px}
+
+.banner{background:var(--gold-soft);border:1px solid var(--warn-line);border-radius:12px;
+  padding:15px 17px;margin-top:20px;font-size:14px;line-height:1.55}
+.banner b{display:block;margin-bottom:3px}
+footer{margin-top:26px;color:var(--ink-3);font-size:12.5px;line-height:1.6}
+@media(prefers-reduced-motion:reduce){.tick{transition:none}}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="viewtoggle">
+    <button class="vt" aria-pressed="true" onclick="setView('results')">Results</button>
+    <button class="vt" aria-pressed="false" onclick="setView('searching')">Searching state</button>
+  </div>
+
+  <!-- ================= SEARCHING ================= -->
+  <div class="searching" id="searching">
+    <canvas id="globe2" width="760" height="440" aria-label="Rotating globe showing routes being searched"></canvas>
+    <div class="searchline" id="sline">Reading your wallet</div>
+    <div class="searchsub">Bengaluru &rarr; Paris &middot; 12–14 Sept</div>
+    <div class="ticks" id="ticks">
+      <div class="tick"><span class="mark">&middot;</span><span>3 cards found — Infinia, Regalia, Amex Platinum Travel</span></div>
+      <div class="tick"><span class="mark">&middot;</span><span>Checking which of them have transfer partners</span></div>
+      <div class="tick"><span class="mark">&middot;</span><span>145 award stays in Paris across Marriott, Accor, IHG</span></div>
+      <div class="tick"><span class="mark">&middot;</span><span>Pricing what your cards can actually reach</span></div>
+      <div class="tick"><span class="mark">&middot;</span><span>Comparing against HDFC's own ₹1.00 SmartBuy rate</span></div>
+    </div>
+  </div>
+
+  <!-- ================= RESULTS ================= -->
+  <div class="results" id="results">
+    <h1>Stay on Points</h1>
+    <p class="sub">What a night costs in your points — not theirs. Every rate converted through your own
+    cards, and marked where we can't.</p>
+
+    <div class="band">
+      <div class="mono">Paris &middot; 12–14 Sept &middot; 1 room</div>
+      <button class="edit">Edit</button>
+    </div>
+
+    <div class="chips">
+      <button class="chip" aria-pressed="true">All programmes</button>
+      <button class="chip" aria-pressed="false">Marriott</button>
+      <button class="chip" aria-pressed="false">Accor</button>
+      <button class="chip" aria-pressed="false">IHG</button>
+      <button class="chip" aria-pressed="false">Worth transferring</button>
+    </div>
+
+    <div class="count">14 stays &middot; published award rates &middot; 6 priced from your cards</div>
+
+    <div class="split">
+      <div class="grid">
+
+        <button class="hcard">
+          <div class="ph">
+            <span class="badge b-ok">WORTH IT &middot; ₹1.11/pt</span>
+            <span class="phtext">hotel photo<br>source not yet decided</span>
+          </div>
+          <div class="body">
+            <div class="hname">Novotel Paris Gare de Lyon</div>
+            <div class="hmeta">Accor ALL &middot; Novotel &middot; 12th arr.</div>
+            <div class="prices">
+              <div class="ppts mono">9,486 <span class="dim" style="font-weight:400;font-size:13px">Accor pts / night</span></div>
+              <div class="pcash mono">or ₹21,125 cash</div>
+            </div>
+            <div class="yours">Costs you <b class="mono">18,972</b> Infinia points at 2:1 —
+              <b class="mono">₹1.11</b> each. <span class="dim">11% over SmartBuy.</span></div>
+          </div>
+        </button>
+
+        <button class="hcard">
+          <div class="ph">
+            <span class="badge b-flat">BOOK WITH CASH &middot; ₹0.30/pt</span>
+            <span class="phtext">hotel photo<br>source not yet decided</span>
+          </div>
+          <div class="body">
+            <div class="hname">Le Méridien Etoile</div>
+            <div class="hmeta">Marriott Bonvoy &middot; 17th arr.</div>
+            <div class="prices">
+              <div class="ppts mono">31,000 <span class="dim" style="font-weight:400;font-size:13px">Bonvoy pts / night</span></div>
+              <div class="pcash mono">or ₹18,400 cash</div>
+            </div>
+            <div class="yours">Costs you <b class="mono">62,000</b> Infinia points — <b class="mono">₹0.30</b>
+              each, the same as plain statement credit. <span class="dim">Pay cash, keep the points.</span></div>
+          </div>
+        </button>
+
+        <button class="hcard">
+          <div class="ph">
+            <span class="badge b-none">NOT PRICED</span>
+            <span class="phtext">hotel photo<br>source not yet decided</span>
+          </div>
+          <div class="body">
+            <div class="hname">Park Hyatt Paris-Vendôme</div>
+            <div class="hmeta">World of Hyatt &middot; 2nd arr.</div>
+            <div class="prices">
+              <div class="ppts mono">35,000 <span class="dim" style="font-weight:400;font-size:13px">Hyatt pts / night</span></div>
+              <div class="pcash mono">or ₹94,300 cash</div>
+            </div>
+            <div class="yours"><span class="dim">No Indian card we track transfers into World of Hyatt.
+              We won't guess a ratio.</span></div>
+          </div>
+        </button>
+
+        <button class="hcard">
+          <div class="ph">
+            <span class="badge b-none">REGALIA CAN'T TRANSFER</span>
+            <span class="phtext">hotel photo<br>source not yet decided</span>
+          </div>
+          <div class="body">
+            <div class="hname">Mercure Paris Opéra Garnier</div>
+            <div class="hmeta">Accor ALL &middot; Mercure &middot; 9th arr.</div>
+            <div class="prices">
+              <div class="ppts mono">7,923 <span class="dim" style="font-weight:400;font-size:13px">Accor pts / night</span></div>
+              <div class="pcash mono">or ₹17,650 cash</div>
+            </div>
+            <div class="yours">Your Regalia has no transfer partners at all.
+              <span class="dim">61,783 points &rarr; ₹0.50 each on SmartBuy covers this room outright.</span></div>
+          </div>
+        </button>
+
+      </div>
+
+      <div class="stage">
+        <canvas id="globe1" width="620" height="470" aria-label="Globe showing where your points reach"></canvas>
+        <div class="legend">
+          <div><span class="k" style="background:var(--ok-ink)"></span>Reachable with your cards — 6 cities</div>
+          <div style="margin-top:5px"><span class="k" style="background:var(--ink-3)"></span>Award space exists, no route from your wallet</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="banner">
+      <b>Why the badge is a verdict, not a rating</b>
+      Every other tool shows you value per <em style="font-style:normal;font-weight:600">their</em> point.
+      Yours are worth what your card's transfer ratio makes them worth — so that's the number on the card,
+      measured against the ₹1.00 HDFC will give you on SmartBuy without transferring anything.
+    </div>
+
+    <footer>
+      Mockup only. Photo placeholders are deliberate — no image source is committed yet.<br>
+      Globe is plain canvas, roughly 4KB of script, no 3D library.
+    </footer>
+  </div>
+</div>
+
+<script>
+/* ---------- globe ---------- */
+var CITIES=[
+  {n:'Bengaluru',la:12.97,lo:77.59,ok:1,home:1},
+  {n:'Paris',la:48.85,lo:2.35,ok:1},{n:'Dubai',la:25.2,lo:55.27,ok:1},
+  {n:'Singapore',la:1.35,lo:103.8,ok:1},{n:'Bangkok',la:13.75,lo:100.5,ok:1},
+  {n:'London',la:51.5,lo:-0.12,ok:1},{n:'Doha',la:25.28,lo:51.53,ok:1},
+  {n:'Tokyo',la:35.68,lo:139.69,ok:0},{n:'Sydney',la:-33.87,lo:151.2,ok:0},
+  {n:'New York',la:40.71,lo:-74.0,ok:0},{n:'São Paulo',la:-23.55,lo:-46.63,ok:0},
+  {n:'Nairobi',la:-1.29,lo:36.82,ok:0},{n:'Cape Town',la:-33.92,lo:18.42,ok:0}
+];
+function mk(cv,opts){
+  var c=cv.getContext('2d'),W=cv.width,H=cv.height,R=Math.min(W,H)*0.40;
+  var cx=W/2,cy=H/2,rot=0,t=0;
+  var reduce=window.matchMedia('(prefers-reduced-motion:reduce)').matches;
+  function proj(la,lo){
+    var p=(90-la)*Math.PI/180,th=(lo+rot)*Math.PI/180;
+    return {x:cx+R*Math.sin(p)*Math.sin(th),y:cy-R*Math.cos(p),z:Math.sin(p)*Math.cos(th)};
+  }
+  function draw(){
+    c.clearRect(0,0,W,H);
+    c.beginPath();c.arc(cx,cy,R,0,7);c.fillStyle='#F7F4EE';c.fill();
+    c.strokeStyle='#E4E0D8';c.lineWidth=1;
+    for(var la=-60;la<=60;la+=30){
+      c.beginPath();
+      for(var lo=-180;lo<=180;lo+=4){var p=proj(la,lo);if(p.z>0){c.lineTo(p.x,p.y);}else{c.moveTo(p.x,p.y);}}
+      c.stroke();
+    }
+    for(var lo2=0;lo2<360;lo2+=30){
+      c.beginPath();
+      for(var la2=-90;la2<=90;la2+=4){var q=proj(la2,lo2);if(q.z>0){c.lineTo(q.x,q.y);}else{c.moveTo(q.x,q.y);}}
+      c.stroke();
+    }
+    c.beginPath();c.arc(cx,cy,R,0,7);c.strokeStyle='#D8D3C8';c.stroke();
+    var home=proj(CITIES[0].la,CITIES[0].lo);
+    CITIES.forEach(function(ct,i){
+      if(i===0)return;
+      var p=proj(ct.la,ct.lo);
+      if(p.z>0&&home.z>0&&(opts.arcs||ct.ok)){
+        var mx=(home.x+p.x)/2,my=(home.y+p.y)/2;
+        var dx=mx-cx,dy=my-cy,d=Math.sqrt(dx*dx+dy*dy)||1;
+        var bx=mx+dx/d*38,by=my+dy/d*38;
+        var prog=opts.arcs?Math.min(1,Math.max(0,(t-i*11)/50)):1;
+        if(prog>0){
+          c.beginPath();c.moveTo(home.x,home.y);
+          if(prog>=1){c.quadraticCurveTo(bx,by,p.x,p.y);}
+          else{
+            var ex=(1-prog)*(1-prog)*home.x+2*(1-prog)*prog*bx+prog*prog*p.x;
+            var ey=(1-prog)*(1-prog)*home.y+2*(1-prog)*prog*by+prog*prog*p.y;
+            c.quadraticCurveTo((home.x+ex)/2+(bx-home.x)*.3,(home.y+ey)/2+(by-home.y)*.3,ex,ey);
+          }
+          c.strokeStyle=ct.ok?'rgba(36,91,51,.55)':'rgba(138,151,166,.35)';
+          c.lineWidth=ct.ok?1.6:1;c.stroke();
+        }
+      }
+    });
+    CITIES.forEach(function(ct){
+      var p=proj(ct.la,ct.lo);if(p.z<=0)return;
+      c.beginPath();c.arc(p.x,p.y,ct.home?5:3.4,0,7);
+      c.fillStyle=ct.home?'#B0812F':(ct.ok?'#245B33':'#8A97A6');c.fill();
+      if(ct.home||ct.ok){
+        c.fillStyle='#4A5A6E';c.font='11px -apple-system,sans-serif';
+        c.fillText(ct.n,p.x+8,p.y+3);
+      }
+    });
+  }
+  function loop(){rot+=reduce?0:0.16;t+=1;draw();requestAnimationFrame(loop);}
+  draw();if(!reduce)loop();
+}
+mk(document.getElementById('globe1'),{arcs:false});
+mk(document.getElementById('globe2'),{arcs:true});
+
+/* ---------- searching narration ---------- */
+var LINES=['Reading your wallet','Checking transfer partners','Finding award stays',
+           'Pricing through your cards','Comparing against SmartBuy'];
+var li=0;
+function step(){
+  var tks=document.querySelectorAll('#ticks .tick');
+  if(li<tks.length){
+    document.getElementById('sline').textContent=LINES[li];
+    tks[li].classList.add('done');
+    tks[li].querySelector('.mark').textContent='✓';
+    li++;setTimeout(step,1100);
+  }else{
+    document.getElementById('sline').textContent='6 of 14 priced from your cards';
+  }
+}
+setTimeout(step,700);
+
+function setView(v){
+  document.getElementById('searching').classList.toggle('on',v==='searching');
+  document.getElementById('results').classList.toggle('off',v==='searching');
+  var b=document.querySelectorAll('.vt');
+  b[0].setAttribute('aria-pressed',v==='results');
+  b[1].setAttribute('aria-pressed',v==='searching');
+}
+document.querySelectorAll('.chip').forEach(function(c){
+  c.addEventListener('click',function(){
+    c.parentElement.querySelectorAll('.chip').forEach(function(x){x.setAttribute('aria-pressed','false')});
+    c.setAttribute('aria-pressed','true');
+  });
+});
+</script>
+</body>
+</html>
