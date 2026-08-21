@@ -17,12 +17,12 @@ export async function POST(req: NextRequest) {
     const card = allCards.find((c: any) => c.id === cardId || c.slug === cardId) as any
     if (!card) return NextResponse.json({ error: 'Card not found' }, { status: 400 })
 
-    const { context, devaluations } = await retrieveRelevantCards(
+    const { context, devaluations, sourced } = await retrieveRelevantCards(
       'best redemption options for ' + card.name + ' points',
       { topK: 5, intent: 'general' }
     )
 
-    const systemPrompt = buildRagSystemPrompt(context, devaluations)
+    const systemPrompt = buildRagSystemPrompt(context, devaluations, undefined, sourced)
 
     const userPrompt = 'Give the best redemption strategy for this user.\n\n' +
       'CARD: ' + card.name + ' (' + card.bank + ')\n' +

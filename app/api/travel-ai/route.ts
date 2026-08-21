@@ -184,12 +184,12 @@ export async function POST(req: NextRequest) {
     }
 
     // Get card context
-    const { context, devaluations, igInsights } = await retrieveRelevantCards(message, {
+    const { context, devaluations, igInsights, sourced } = await retrieveRelevantCards(message, {
       topK: 6,
       intent: 'travel',
     })
 
-    const systemPrompt = buildRagSystemPrompt(context, devaluations, igInsights) +
+    const systemPrompt = buildRagSystemPrompt(context, devaluations, igInsights, sourced) +
       liveAvailabilityContext +
       `
 

@@ -17,12 +17,12 @@ export async function POST(req: NextRequest) {
     const card = allCards.find((c: any) => c.id === cardId || c.slug === cardId) as any
     if (!card) return NextResponse.json({ error: 'Card not found' }, { status: 400 })
 
-    const { context, devaluations } = await retrieveRelevantCards(
+    const { context, devaluations, sourced } = await retrieveRelevantCards(
       'best cards for ' + (spendProfile || 'general spending') + ' Rs.' + monthlySpend + ' per month',
       { topK: 6, intent: 'general' }
     )
 
-    const systemPrompt = buildRagSystemPrompt(context, devaluations)
+    const systemPrompt = buildRagSystemPrompt(context, devaluations, undefined, sourced)
 
     const cardInfo = cardToText(card)
 

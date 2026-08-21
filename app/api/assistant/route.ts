@@ -21,12 +21,12 @@ export async function POST(req: NextRequest) {
     }
     if (!message) return NextResponse.json({ error: 'Missing message' }, { status: 400 });
 
-    const { context, devaluations, igInsights } = await retrieveRelevantCards(message, {
+    const { context, devaluations, igInsights, sourced } = await retrieveRelevantCards(message, {
       topK: 6,
       intent: 'general',
     });
 
-    const systemPrompt = buildRagSystemPrompt(context, devaluations, igInsights) +
+    const systemPrompt = buildRagSystemPrompt(context, devaluations, igInsights, sourced) +
       `\n\nYou are the CreditIQ Assistant  --  India's most honest credit card advisor.
 You help users find the best credit card for any merchant, category, or spend pattern.
 You have zero bank bias  --  you are not paid by any bank.

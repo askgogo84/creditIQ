@@ -36,8 +36,8 @@ export async function POST(req: NextRequest) {
     const tripQuery = normalizeDestination(rawQuery)
     if (!tripQuery.trim()) return NextResponse.json({ error: 'Missing trip query' }, { status: 400 })
 
-    const { context, devaluations, igInsights } = await retrieveRelevantCards(tripQuery, { topK: 8, intent: 'travel' })
-    const systemPrompt = buildRagSystemPrompt(context, devaluations, igInsights)
+    const { context, devaluations, igInsights, sourced } = await retrieveRelevantCards(tripQuery, { topK: 8, intent: 'travel' })
+    const systemPrompt = buildRagSystemPrompt(context, devaluations, igInsights, sourced)
 
     // Pre-fetch real award availability from seats.aero
     const originCode = (!origin || origin === 'Bangalore') ? 'BLR' : origin.slice(0, 3).toUpperCase()
