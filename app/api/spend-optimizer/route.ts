@@ -40,7 +40,7 @@ export async function POST(req: NextRequest) {
     }
 
     // Increase topK to surface more card options for the AI to choose from
-    const { context, devaluations } = await retrieveRelevantCards(prompt, {
+    const { context, devaluations, sourced } = await retrieveRelevantCards(prompt, {
       topK: 20,  // was 10 — doubled to see more cards
       intent,
       maxFee: spends?.maxFee,
@@ -49,7 +49,7 @@ export async function POST(req: NextRequest) {
     // buildRagSystemPrompt is prose-oriented (shared with /api/assistant, which wants
     // prose). This route JSON.parse()s the reply, so pin the output format here at the
     // route level — insurance against a rare prose reply. Scoped to this route only.
-    const systemPrompt = buildRagSystemPrompt(context, devaluations) +
+    const systemPrompt = buildRagSystemPrompt(context, devaluations, undefined, sourced) +
       '\n\nOUTPUT FORMAT: Respond with valid JSON ONLY, exactly matching the schema in the user message. No markdown, no code fences, no prose before or after the JSON.'
 
     const ai = await callClaude({

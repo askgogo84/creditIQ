@@ -41,12 +41,12 @@ export async function POST(req: NextRequest) {
       return cardId
     }
 
-    const { context, devaluations } = await retrieveRelevantCards(
+    const { context, devaluations, sourced } = await retrieveRelevantCards(
       'best alternative to ' + currentCard.name + ' for ' + (spendProfile || 'general') + ' spending',
       { topK: 8 }
     )
 
-    const systemPrompt = buildRagSystemPrompt(context, devaluations)
+    const systemPrompt = buildRagSystemPrompt(context, devaluations, undefined, sourced)
 
     const userPrompt = `A user wants to know if they should switch from their current card.
 
