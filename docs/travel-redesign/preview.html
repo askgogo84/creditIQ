@@ -1,0 +1,817 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>CreditIQ - 3D Flight Simulation</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            overflow: hidden;
+            background: #020617;
+            font-family:
+                -apple-system,
+                BlinkMacSystemFont,
+                "Segoe UI",
+                Roboto,
+                Helvetica,
+                Arial,
+                sans-serif;
+        }
+
+        #globeViz {
+            width: 100vw;
+            height: 100vh;
+        }
+
+        .search-panel {
+            position: absolute;
+            top: 30px;
+            left: 30px;
+            z-index: 100;
+            width: 290px;
+
+            background: rgba(15, 23, 42, 0.86);
+            padding: 22px;
+
+            border-radius: 16px;
+            border: 1px solid rgba(255, 255, 255, 0.12);
+
+            color: white;
+            backdrop-filter: blur(18px);
+
+            box-shadow:
+                0 20px 50px rgba(0, 0, 0, 0.4);
+        }
+
+        h2 {
+            margin: 0 0 8px;
+            font-size: 18px;
+        }
+
+        .route {
+            color: #94a3b8;
+            font-size: 14px;
+            margin-bottom: 18px;
+        }
+
+        button {
+            width: 100%;
+            padding: 12px;
+
+            border: 0;
+            border-radius: 8px;
+
+            background: #2563eb;
+            color: white;
+
+            font-weight: 600;
+            font-size: 14px;
+
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        button:hover {
+            background: #3b82f6;
+        }
+
+        button:disabled {
+            background: #475569;
+            cursor: not-allowed;
+        }
+
+        #status {
+            margin-top: 12px;
+            font-size: 12px;
+            color: #22d3ee;
+            min-height: 16px;
+        }
+    </style>
+
+    <script src="https://cdn.jsdelivr.net/npm/globe.gl"></script>
+</head>
+
+<body>
+
+<div class="search-panel">
+
+    <h2>✈ Flight Search</h2>
+
+    <div class="route">
+        BLR · Bengaluru → HND · Tokyo
+    </div>
+
+    <button id="searchBtn">
+        Search Flights
+    </button>
+
+    <div id="status"></div>
+
+</div>
+
+<div id="globeViz"></div>
+
+
+<script type="module">
+
+import * as THREE
+from "https://esm.sh/three@0.180.0";
+
+
+// ======================================================
+// LOCATIONS
+// ======================================================
+
+const source = {
+    code: "BLR",
+    name: "Bengaluru",
+    lat: 12.9716,
+    lng: 77.5946
+};
+
+const destination = {
+    code: "HND",
+    name: "Tokyo",
+    lat: 35.6762,
+    lng: 139.6503
+};
+
+
+// ======================================================
+// CREATE GLOBE
+// ======================================================
+
+const globe = new Globe(
+    document.getElementById("globeViz")
+)
+
+.globeImageUrl(
+    "https://unpkg.com/three-globe/example/img/earth-night.jpg"
+)
+
+.bumpImageUrl(
+    "https://unpkg.com/three-globe/example/img/earth-topology.png"
+)
+
+.backgroundColor("#020617")
+
+.showAtmosphere(true)
+
+.atmosphereColor("#2563eb")
+
+.atmosphereAltitude(0.18)
+
+.pointOfView({
+    lat: 22,
+    lng: 105,
+    altitude: 2.1
+}, 0);
+
+
+// ======================================================
+// CITY / AIRPORT MARKERS
+// ======================================================
+
+globe
+.pointsData([
+    {
+        ...source,
+        color: "#00ff88"
+    },
+    {
+        ...destination,
+        color: "#00d4ff"
+    }
+])
+
+.pointLat("lat")
+.pointLng("lng")
+.pointColor("color")
+.pointAltitude(0.025)
+.pointRadius(0.65);
+
+
+// ======================================================
+// CITY LABELS
+// ======================================================
+
+globe
+.labelsData([
+    {
+        lat: source.lat,
+        lng: source.lng,
+        altitude: 0.07,
+        text: "BLR · BENGALURU"
+    },
+    {
+        lat: destination.lat,
+        lng: destination.lng,
+        altitude: 0.07,
+        text: "HND · TOKYO"
+    }
+])
+
+.labelLat("lat")
+.labelLng("lng")
+.labelAltitude("altitude")
+.labelText("text")
+
+.labelSize(1.5)
+
+.labelColor(() => "#ffffff")
+
+.labelDotRadius(0)
+
+.labelResolution(3);
+
+
+// ======================================================
+// BUILD 3D AIRPLANE
+// ======================================================
+
+const plane = new THREE.Group();
+
+const planeMaterial =
+    new THREE.MeshBasicMaterial({
+        color: 0xffffff
+    });
+
+
+// BODY
+const body =
+    new THREE.Mesh(
+
+        new THREE.CylinderGeometry(
+            0.45,
+            0.65,
+            5,
+            16
+        ),
+
+        planeMaterial
+
+    );
+
+body.rotation.x = Math.PI / 2;
+
+plane.add(body);
+
+
+// NOSE
+const nose =
+    new THREE.Mesh(
+
+        new THREE.ConeGeometry(
+            0.46,
+            1.5,
+            16
+        ),
+
+        planeMaterial
+
+    );
+
+nose.rotation.x = Math.PI / 2;
+
+nose.position.z = 3.2;
+
+plane.add(nose);
+
+
+// MAIN WINGS
+const wings =
+    new THREE.Mesh(
+
+        new THREE.BoxGeometry(
+            6,
+            0.18,
+            1.4
+        ),
+
+        planeMaterial
+
+    );
+
+plane.add(wings);
+
+
+// REAR WINGS
+const tailWings =
+    new THREE.Mesh(
+
+        new THREE.BoxGeometry(
+            2.8,
+            0.14,
+            0.8
+        ),
+
+        planeMaterial
+
+    );
+
+tailWings.position.z = -2;
+
+plane.add(tailWings);
+
+
+// VERTICAL TAIL
+const tail =
+    new THREE.Mesh(
+
+        new THREE.BoxGeometry(
+            0.15,
+            1.7,
+            1.3
+        ),
+
+        planeMaterial
+
+    );
+
+tail.position.y = 0.8;
+tail.position.z = -2;
+
+plane.add(tail);
+
+
+// ======================================================
+// AIRCRAFT GLOW
+// ======================================================
+
+const glowMaterial =
+    new THREE.MeshBasicMaterial({
+        color: 0x00d4ff,
+        transparent: true,
+        opacity: 0.18
+    });
+
+const glow =
+    new THREE.Mesh(
+
+        new THREE.SphereGeometry(
+            2.4,
+            20,
+            20
+        ),
+
+        glowMaterial
+
+    );
+
+plane.add(glow);
+
+
+// AIRCRAFT SIZE
+
+plane.scale.set(
+    0.8,
+    0.8,
+    0.8
+);
+
+plane.visible = false;
+
+globe.scene().add(plane);
+
+
+// ======================================================
+// GREAT CIRCLE CALCULATION
+// ======================================================
+
+function interpolateGreatCircle(start, end, t) {
+
+    const lat1 =
+        THREE.MathUtils.degToRad(start.lat);
+
+    const lon1 =
+        THREE.MathUtils.degToRad(start.lng);
+
+    const lat2 =
+        THREE.MathUtils.degToRad(end.lat);
+
+    const lon2 =
+        THREE.MathUtils.degToRad(end.lng);
+
+
+    const angularDistance =
+
+        2 * Math.asin(
+
+            Math.sqrt(
+
+                Math.pow(
+                    Math.sin((lat2 - lat1) / 2),
+                    2
+                )
+
+                +
+
+                Math.cos(lat1) *
+                Math.cos(lat2) *
+
+                Math.pow(
+                    Math.sin((lon2 - lon1) / 2),
+                    2
+                )
+
+            )
+
+        );
+
+
+    if (angularDistance === 0) {
+
+        return {
+            lat: start.lat,
+            lng: start.lng
+        };
+
+    }
+
+
+    const A =
+        Math.sin(
+            (1 - t) * angularDistance
+        )
+        /
+        Math.sin(angularDistance);
+
+
+    const B =
+        Math.sin(
+            t * angularDistance
+        )
+        /
+        Math.sin(angularDistance);
+
+
+    const x =
+
+        A *
+        Math.cos(lat1) *
+        Math.cos(lon1)
+
+        +
+
+        B *
+        Math.cos(lat2) *
+        Math.cos(lon2);
+
+
+    const y =
+
+        A *
+        Math.cos(lat1) *
+        Math.sin(lon1)
+
+        +
+
+        B *
+        Math.cos(lat2) *
+        Math.sin(lon2);
+
+
+    const z =
+
+        A *
+        Math.sin(lat1)
+
+        +
+
+        B *
+        Math.sin(lat2);
+
+
+    const lat =
+        Math.atan2(
+            z,
+            Math.sqrt(
+                x * x +
+                y * y
+            )
+        );
+
+
+    const lon =
+        Math.atan2(
+            y,
+            x
+        );
+
+
+    return {
+
+        lat:
+            THREE.MathUtils.radToDeg(lat),
+
+        lng:
+            THREE.MathUtils.radToDeg(lon)
+
+    };
+
+}
+
+
+// ======================================================
+// GET FLIGHT POSITION
+// ======================================================
+
+function getFlightPosition(t) {
+
+    const geo =
+        interpolateGreatCircle(
+            source,
+            destination,
+            t
+        );
+
+
+    // Smooth takeoff → cruising altitude → landing
+
+    const altitude =
+        0.03
+        +
+        Math.sin(
+            Math.PI * t
+        ) * 0.35;
+
+
+    const position =
+        globe.getCoords(
+            geo.lat,
+            geo.lng,
+            altitude
+        );
+
+
+    return {
+
+        geo,
+
+        position:
+            new THREE.Vector3(
+                position.x,
+                position.y,
+                position.z
+            )
+
+    };
+
+}
+
+
+// ======================================================
+// BUTTON
+// ======================================================
+
+const button =
+    document.getElementById("searchBtn");
+
+const status =
+    document.getElementById("status");
+
+
+button.addEventListener(
+    "click",
+    startFlight
+);
+
+
+// ======================================================
+// START FLIGHT
+// ======================================================
+
+function startFlight() {
+
+    try {
+
+        button.disabled = true;
+
+        button.innerText =
+            "Searching flights...";
+
+
+        status.innerText =
+            "Scanning BLR → HND routes";
+
+
+        // ==================================================
+        // DRAW NEON FLIGHT ARC
+        // ==================================================
+
+        globe
+
+        .arcsData([
+            {
+                startLat: source.lat,
+                startLng: source.lng,
+
+                endLat: destination.lat,
+                endLng: destination.lng,
+
+                color: [
+                    "#00ff88",
+                    "#00d4ff"
+                ]
+            }
+        ])
+
+        .arcColor("color")
+
+        .arcAltitude(0.35)
+
+        .arcStroke(0.7)
+
+        .arcDashLength(0.12)
+
+        .arcDashGap(0.04)
+
+        .arcDashAnimateTime(1300);
+
+
+        // ==================================================
+        // SHOW AIRCRAFT
+        // ==================================================
+
+        plane.visible = true;
+
+
+        const duration = 5500;
+
+        const startTime =
+            performance.now();
+
+
+        // ==================================================
+        // ANIMATION LOOP
+        // ==================================================
+
+        function animate(currentTime) {
+
+            const elapsed =
+                currentTime - startTime;
+
+
+            let t =
+                elapsed / duration;
+
+
+            t =
+                Math.min(
+                    t,
+                    1
+                );
+
+
+            // Smooth acceleration / deceleration
+
+            const easedT =
+                t < 0.5
+
+                ? 2 * t * t
+
+                : 1 -
+                  Math.pow(
+                      -2 * t + 2,
+                      2
+                  ) / 2;
+
+
+            const current =
+                getFlightPosition(easedT);
+
+
+            plane.position.copy(
+                current.position
+            );
+
+
+            // ==================================================
+            // KEEP PLANE FACING FORWARD
+            // ==================================================
+
+            if (easedT < 0.995) {
+
+                const next =
+                    getFlightPosition(
+
+                        Math.min(
+                            easedT + 0.005,
+                            1
+                        )
+
+                    );
+
+
+                plane.up
+                    .copy(
+                        current.position
+                    )
+                    .normalize();
+
+
+                plane.lookAt(
+                    next.position
+                );
+
+            }
+
+
+            // ==================================================
+            // CAMERA FOLLOW
+            // ==================================================
+
+            globe.pointOfView({
+
+                lat:
+                    current.geo.lat,
+
+                lng:
+                    current.geo.lng,
+
+                altitude: 1.7
+
+            }, 50);
+
+
+            // ==================================================
+            // KEEP ANIMATING
+            // ==================================================
+
+            if (t < 1) {
+
+                requestAnimationFrame(
+                    animate
+                );
+
+            }
+
+            else {
+
+                status.innerText =
+                    "Flights found · BLR → HND ✓";
+
+
+                // Hold Tokyo position briefly
+
+                setTimeout(() => {
+
+                    plane.visible =
+                        false;
+
+
+                    button.disabled =
+                        false;
+
+
+                    button.innerText =
+                        "Search Flights";
+
+                }, 700);
+
+            }
+
+        }
+
+
+        requestAnimationFrame(
+            animate
+        );
+
+
+    }
+
+    catch (error) {
+
+        console.error(
+            "Flight animation error:",
+            error
+        );
+
+
+        status.innerText =
+            "Animation error — check console";
+
+
+        button.disabled =
+            false;
+
+
+        button.innerText =
+            "Search Flights";
+
+    }
+
+}
+
+</script>
+
+</body>
+</html>

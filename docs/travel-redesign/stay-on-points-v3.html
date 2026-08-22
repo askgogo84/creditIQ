@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Stay on Points v3 — grid + map</title>
+<style>
+:root{
+  --paper:#FBF9F5;--card:#FFFFFF;--ink-1:#16263B;--ink-2:#4A5A6E;--ink-3:#8A97A6;
+  --rule:#E7E3DB;--gold:#B0812F;--ok-bg:#E4EFE6;--ok-ink:#245B33;
+  --flat-bg:#F2EFE9;--flat-ink:#6B6152;--none-ink:#98A2AE;--gold-soft:#F5ECDA;--warn:#DEC489;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--paper);color:var(--ink-1);font-size:14px;line-height:1.45;
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  -webkit-font-smoothing:antialiased}
+.mono{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-variant-numeric:tabular-nums}
+
+/* top bar */
+.top{display:flex;align-items:center;gap:16px;padding:12px 20px;background:var(--card);
+  border-bottom:1px solid var(--rule);position:sticky;top:0;z-index:20}
+.brand{font-weight:700;font-size:16px;letter-spacing:-.01em}
+.brand span{color:var(--gold)}
+.searchbar{flex:1;max-width:520px;display:flex;align-items:center;background:var(--card);
+  border:1px solid var(--rule);border-radius:999px;padding:5px 5px 5px 18px;gap:8px;
+  box-shadow:0 1px 3px rgba(20,30,50,.05)}
+.sf{font-size:13.5px;padding:5px 10px;border-right:1px solid var(--rule);white-space:nowrap}
+.sf:last-of-type{border:none}
+.sf b{font-weight:600}
+.sgo{margin-left:auto;width:32px;height:32px;border-radius:50%;background:var(--gold);border:0;
+  color:#fff;cursor:pointer;font-size:14px}
+
+/* filter row */
+.filters{display:flex;gap:8px;padding:12px 20px;overflow-x:auto;background:var(--paper);
+  border-bottom:1px solid var(--rule);position:sticky;top:57px;z-index:19}
+.filters::-webkit-scrollbar{display:none}
+.chip{white-space:nowrap;padding:7px 14px;border-radius:999px;border:1px solid var(--rule);
+  background:var(--card);font-size:13px;color:var(--ink-2);cursor:pointer;font-family:inherit}
+.chip[aria-pressed="true"]{background:var(--ink-1);color:#fff;border-color:var(--ink-1);font-weight:600}
+.chip.mine[aria-pressed="true"]{background:var(--ok-ink);border-color:var(--ok-ink)}
+
+/* split */
+.split{display:grid;grid-template-columns:1fr;height:calc(100vh - 106px)}
+@media(min-width:1000px){.split{grid-template-columns:1.25fr 1fr}}
+.left{overflow-y:auto;padding:16px 20px 60px}
+.right{display:none;position:relative;background:#EEF3F7}
+@media(min-width:1000px){.right{display:block}}
+
+.count{font-size:19px;font-weight:600;margin:2px 0 14px;letter-spacing:-.01em}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+@media(min-width:640px){.grid{grid-template-columns:repeat(3,1fr)}}
+
+.hc{background:none;border:0;padding:0;text-align:left;font-family:inherit;color:inherit;cursor:pointer}
+.hc:focus-visible{outline:2px solid var(--gold);outline-offset:3px;border-radius:12px}
+.frame{position:relative;aspect-ratio:1/1;border-radius:12px;overflow:hidden;background:#EDE9E1}
+.frame img{width:100%;height:100%;object-fit:cover;display:block}
+.ph{width:100%;height:100%;display:flex;align-items:center;justify-content:center;
+  background:repeating-linear-gradient(135deg,#EAE5DC 0 10px,#F2EEE7 10px 20px)}
+.ph span{font-size:10px;letter-spacing:.07em;text-transform:uppercase;color:var(--ink-3);text-align:center;padding:0 10px}
+.tag{position:absolute;top:9px;left:9px;font-size:10.5px;font-weight:700;letter-spacing:.03em;
+  padding:5px 9px;border-radius:6px;background:rgba(255,255,255,.94);backdrop-filter:blur(6px)}
+.t-ok{color:var(--ok-ink)}.t-flat{color:var(--flat-ink)}.t-none{color:var(--none-ink)}
+.heart{position:absolute;top:9px;right:9px;width:26px;height:26px;border-radius:50%;
+  background:rgba(255,255,255,.9);border:0;cursor:pointer;font-size:13px;line-height:1;color:var(--ink-2)}
+.hn{display:flex;justify-content:space-between;gap:8px;margin-top:9px;align-items:baseline}
+.hname{font-weight:600;font-size:14px;line-height:1.3;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.rate{font-size:12.5px;color:var(--ink-2);white-space:nowrap}
+.hbrand{color:var(--ink-3);font-size:12px;margin-top:1px}
+.pts{margin-top:6px;display:flex;justify-content:space-between;align-items:baseline;gap:6px}
+.ppn{font-size:13.5px;font-weight:600}
+.ppn i{font-style:normal;font-weight:400;color:var(--ink-3);font-size:11.5px}
+.vpp{font-size:11.5px;font-weight:700;padding:2px 7px;border-radius:5px;white-space:nowrap}
+.v-ok{background:var(--ok-bg);color:var(--ok-ink)}
+.v-flat{background:var(--flat-bg);color:var(--flat-ink)}
+.v-none{background:#F3F1ED;color:var(--none-ink)}
+.cash{font-size:12px;color:var(--ink-3);margin-top:2px}
+.yours{font-size:12px;margin-top:5px;color:var(--ink-2);line-height:1.35}
+.yours b{color:var(--ink-1)}
+
+/* map */
+#map{width:100%;height:100%;display:block}
+.maplegend{position:absolute;left:14px;bottom:14px;background:rgba(255,255,255,.95);
+  border:1px solid var(--rule);border-radius:10px;padding:10px 13px;font-size:12px;line-height:1.6}
+.k{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:6px}
+
+.banner{margin:18px 0 0;background:var(--gold-soft);border:1px solid var(--warn);
+  border-radius:11px;padding:13px 15px;font-size:13px;line-height:1.5}
+.banner b{display:block;margin-bottom:2px}
+footer{margin-top:16px;color:var(--ink-3);font-size:11.5px;line-height:1.6}
+</style>
+</head>
+<body>
+
+<div class="top">
+  <div class="brand">Credit<span>IQ</span></div>
+  <div class="searchbar">
+    <div class="sf"><b>Paris</b></div>
+    <div class="sf">12–14 Sept</div>
+    <div class="sf">1 room</div>
+    <button class="sgo">&#9906;</button>
+  </div>
+</div>
+
+<div class="filters">
+  <button class="chip mine" aria-pressed="true">Bookable from my cards &middot; 6</button>
+  <button class="chip" aria-pressed="false">All stays &middot; 14</button>
+  <button class="chip" aria-pressed="false">Accor</button>
+  <button class="chip" aria-pressed="false">Marriott</button>
+  <button class="chip" aria-pressed="false">IHG</button>
+  <button class="chip" aria-pressed="false">Worth transferring</button>
+  <button class="chip" aria-pressed="false">4.5+</button>
+</div>
+
+<div class="split">
+  <div class="left">
+    <div class="count">14 stays in Paris</div>
+    <div class="grid" id="grid"></div>
+
+    <div class="banner">
+      <b>Why the badge shows two numbers</b>
+      Everyone else prints the value of the hotel's point. We print the value of <em style="font-style:normal;font-weight:600">yours</em> —
+      after your card's transfer ratio — against the ₹1.00 HDFC gives you on SmartBuy without transferring anything.
+    </div>
+    <footer>
+      Mockup. Photo frames are empty on purpose — no image source is committed yet.<br>
+      Accor points are fixed at 2,000 = €40 (issuer-published). Marriott and Hilton price dynamically, so those rates are cached with an age stamp.
+    </footer>
+  </div>
+
+  <div class="right">
+    <canvas id="map"></canvas>
+    <div class="maplegend">
+      <div><span class="k" style="background:#245B33"></span>Reachable from your cards</div>
+      <div><span class="k" style="background:#B0812F"></span>Better as cash</div>
+      <div><span class="k" style="background:#98A2AE"></span>No route from your wallet</div>
+    </div>
+  </div>
+</div>
+
+<script>
+var H=[
+ {n:"Novotel Paris Gare de Lyon",b:"Accor ALL · Novotel",r:"4.6 (3,200)",p:9486,cash:21125,
+  yp:18972,vpp:"1.11",k:"ok",tag:"WORTH IT",you:"<b>18,972</b> Infinia pts at 2:1"},
+ {n:"ibis Styles Opéra Lafayette",b:"Accor ALL · ibis Styles",r:"4.5 (900)",p:8681,cash:19320,
+  yp:17362,vpp:"1.11",k:"ok",tag:"WORTH IT",you:"<b>17,362</b> Infinia pts at 2:1"},
+ {n:"Mercure Opéra Garnier",b:"Accor ALL · Mercure",r:"4.4 (1,600)",p:7923,cash:17650,
+  yp:15846,vpp:"1.11",k:"ok",tag:"WORTH IT",you:"<b>15,846</b> Infinia pts at 2:1"},
+ {n:"Le Méridien Etoile",b:"Marriott Bonvoy",r:"4.3 (2,100)",p:31000,cash:18400,
+  yp:62000,vpp:"0.30",k:"flat",tag:"USE CASH",you:"Same rate as plain statement credit"},
+ {n:"Courtyard Paris Gare de Lyon",b:"Marriott Bonvoy",r:"4.2 (1,400)",p:26000,cash:15900,
+  yp:52000,vpp:"0.31",k:"flat",tag:"USE CASH",you:"Cash is cheaper than the points cost"},
+ {n:"Hôtel L'Échiquier Opéra",b:"Accor ALL · MGallery",r:"4.7 (1,700)",p:10678,cash:23781,
+  yp:21356,vpp:"1.11",k:"ok",tag:"WORTH IT",you:"<b>21,356</b> Infinia pts at 2:1"},
+ {n:"Park Hyatt Paris-Vendôme",b:"World of Hyatt",r:"4.8 (2,600)",p:35000,cash:94300,
+  yp:0,vpp:"—",k:"none",tag:"NOT PRICED",you:"No Indian card transfers into Hyatt"},
+ {n:"Hôtel du Louvre",b:"Hyatt Unbound",r:"4.6 (1,900)",p:30000,cash:71200,
+  yp:0,vpp:"—",k:"none",tag:"NOT PRICED",you:"No Indian card transfers into Hyatt"},
+ {n:"Kimpton St Honoré",b:"IHG One Rewards",r:"4.7 (1,100)",p:70000,cash:41500,
+  yp:0,vpp:"—",k:"none",tag:"NOT PRICED",you:"IHG edge not yet sourced"}
+];
+var g=document.getElementById('grid');
+H.forEach(function(h){
+  var el=document.createElement('button');el.className='hc';
+  el.innerHTML=
+   '<div class="frame">'+
+     '<span class="tag t-'+h.k+'">'+h.tag+'</span>'+
+     '<button class="heart">&#9825;</button>'+
+     '<div class="ph"><span>photo frame<br>4:3 &middot; source TBD</span></div>'+
+   '</div>'+
+   '<div class="hn"><div class="hname">'+h.n+'</div><div class="rate">&#9733; '+h.r+'</div></div>'+
+   '<div class="hbrand">'+h.b+'</div>'+
+   '<div class="pts"><div class="ppn mono">'+h.p.toLocaleString('en-IN')+' <i>pts/night</i></div>'+
+     '<div class="vpp v-'+h.k+'">'+(h.vpp==='—'?'—':'₹'+h.vpp+'/pt')+'</div></div>'+
+   '<div class="cash mono">or ₹'+h.cash.toLocaleString('en-IN')+' cash</div>'+
+   '<div class="yours">'+h.you+'</div>';
+  g.appendChild(el);
+});
+
+/* simple map */
+var c=document.getElementById('map'),x=c.getContext('2d');
+function draw(){
+  var w=c.parentElement.clientWidth,hh=c.parentElement.clientHeight;
+  c.width=w*2;c.height=hh*2;c.style.width=w+'px';c.style.height=hh+'px';x.scale(2,2);
+  x.fillStyle='#EEF3F7';x.fillRect(0,0,w,hh);
+  x.strokeStyle='#DCE4EC';x.lineWidth=1;
+  for(var i=0;i<w;i+=46){x.beginPath();x.moveTo(i,0);x.lineTo(i,hh);x.stroke();}
+  for(var j=0;j<hh;j+=46){x.beginPath();x.moveTo(0,j);x.lineTo(w,j);x.stroke();}
+  x.strokeStyle='#C9D6E2';x.lineWidth=3;
+  x.beginPath();x.moveTo(0,hh*.62);x.bezierCurveTo(w*.3,hh*.5,w*.6,hh*.72,w,hh*.55);x.stroke();
+  var pins=[[.30,.34,'#245B33','9,486'],[.46,.28,'#245B33','8,681'],[.38,.52,'#245B33','7,923'],
+            [.62,.40,'#B0812F','31,000'],[.55,.62,'#B0812F','26,000'],[.26,.63,'#245B33','10,678'],
+            [.70,.25,'#98A2AE','35,000'],[.74,.56,'#98A2AE','30,000'],[.50,.75,'#98A2AE','70,000']];
+  pins.forEach(function(p){
+    var px=w*p[0],py=hh*p[1],lbl=p[3]+' pts';
+    x.font='600 11px -apple-system,sans-serif';
+    var tw=x.measureText(lbl).width+18;
+    x.fillStyle='#fff';x.strokeStyle=p[2];x.lineWidth=1.4;
+    x.beginPath();x.roundRect(px-tw/2,py-11,tw,22,11);x.fill();x.stroke();
+    x.fillStyle=p[2];x.beginPath();x.arc(px-tw/2+9,py,3.2,0,7);x.fill();
+    x.fillStyle='#16263B';x.fillText(lbl,px-tw/2+16,py+4);
+  });
+}
+draw();window.addEventListener('resize',draw);
+</script>
+</body>
+</html>

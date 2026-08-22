@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Stay on Points v3 — data globe + results (one surface)</title>
+<style>
+:root{
+  --paper:#FBF9F5; --card:#FFFFFF; --ink-1:#16263B; --ink-2:#4A5A6E; --ink-3:#8A97A6;
+  --rule:#E4E0D8; --gold:#B0812F; --gold-soft:#F4EBD9;
+  --ok-bg:#E4EFE6; --ok-ink:#245B33;
+  --flat-bg:#F1EFEA; --flat-ink:#5A5344;
+  --none-bg:#F4F2EE; --none-ink:#8A97A6;
+  --warn-line:#DEC489;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--paper);color:var(--ink-1);font-size:15px;line-height:1.5;
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  -webkit-font-smoothing:antialiased}
+.mono{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-variant-numeric:tabular-nums}
+.wrap{max-width:1180px;margin:0 auto;padding:18px 16px 70px}
+
+h1{font-size:28px;margin:0 0 6px;font-weight:600;letter-spacing:-.02em}
+.sub{color:var(--ink-2);margin:0 0 18px;max-width:62ch}
+
+.band{background:var(--card);border:1px solid var(--rule);border-radius:12px;padding:13px 16px;
+  display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:14px}
+.edit{color:var(--gold);font-weight:600;background:none;border:none;font-family:inherit;font-size:14px;cursor:pointer}
+.count{color:var(--ink-2);font-size:14px;margin-bottom:14px}
+.count b{color:var(--ink-1)}
+
+/* filter status pill (reflects the pin selection — map & list are one surface) */
+.filterbar{display:flex;align-items:center;gap:10px;margin-bottom:14px;min-height:30px;flex-wrap:wrap}
+.fpill{display:inline-flex;align-items:center;gap:8px;background:var(--ink-1);color:#fff;border-radius:999px;
+  padding:6px 8px 6px 14px;font-size:13.5px;font-weight:600}
+.fpill button{background:rgba(255,255,255,.18);border:none;color:#fff;width:20px;height:20px;border-radius:50%;
+  cursor:pointer;font-size:13px;line-height:1;font-family:inherit}
+.fhint{color:var(--ink-3);font-size:13px}
+
+/* ---- split layout: results (left) + sticky data globe (right) ---- */
+.split{display:grid;grid-template-columns:1fr;gap:20px}
+@media(min-width:900px){.split{grid-template-columns:1.12fr .88fr;align-items:start}}
+
+.grid{display:grid;grid-template-columns:1fr;gap:16px}
+@media(min-width:560px){.grid{grid-template-columns:1fr 1fr}}
+
+.hcard{background:var(--card);border:1px solid var(--rule);border-radius:14px;overflow:hidden;
+  cursor:pointer;text-align:left;font-family:inherit;font-size:inherit;color:inherit;padding:0;
+  display:flex;flex-direction:column;transition:border-color .15s,box-shadow .15s}
+.hcard:hover{border-color:var(--ink-3)}
+.hcard.flash{border-color:var(--gold);box-shadow:0 0 0 2px rgba(176,129,47,.28)}
+.ph{position:relative;aspect-ratio:16/9;background:
+  repeating-linear-gradient(135deg,#EFEBE3 0 12px,#F5F2EC 12px 24px);
+  display:flex;align-items:center;justify-content:center}
+.phtext{color:var(--ink-3);font-size:11px;letter-spacing:.08em;text-transform:uppercase;text-align:center;padding:0 14px}
+.badge{position:absolute;top:10px;left:10px;font-size:11px;font-weight:700;letter-spacing:.04em;
+  padding:5px 9px;border-radius:6px}
+.b-ok{background:var(--ok-bg);color:var(--ok-ink)}
+.b-flat{background:var(--flat-bg);color:var(--flat-ink)}
+.b-none{background:var(--none-bg);color:var(--none-ink)}
+.city-tag{position:absolute;top:10px;right:10px;font-size:11px;font-weight:600;background:rgba(22,38,59,.72);
+  color:#fff;padding:4px 8px;border-radius:6px}
+.body{padding:12px 14px 14px;flex:1;display:flex;flex-direction:column}
+.hname{font-weight:600;font-size:15px;line-height:1.3}
+.hmeta{color:var(--ink-2);font-size:12.5px;margin-top:3px}
+.prices{margin-top:10px;padding-top:10px;border-top:1px solid var(--rule)}
+.ppts{font-size:14.5px;font-weight:600}
+.pcash{color:var(--ink-2);font-size:13px;margin-top:2px}
+.yours{margin-top:8px;font-size:13px}
+.yours b{font-weight:700}
+.dim{color:var(--ink-3)}
+
+/* ---- data globe ---- */
+.stage{background:var(--card);border:1px solid var(--rule);border-radius:14px;padding:16px;
+  position:sticky;top:16px}
+.stage h3{margin:0 0 3px;font-size:15px}
+.stage .shint{color:var(--ink-3);font-size:12.5px;margin:0 0 10px}
+canvas{display:block;width:100%;height:auto;border-radius:10px;background:#FCFAF6;cursor:pointer}
+.legend{margin-top:13px;font-size:12.5px;color:var(--ink-2);display:grid;gap:5px}
+.legend .k{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:7px;vertical-align:middle}
+.readout{margin-top:12px;padding-top:12px;border-top:1px solid var(--rule);font-size:13px;color:var(--ink-2);min-height:34px}
+.readout b{color:var(--ink-1)}
+
+.banner{background:var(--gold-soft);border:1px solid var(--warn-line);border-radius:12px;
+  padding:15px 17px;margin-top:22px;font-size:14px;line-height:1.55}
+.banner b{display:block;margin-bottom:3px}
+footer{margin-top:24px;color:var(--ink-3);font-size:12.5px;line-height:1.6}
+@media(prefers-reduced-motion:reduce){.hcard{transition:none}}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <h1>Stay on Points</h1>
+  <p class="sub">What a night costs in <em style="font-style:normal;font-weight:600">your</em> points — not theirs.
+  The map is the list: every pin is priced through your own cards, and greyed where we have no route. Tap a pin to
+  narrow the stays.</p>
+
+  <div class="band">
+    <div class="mono">12–14 Sept &middot; 1 room &middot; from Bengaluru wallet: Infinia, Regalia, Amex Plat Travel</div>
+    <button class="edit">Edit</button>
+  </div>
+
+  <div class="filterbar" id="filterbar"></div>
+
+  <div class="split">
+    <div class="grid" id="grid"><!-- cards render here --></div>
+
+    <div class="stage">
+      <h3>Where your points reach</h3>
+      <p class="shint">Pin = cheapest night in your points &middot; count of stays. Tap to filter.</p>
+      <canvas id="globe" width="620" height="520" aria-label="Data globe: cheapest points-per-night by city, colored by whether your cards can reach it"></canvas>
+      <div class="legend">
+        <div><span class="k" style="background:#B0812F"></span>Bengaluru — your home wallet</div>
+        <div><span class="k" style="background:#245B33"></span>Reachable with your cards <span class="dim" id="lg-ok"></span></div>
+        <div><span class="k" style="background:#8A97A6"></span>Award space exists, no route from your wallet <span class="dim" id="lg-no"></span></div>
+      </div>
+      <div class="readout" id="readout">Tap a pin to see the cheapest stay it holds.</div>
+    </div>
+  </div>
+
+  <div class="banner">
+    <b>The map can never disagree with the list</b>
+    Every pin is derived from the same priced stays shown on the left — cheapest-in-your-points and the count come
+    straight off those rows. A grey pin is a city where award space exists but no card in your wallet transfers into
+    it; we colour it honestly rather than hide it.
+  </div>
+
+  <footer>
+    Mockup only — <b>fixture data</b>, no live hotel-award pricing exists yet (points/night and reachability here are
+    hand-set to show the design). Photo placeholders deliberate.<br>
+    This 2D canvas stands in for the real component, which will be a <b>light globe.gl 3D globe</b> (deps + texture
+    pipeline reused from the shelved landing globe), poster-first, desktop-gated, rAF stopped off-screen.
+  </footer>
+</div>
+
+<script>
+/* ============================================================
+   ONE SOURCE OF TRUTH — the priced stays. The globe pins are
+   DERIVED from this array, so map and list cannot disagree.
+   States mirror the list badge vocabulary exactly:
+     reachable    -> green  (WORTH IT)
+     book-cash    -> flat   (still "reachable", but cash wins)
+     not-priced   -> grey   (award exists, no route we verify)
+     cant-transfer-> grey   (a held card has no partner for it)
+   A pin is GREEN if the city has >=1 reachable/book-cash stay,
+   else GREY. cheapestPts = min points/night among priced stays.
+   ============================================================ */
+var HOME={n:'Bengaluru',la:12.97,lo:77.59};
+var STAYS=[
+  // Paris — reachable via Accor/Marriott
+  {id:'p1',city:'Paris',la:48.85,lo:2.35,name:'Novotel Paris Gare de Lyon',prog:'Accor ALL · Novotel',
+   pts:9486,cash:21125,state:'reachable',your:'18,972 Infinia pts at 2:1 — ₹1.11 each. 11% over SmartBuy.'},
+  {id:'p2',city:'Paris',la:48.85,lo:2.35,name:'Le Méridien Etoile',prog:'Marriott Bonvoy',
+   pts:31000,cash:18400,state:'book-cash',your:'62,000 Infinia pts — ₹0.30 each, same as statement credit. Pay cash.'},
+  {id:'p3',city:'Paris',la:48.85,lo:2.35,name:'Park Hyatt Paris-Vendôme',prog:'World of Hyatt',
+   pts:35000,cash:94300,state:'not-priced',your:'No Indian card we track transfers into World of Hyatt.'},
+  // Dubai — reachable
+  {id:'d1',city:'Dubai',la:25.2,lo:55.27,name:'Sofitel Dubai The Obelisk',prog:'Accor ALL · Sofitel',
+   pts:12200,cash:26400,state:'reachable',your:'24,400 Infinia pts at 2:1 — ₹1.08 each. Worth transferring.'},
+  {id:'d2',city:'Dubai',la:25.2,lo:55.27,name:'Le Royal Méridien Beach',prog:'Marriott Bonvoy',
+   pts:42000,cash:23900,state:'book-cash',your:'84,000 pts — ₹0.28 each. Cash is cheaper here.'},
+  // Singapore — reachable
+  {id:'s1',city:'Singapore',la:1.35,lo:103.8,name:'Pullman Singapore Orchard',prog:'Accor ALL · Pullman',
+   pts:10800,cash:24800,state:'reachable',your:'21,600 Infinia pts at 2:1 — ₹1.15 each.'},
+  // Tokyo — award exists, no route (Hyatt/independent)
+  {id:'t1',city:'Tokyo',la:35.68,lo:139.69,name:'Hyatt Regency Tokyo',prog:'World of Hyatt',
+   pts:26000,cash:31200,state:'not-priced',your:'No card in your wallet transfers into World of Hyatt.'},
+  {id:'t2',city:'Tokyo',la:35.68,lo:139.69,name:'Mercure Tokyo Ginza',prog:'Accor ALL · Mercure',
+   pts:9100,cash:20300,state:'cant-transfer',your:'Only your Regalia matches Accor — and Regalia has no transfer partners.'},
+  // New York — award exists, no route
+  {id:'n1',city:'New York',la:40.71,lo:-74.0,name:'The Standard High Line',prog:'Independent',
+   pts:null,cash:41800,state:'not-priced',your:'Independent hotel — no points programme to transfer into.'}
+];
+
+/* ---- derive city pins from STAYS (map = projection of list) ---- */
+function derivePins(){
+  var by={};
+  STAYS.forEach(function(s){
+    (by[s.city]=by[s.city]||[]).push(s);
+  });
+  return Object.keys(by).map(function(city){
+    var rows=by[city];
+    var reachablePts=rows.filter(function(r){return (r.state==='reachable'||r.state==='book-cash')&&r.pts!=null})
+                         .map(function(r){return r.pts});
+    var green=reachablePts.length>0;
+    return {
+      city:city, la:rows[0].la, lo:rows[0].lo, count:rows.length,
+      cheapest: green?Math.min.apply(null,reachablePts):null,
+      state: green?'ok':'none'
+    };
+  });
+}
+var PINS=derivePins();
+var okCount=PINS.filter(function(p){return p.state==='ok'}).length;
+var noCount=PINS.filter(function(p){return p.state==='none'}).length;
+document.getElementById('lg-ok').textContent='— '+okCount+' cities';
+document.getElementById('lg-no').textContent='— '+noCount+' cities';
+
+/* ---- shared selection state (the one surface) ---- */
+var selectedCity=null;
+
+function badgeFor(s){
+  if(s.state==='reachable') return {cls:'b-ok',txt:'WORTH IT'};
+  if(s.state==='book-cash') return {cls:'b-flat',txt:'BOOK WITH CASH'};
+  if(s.state==='cant-transfer') return {cls:'b-none',txt:"CARD CAN'T TRANSFER"};
+  return {cls:'b-none',txt:'NOT PRICED'};
+}
+function fmt(n){return n==null?'—':n.toLocaleString('en-IN')}
+
+function renderCards(){
+  var grid=document.getElementById('grid');
+  grid.innerHTML='';
+  var rows=STAYS.filter(function(s){return !selectedCity||s.city===selectedCity});
+  rows.forEach(function(s){
+    var b=badgeFor(s);
+    var el=document.createElement('button');
+    el.className='hcard';el.dataset.id=s.id;
+    el.innerHTML=
+      '<div class="ph"><span class="badge '+b.cls+'">'+b.txt+'</span>'+
+        '<span class="city-tag">'+s.city+'</span>'+
+        '<span class="phtext">hotel photo<br>source not yet decided</span></div>'+
+      '<div class="body"><div class="hname">'+s.name+'</div>'+
+        '<div class="hmeta">'+s.prog+'</div>'+
+        '<div class="prices"><div class="ppts mono">'+fmt(s.pts)+
+          ' <span class="dim" style="font-weight:400;font-size:12.5px">pts / night</span></div>'+
+          '<div class="pcash mono">or ₹'+fmt(s.cash)+' cash</div></div>'+
+        '<div class="yours"><span class="'+(s.state==='reachable'?'':'dim')+'">'+s.your+'</span></div></div>';
+    grid.appendChild(el);
+  });
+  updateCount();
+}
+function updateCount(){
+  var shown=STAYS.filter(function(s){return !selectedCity||s.city===selectedCity});
+  var priced=shown.filter(function(s){return s.state==='reachable'||s.state==='book-cash'}).length;
+  document.getElementById('count') && (document.getElementById('count').remove());
+  // filter bar
+  var fb=document.getElementById('filterbar');fb.innerHTML='';
+  if(selectedCity){
+    fb.innerHTML='<span class="fpill">'+selectedCity+' · '+shown.length+' stays'+
+      ' <button title="Clear" onclick="clearFilter()">×</button></span>'+
+      '<span class="fhint">'+priced+' priced from your cards · tap another pin to switch</span>';
+  }else{
+    fb.innerHTML='<span class="fhint"><b style="color:var(--ink-1)">'+STAYS.length+
+      ' stays</b> across '+PINS.length+' cities · '+
+      STAYS.filter(function(s){return s.state==='reachable'||s.state==='book-cash'}).length+
+      ' priced from your cards · tap a pin to narrow</span>';
+  }
+}
+function clearFilter(){selectedCity=null;draw();renderCards();setReadout(null);}
+window.clearFilter=clearFilter;
+
+function selectCity(city){
+  selectedCity=(selectedCity===city)?null:city;
+  draw();renderCards();
+  var pin=PINS.filter(function(p){return p.city===city})[0];
+  setReadout(selectedCity?pin:null);
+  // flash the matching cards
+  if(selectedCity){
+    setTimeout(function(){
+      document.querySelectorAll('.hcard').forEach(function(c){c.classList.add('flash');
+        setTimeout(function(){c.classList.remove('flash')},650);});
+    },20);
+  }
+}
+function setReadout(pin){
+  var r=document.getElementById('readout');
+  if(!pin){r.innerHTML='Tap a pin to see the cheapest stay it holds.';return;}
+  if(pin.state==='ok'){
+    r.innerHTML='<b>'+pin.city+'</b> — cheapest in your points: <b class="mono">'+fmt(pin.cheapest)+
+      ' pts</b>/night · '+pin.count+' stay'+(pin.count>1?'s':'')+' found.';
+  }else{
+    r.innerHTML='<b>'+pin.city+'</b> — '+pin.count+' award stay'+(pin.count>1?'s':'')+
+      ', but <span class="dim">no route from your wallet</span>. We won’t put a points figure on it.';
+  }
+}
+
+/* ---- the light globe (2D canvas stand-in for the real globe.gl light globe) ---- */
+var cv=document.getElementById('globe'),ctx=cv.getContext('2d');
+var W=cv.width,H=cv.height,R=Math.min(W,H)*0.42,CX=W/2,CY=H/2,rot=20;
+var reduce=window.matchMedia('(prefers-reduced-motion:reduce)').matches;
+var screenPins=[]; // {city,x,y,state,r} for hit-testing
+
+function proj(la,lo){
+  var p=(90-la)*Math.PI/180,th=(lo+rot)*Math.PI/180;
+  return {x:CX+R*Math.sin(p)*Math.sin(th),y:CY-R*Math.cos(p),z:Math.sin(p)*Math.cos(th)};
+}
+function draw(){
+  ctx.clearRect(0,0,W,H);
+  // light sphere
+  ctx.beginPath();ctx.arc(CX,CY,R,0,7);ctx.fillStyle='#F7F4EE';ctx.fill();
+  ctx.strokeStyle='#E4E0D8';ctx.lineWidth=1;
+  for(var la=-60;la<=60;la+=30){ctx.beginPath();
+    for(var lo=-180;lo<=180;lo+=4){var p=proj(la,lo);p.z>0?ctx.lineTo(p.x,p.y):ctx.moveTo(p.x,p.y);}ctx.stroke();}
+  for(var lo2=0;lo2<360;lo2+=30){ctx.beginPath();
+    for(var la2=-90;la2<=90;la2+=4){var q=proj(la2,lo2);q.z>0?ctx.lineTo(q.x,q.y):ctx.moveTo(q.x,q.y);}ctx.stroke();}
+  ctx.beginPath();ctx.arc(CX,CY,R,0,7);ctx.strokeStyle='#D8D3C8';ctx.stroke();
+
+  var home=proj(HOME.la,HOME.lo);
+  screenPins=[];
+
+  // arcs home->reachable (subtle), only for green pins
+  PINS.forEach(function(pin){
+    var p=proj(pin.la,pin.lo);
+    if(p.z>0&&home.z>0&&pin.state==='ok'){
+      var mx=(home.x+p.x)/2,my=(home.y+p.y)/2,dx=mx-CX,dy=my-CY,d=Math.sqrt(dx*dx+dy*dy)||1;
+      ctx.beginPath();ctx.moveTo(home.x,home.y);
+      ctx.quadraticCurveTo(mx+dx/d*34,my+dy/d*34,p.x,p.y);
+      ctx.strokeStyle='rgba(36,91,51,.28)';ctx.lineWidth=1.3;ctx.stroke();
+    }
+  });
+
+  // home marker
+  if(home.z>0){
+    ctx.beginPath();ctx.arc(home.x,home.y,5.5,0,7);ctx.fillStyle='#B0812F';ctx.fill();
+    ctx.fillStyle='#4A5A6E';ctx.font='11px -apple-system,sans-serif';ctx.fillText('Bengaluru',home.x+9,home.y+3);
+  }
+
+  // city pins with DATA labels
+  PINS.forEach(function(pin){
+    var p=proj(pin.la,pin.lo);if(p.z<=0)return;
+    var sel=(selectedCity===pin.city);
+    var col=pin.state==='ok'?'#245B33':'#8A97A6';
+    var rad=sel?7:5;
+    if(sel){ctx.beginPath();ctx.arc(p.x,p.y,rad+5,0,7);ctx.strokeStyle=col;ctx.lineWidth=2;ctx.stroke();}
+    ctx.beginPath();ctx.arc(p.x,p.y,rad,0,7);ctx.fillStyle=col;ctx.fill();
+    ctx.strokeStyle='#fff';ctx.lineWidth=1.5;ctx.stroke();
+    screenPins.push({city:pin.city,x:p.x,y:p.y,r:14});
+    // data label
+    var label=pin.state==='ok'
+      ? pin.city+' · from '+fmt(pin.cheapest)+' pts · '+pin.count
+      : pin.city+' · no route · '+pin.count;
+    ctx.font=(sel?'600 ':'')+'11.5px -apple-system,sans-serif';
+    var tw=ctx.measureText(label).width;
+    var lx=p.x+10, ly=p.y-8;
+    if(lx+tw>W-6) lx=p.x-10-tw; // keep on-canvas
+    // label chip
+    ctx.fillStyle='rgba(255,255,255,.82)';
+    ctx.fillRect(lx-4,ly-11,tw+8,16);
+    ctx.fillStyle=pin.state==='ok'?'#16263B':'#8A97A6';
+    ctx.fillText(label,lx,ly+1);
+  });
+}
+
+/* hit-testing: click a pin -> filter list */
+cv.addEventListener('click',function(e){
+  var rect=cv.getBoundingClientRect();
+  var scaleX=cv.width/rect.width, scaleY=cv.height/rect.height;
+  var mx=(e.clientX-rect.left)*scaleX, my=(e.clientY-rect.top)*scaleY;
+  var hit=null,best=1e9;
+  screenPins.forEach(function(sp){
+    var dx=sp.x-mx,dy=sp.y-my,d=dx*dx+dy*dy;
+    if(d<sp.r*sp.r*4 && d<best){best=d;hit=sp.city;}
+  });
+  if(hit) selectCity(hit);
+});
+
+/* slow rotate (paused by reduced-motion; the real component also stops off-screen/hidden) */
+function loop(){rot+=0.10;draw();requestAnimationFrame(loop);}
+draw();renderCards();updateCount();
+if(!reduce) loop();
+</script>
+</body>
+</html>
