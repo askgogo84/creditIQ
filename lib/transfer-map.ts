@@ -61,7 +61,7 @@ export interface TransferRoute {
 export const TRANSFER_MAP: Record<string, TransferRoute[]> = {
   // Singapore Airlines KrisFlyer — CONFIRMED LIVE slug.
   singapore: [
-    { cardCurrency: 'edge',          cardBank: 'Axis', ratio: [5, 4], verified: false }, // Axis EDGE (Magnus/Reserve) 5:4
+    { cardCurrency: 'edge',          cardBank: 'Axis', ratio: [5, 2], verified: false }, // Axis EDGE (Magnus/Reserve) 5:2 — devalued from 5:4 eff. 2 Apr 2026 (kept in sync with transfer-graph)
     { cardCurrency: 'miles',         cardBank: 'Axis', ratio: [1, 1], verified: false }, // Axis EDGE Miles (Atlas etc.) 1:1
     // HDFC reward-points -> KrisFlyer 1:1, but ONLY Infinia + Diners Black.
     // Regalia Gold (devalued) and Diners Privilege do NOT get this ratio.

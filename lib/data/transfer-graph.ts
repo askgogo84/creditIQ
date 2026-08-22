@@ -29,20 +29,31 @@ import type { TransferEdge } from '../transfer-ladder';
 const SRC = 'internal-estimate:lib/transfer-map.ts';
 const AS_OF = '2026-07-10';
 
+// Axis EDGE Rewards devaluation, EFFECTIVE 2 Apr 2026 (live-mispriced until this edit):
+// the KrisFlyer transfer was re-rated 5:4 -> 5:2, and Marriott Bonvoy / Accor ALL /
+// Qatar Privilege Club were dropped as Axis EDGE partners entirely. Those three were
+// never nodes in this graph, so there is nothing to remove here — but the KrisFlyer
+// ratio was live and wrong. No canonical issuer URL captured yet, so state stays
+// 'unverified' until one is attached (then it can flip to 'verified').
+const AXIS_DEVAL_ASOF = '2026-04-02';
+const AXIS_DEVAL_SRC = 'axis-edge-rewards-devaluation-2026-04-02';
+
 export const TRANSFER_EDGES: TransferEdge[] = [
-  // Axis EDGE (Magnus / Reserve) -> Singapore KrisFlyer, 5:4.
+  // Axis EDGE (Magnus / Reserve) -> Singapore KrisFlyer, 5:2 (devalued from 5:4,
+  // effective 2 Apr 2026 — the same change dropped Marriott / Accor / Qatar, which
+  // this graph never carried).
   {
     from_currency: 'axis_edge',
     to_programme: 'singapore',
     ratio_from: 5,
-    ratio_to: 4,
+    ratio_to: 2,
     min_transfer: null,
     duration_days_min: null,
     duration_days_max: null,
     bonus_note: null,
     state: 'unverified',
-    source: SRC,
-    as_of: AS_OF,
+    source: AXIS_DEVAL_SRC,
+    as_of: AXIS_DEVAL_ASOF,
     card_name_allowlist: null,
   },
 
