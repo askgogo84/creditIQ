@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "prebuild": "npm run check:card-links && npm run check:transfer-graph && npm run check:point-values",
+    "prebuild": "npm run check:card-links && npm run check:transfer-graph && npm run check:point-values && npm run check:airports",
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
@@ -13,6 +13,9 @@
     "check:card-links": "tsx scripts/validate-card-links.ts",
     "check:transfer-graph": "tsx scripts/validate-transfer-graph.ts",
     "check:point-values": "tsx scripts/validate-point-values.ts",
+    "check:airports": "tsx scripts/validate-airports.ts",
+    "gen:airports": "tsx scripts/gen-airports.ts",
+    "audit:affiliate-db": "tsx scripts/audit-affiliate-coverage-db.ts",
     "gen:card-art": "tsx scripts/gen-card-art-manifest.ts",
     "test": "vitest run"
   },

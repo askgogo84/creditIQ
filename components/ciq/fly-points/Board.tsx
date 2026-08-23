@@ -20,8 +20,9 @@
 import { useMemo, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { authedFetch } from '@/lib/authed-fetch';
-import { AirportSelect, labelFor } from '@/components/ciq/fly-points/AirportSelect';
-import { detectIataFromText } from '@/components/design/FlightSearch';
+import { useScrollToResults } from '@/lib/hooks/useScrollToResults';
+import { AirportSelect } from '@/components/ciq/fly-points/AirportSelect';
+import { labelFor, resolveCity } from '@/lib/data/airports';
 import type { RedemptionOption, CabinBest } from '@/lib/fusion-core';
 import { Ladder } from '@/components/ciq/fly-points/Ladder';
 import '@/components/ciq/fly-points/fly-points.css';
@@ -173,9 +174,10 @@ function fmtTaxes(trip: AwardView['trip']): string {
 
 export function Board() {
   const params = useSearchParams();
-  // ?q=Trip to <city> (from /explore etc.) prefills the destination. No city match
-  // -> default DXB. ?points=/&bank= are ignored: the board prices from wallet cards.
-  const qTo = detectIataFromText(params.get('q') || '') || 'DXB';
+  // ?q=Trip to <city> (from /explore etc.) prefills the destination. No recognised
+  // city -> EMPTY destination (the user picks one); never a silently-wrong default.
+  // ?points=/&bank= are ignored: the board prices from wallet cards.
+  const qTo = resolveCity(params.get('q') || '') || '';
 
   const [from, setFrom] = useState('BLR');
   const [to, setTo] = useState(qTo);
@@ -196,6 +198,7 @@ export function Board() {
   // they narrow to what their wallet can fund. My cards is the deliberate narrowing,
   // not the starting point.
   const [cardsScope, setCardsScope] = useState<'mine' | 'all'>('all');
+  const { ref: resultsRef, scrollToResults } = useScrollToResults();
 
   const dateFrom = flex > 0 ? shiftISO(date, -flex) : date;
   const dateTo = flex > 0 ? shiftISO(date, flex) : date;
@@ -224,6 +227,7 @@ export function Board() {
       const awardRows: FusionRow[] = (data.flights || []).filter((r: FusionRow) => r.award);
       setRows(awardRows);
       setCollapsed(true);
+      if (awardRows.length > 0) scrollToResults();
     } catch {
       setError('Couldn’t reach the award search just now — try again in a moment.');
     } finally {
@@ -316,7 +320,7 @@ export function Board() {
             </select>
           </div>
 
-          <button className="fp-btn" onClick={search} disabled={loading || from === to}>
+          <button className="fp-btn" onClick={search} disabled={loading || !from || !to || from === to}>
             {loading ? 'Searching…' : 'Search'}
           </button>
         </div>
@@ -336,7 +340,7 @@ export function Board() {
       {/* FILTERS + RESULTS */}
       {rows && !loading && (
         <>
-          <div className="fp-filters" role="group" aria-label="Filters">
+          <div ref={resultsRef} className="fp-filters" role="group" aria-label="Filters" style={{ scrollMarginTop: 16 }}>
             <button className="fp-chip" aria-pressed={!nonStop} onClick={() => setNonStop(false)}>All stops</button>
             <button className="fp-chip" aria-pressed={nonStop} onClick={() => setNonStop(true)}>Non-stop</button>
             <button

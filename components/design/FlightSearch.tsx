@@ -85,34 +85,10 @@ function getBookingUrl(option: BookingOption, result: FlightResult, tripType: st
   return option.getUrl(result.from, result.to, result.date, result.return_date, tripType);
 }
 
-// Popular Indian airport codes
-// City name → IATA for natural language detection
-export const CITY_TO_IATA: Record<string, string> = {
-  'bangalore': 'BLR', 'bengaluru': 'BLR', 'delhi': 'DEL', 'new delhi': 'DEL',
-  'mumbai': 'BOM', 'bombay': 'BOM', 'chennai': 'MAA', 'madras': 'MAA',
-  'hyderabad': 'HYD', 'kolkata': 'CCU', 'calcutta': 'CCU',
-  'kochi': 'COK', 'cochin': 'COK', 'goa': 'GOI',
-  'pune': 'PNQ', 'ahmedabad': 'AMD', 'jaipur': 'JAI',
-  'bali': 'DPS', 'denpasar': 'DPS',
-  'singapore': 'SIN', 'dubai': 'DXB', 'bangkok': 'BKK',
-  'london': 'LHR', 'new york': 'JFK', 'nyc': 'JFK',
-  'paris': 'CDG', 'tokyo': 'NRT', 'sydney': 'SYD',
-  'kuala lumpur': 'KUL', 'kl': 'KUL', 'hong kong': 'HKG',
-  'phuket': 'HKT', 'colombo': 'CMB', 'maldives': 'MLE', 'male': 'MLE',
-  'istanbul': 'IST', 'doha': 'DOH', 'abu dhabi': 'AUH', 'muscat': 'MCT',
-  'amsterdam': 'AMS', 'rome': 'FCO', 'frankfurt': 'FRA',
-  'los angeles': 'LAX', 'san francisco': 'SFO', 'toronto': 'YYZ',
-  'nairobi': 'NBO', 'johannesburg': 'JNB', 'kathmandu': 'KTM',
-  'seoul': 'ICN', 'taipei': 'TPE', 'jakarta': 'CGK',
-};
-
-export function detectIataFromText(text: string): string | null {
-  const lower = text.toLowerCase();
-  for (const [city, iata] of Object.entries(CITY_TO_IATA)) {
-    if (lower.includes(city)) return iata;
-  }
-  return null;
-}
+// NOTE: the former CITY_TO_IATA map and detectIataFromText() lived here and were a
+// second, divergent airport list. They were removed — city→IATA resolution is now
+// resolveCity() in lib/data/airports (the single source of truth). This component
+// keeps only its own inline picker list (AIRPORTS, below) for its legacy UI.
 
 export const INDIRECT_ROUTES: Record<string, { via: string; hub: string }> = {
   'DPS': { via: 'SIN', hub: 'Singapore' },
