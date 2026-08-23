@@ -7,6 +7,8 @@ import { DesignFooter } from '@/components/design/Footer';
 import { SEED_CARDS } from '@/lib/data/seed-cards';
 import { getApplyUrl } from '@/lib/affiliate';
 import { authedFetch } from '@/lib/authed-fetch';
+import { useScrollToResults } from '@/lib/hooks/useScrollToResults';
+import { StatusGlyph } from '@/components/ciq/StatusGlyph';
 
 type Step = 'current' | 'reason' | 'debt' | 'result';
 
@@ -80,6 +82,11 @@ export default function CardSwitchPage() {
   const [currentInterestRate, setCurrentInterestRate] = useState('36');
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<{ cards: Recommendation[]; summary: string; btSavings?: number } | null>(null);
+  const { ref: stepRef, scrollToResults } = useScrollToResults();
+  // Advance (or go back) a wizard step and bring the new step into view — the
+  // step content renders below the fold on mobile, so a plain setStep left the
+  // viewport parked on the old step.
+  const goStep = (s: Step) => { setStep(s); scrollToResults(); };
 
   const currentCard = CARD_OPTIONS.find(c => c.id === currentCardId);
   const debtAmt = parseInt(outstandingDebt.replace(/,/g, '')) || 0;
@@ -105,8 +112,9 @@ export default function CardSwitchPage() {
       });
       const data = await res.json();
       setResult(data);
-      setStep('result');
+      goStep('result');
     } catch {
+      // Error/fallback path: still show fallback cards, but do NOT auto-scroll.
       setResult({
         summary: 'Analysis complete. Here are your best switch options.',
         cards: SEED_CARDS
@@ -161,6 +169,11 @@ export default function CardSwitchPage() {
           ))}
         </div>
 
+        {/* Wizard steps — one ref for the whole step region; goStep() scrolls here
+            on every advance so the new step is in view (offset 16: shell has no
+            fixed top header). */}
+        <div ref={stepRef} style={{ scrollMarginTop: 16 }}>
+
         {/* Step 1 -- Current card */}
         {step === 'current' && (
           <div style={CARD}>
@@ -200,7 +213,7 @@ export default function CardSwitchPage() {
             )}
 
             <button
-              onClick={() => currentCardId && setStep('reason')}
+              onClick={() => currentCardId && goStep('reason')}
               disabled={!currentCardId}
               style={{
                 ...COPPER_BTN, width: '100%',
@@ -246,9 +259,9 @@ export default function CardSwitchPage() {
             </div>
 
             <div style={{ display: 'flex', gap: 10 }}>
-              <button onClick={() => setStep('current')} style={{ ...GHOST_BTN, flex: 1 }}>Back</button>
+              <button onClick={() => goStep('current')} style={{ ...GHOST_BTN, flex: 1 }}>Back</button>
               <button
-                onClick={() => setStep('debt')}
+                onClick={() => goStep('debt')}
                 disabled={selectedReasons.length === 0}
                 style={{
                   ...COPPER_BTN, flex: 2,
@@ -316,7 +329,7 @@ export default function CardSwitchPage() {
             )}
 
             <div style={{ display: 'flex', gap: 10 }}>
-              <button onClick={() => setStep('reason')} style={{ ...GHOST_BTN, flex: 1 }}>Back</button>
+              <button onClick={() => goStep('reason')} style={{ ...GHOST_BTN, flex: 1 }}>Back</button>
               <button
                 onClick={analyze}
                 disabled={loading}
@@ -385,7 +398,7 @@ export default function CardSwitchPage() {
                     <div style={{ flex: 1 }}>
                       <div style={{ fontSize: 19, fontWeight: 800, color: 'var(--ink)', marginBottom: 6 }}>{card.name}</div>
                       {(card.reasons || []).map((r, j) => (
-                        <div key={j} style={{ fontSize: 13, color: 'var(--green)', marginBottom: 2 }}>(ok) {r}</div>
+                        <div key={j} style={{ fontSize: 13, color: 'var(--green)', marginBottom: 2, display: 'flex', alignItems: 'center', gap: 6 }}><StatusGlyph kind="check" color="var(--green)" size={13} /> {r}</div>
                       ))}
                     </div>
                     <div style={{ textAlign: 'right', flexShrink: 0 }}>
@@ -397,11 +410,11 @@ export default function CardSwitchPage() {
                   </div>
 
                   <div style={{ display: 'flex', gap: 10 }}>
-                    <a href={url} target="_blank" rel="noopener noreferrer" style={{
+                    {url && <a href={url} target="_blank" rel="noopener noreferrer" style={{
                       flex: 1, display: 'block', textAlign: 'center', padding: '10px 20px',
                       background: 'var(--copper)', color: 'var(--surface)',
                       borderRadius: 10, fontSize: 13, fontWeight: 700, textDecoration: 'none',
-                    }}>{label}</a>
+                    }}>{label}</a>}
                     <Link href={`/card/${card.slug || card.id || ""}`} style={{
                       flex: 1, display: 'block', textAlign: 'center', padding: '10px 20px',
                       background: 'var(--surface-2)', color: 'var(--ink)',
@@ -414,13 +427,14 @@ export default function CardSwitchPage() {
             })}
 
             <button
-              onClick={() => { setStep('current'); setResult(null); setSelectedReasons([]); setOutstandingDebt(''); }}
+              onClick={() => { setResult(null); setSelectedReasons([]); setOutstandingDebt(''); goStep('current'); }}
               style={{ ...GHOST_BTN, width: '100%', marginTop: 8 }}
             >
               Start over
             </button>
           </>
         )}
+        </div>
       </main>
       <DesignFooter />
     </div>

@@ -3,7 +3,7 @@
 // Source: EarnKaro bitli.in tracked links
 // Last updated: 25 May 2026
 
-const AFFILIATE_LINKS: Record<string, string> = {
+export const AFFILIATE_LINKS: Record<string, string> = {
   //  HDFC 
   "hdfc-regalia":              "https://bitli.in/s7cak4c",
   "hdfc-regalia-gold":         "https://bitli.in/s7cak4c",
@@ -165,28 +165,56 @@ const AFFILIATE_LINKS: Record<string, string> = {
   "kayak-flights":             "https://bitli.in/Pb5juMv",
 };
 
-const DEFAULT_AFFILIATE_URL = "https://www.paisabazaar.com/credit-card/";
+// A resolved apply link, or an explicit no-link state. There is deliberately NO
+// default/fallback URL: a card with no tracked link resolves to `type: "none"`
+// and callers must render no apply button rather than misdirect the user
+// (previously a missing slug silently routed to a Paisabazaar competitor page).
+export type ApplyLink =
+  | { url: string; type: "affiliate" | "direct"; label: string }
+  | { url: null; type: "none"; label: null };
 
-export function getAffiliateUrl(cardId: string): string {
-  const normalized = cardId.toLowerCase().replace(/\s+/g, "-");
-  return AFFILIATE_LINKS[normalized] ?? DEFAULT_AFFILIATE_URL;
+const NO_LINK: ApplyLink = { url: null, type: "none", label: null };
+
+function normalizeKey(s: string): string {
+  return s.toLowerCase().replace(/\s+/g, "-");
 }
 
-export function getApplyUrl(cardId: unknown): { url: string; type: "affiliate" | "direct" | "paisabazaar"; label: string } {
-  const id = typeof cardId === "string"
-    ? cardId
-    : String((cardId as Record<string, unknown>)?.id ?? (cardId as Record<string, unknown>)?.slug ?? (cardId as Record<string, unknown>)?.name ?? "");
-  const normalized = id.toLowerCase().replace(/\s+/g, "-");
-  const url = AFFILIATE_LINKS[normalized] ?? DEFAULT_AFFILIATE_URL;
-  const type: "affiliate" | "direct" | "paisabazaar" = url.includes("bitli.in") ? "affiliate" : url.includes("paisabazaar") ? "paisabazaar" : "direct";
+// SINGLE SOURCE OF TRUTH for affiliate resolution. Tries id, then slug, then
+// name, returning the FIRST candidate that MATCHES a map key — not merely the
+// first non-null candidate. This matters because the live Supabase catalogue
+// gives many rows a UUID `id` whose `slug` still matches the map; stopping at
+// the (non-null, non-matching) UUID would miss them. getApplyUrl and the
+// coverage audits all route through this so runtime and audit can never drift.
+export function resolveAffiliate(cardId: unknown): { key: string; url: string } | null {
+  const candidates: unknown[] = typeof cardId === "string"
+    ? [cardId]
+    : cardId && typeof cardId === "object"
+      ? [(cardId as Record<string, unknown>).id, (cardId as Record<string, unknown>).slug, (cardId as Record<string, unknown>).name]
+      : [];
+  for (const c of candidates) {
+    if (typeof c !== "string" || !c) continue;
+    const key = normalizeKey(c);
+    const url = AFFILIATE_LINKS[key];
+    if (url) return { key, url };
+  }
+  return null;
+}
+
+export function getAffiliateUrl(cardId: string): string | null {
+  return resolveAffiliate(cardId)?.url ?? null;
+}
+
+export function getApplyUrl(cardId: unknown): ApplyLink {
+  const match = resolveAffiliate(cardId);
+  if (!match) return NO_LINK;
+  const type: "affiliate" | "direct" = match.url.includes("bitli.in") ? "affiliate" : "direct";
   const label = type === "affiliate" ? "Apply & Earn" : "Apply Now";
-  return { url, type, label };
+  return { url: match.url, type, label };
 }
 
-export function hasTrackedLink(cardId: string): boolean {
-  const normalized = cardId.toLowerCase().replace(/\s+/g, "-");
-  const url = AFFILIATE_LINKS[normalized];
-  return !!url && url.includes("bitli.in");
+export function hasTrackedLink(cardId: unknown): boolean {
+  const match = resolveAffiliate(cardId);
+  return !!match && match.url.includes("bitli.in");
 }
 
 export function getTrackedCardIds(): string[] {

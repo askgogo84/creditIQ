@@ -10,7 +10,13 @@ export async function GET(req: NextRequest, { params }: { params: { cardId: stri
     return NextResponse.redirect(new URL('/', req.url));
   }
 
-  const { url, type } = getApplyUrl(card);
+  const { url } = getApplyUrl(card);
+
+  // No tracked/apply link for this card — send home rather than to a
+  // misdirected or broken URL (getApplyUrl no longer returns a default).
+  if (!url) {
+    return NextResponse.redirect(new URL('/', req.url));
+  }
 
   // TODO: Log click to analytics (Supabase applications table)
   // For now we just redirect

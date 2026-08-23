@@ -19,6 +19,7 @@
 import { readdirSync, readFileSync } from 'fs';
 import { join } from 'path';
 import { SEED_CARDS } from '../lib/data/seed-cards';
+import { resolveAffiliate } from '../lib/affiliate';
 
 const valid = new Set<string>(SEED_CARDS.flatMap((c) => [c.id, c.slug]));
 
@@ -89,6 +90,23 @@ if (integrity.length) {
   console.error(`\n✗ validate-card-links: ${integrity.length} SEED_CARDS integrity failure(s) in ${SEED_FILE}:\n`);
   integrity.forEach((o) => console.error('  - ' + o));
   console.error('');
+  process.exit(1);
+}
+
+// ---------------------------------------------------------------------------
+// Affiliate coverage over the CODE catalogue (SEED_CARDS).
+// A card with no AFFILIATE_LINKS entry now renders NO apply button (the
+// Paisabazaar default was removed). Uses the SAME resolveAffiliate() as runtime
+// so this can't drift from what the app actually does. SCOPE: code-defined cards
+// only — production serves Supabase (getAllCards), which is audited separately
+// and off-build by `npm run audit:affiliate-db` (needs DB creds).
+// ---------------------------------------------------------------------------
+const noAffiliate = SEED_CARDS.filter((c) => !resolveAffiliate(c)).map((c) => `${c.id} (${c.bank})`);
+if (noAffiliate.length) {
+  console.error(`\n✗ validate-card-links: ${noAffiliate.length} SEED_CARDS card(s) have NO AFFILIATE_LINKS entry — they render no apply button:\n`);
+  noAffiliate.forEach((o) => console.error('  - ' + o));
+  console.error('\nAdd a tracked/direct link in lib/affiliate.ts (keyed by id or slug), or remove the card.');
+  console.error('NOTE: this covers code cards only; audit the live Supabase catalogue with `npm run audit:affiliate-db`.\n');
   process.exit(1);
 }
 

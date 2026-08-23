@@ -7,6 +7,7 @@ import { PageHeader } from '@/components/ciq/PageHeader';
 import { SEED_CARDS } from '@/lib/data/seed-cards';
 import { getApplyUrl } from '@/lib/affiliate';
 import { EstimatedValue } from '@/components/cards/Unverified';
+import { useScrollToResults } from '@/lib/hooks/useScrollToResults';
 import { X, Plus } from 'lucide-react';
 
 const ALL_CARDS = SEED_CARDS as any[];
@@ -22,6 +23,7 @@ export default function ComparePage() {
   const [selected, setSelected] = useState<string[]>([]);
   const [search, setSearch] = useState('');
   const [showPicker, setShowPicker] = useState(false);
+  const { ref: tableRef, scrollToResults } = useScrollToResults();
 
   const selectedCards = selected.map(id => ALL_CARDS.find(c => c.id === id)).filter(Boolean) as CompareCard[];
   const filtered = ALL_CARDS.filter(c =>
@@ -29,7 +31,15 @@ export default function ComparePage() {
     !selected.includes(c.id)
   ).slice(0, 20);
 
-  const addCard = (id: string) => { if (selected.length < 4 && !selected.includes(id)) setSelected([...selected, id]); setSearch(''); };
+  const addCard = (id: string) => {
+    if (selected.length < 4 && !selected.includes(id)) {
+      const next = [...selected, id];
+      setSelected(next);
+      // Once there are 2+ cards the comparison table appears below — bring it into view.
+      if (next.length >= 2) scrollToResults();
+    }
+    setSearch('');
+  };
   const removeCard = (id: string) => setSelected(selected.filter(s => s !== id));
 
   const ROWS: { label: string; field?: string; key: (c: CompareCard) => string }[] = [
@@ -75,7 +85,7 @@ export default function ComparePage() {
                         <EstimatedValue slug={card.id} field="annual_fee_inr" baseColor={fee === 0 ? '#2d7a56' : 'var(--ink,#142950)'}>{fee === 0 ? 'FREE' : `Rs.${fee.toLocaleString('en-IN')}`}</EstimatedValue>
                       </div>
                       <div style={{ fontFamily: 'var(--font-mono,monospace)', fontSize: 9, color: 'var(--ink-3,#5A6A8A)', marginBottom: 14, textTransform: 'uppercase', letterSpacing: '0.1em' }}>annual fee</div>
-                      <a href={url} target="_blank" rel="noopener noreferrer" style={{ display: 'block', textAlign: 'center', padding: '10px', background: 'var(--copper-3,#D89B2A)', color: '#fff', borderRadius: 10, fontSize: 13, fontWeight: 700, textDecoration: 'none', marginBottom: 8 }}>{label}</a>
+                      {url && <a href={url} target="_blank" rel="noopener noreferrer" style={{ display: 'block', textAlign: 'center', padding: '10px', background: 'var(--copper-3,#D89B2A)', color: '#fff', borderRadius: 10, fontSize: 13, fontWeight: 700, textDecoration: 'none', marginBottom: 8 }}>{label}</a>}
                       <Link href={`/card/${card.id}`} style={{ display: 'block', textAlign: 'center', padding: '8px', background: 'transparent', color: 'var(--ink,#142950)', borderRadius: 10, fontSize: 12, fontWeight: 600, textDecoration: 'none', border: '1.5px solid var(--line,rgba(20,41,80,0.12))' }}>Full review</Link>
                     </div>
                   </div>
@@ -115,7 +125,7 @@ export default function ComparePage() {
             )}
 
             {selectedCards.length >= 2 && (
-              <div style={{ background: 'var(--paper,#FAF5EB)', borderRadius: 18, border: '1px solid var(--line,rgba(20,41,80,0.08))', overflow: 'hidden', marginBottom: 24 }}>
+              <div ref={tableRef} style={{ background: 'var(--paper,#FAF5EB)', borderRadius: 18, border: '1px solid var(--line,rgba(20,41,80,0.08))', overflow: 'hidden', marginBottom: 24, scrollMarginTop: 16 }}>
                 <div style={{ display: 'grid', gridTemplateColumns: `180px repeat(${selectedCards.length},1fr)`, background: 'var(--ink,#142950)' }}>
                   <div style={{ padding: '14px 20px', fontFamily: 'var(--font-mono,monospace)', fontSize: 9, fontWeight: 700, color: 'rgba(255,255,255,0.35)', textTransform: 'uppercase', letterSpacing: '0.14em' }}>Feature</div>
                   {selectedCards.map(card => (

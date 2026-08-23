@@ -7,6 +7,8 @@ import { DesignFooter } from '@/components/design/Footer';
 import { SEED_CARDS } from '@/lib/data/seed-cards';
 import { getApplyUrl } from '@/lib/affiliate';
 import { EstimatedValue, UnverifiedRowBadge } from '@/components/cards/Unverified';
+import { useScrollToResults } from '@/lib/hooks/useScrollToResults';
+import { StatusGlyph } from '@/components/ciq/StatusGlyph';
 
 interface OddsResult {
   cardId: string;
@@ -33,6 +35,7 @@ export default function ApprovalOddsPage() {
   const [loading, setLoading] = useState(false);
   const [results, setResults] = useState<OddsResult[]>([]);
   const [calculated, setCalculated] = useState(false);
+  const { ref: resultsRef, scrollToResults } = useScrollToResults();
 
   const calculate = () => {
     setLoading(true);
@@ -130,6 +133,7 @@ export default function ApprovalOddsPage() {
       setResults(cardResults);
       setCalculated(true);
       setLoading(false);
+      if (cardResults.length > 0) scrollToResults();
     }, 800);
   };
 
@@ -165,8 +169,14 @@ export default function ApprovalOddsPage() {
               <input type="number" value={cibil} onChange={e => setCibil(e.target.value)}
                 min="300" max="900" placeholder="e.g. 750"
                 style={{ width: '100%', height: 44, padding: '0 14px', background: 'var(--bg-input, #f8fafc)', border: '1px solid var(--border, #e2e8f0)', borderRadius: 10, fontSize: 15, color: 'var(--text, #0f172a)', outline: 'none', boxSizing: 'border-box' as const }} />
-              <div style={{ fontSize: 11, color: 'var(--text-muted, #8888AA)', marginTop: 4 }}>
-                {parseInt(cibil) >= 750 ? '(ok) Excellent' : parseInt(cibil) >= 700 ? '~ Good' : '(x) Needs work'}
+              <div style={{ fontSize: 11, color: 'var(--text-muted, #8888AA)', marginTop: 4, display: 'flex', alignItems: 'center', gap: 5 }}>
+                {(() => {
+                  const v = parseInt(cibil);
+                  const kind = v >= 750 ? 'check' : v >= 700 ? 'neutral' : 'cross';
+                  const col = v >= 750 ? '#16a34a' : v >= 700 ? '#8888AA' : '#B84230';
+                  const txt = v >= 750 ? 'Excellent' : v >= 700 ? 'Good' : 'Needs work';
+                  return <><StatusGlyph kind={kind} color={col} size={12} /> {txt}</>;
+                })()}
               </div>
             </div>
 
@@ -218,7 +228,7 @@ export default function ApprovalOddsPage() {
         {calculated && results.length > 0 && (
           <>
             {/* Summary */}
-            <div style={{ background: 'linear-gradient(135deg, #1B3A5C, #0d2240)', borderRadius: 16, padding: '20px 24px', marginBottom: 24, border: '1px solid rgba(201,151,46,0.2)' }}>
+            <div ref={resultsRef} style={{ scrollMarginTop: 76, background: 'linear-gradient(135deg, #1B3A5C, #0d2240)', borderRadius: 16, padding: '20px 24px', marginBottom: 24, border: '1px solid rgba(201,151,46,0.2)' }}>
               <div style={{ fontSize: 13, color: 'rgba(255,255,255,0.5)', marginBottom: 4 }}>Based on CIBIL {cibil} . Rs.{parseInt(income).toLocaleString('en-IN')}/mo . {employment}</div>
               <div style={{ fontSize: 20, fontWeight: 800, color: '#fff' }}>
                 {topCards.length} cards with {'>'}65% approval odds
@@ -259,7 +269,7 @@ export default function ApprovalOddsPage() {
                           </div>
                         </div>
                         {card.reasons.slice(0, 2).map((r, j) => (
-                          <div key={j} style={{ fontSize: 12, color: card.gradeColor, marginBottom: 2 }}>(ok) {r}</div>
+                          <div key={j} style={{ fontSize: 12, color: card.gradeColor, marginBottom: 2, display: 'flex', alignItems: 'center', gap: 6 }}><StatusGlyph kind="check" color={card.gradeColor} size={13} /> {r}</div>
                         ))}
                       </div>
                       <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
@@ -270,12 +280,12 @@ export default function ApprovalOddsPage() {
                           fontSize: 12, fontWeight: 700, color: card.gradeColor,
                           textAlign: 'center' as const,
                         }}>{card.grade}</div>
-                        <a href={url} target="_blank" rel="noopener noreferrer" style={{
+                        {url && <a href={url} target="_blank" rel="noopener noreferrer" style={{
                           display: 'block', textAlign: 'center' as const, padding: '10px 20px',
                           background: 'linear-gradient(135deg, #C9972E, #E8B84B)',
                           color: '#0a0a0a', borderRadius: 10, fontSize: 13, fontWeight: 700,
                           textDecoration: 'none', whiteSpace: 'nowrap' as const,
-                        }}>{label}</a>
+                        }}>{label}</a>}
                         <Link href={`/card/${card.cardId}`} style={{
                           display: 'block', textAlign: 'center' as const, padding: '8px',
                           color: 'var(--text-muted, #8888AA)', fontSize: 12, textDecoration: 'none',

@@ -44,7 +44,7 @@ export function CardTile({ card, annualValue, reasoning, rank }: Props) {
   );
   const features = getKeyFeatures(card);
   const apr = (card as any).apr_percent;
-  const { url: applyUrl, type: affiliateType, label: applyLabel } = getApplyUrl(card);
+  const { url: applyUrl, type: affiliateType } = getApplyUrl(card);
 
   return (
     <article className="group relative flex flex-col bg-ink-900/40 border border-white/5 hover:border-copper-500/30 rounded-xl overflow-hidden transition-all duration-300">
@@ -125,21 +125,23 @@ export function CardTile({ card, annualValue, reasoning, rank }: Props) {
           <Link href={`/card/${card.slug}`} className="flex-1 text-center text-xs font-medium py-2.5 rounded transition-colors" style={{ color: 'var(--text-muted)', border: '1px solid var(--border)' }}>
             View details
           </Link>
-          <a
-            href={applyUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex-1 text-center text-xs font-bold py-2.5 rounded transition-all flex items-center justify-center gap-1"
-            style={{ background: 'var(--accent)', color: 'var(--accent-text)' }}
-            onClick={() => {
-              // Track affiliate click
-              if (typeof window !== 'undefined') {
-                fetch('/api/track-click', { method: 'POST', body: JSON.stringify({ cardId: card.id, type: affiliateType }), headers: { 'Content-Type': 'application/json' } }).catch(() => {});
-              }
-            }}
-          >
-            Apply <ExternalLink className="w-3 h-3" />
-          </a>
+          {applyUrl && (
+            <a
+              href={applyUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex-1 text-center text-xs font-bold py-2.5 rounded transition-all flex items-center justify-center gap-1"
+              style={{ background: 'var(--accent)', color: 'var(--accent-text)' }}
+              onClick={() => {
+                // Track affiliate click
+                if (typeof window !== 'undefined') {
+                  fetch('/api/track-click', { method: 'POST', body: JSON.stringify({ cardId: card.id, type: affiliateType }), headers: { 'Content-Type': 'application/json' } }).catch(() => {});
+                }
+              }}
+            >
+              Apply <ExternalLink className="w-3 h-3" />
+            </a>
+          )}
           <button
             onClick={() => inCompare ? remove(card.id) : add(card.id)}
             className="shrink-0 w-9 h-9 rounded border flex items-center justify-center transition-all"
@@ -148,13 +150,6 @@ export function CardTile({ card, annualValue, reasoning, rank }: Props) {
             {inCompare ? <Check className="w-4 h-4" /> : <Plus className="w-4 h-4" />}
           </button>
         </div>
-
-        {/* Affiliate transparency note */}
-        {affiliateType === 'paisabazaar' && (
-          <div className="text-[9px] text-center" style={{ color: 'var(--text-dim)' }}>
-            Via Paisabazaar . We may earn a commission
-          </div>
-        )}
       </div>
     </article>
   );
