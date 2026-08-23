@@ -11,6 +11,7 @@ import { CreditCard3D, type CardVariant } from '@/components/design/CreditCard3D
 import { SEED_CARDS, cardPageExists } from '@/lib/data/seed-cards'
 import { authedFetch } from '@/lib/authed-fetch'
 import { PageHeader } from '@/components/ciq/PageHeader'
+import { useScrollToResults } from '@/lib/hooks/useScrollToResults'
 
 // Presets prefill an editable monthly-spend field (user can override).
 const PRESETS = {
@@ -62,6 +63,7 @@ export default function CardRoastPage() {
   const [result, setResult] = useState<RoastResult | null>(null)
   const [errorMsg, setErrorMsg] = useState('')
   const [copied, setCopied] = useState(false)
+  const { ref: resultsRef, scrollToResults } = useScrollToResults()
 
   const selName = (SEED_CARDS.find((c: any) => c.id === selectedCard) as any)?.name || selectedCard
 
@@ -92,6 +94,7 @@ export default function CardRoastPage() {
       }
       setResult(data as RoastResult)
       setStep('result')
+      scrollToResults()
     } catch {
       setErrorMsg('Network hiccup — check your connection and try again.')
       setStep('error')
@@ -234,7 +237,7 @@ export default function CardRoastPage() {
             )}
 
             {step === 'result' && result && (
-              <div>
+              <div ref={resultsRef} style={{ scrollMarginTop: 16 }}>
                 <div style={{ display: 'grid', gridTemplateColumns: '1.1fr 1fr', gap: 'clamp(32px,5vw,64px)', alignItems: 'center', marginBottom: 'clamp(48px,7vw,80px)' }} className="grid-1-mobile">
                   <div>
                     <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: '0.15em', textTransform: 'uppercase', color: 'var(--copper,#8C5F12)', marginBottom: 14 }}>{selName.toUpperCase()} - {PRESETS[preset].label.toUpperCase()}</div>

@@ -7,6 +7,7 @@ import { Header } from '@/components/Header';
 import { DesignFooter } from '@/components/design/Footer';
 import { Upload, FileText, CheckCircle, AlertCircle, Zap, ArrowRight, Lock, X, LogIn, Eye, EyeOff } from 'lucide-react';
 import Link from 'next/link';
+import { useScrollToResults } from '@/lib/hooks/useScrollToResults';
 
 // WEBSITE page (per site/app split decision): marketing Header + Footer stay.
 // Body is gold-on-black via scoped token remap on <main> (no <style> JSX block => no hydration risk).
@@ -74,6 +75,7 @@ export default function UploadStatementPage() {
   const [savedCount, setSavedCount] = useState(0);
   const [manualPoints, setManualPoints] = useState('');
   const fileRef = useRef<HTMLInputElement>(null);
+  const { ref: resultsRef, scrollToResults } = useScrollToResults();
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
@@ -127,6 +129,7 @@ export default function UploadStatementPage() {
       } else {
         setResult(data.data);
         if (userId) setSavedCount(c => c + 1);
+        scrollToResults();
       }
     } catch (e: any) { setError(e.message); }
     setLoading(false);
@@ -309,7 +312,7 @@ export default function UploadStatementPage() {
           )}
 
           {result && (
-            <div className="space-y-4">
+            <div ref={resultsRef} className="space-y-4" style={{ scrollMarginTop: 76 }}>
               <div className="rounded-2xl p-6 border" style={{ borderColor: 'color-mix(in srgb, var(--emerald) 30%, transparent)', background: 'color-mix(in srgb, var(--emerald) 6%, transparent)' }}>
                 <div className="flex items-center gap-3 mb-5">
                   <CheckCircle className="w-6 h-6" style={{ color: 'var(--emerald)' }} />

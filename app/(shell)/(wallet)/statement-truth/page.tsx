@@ -5,6 +5,7 @@ import { useState, useRef } from 'react';
 import { DesignFooter } from '@/components/design/Footer';
 import { Reveal } from '@/components/design/Reveal';
 import { PageHeader } from '@/components/ciq/PageHeader';
+import { useScrollToResults } from '@/lib/hooks/useScrollToResults';
 
 import Link from 'next/link';
 
@@ -32,6 +33,7 @@ export default function StatementTruthPage() {
   const [totalBalance, setTotalBalance] = useState('');
   const [balanceSaved, setBalanceSaved] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
+  const { ref: resultsRef, scrollToResults } = useScrollToResults();
 
   const handleFile = (f: File) => {
     if (f.type !== 'application/pdf') { setError('Please upload a PDF statement.'); return; }
@@ -52,7 +54,7 @@ export default function StatementTruthPage() {
         });
         const data = await res.json();
         if (data.error) throw new Error(data.error);
-        setReport(data); setStep('result');
+        setReport(data); setStep('result'); scrollToResults();
       };
       reader.readAsDataURL(file);
     } catch (err: any) {
@@ -142,7 +144,7 @@ export default function StatementTruthPage() {
             {step === 'result' && report && (
               <>
                 {/* Verdict */}
-                <div style={{ background: verdictBg, border: `1px solid ${verdictBorder}`, borderRadius: 18, padding: '22px 24px', marginBottom: 20 }}>
+                <div ref={resultsRef} style={{ background: verdictBg, border: `1px solid ${verdictBorder}`, borderRadius: 18, padding: '22px 24px', marginBottom: 20, scrollMarginTop: 16 }}>
                   <div style={{ fontFamily: 'var(--font-mono,monospace)', fontSize: 9, fontWeight: 700, letterSpacing: '0.16em', textTransform: 'uppercase', color: verdictColor, marginBottom: 8 }}>
                     Truth Verdict &bull; {report.cardName}
                   </div>

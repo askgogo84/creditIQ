@@ -3,6 +3,7 @@
 import { authedFetch } from '@/lib/authed-fetch';
 import { useState } from 'react';
 import { PageHeader } from '@/components/ciq/PageHeader';
+import { useScrollToResults } from '@/lib/hooks/useScrollToResults';
 
 const CARDS_WITH_POINTS = [
   { value: 'hdfc-infinia', label: 'HDFC Infinia', bank: 'HDFC Bank', pointName: 'Reward Points', ratio: '1 pt = Rs.1 (SmartBuy) / 0.5 base' },
@@ -97,6 +98,7 @@ export default function PointsOptimizerPage() {
   const [result, setResult] = useState<OptimizeResult | null>(null);
   const [error, setError] = useState('');
   const [aiStrategy, setAiStrategy] = useState('');
+  const { ref: resultsRef, scrollToResults } = useScrollToResults();
 
   const selectedCardData = CARDS_WITH_POINTS.find(c => c.value === selectedCard);
   const pointsNum = parseInt(points.replace(/,/g, '')) || 0;
@@ -151,6 +153,7 @@ Respond ONLY with valid JSON (no markdown, no code fences):
       if (data.error) throw new Error(data.error);
       setResult(data);
       setAiStrategy(data.topStrategy || '');
+      if (data?.paths?.length > 0) scrollToResults();
     } catch (e: unknown) {
       setError('Optimization failed. Please try again. ' + (e instanceof Error ? e.message : ''));
     } finally {
@@ -291,7 +294,7 @@ Respond ONLY with valid JSON (no markdown, no code fences):
           </div>
 
           {/* ── RIGHT: Results ── */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+          <div ref={resultsRef} style={{ display: 'flex', flexDirection: 'column', gap: 16, scrollMarginTop: 16 }}>
 
             {!result && !loading && (
               <div style={{

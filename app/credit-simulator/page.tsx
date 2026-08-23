@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { Header } from '@/components/Header';
 import { DesignFooter } from '@/components/design/Footer';
+import { iconGlyph } from '@/components/ciq/StatusGlyph';
 
 interface SimAction {
   id: string;
@@ -39,7 +40,7 @@ const ACTIONS: SimAction[] = [
     id: 'missed-payment',
     label: 'Miss a payment',
     description: 'Single biggest negative event -- avoid at all costs',
-    icon: '(x)',
+    icon: 'glyph:cross',
     impact: () => -85,
     params: [],
   },
@@ -55,7 +56,7 @@ const ACTIONS: SimAction[] = [
     id: 'on-time',
     label: 'Pay all bills on time for 6 months',
     description: 'Consistent on-time payments are the #1 score factor',
-    icon: '(ok)',
+    icon: 'glyph:check',
     impact: () => 35,
     params: [],
   },
@@ -237,7 +238,7 @@ export default function CreditSimulatorPage() {
                       border: '1px solid var(--border, #e2e8f0)', borderRadius: 10,
                     }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                        <span style={{ fontSize: 18 }}>{action.icon}</span>
+                        {iconGlyph(action.icon, 18) ?? <span style={{ fontSize: 18 }}>{action.icon}</span>}
                         <div>
                           <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text, #0f172a)' }}>{action.label}</div>
                           <div style={{ fontSize: 11, color: impact > 0 ? '#22c55e' : '#ef4444', fontWeight: 700 }}>
@@ -271,7 +272,7 @@ export default function CreditSimulatorPage() {
                       }}>
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                            <span style={{ fontSize: 16 }}>{action.icon}</span>
+                            {iconGlyph(action.icon, 16) ?? <span style={{ fontSize: 16 }}>{action.icon}</span>}
                             <div>
                               <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text, #0f172a)' }}>{action.label}</div>
                               <div style={{ fontSize: 11, color: 'var(--text-muted, #8888AA)' }}>{action.description}</div>

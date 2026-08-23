@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { Header } from '@/components/Header';
 import { DesignFooter } from '@/components/design/Footer';
 import { ExternalLink, Clock, CheckCircle, Search } from 'lucide-react';
+import { iconGlyph } from '@/components/ciq/StatusGlyph';
 
 const STATUS_LINKS = [
   { bank: 'HDFC Bank', color: '#004C8F', url: 'https://leads.hdfcbank.com/applications/webforms/apply/HDFC_TrackApp/TrackApp.aspx', steps: ['Apply online', 'Verification call within 48hrs', 'Physical verification', 'Card dispatched in 7-10 days'], typical_days: '7-15' },
@@ -24,8 +25,8 @@ const STATUS_TIPS = [
   { icon: '📞', tip: 'Call the bank\'s credit card helpline after 5 working days if no update.' },
   { icon: '📧', tip: 'Check your registered email -- most banks send status emails at each stage.' },
   { icon: '📱', tip: 'SMS your application reference number to the bank\'s SMS service.' },
-  { icon: '(!!)', tip: 'A "verification pending" status usually means a physical visit or document is needed.' },
-  { icon: '(x)', tip: 'If rejected, wait 6 months before applying again -- multiple rejections hurt your score.' },
+  { icon: 'glyph:alert', tip: 'A "verification pending" status usually means a physical visit or document is needed.' },
+  { icon: 'glyph:cross', tip: 'If rejected, wait 6 months before applying again -- multiple rejections hurt your score.' },
 ];
 
 export default function ApplicationStatusPage() {
@@ -101,7 +102,7 @@ export default function ApplicationStatusPage() {
             <div className="space-y-3">
               {STATUS_TIPS.map((t, i) => (
                 <div key={i} className="flex items-start gap-3 text-sm" style={{ color: 'var(--text-muted)' }}>
-                  <span className="text-lg shrink-0">{t.icon}</span>
+                  {iconGlyph(t.icon, 18) ?? <span className="text-lg shrink-0">{t.icon}</span>}
                   {t.tip}
                 </div>
               ))}

@@ -14,6 +14,7 @@ import { useState } from 'react';
 import { Header } from '@/components/Header';
 import { DesignFooter } from '@/components/design/Footer';
 import { authedFetch } from '@/lib/authed-fetch';
+import { useScrollToResults } from '@/lib/hooks/useScrollToResults';
 
 // ── estimate palette (deliberately grey/gold, never green) ──────────────────
 const GREY = '#64748b';
@@ -141,6 +142,7 @@ export default function FlightsFusionPage() {
   const [error, setError] = useState('');
   const [data, setData] = useState<FusionResponse | null>(null);
   const [expanded, setExpanded] = useState<string | null>(null);
+  const { ref: resultsRef, scrollToResults } = useScrollToResults();
 
   const search = async () => {
     if (!from.trim() || !to.trim()) return;
@@ -167,6 +169,7 @@ export default function FlightsFusionPage() {
       const json = await res.json();
       if (!res.ok) throw new Error(json.error || 'search failed');
       setData(json as FusionResponse);
+      if ((json as FusionResponse).flights?.length > 0) scrollToResults();
     } catch {
       setError('Could not fetch flights. Please try again.');
     } finally {
@@ -275,7 +278,7 @@ export default function FlightsFusionPage() {
 
         {data && !loading && (
           <>
-            <div style={{ fontSize: 12, color: GREY_SOFT, marginBottom: 12 }}>
+            <div ref={resultsRef} style={{ fontSize: 12, color: GREY_SOFT, marginBottom: 12, scrollMarginTop: 76 }}>
               {data.flights.length} flight{data.flights.length === 1 ? '' : 's'} {data.route.from} {'→'} {data.route.to}
               {' · '}{data.counts.awards} award seat{data.counts.awards === 1 ? '' : 's'} found
               {' · '}{data.counts.cards} of your cards checked

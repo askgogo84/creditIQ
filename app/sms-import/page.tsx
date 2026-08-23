@@ -7,6 +7,8 @@ import { Header } from '@/components/Header';
 import { DesignFooter } from '@/components/design/Footer';
 import { MessageSquare, CheckCircle, Zap, AlertCircle, ArrowRight, Copy, LogIn, Plus } from 'lucide-react';
 import Link from 'next/link';
+import { useScrollToResults } from '@/lib/hooks/useScrollToResults';
+import { StatusGlyph } from '@/components/ciq/StatusGlyph';
 
 const SAMPLE_SMS = [
   'You have earned 2,500 Reward Points on your HDFC Bank Credit Card XX4821. Total RP Balance: 87,500.',
@@ -30,6 +32,7 @@ export default function SmsImportPage() {
   const [error, setError] = useState('');
   const [userId, setUserId] = useState<string | null>(null);
   const [savedCount, setSavedCount] = useState(0);
+  const { ref: resultsRef, scrollToResults } = useScrollToResults();
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
@@ -76,6 +79,7 @@ export default function SmsImportPage() {
       if (!res.ok || data.error) throw new Error(data.error || 'Failed to parse');
       setResult(data);
       if (userId && data.cards?.length > 0) setSavedCount(c => c + data.cards.length);
+      if (data.cards?.length > 0) scrollToResults();
     } catch (e: any) { setError(e.message); }
     setLoading(false);
   };
@@ -192,7 +196,7 @@ You have earned 2,500 Reward Points on your HDFC Card XX4821. Total RP Balance: 
 
           {/* Results */}
           {result && (
-            <div className="mt-6 space-y-4">
+            <div ref={resultsRef} className="mt-6 space-y-4" style={{ scrollMarginTop: 76 }}>
               {result.cards?.length === 0 ? (
                 <div className="rounded-xl p-5 border text-center" style={{ borderColor: 'var(--border)', background: 'var(--bg-elevated)' }}>
                   <AlertCircle className="w-8 h-8 mx-auto mb-3" style={{ color: 'var(--text-dim)' }} />
@@ -209,7 +213,7 @@ You have earned 2,500 Reward Points on your HDFC Card XX4821. Total RP Balance: 
                       <div>
                         <div className="font-medium" style={{ color: 'var(--text)' }}>
                           {result.cards.length} card{result.cards.length !== 1 ? 's' : ''} found
-                          {userId && <span className="text-xs ml-2 px-2 py-0.5 rounded-full" style={{ background: 'color-mix(in srgb, var(--emerald) 15%, transparent)', color: 'var(--emerald)' }}>Saved to dashboard (ok)</span>}
+                          {userId && <span className="text-xs ml-2 px-2 py-0.5 rounded-full inline-flex items-center gap-1" style={{ background: 'color-mix(in srgb, var(--emerald) 15%, transparent)', color: 'var(--emerald)' }}>Saved to dashboard <StatusGlyph kind="check" size={11} /></span>}
                         </div>
                         <div className="text-xs" style={{ color: 'var(--text-dim)' }}>
                           Total: {result.totalPoints?.toLocaleString('en-IN')} points across all cards

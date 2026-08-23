@@ -5,6 +5,7 @@ import { Header } from '@/components/Header';
 import { DesignFooter } from '@/components/design/Footer';
 import { SavePromptBanner } from '@/components/design/SavePromptBanner';
 import { EstimatedValue } from '@/components/cards/Unverified';
+import { useScrollToResults } from '@/lib/hooks/useScrollToResults';
 
 const CATEGORIES = [
   { key: 'online',    label: 'Online Shopping',  default: 10000 },
@@ -36,6 +37,7 @@ function RewardsCalculatorInner() {
   const [result, setResult] = useState<any>(null);
   const [loading, setLoading] = useState(false);
   const [autoCalculated, setAutoCalculated] = useState(false);
+  const { ref: resultsRef, scrollToResults } = useScrollToResults();
 
   useEffect(() => {
     fetch('/api/cards').then(r => r.json()).then((data: any) => {
@@ -86,7 +88,9 @@ function RewardsCalculatorInner() {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ card_id: cardToUse, spends }),
       });
-      setResult(await res.json());
+      const data = await res.json();
+      setResult(data);
+      if (data && !data.error) scrollToResults();
     } finally { setLoading(false); }
   };
 
@@ -155,7 +159,7 @@ function RewardsCalculatorInner() {
         </button>
 
         {result && (
-          <div>
+          <div ref={resultsRef} style={{ scrollMarginTop: 76 }}>
             {!result.is_best && result.annual_gap > 0 && (
               <div style={{ background: 'linear-gradient(135deg,#1B3A5C,#0D2240)', borderRadius: 20, padding: '32px 28px', marginBottom: 14, textAlign: 'center', boxShadow: '0 8px 40px rgba(27,58,92,0.22)' }}>
                 <div style={{ fontSize: 10, fontWeight: 700, color: 'rgba(255,255,255,0.45)', letterSpacing: '0.18em', marginBottom: 10 }}>YOU ARE LEAVING ON THE TABLE EVERY YEAR</div>

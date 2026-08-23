@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { authedFetch } from '@/lib/authed-fetch';
 import { PageHeader } from '@/components/ciq/PageHeader';
 import { SEED_CARDS } from '@/lib/data/seed-cards';
+import { useScrollToResults } from '@/lib/hooks/useScrollToResults';
 
 // Card-count claim is COMPUTED from the canonical catalogue, never typed — so it can't
 // drift from reality the way the old hardcoded "93+" did. The engine (RAG) is grounded
@@ -58,6 +59,7 @@ export default function SpendOptimizerPage() {
   const [result, setResult] = useState<AIResult | null>(null);
   const [error, setError] = useState('');
   const [step, setStep] = useState<'input' | 'result'>('input');
+  const { ref: resultsRef, scrollToResults } = useScrollToResults();
 
   const totalSpend = Object.values(spends).reduce((sum, v) => sum + (parseInt(v) || 0), 0);
 
@@ -108,6 +110,7 @@ Respond ONLY with valid JSON (no markdown, no backticks, no explanation outside 
       if (data.error) throw new Error(data.error);
       setResult(data);
       setStep('result');
+      if (data?.cards?.length > 0) scrollToResults();
     } catch (e: unknown) {
       setError('Analysis failed. Please try again. ' + (e instanceof Error ? e.message : ''));
     } finally {
@@ -235,7 +238,7 @@ Respond ONLY with valid JSON (no markdown, no backticks, no explanation outside 
           )}
 
           {step === 'result' && result && (
-            <>
+            <div ref={resultsRef} style={{ scrollMarginTop: 16 }}>
               {/* Insight banner — informational (amber), a semantic feedback tint kept
                   as an intentional literal (no on-system token for info states). */}
               {result.insight && (
@@ -370,7 +373,7 @@ Respond ONLY with valid JSON (no markdown, no backticks, no explanation outside 
               >
                 ← Try Different Spends
               </button>
-            </>
+            </div>
           )}
       </div>
     </>

@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { authedFetch } from '@/lib/authed-fetch';
 import { Figure } from '@/components/design/Figure';
+import { StatusGlyph } from '@/components/ciq/StatusGlyph';
 
 interface FlightOption {
   rank: number;
@@ -481,7 +482,7 @@ export function TripComparison({ destination, origin = 'Bangalore', nights = 3, 
                 {h.chain} {'.'} {h.area}
               </div>
               {h.includes && (
-                <div style={{ fontSize: 12, color: '#16a34a', marginBottom: 4 }}>(ok) {h.includes}</div>
+                <div style={{ fontSize: 12, color: '#16a34a', marginBottom: 4, display: 'flex', alignItems: 'center', gap: 6 }}><StatusGlyph kind="check" color="#16a34a" size={12} /> {h.includes}</div>
               )}
               {h.pointsOption && (
                 <div style={{ fontSize: 12, color: GOLD, marginBottom: 8 }}>
