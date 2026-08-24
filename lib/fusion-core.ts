@@ -159,6 +159,17 @@ export function buildRedemption(
 
     // Unknown card — never fabricate a program or ratio.
     if (!resolved) {
+      // DIAGNOSTIC (Step 1, zero behaviour change): size the resolver-miss rate.
+      // No user identifiers logged — bank + card_name only, never user id / email /
+      // last-four. Remove once the miss rate is characterised.
+      console.warn('fusion miss', {
+        bank: card.bank,
+        card_name: card.card_name,
+        resolvedCurrency: null,
+        slug: null,
+        awardSource: award.source,
+        reason: 'currency-unknown',
+      });
       return {
         cardName: card.card_name,
         bank: card.bank,
@@ -180,6 +191,22 @@ export function buildRedemption(
       : [];
 
     if (!routes.length) {
+      // DIAGNOSTIC (Step 1, zero behaviour change): distinguish a genuinely
+      // absent slug/programme pair from an edge that EXISTS but was gated out by
+      // its card_name_allowlist. A direct edge on (slug -> award.source) that
+      // produced no route can only have been dropped by the allowlist (ratio>0
+      // holds across the seed graph), so its presence means allowlist-excluded.
+      const directPairExists = TRANSFER_EDGES.some(
+        (e) => e.from_currency === slug && e.to_programme === award.source,
+      );
+      console.warn('fusion miss', {
+        bank: card.bank,
+        card_name: card.card_name,
+        resolvedCurrency: resolved.currency,
+        slug,
+        awardSource: award.source,
+        reason: directPairExists ? 'allowlist-excluded' : 'no-edge',
+      });
       return {
         cardName: card.card_name,
         bank: card.bank,
