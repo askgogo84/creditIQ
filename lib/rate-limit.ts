@@ -33,11 +33,8 @@ export function clientIp(req: NextRequest): string {
 type Tier = { perMin: number; perDay: number };
 type Limits = { anon: Tier; user: Tier };
 
-// Anonymous caps are the floor; logged-in ~5x. trip-planner + trip-compare share a tier
-// because one "plan a trip" action fires BOTH routes back to back.
+// Anonymous caps are the floor; logged-in ~5x.
 export const LIMITS: Record<string, Limits> = {
-  'trip-planner':    { anon: { perMin: 3,  perDay: 40  }, user: { perMin: 15, perDay: 200  } },
-  'trip-compare':    { anon: { perMin: 3,  perDay: 40  }, user: { perMin: 15, perDay: 200  } },
   'card-roast':      { anon: { perMin: 5,  perDay: 60  }, user: { perMin: 25, perDay: 300  } },
   'card-switch':     { anon: { perMin: 5,  perDay: 60  }, user: { perMin: 25, perDay: 300  } },
   'spend-optimizer': { anon: { perMin: 5,  perDay: 40  }, user: { perMin: 25, perDay: 200  } },
