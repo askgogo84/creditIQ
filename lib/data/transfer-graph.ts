@@ -58,6 +58,10 @@ export const TRANSFER_EDGES: TransferEdge[] = [
   },
 
   // Axis EDGE Miles (Atlas etc.) -> Singapore KrisFlyer, 1:1.
+  // FLAG 2026-08-25: 2026 trade sources report Atlas EDGE Miles transfer at 1:2
+  // (tier-dependent: Olympus 1:4 / Atlas 1:2 / Horizon 1:1), so a flat 1:1 likely
+  // UNDER-credits Atlas holders by half. NOT changed pending Travel Edge portal
+  // confirmation (login-gated); label PROXY/INFERENCE only. Do not auto-overwrite.
   {
     from_currency: 'axis_miles',
     to_programme: 'singapore',
@@ -93,6 +97,11 @@ export const TRANSFER_EDGES: TransferEdge[] = [
 
   // Axis EDGE -> Air India (Flying Returns), 1:1. Slug 'air-india' is a best-guess
   // seats.aero source (unconfirmed live), a further reason this is unverified.
+  // FLAG 2026-08-25: ratio 1:1 is INTERNALLY INCONSISTENT with the flat 5:2 EDGE
+  // Reward Points deval (eff. 2 Apr 2026) applied to axis_edge -> singapore above.
+  // EDGE Reward Points transfer at one flat ratio to all partners, so this is
+  // likely 5:2, not 1:1. NOT changed pending Travel Edge portal confirmation
+  // (per-partner ratios are login-gated). Do not auto-overwrite.
   {
     from_currency: 'axis_edge',
     to_programme: 'air-india',

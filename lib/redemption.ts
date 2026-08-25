@@ -32,13 +32,20 @@ function getDefaultRedemptions(card: CreditCard): RedemptionOption[] {
     ];
   }
 
-  // EDGE Miles  --  Axis
-  // NOTE: 5:4 transfers mean 1 EDGE mile = 0.8 partner miles. Values below are ratio-adjusted.
+  // EDGE Reward Points  --  Axis
+  // Axis EDGE Reward Points -> KrisFlyer was re-rated 5:4 -> 5:2 effective 2 Apr 2026
+  // (5 EDGE = 2 partner miles => 1 EDGE = 0.4 mile). At the KrisFlyer verified
+  // ceiling of Rs.1.60/mile that is Rs.0.64/point.
+  // source: axis-edge-rewards-devaluation-2026-04-02  as_of: 2026-04-02
+  // UNVERIFIED-PENDING-PORTAL: the numeric 5:2 is corroborated by Axis's indexed
+  // page + multiple 2026 trade sources, but the per-partner ratio table is behind
+  // the Travel Edge login and was NOT rendered. Do NOT mark verified until captured.
   if (currency === 'edge') {
     return [
       { type: 'flight', partner: 'Axis Travel Edge Portal', value_per_point_inr: 1.0, best_for: 'Domestic and international flights' },
-      { type: 'transfer', partner: 'Singapore KrisFlyer (5:4)', value_per_point_inr: 1.28, best_for: 'Business class sweet spots  --  up to Rs.1.28/mile after 5:4 ratio (KrisFlyer verified ceiling Rs.1.60)' },
-      { type: 'transfer', partner: 'Marriott Bonvoy (5:4)', value_per_point_inr: 0.96, best_for: 'Luxury hotel stays  --  value varies by property (estimate)' },
+      { type: 'transfer', partner: 'Singapore KrisFlyer (5:2)', value_per_point_inr: 0.64, best_for: 'Business class sweet spots  --  Rs.0.64/point after 5:2 transfer (KrisFlyer verified ceiling Rs.1.60/mile)' },
+      // FLAG (not fixed here, out of scope): Air India at 1:1 is inconsistent with the
+      // flat 5:2 EDGE Reward Points ratio above; pending portal confirmation.
       { type: 'transfer', partner: 'Air India Flying Returns (1:1)', value_per_point_inr: 0.8, best_for: 'Air India flights' },
       { type: 'cashback', value_per_point_inr: 0.20, best_for: 'Worst option  --  avoid' },
     ];
