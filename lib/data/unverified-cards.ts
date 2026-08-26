@@ -20,6 +20,13 @@ export const UNVERIFIED_CARD_FIELDS: Record<string, ReadonlySet<string>> = {
   'au-altura-plus': new Set(['reward_currency', 'tier']),
   // live 2% base / income ₹1.2L / credit 750 vs source 1% / ₹1.5L / 730
   'icici-sapphiro': new Set(['base_reward_rate', 'min_income_inr_monthly', 'credit_score_min']),
+  // Added 2026-08-26: base_reward_rate 0 is a PLACEHOLDER for unknown (earn chart not
+  // machine-readable this run); reward_currency 'reward-points' proxies 6E Rewards.
+  // Flag as estimated so surfaces never present the 0%/proxy as verified fact.
+  'indigo-hdfc-6e-rewards-xl': new Set(['base_reward_rate', 'reward_currency']),
+  // Added 2026-08-26: subscription-style card, fee + earn rate UNKNOWN this run;
+  // 0s are placeholders (non-nullable numeric fields), flagged so they read estimated.
+  'idfc-first-swyp': new Set(['base_reward_rate', 'joining_fee_inr', 'annual_fee_inr']),
 };
 
 /** True when any field on this card is contested (i.e. the card is flagged). */

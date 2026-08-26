@@ -7,5 +7,5 @@
 // honest is a GATE, not a comment: lib/catalogue-stats.test.ts imports SEED_CARDS and
 // FAILS the build if either value drifts from the real catalogue. So the number can't go
 // stale silently — the test breaks first. When it fails, update the two lines below.
-export const CARD_COUNT = 49  // === SEED_CARDS.length          (guarded by catalogue-stats.test.ts)
+export const CARD_COUNT = 51  // === SEED_CARDS.length          (guarded by catalogue-stats.test.ts)
 export const BANK_COUNT = 12  // === distinct issuers in SEED_CARDS (guarded likewise)
