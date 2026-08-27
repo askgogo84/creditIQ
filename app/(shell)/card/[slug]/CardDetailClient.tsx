@@ -4,7 +4,7 @@ import { ReportValue } from '@/components/ReportValue';
 
 import { CreditCard3D } from '@/components/design/CreditCard3D';
 import { CardArt } from '@/components/cards/CardArt';
-import { isCardUnverified, isFieldUnverified } from '@/lib/data/unverified-cards';
+import { isCardUnverified, isFieldUnverified, isFieldUnknown } from '@/lib/data/unverified-cards';
 import { EstimatedValue } from '@/components/cards/Unverified';
 import { useCompare } from '@/lib/store';
 import { calculateAnnualValue } from '@/lib/engine';
@@ -84,9 +84,9 @@ export function CardDetailClient({ card }: { card: CreditCard }) {
 
               {/* Metric grid */}
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2,1fr)', gap: 12, marginBottom: 32 }}>
-                <Metric label="Annual Fee" value={card.annual_fee_inr === 0 ? 'FREE' : formatINR(card.annual_fee_inr)} estimated={isFieldUnverified(card.slug, 'annual_fee_inr')} />
-                <Metric label="Joining Fee" value={card.joining_fee_inr === 0 ? 'FREE' : formatINR(card.joining_fee_inr)} estimated={isFieldUnverified(card.slug, 'joining_fee_inr')} />
-                <Metric label="Base Rate" value={`${card.base_reward_rate}%`} highlight estimated={isFieldUnverified(card.slug, 'base_reward_rate')} />
+                <Metric label="Annual Fee" value={card.annual_fee_inr === 0 ? 'FREE' : formatINR(card.annual_fee_inr)} estimated={isFieldUnverified(card.slug, 'annual_fee_inr')} unknown={isFieldUnknown(card.slug, 'annual_fee_inr')} />
+                <Metric label="Joining Fee" value={card.joining_fee_inr === 0 ? 'FREE' : formatINR(card.joining_fee_inr)} estimated={isFieldUnverified(card.slug, 'joining_fee_inr')} unknown={isFieldUnknown(card.slug, 'joining_fee_inr')} />
+                <Metric label="Base Rate" value={`${card.base_reward_rate}%`} highlight estimated={isFieldUnverified(card.slug, 'base_reward_rate')} unknown={isFieldUnknown(card.slug, 'base_reward_rate')} />
                 <Metric label="Our rating" value={`${card.expert_rating?.toFixed(1) ?? '--'}/10`} highlight />
               </div>
               <p style={{ fontSize: 12, color: 'var(--ink-3,#5A6A8A)', margin: '0 0 32px', lineHeight: 1.5 }}>
@@ -414,7 +414,11 @@ export function CardDetailClient({ card }: { card: CreditCard }) {
   );
 }
 
-function Metric({ label, value, highlight, estimated }: { label: string; value: string; highlight?: boolean; estimated?: boolean }) {
+function Metric({ label, value, highlight, estimated, unknown }: { label: string; value: string; highlight?: boolean; estimated?: boolean; unknown?: boolean }) {
+  // `unknown` = we have NO sourced value; the stored 0 is a placeholder. Render "--"
+  // (matching the expert_rating "--/10" fallback) with no "· est" — an unknown fee
+  // is not an estimate, and "FREE"/"0%" would assert a figure we never sourced.
+  // `unknown` takes precedence over `estimated`.
   // `estimated` = this figure is being re-verified (our sources disagree). Render
   // it in the estimated-provenance grey, never verified-green/copper, and expose
   // the reason on hover. We show the number, not a blank — the user can still judge.
@@ -422,10 +426,10 @@ function Metric({ label, value, highlight, estimated }: { label: string; value: 
     <div style={{ background: 'var(--surface,#fff)', border: '1px solid var(--line,rgba(20,41,80,0.08))', borderRadius: 12, padding: '14px 16px' }}>
       <div style={{ fontFamily: 'var(--font-mono,monospace)', fontSize: 9, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.14em', color: 'var(--ink-3,#5A6A8A)', marginBottom: 6 }}>{label}</div>
       <div
-        title={estimated ? 'Being re-verified — our sources disagree on this figure' : undefined}
-        style={{ fontSize: 22, fontWeight: 800, color: estimated ? 'var(--prov-estimated)' : highlight ? 'var(--copper-3,#D89B2A)' : 'var(--ink,#142950)', fontVariantNumeric: 'tabular-nums' }}
+        title={unknown ? 'Not yet sourced — we don’t assert a value we haven’t verified' : estimated ? 'Being re-verified — our sources disagree on this figure' : undefined}
+        style={{ fontSize: 22, fontWeight: 800, color: unknown || estimated ? 'var(--prov-estimated)' : highlight ? 'var(--copper-3,#D89B2A)' : 'var(--ink,#142950)', fontVariantNumeric: 'tabular-nums' }}
       >
-        {value}{estimated && <span aria-hidden="true" style={{ fontSize: 12, fontWeight: 700, marginLeft: 4, color: 'var(--prov-estimated)' }}>·&nbsp;est</span>}
+        {unknown ? '--' : value}{!unknown && estimated && <span aria-hidden="true" style={{ fontSize: 12, fontWeight: 700, marginLeft: 4, color: 'var(--prov-estimated)' }}>·&nbsp;est</span>}
       </div>
     </div>
   );
