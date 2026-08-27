@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { CardMockup } from './cards/CardMockup';
 import { CardArt } from './cards/CardArt';
 import { EstimatedValue, UnverifiedRowBadge } from './cards/Unverified';
+import { isFieldUnknown } from '@/lib/data/unverified-cards';
 import { useCompare } from '@/lib/store';
 import { StarRating } from './StarRating';
 import { getApplyUrl } from '@/lib/affiliate';
@@ -19,15 +20,23 @@ interface Props {
 
 function getKeyFeatures(card: CreditCard) {
   const features = [];
-  if (card.annual_fee_inr === 0) {
+  // A stored 0 can mean "unknown placeholder", not "₹0". Never let the grid assert
+  // "Zero annual fee" / "0% rewards" from an unsourced field (see unverified-cards.ts).
+  if (isFieldUnknown(card.slug, 'annual_fee_inr')) {
+    features.push({ icon: Shield, text: 'Fee not listed' });
+  } else if (card.annual_fee_inr === 0) {
     features.push({ icon: Shield, text: 'Zero annual fee', highlight: true });
   } else {
     features.push({ icon: Shield, text: `Rs.${card.annual_fee_inr.toLocaleString('en-IN')}/year` });
   }
-  if (card.base_reward_rate >= 3) {
-    features.push({ icon: Zap, text: `${card.base_reward_rate}% rewards`, highlight: true });
-  } else {
-    features.push({ icon: Zap, text: `${card.base_reward_rate}% rewards` });
+  // Omit the rewards pill entirely when the base rate is unsourced — a placeholder 0
+  // is not "0% rewards", and a compact pill has no room for a "--" caveat.
+  if (!isFieldUnknown(card.slug, 'base_reward_rate')) {
+    if (card.base_reward_rate >= 3) {
+      features.push({ icon: Zap, text: `${card.base_reward_rate}% rewards`, highlight: true });
+    } else {
+      features.push({ icon: Zap, text: `${card.base_reward_rate}% rewards` });
+    }
   }
   const cats = card.category || [];
   if (cats.includes('travel')) features.push({ icon: Plane, text: 'Lounge access' });

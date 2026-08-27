@@ -1,6 +1,6 @@
 'use client';
 
-import { isCardUnverified, isFieldUnverified } from '@/lib/data/unverified-cards';
+import { isCardUnverified, isFieldUnverified, isFieldUnknown } from '@/lib/data/unverified-cards';
 
 // SINGLE SOURCE of the "this card's data is being re-verified" UI treatment.
 // Every surface that shows a contested card's value or ranked row must go through
@@ -10,6 +10,7 @@ import { isCardUnverified, isFieldUnverified } from '@/lib/data/unverified-cards
 
 const REVERIFY_TITLE = 'Being re-verified — our sources disagree on figures for this card';
 const RANK_TITLE = 'This card’s ranking is uncertain — its position is computed from figures being re-verified';
+const UNKNOWN_TITLE = 'Not yet sourced — we don’t assert a value we haven’t verified';
 
 /**
  * Wrap a DISPLAYED value that is, or is computed from, a contested field. When the
@@ -40,6 +41,12 @@ export function EstimatedValue({
   mark?: boolean;
   style?: React.CSSProperties;
 }) {
+  // Field-specific UNKNOWN (a placeholder 0) is stronger than "estimated": we have
+  // no sourced value, so render "--" (no "· est") rather than a greyed false number.
+  const unknown = field ? isFieldUnknown(slug, field) : false;
+  if (unknown) {
+    return <span title={UNKNOWN_TITLE} style={{ color: 'var(--prov-estimated)', ...style }}>--</span>;
+  }
   const est = field ? isFieldUnverified(slug, field) : isCardUnverified(slug);
   return (
     <span title={est ? REVERIFY_TITLE : undefined} style={{ color: est ? 'var(--prov-estimated)' : baseColor, ...style }}>
