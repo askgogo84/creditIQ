@@ -198,17 +198,6 @@ export async function POST(req: NextRequest) {
       fetchUserCards(gate.userId),
     ]);
 
-    // DIAGNOSTIC (Step 1, zero behaviour change): the DISTINCT set of source slugs
-    // seats.aero returned for this route, hit or miss. Directly answers whether a
-    // programme like British Airways comes back as 'ba' or some other slug, without
-    // waiting for a miss pattern. Route codes only — no user identifiers. Remove
-    // once the source slugs are characterised.
-    console.warn('fusion sources', {
-      from,
-      to,
-      sources: [...new Set(awards.map((a) => a.source))],
-    });
-
     // Enrich the lowest-mileage awards with per-flight trip details (flight #,
     // times, duration, exact stops). Each is a separate credit-costing seats.aero
     // call, so we cap at ENRICH_CAP and log anything left summary-only.
