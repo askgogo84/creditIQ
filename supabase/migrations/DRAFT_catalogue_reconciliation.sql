@@ -1,0 +1,156 @@
+-- =============================================================================
+-- DRAFT_catalogue_reconciliation.sql   ·   2026-08-26
+-- =============================================================================
+-- STATUS: DRAFT. DO NOT RUN. DO NOT ADD TO THE MIGRATION SEQUENCE.
+--
+-- This file is intentionally named with a `DRAFT_` prefix (not the `NNN_name.sql`
+-- pattern the runner expects) so it CANNOT be executed by the normal migration
+-- pipeline. It was authored as a review artifact for
+-- docs/CATALOGUE-RECONCILIATION-2026-08-26.md (Phase 1). It has NOT been run and
+-- writes nothing until a human deliberately promotes it.
+--
+-- It does two things:
+--   (1) NORMALIZE the string-encoded `redemption_options` values to jsonb arrays.
+--   (2) Propose DELETEs for junk rows — every DELETE is COMMENTED OUT and every
+--       affected id must be enumerated by a human from the SELECTs in section 0
+--       before it is ever uncommented.
+--
+-- Target: Supabase project ref yazpphublutdodahfwvr (`cards` table) ONLY.
+-- NEVER run against ref qenhjcooyecmatwducpu (different product).
+--
+-- SAFETY: run inside the transaction in section 4, verify counts, and only then
+-- COMMIT. A full-table backup (section 1) is taken first for rollback.
+-- =============================================================================
+
+
+-- -----------------------------------------------------------------------------
+-- SECTION 0 — INSPECTION (read-only; run these FIRST, by hand, fill in the lists)
+-- -----------------------------------------------------------------------------
+-- 0a. How many rows store redemption_options as a jsonb string vs array?
+--     select jsonb_typeof(redemption_options) as t, count(*)
+--     from cards group by 1 order by 2 desc;
+--
+-- 0b. Sample the string rows to determine ENCODING DEPTH (single vs double).
+--     If (redemption_options #>> '{}') still begins with '"' or '[' -> see note.
+--     select id,
+--            left(redemption_options::text, 80)                as raw,
+--            left((redemption_options #>> '{}'), 80)           as one_unwrap
+--     from cards
+--     where jsonb_typeof(redemption_options) = 'string'
+--     limit 20;
+--
+-- 0c. The 44 slugless rows (triage source for section 3):
+--     select id, name, bank, reward_currency, redemption_options
+--     from cards where slug is null order by name nulls last;
+--
+-- 0d. Duplicate detection (e.g. HDFC Infinia Metal across a UUID row + a slug row):
+--     select lower(name) as n, bank, count(*), array_agg(id) as ids
+--     from cards group by 1,2 having count(*) > 1 order by 3 desc;
+
+
+-- -----------------------------------------------------------------------------
+-- SECTION 1 — BACKUP (for rollback). Snapshot the whole table first.
+-- -----------------------------------------------------------------------------
+-- create table if not exists cards_backup_20260826 as table cards;
+-- -- verify: select count(*) from cards_backup_20260826;   -- expect 173
+
+
+-- -----------------------------------------------------------------------------
+-- SECTION 2 — NORMALIZE redemption_options string -> jsonb array
+-- -----------------------------------------------------------------------------
+-- The column is jsonb. Affected rows hold a jsonb *string scalar* whose text is
+-- itself JSON (e.g.  "[{\"type\":\"cashback\",\"value_per_point_inr\":1}]"),
+-- instead of a jsonb *array*. `#>> '{}'` extracts the scalar as text; re-casting
+-- that text to jsonb yields the intended array.
+--
+-- 2a. SINGLE-encoded case (one unwrap -> array). Guard on jsonb_typeof so proper
+--     array rows (the 106 good ones) are untouched. Guard on the text looking
+--     like an array so we never cast a non-JSON string and error the batch.
+--
+-- update cards
+--    set redemption_options = (redemption_options #>> '{}')::jsonb
+--  where jsonb_typeof(redemption_options) = 'string'
+--    and ltrim(redemption_options #>> '{}') like '[%';
+--
+-- 2b. DOUBLE-encoded case (unwrap once -> STILL a jsonb string; unwrap twice ->
+--     array). Only run this if section 0b shows the one_unwrap value still starts
+--     with a quote. Idempotent: after 2b the row is a proper array and the guard
+--     (jsonb_typeof = 'string') no longer matches, so re-running is a no-op.
+--
+-- update cards
+--    set redemption_options = ((redemption_options #>> '{}')::jsonb #>> '{}')::jsonb
+--  where jsonb_typeof(redemption_options) = 'string'
+--    and jsonb_typeof((redemption_options #>> '{}')::jsonb) = 'string';
+--
+-- 2c. VERIFY no string rows remain and none were emptied unexpectedly:
+--     select jsonb_typeof(redemption_options) as t, count(*) from cards group by 1;
+--     -- expect: only 'array' (and any legitimately empty '[]' still an array)
+
+
+-- -----------------------------------------------------------------------------
+-- SECTION 3 — PROPOSED DELETES  (ALL COMMENTED OUT — DO NOT UNCOMMENT BLINDLY)
+-- -----------------------------------------------------------------------------
+-- NOTHING is deleted by this draft. Per the reconciliation doc, the safe default
+-- for all 44 slugless rows is KEEP-pending-inspection. The blocks below are
+-- placeholders: a human must (i) run the section-0 SELECTs, (ii) paste the exact
+-- ids into the IN(...) lists, (iii) re-review each id, and only then uncomment.
+--
+-- 3a. JUNK candidates — rows with no name AND empty redemption_options AND no
+--     distinguishing fields (test/import debris). Enumerate ids from 0c first.
+--
+--     -- delete from cards
+--     --  where id in (
+--     --    /* PASTE junk row ids here, one per line, e.g.:
+--     --       'a1b2c3d4-....',   -- null name, '[]' redemptions, null bank
+--     --    */
+--     --  );
+--
+-- 3b. DUPLICATE rows — e.g. the HDFC Infinia Metal UUID row that duplicates the
+--     `hdfc-infinia` slug row. DO NOT delete before MERGING richer fields into
+--     the survivor and backfilling any references. Enumerate from 0d.
+--
+--     -- delete from cards
+--     --  where id in (
+--     --    /* PASTE the NON-survivor duplicate ids here, e.g.:
+--     --       '<uuid-of-duplicate-infinia-metal-row>',  -- keep 'hdfc-infinia'
+--     --    */
+--     --  );
+--
+-- NOTE: slugless-but-real rows are NOT deleted — they should instead be fixed:
+--     -- update cards set slug = <normalized-name> where id = '<id>';   -- (KEEP bucket)
+
+
+-- -----------------------------------------------------------------------------
+-- SECTION 4 — TRANSACTION WRAPPER (how to run sections 2/3 safely, when promoted)
+-- -----------------------------------------------------------------------------
+-- begin;
+--   -- section 1 backup (if not already taken)
+--   -- section 2a  [+ 2b only if 0b proved double-encoding]
+--   -- section 3 deletes (only after ids pasted + re-reviewed)
+--   -- section 2c verification queries
+-- -- inspect results, then:
+-- commit;    -- or: rollback;
+
+
+-- -----------------------------------------------------------------------------
+-- SECTION 5 — ROLLBACK
+-- -----------------------------------------------------------------------------
+-- If committed and later found wrong, restore from the section-1 snapshot:
+--
+-- begin;
+--   -- restore only redemption_options (preferred — preserves other edits):
+--   -- update cards c
+--   --    set redemption_options = b.redemption_options
+--   --   from cards_backup_20260826 b
+--   --  where c.id = b.id;
+--   --
+--   -- OR full restore (if deletes must also be undone):
+--   -- truncate cards;
+--   -- insert into cards select * from cards_backup_20260826;
+-- commit;
+--
+-- Once satisfied and permanently done:
+--   -- drop table cards_backup_20260826;
+-- =============================================================================
+-- END DRAFT — not executed, not sequenced.
+-- =============================================================================
