@@ -21,7 +21,8 @@ export interface TileCard {
   color?: string;
   tags?: string[];
   fee: number;
-  iqScore: number;
+  /** null = not meaningfully scorable (a scoring input is unknown) → render "--". */
+  iqScore: number | null;
 }
 
 interface CardTileProps {
@@ -115,7 +116,7 @@ export function CardTile({ card, href, rank, scoreLabel = 'IQ Score', scoreMax =
                 letterSpacing: '-0.02em',
               }}
             >
-              {scoreMax === 10 ? card.iqScore.toFixed(1) : card.iqScore}
+              {card.iqScore == null ? '--' : scoreMax === 10 ? card.iqScore.toFixed(1) : card.iqScore}
               <span style={{ fontSize: 14, color: 'var(--ink-4)' }}>/{scoreMax}</span>
             </div>
             {scoreMax === 10 && (

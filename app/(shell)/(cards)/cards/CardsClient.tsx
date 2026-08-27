@@ -2,6 +2,13 @@
 import { useState } from 'react';
 import { CardTile, type TileCard } from '@/components/design/CardTile';
 import { type CardVariant } from '@/components/design/CreditCard3D';
+import { isFieldUnknown, isCardUnknown } from '@/lib/data/unverified-cards';
+
+// Category tags that assert "this card has no annual fee". Suppressed when the
+// card's annual_fee_inr is an unknown placeholder — a "--" fee and a "No Annual
+// Fee" pill can't both be true (the pill often rides in on the Supabase row's
+// category array, which we can't edit here).
+const FEE_FREE_TAGS = new Set(['no-annual-fee', 'zero-fee', 'no-fee', 'lifetime-free', 'free']);
 
 const VARIANT_ROTATION: CardVariant[] = ['obsidian', 'navy', 'plum', 'gold', 'iris', 'mint'];
 const NETWORK_BY_BANK: Record<string, string> = {
@@ -24,14 +31,21 @@ function toTileCard(c: any, idx: number): TileCard {
   const bankKey = (c.bank || '').toUpperCase().split(' ')[0];
   const highlights = Array.isArray(c.highlights) ? c.highlights : [];
   const category = Array.isArray(c.category) ? c.category : [];
+  const slug = c.slug || c.id;
+  // Drop "no fee" pills when the fee is an unknown placeholder (see FEE_FREE_TAGS).
+  const tagSource = isFieldUnknown(slug, 'annual_fee_inr')
+    ? category.filter((t: string) => !FEE_FREE_TAGS.has(t))
+    : category;
   return {
-    slug: c.slug || c.id,
+    slug,
     name: c.name,
     bank: c.bank,
     tier: tagline(c.tier),
     fee: c.annual_fee_inr ?? c.annual_fee ?? 0,
-    iqScore: c.iq_score ?? 60,
-    tags: category.slice(0, 2).map((t: string) => t.replace(/-/g, ' ').replace(/\b\w/g, (l: string) => l.toUpperCase())),
+    // The IQ score is not computed (a stored/default value); with an unknown scoring
+    // input (fee/earn rate) it can't be asserted — null → "--", like the rating.
+    iqScore: isCardUnknown(slug) ? null : (c.iq_score ?? 60),
+    tags: tagSource.slice(0, 2).map((t: string) => t.replace(/-/g, ' ').replace(/\b\w/g, (l: string) => l.toUpperCase())),
     tagline: highlights[0] || c.best_for || '',
     variant: VARIANT_ROTATION[idx % VARIANT_ROTATION.length],
     color: c.color,

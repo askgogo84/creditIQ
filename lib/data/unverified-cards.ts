@@ -61,3 +61,12 @@ export function isFieldUnverified(slug: string | undefined, field: string): bool
 export function isFieldUnknown(slug: string | undefined, field: string): boolean {
   return !!slug && !!UNKNOWN_CARD_FIELDS[slug]?.has(field);
 }
+
+/**
+ * True when ANY field on this card is an unknown placeholder. Use for values
+ * COMPUTED from the card (e.g. the composite IQ score, which draws on fee + earn
+ * rate): if a scoring input is unknown, the score can't be asserted — render "--".
+ */
+export function isCardUnknown(slug: string | undefined): boolean {
+  return !!slug && slug in UNKNOWN_CARD_FIELDS;
+}
