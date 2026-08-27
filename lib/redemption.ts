@@ -5,9 +5,11 @@ import type { CreditCard, RedemptionOption, RedemptionRecommendation } from './t
  * Used when a card has no explicit redemption_options defined
  *
  * VALUATION HONESTY RULES (Jul 2026 audit — this is the brand, do not violate):
- * 1. KrisFlyer: VERIFIED lazy Rs.1.00/mile, ceiling Rs.1.60/mile. Transfer entries
- *    must apply the card's transfer RATIO to these numbers (5:4 => x0.8).
- *    Never quote above Rs.1.60/mile equivalent.
+ * 1. KrisFlyer: VERIFIED lazy Rs.1.00/mile, ceiling Rs.1.60/mile. This ceiling now
+ *    lives as gate-checked DATA in lib/data/point-values.ts (axis_miles/axis_edge
+ *    currency-ceiling entries) — that file is the source of truth; a comment is not
+ *    a gate. Transfer entries must apply the card's transfer RATIO to these numbers
+ *    (5:4 => x0.8; 5:2 => x0.4). Never quote above Rs.1.60/mile equivalent.
  * 2. Marriott/Hilton/Avios transfer values are CONSERVATIVE ESTIMATES, not verified.
  *    Do not raise them or add "best value" superlatives without a verified source.
  * 3. Portal/voucher/cashback/catalog rates are deterministic published rates —

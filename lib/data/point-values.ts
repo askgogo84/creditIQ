@@ -96,6 +96,21 @@ const SEED_ASOF = '2026-08-20';
 const XFER = 'internal-estimate:lib/data/transfer-graph.ts';
 const XFER_ASOF = '2026-07-10'; // transfer-graph's own asOf
 
+// ── non-HDFC currency-ceiling sources (extend coverage beyond HDFC) ───────────
+// The KrisFlyer Rs 1.60/mile verified ceiling was previously ONLY a code comment
+// in lib/redemption.ts (VALUATION HONESTY RULES header) — a comment is not a gate.
+// It now lives here as real, gate-checked data. No issuer DEEP-LINK ceiling exists
+// for the Axis/Amex currencies (there is no issuer SmartBuy-style calculator), so
+// these are 'internal-estimate', never 'issuer-published'. The Axis ratios are
+// UNVERIFIED-PENDING-PORTAL — the per-partner table is behind the Travel Edge login
+// and was not captured (matches lib/redemption.ts + commit e251d5a4).
+const AXIS_XFER = 'internal-estimate:lib/redemption.ts (Axis EDGE/miles transfer defaults) + lib/data/transfer-graph.ts';
+const AMEX_XFER = 'internal-estimate:lib/redemption.ts (Amex MR transfer defaults)';
+const KRISFLYER_CEILING_SRC = 'internal-estimate:KrisFlyer award-chart verified ceiling Rs.1.60/mile — moved from lib/redemption.ts VALUATION HONESTY RULES header (Jul 2026 audit)';
+const AXIS_EDGE_ASOF = '2026-04-02'; // Axis EDGE 5:2 devaluation effective date
+const KRISFLYER_ASOF = '2026-07-01'; // Jul 2026 valuation-honesty audit (KrisFlyer ceiling)
+const AMEX_MR_ASOF = SEED_ASOF;      // 2026-08-20
+
 // ── channel factories (keep the card list DRY + consistent) ──────────────────
 
 // HDFC reward-point cashback (points -> statement credit). WIDELY REPORTED at
@@ -251,6 +266,48 @@ export const CARD_POINT_VALUES: CardPointValue[] = [
   cashbackCard('tata-neu-infinity-hdfc', 'HDFC Tata Neu Infinite'),
   cashbackCard('hdfc-tata-neu', 'HDFC Tata Neu'),
   cashbackCard('hdfc-other-cashback', 'HDFC Other Cashback Cards (calculator catch-all)'),
+
+  // Non-HDFC currency ceilings ──────────────────────────────────────────────────
+  // CURRENCY-level records (card key = currency id, not a card slug) that carry the
+  // verified partner ceiling for a reward currency, so the gate + any surface share
+  // ONE sourced number rather than a code comment. All 'internal-estimate' (no issuer
+  // deep-link ceiling exists for these); Axis ratios UNVERIFIED-PENDING-PORTAL.
+  {
+    card: 'axis_edge', card_name: 'Axis EDGE Reward Points (currency ceiling)', issuer: 'Axis',
+    points_currency: 'axis_edge', currency_state: 'internal-estimate',
+    currency_source: AXIS_XFER, currency_as_of: AXIS_EDGE_ASOF,
+    channels: [
+      {
+        kind: 'transfer-partner', value_paise: 64, state: 'internal-estimate',
+        source: AXIS_XFER, as_of: AXIS_EDGE_ASOF,
+        note: 'Singapore KrisFlyer via 5:2 EDGE->miles (eff 2 Apr 2026): 0.4 mile/pt x Rs.1.60/mile KrisFlyer verified ceiling = Rs.0.64/pt. UNVERIFIED-PENDING-PORTAL: per-partner ratio table behind the Travel Edge login, not captured (matches lib/redemption.ts + commit e251d5a4).',
+      },
+    ],
+  },
+  {
+    card: 'axis_miles', card_name: 'Axis EDGE Miles (currency ceiling)', issuer: 'Axis',
+    points_currency: 'axis_miles', currency_state: 'internal-estimate',
+    currency_source: AXIS_XFER, currency_as_of: KRISFLYER_ASOF,
+    channels: [
+      {
+        kind: 'transfer-partner', value_paise: 160, state: 'internal-estimate',
+        source: KRISFLYER_CEILING_SRC, as_of: KRISFLYER_ASOF,
+        note: 'Singapore KrisFlyer 1:1 at the Rs.1.60/mile KrisFlyer verified ceiling (moved here from lib/redemption.ts VALUATION HONESTY RULES header). UNVERIFIED-PENDING-PORTAL for the Axis miles->KrisFlyer ratio (per commit e251d5a4).',
+      },
+    ],
+  },
+  {
+    card: 'amex_mr', card_name: 'Amex Membership Rewards (currency ceiling)', issuer: 'AmEx',
+    points_currency: 'amex_membership_rewards', currency_state: 'internal-estimate',
+    currency_source: AMEX_XFER, currency_as_of: AMEX_MR_ASOF,
+    channels: [
+      {
+        kind: 'transfer-partner', value_paise: 120, state: 'internal-estimate',
+        source: AMEX_XFER, as_of: AMEX_MR_ASOF,
+        note: 'British Airways Avios 1:1 — conservative estimate (lib/redemption.ts), NOT issuer-verified; no issuer deep-link ceiling exists for MR.',
+      },
+    ],
+  },
 ];
 
 // ── derived accessors (floor/ceiling are computed, never stored) ─────────────
