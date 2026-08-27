@@ -1,3 +1,7 @@
+> **The real audit now exists:** `docs/MERGE-AUDIT-2026-08-26.md` (run against the
+> 2026-08-26 export). Keep this framework for its reusable bucket criteria + export SQL
+> for the next export cycle.
+
 # Supabase → SEED Merge Audit — FRAMEWORK (2026-08-26)
 
 > **THIS IS A FRAMEWORK, NOT AN AUDIT.**
