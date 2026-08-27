@@ -2,7 +2,7 @@
 import { useState } from 'react';
 import { CardTile, type TileCard } from '@/components/design/CardTile';
 import { type CardVariant } from '@/components/design/CreditCard3D';
-import { isFieldUnknown, isCardUnknown } from '@/lib/data/unverified-cards';
+import { isFieldUnknown } from '@/lib/data/unverified-cards';
 
 // Category tags that assert "this card has no annual fee". Suppressed when the
 // card's annual_fee_inr is an unknown placeholder — a "--" fee and a "No Annual
@@ -42,9 +42,13 @@ function toTileCard(c: any, idx: number): TileCard {
     bank: c.bank,
     tier: tagline(c.tier),
     fee: c.annual_fee_inr ?? c.annual_fee ?? 0,
-    // The IQ score is not computed (a stored/default value); with an unknown scoring
-    // input (fee/earn rate) it can't be asserted — null → "--", like the rating.
-    iqScore: isCardUnknown(slug) ? null : (c.iq_score ?? 60),
+    // The IQ score is NEVER computed — there is no scoring function; every stored
+    // value is a seeded default (70/60) or an unverified scrape (0 of 51 cards carry
+    // a real score; see lib/scripts/seed-supabase-cards.ts:38). We never present a
+    // fabricated number as a computed assessment → null renders "--/100", like the
+    // hand-set rating's "--" fallback. Restore a real value only if/when iq_score is
+    // actually computed.
+    iqScore: null,
     tags: tagSource.slice(0, 2).map((t: string) => t.replace(/-/g, ' ').replace(/\b\w/g, (l: string) => l.toUpperCase())),
     tagline: highlights[0] || c.best_for || '',
     variant: VARIANT_ROTATION[idx % VARIANT_ROTATION.length],
