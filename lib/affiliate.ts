@@ -23,7 +23,10 @@ export const AFFILIATE_LINKS: Record<string, string> = {
   "tata-neu-infinity-hdfc":    "https://bitli.in/s7cak4c",
   "tata-neu-plus-hdfc":        "https://bitli.in/s7cak4c",
 
-  //  AXIS 
+  //  HDFC (direct  --  no EarnKaro program for this card; URL from docs/CARD-SOURCING-2026-08-26.md, hdfcbank.com read 2026-08-26)
+  "indigo-hdfc-6e-rewards-xl": "https://www.hdfcbank.com/personal/pay/cards/credit-cards/6e-rewards-xl-indigo-hdfc-bank-credit-card",
+
+  //  AXIS
   "axis-magnus":               "https://bitli.in/MQ6vAYP",
   "axis-magnus-burgundy":      "https://bitli.in/MQ6vAYP",
   "axis-privilege":            "https://bitli.in/9gTv08q",
