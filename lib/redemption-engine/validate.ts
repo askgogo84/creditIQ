@@ -28,7 +28,6 @@ export function validateRedemptionInput(input: RedemptionInput): void {
   }
   if (booking.cashFareMinor !== undefined) {
     assertSafeInteger('booking.cashFareMinor', booking.cashFareMinor, { min: 0 });
-    if (!booking.cashFareState) throw new Error('cashFareState is required when cashFareMinor is present');
   } else if (booking.cashFareState) {
     throw new Error('cashFareState requires cashFareMinor');
   }
@@ -46,7 +45,6 @@ export function validateRedemptionInput(input: RedemptionInput): void {
   assertBp('portal.cap_bp', portal.cap_bp, 10000);
   assertSafeInteger('portal.fee_minor', portal.fee_minor, { min: 0 });
   assertBp('portal.fee_tax_bp', portal.fee_tax_bp);
-  if (!portal.provenance || portal.provenance.length === 0) throw new Error('portal.provenance is required');
   for (const value of portal.value_readings ?? []) assertSafeInteger('portal.value_reading', value, { positive: true });
   for (const cap of portal.cap_readings ?? []) assertBp('portal.cap_reading', cap, 10000);
   for (const fee of portal.fee_readings ?? []) assertSafeInteger('portal.fee_reading', fee, { min: 0 });
