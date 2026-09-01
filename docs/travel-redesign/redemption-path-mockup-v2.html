@@ -1,0 +1,346 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Redemption path — mockup v2</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300;9..144,400&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#FBF8F3; --surface:#FFFFFF; --sand:#F1ECE4;
+    --ink:#142335; --ink-2:#4B5563; --ink-3:#6B7280;
+    --line:rgba(20,35,53,.12); --line-strong:rgba(20,35,53,.24);
+    --copper:#D89B2A; --verified:#1B6B42; --cached:#7D5410; --estimated:#635C51;
+    --warn:#B54708;   /* NEW TOKEN — 5.1:1 on white, not yet in globals.css */
+    --mock:#7C3AED;   /* mockup annotation only */
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);font-family:Inter,system-ui,sans-serif;
+       font-size:15px;line-height:1.55;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:420px;margin:0 auto;padding:20px 16px 64px}
+  h1{font-family:Fraunces,Georgia,serif;font-weight:300;font-size:26px;line-height:1.25;margin:0 0 6px}
+  .sub{color:var(--ink-2);font-size:13.5px;margin:0 0 18px}
+  .num{font-family:'JetBrains Mono',monospace;font-variant-numeric:tabular-nums}
+
+  .tabs{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:18px}
+  .tab{appearance:none;border:1px solid var(--line-strong);background:var(--surface);color:var(--ink);
+       font:inherit;font-size:13px;padding:10px 12px;border-radius:2px;min-height:44px;cursor:pointer;
+       flex:1 1 46%;text-align:left}
+  .tab[aria-selected="true"]{background:var(--ink);color:#fff;border-color:var(--ink)}
+  .tab:focus-visible{outline:2px solid var(--copper);outline-offset:2px}
+
+  /* programme-level economics — one band, not per hotel */
+  .prog{background:var(--surface);border:1px solid var(--line);border-radius:2px;padding:12px 14px;margin-bottom:12px}
+  .prog h3{margin:0 0 6px;font-size:13px;font-weight:600;color:var(--ink-2)}
+  .prog .rate{font-size:14px;margin:0}
+  .prog .rate .win{color:var(--verified);font-weight:600}
+  .prog .rate .lose{color:var(--ink);font-weight:600}
+  .prog .src{font-size:11.5px;color:var(--estimated);margin:6px 0 0}
+
+  .card{background:var(--surface);border:1px solid var(--line);border-radius:2px;overflow:hidden}
+  .photo{height:110px;background:linear-gradient(135deg,#E8E0D4,#D8CEBE);position:relative}
+  .photo span{position:absolute;left:10px;bottom:8px;font-size:11px;color:var(--estimated);
+              background:rgba(255,255,255,.9);padding:2px 6px;border-radius:2px}
+  .body{padding:14px 14px 0}
+  .hname{font-family:Fraunces,Georgia,serif;font-weight:400;font-size:19px;line-height:1.3;margin:0}
+  .hmeta{color:var(--ink-3);font-size:13px;margin:2px 0 12px}
+  .bill{display:flex;justify-content:space-between;align-items:baseline;padding-bottom:6px}
+  .bill .lbl{font-size:13px;color:var(--ink-2)} .bill .num{font-size:19px;font-weight:500}
+  .elig{font-size:12px;color:var(--warn);margin:0 0 12px}
+
+  .bal{display:flex;gap:14px;border-top:1px solid var(--line);padding:10px 14px;font-size:12.5px;color:var(--ink-2)}
+  .bal div span{display:block;color:var(--ink);font-weight:500}
+
+  .path{border-top:1px dashed var(--mock);padding:14px;background:var(--sand)}
+  .path-tag{font-size:11px;color:var(--mock);margin:0 0 10px}
+  .path h4{margin:0 0 10px;font-size:14px;font-weight:600}
+  ol.steps{margin:0;padding:0;list-style:none;counter-reset:s}
+  ol.steps > li{counter-increment:s;position:relative;padding-left:30px;padding-bottom:16px}
+  ol.steps > li:last-child{padding-bottom:0}
+  ol.steps > li::before{content:counter(s);position:absolute;left:0;top:0;width:21px;height:21px;
+    border:1px solid var(--line-strong);border-radius:50%;font-family:'JetBrains Mono',monospace;
+    font-size:11px;line-height:19px;text-align:center;color:var(--ink-2);background:var(--surface)}
+  .act{font-size:14px;font-weight:500;margin:0 0 4px;line-height:1.4}
+  .det{font-size:13px;color:var(--ink-2);margin:0 0 3px;line-height:1.5}
+  .det .num{color:var(--ink);font-weight:500}
+  .warn{display:block;font-size:12.5px;color:var(--warn);border-left:2px solid var(--warn);
+        padding:2px 0 2px 8px;margin:6px 0 0;line-height:1.45}
+  .keep{font-size:12.5px;color:var(--verified);margin:6px 0 0}
+  .cta{display:inline-block;margin-top:6px;background:var(--copper);color:#20160A;font-size:13px;
+       font-weight:600;text-decoration:none;padding:11px 14px;border-radius:2px;min-height:44px;line-height:22px}
+  .cta:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
+  .alt{border-top:1px solid var(--line);margin-top:14px;padding-top:12px;font-size:12.5px;color:var(--ink-3)}
+  .alt b{color:var(--ink-2);font-weight:600}
+  .rates{padding:10px 14px;border-top:1px solid var(--line);font-size:11.5px;color:var(--estimated)}
+
+  /* two-option compare (BELOW_MINIMUM) */
+  .opts{display:flex;flex-direction:column;gap:10px}
+  .opt{border:1px solid var(--line-strong);background:var(--surface);border-radius:2px;padding:12px}
+  .opt.pick{border-color:var(--verified);border-width:2px}
+  .opt h5{margin:0 0 4px;font-size:13.5px;font-weight:600}
+  .opt p{margin:0;font-size:12.5px;color:var(--ink-2);line-height:1.5}
+
+  /* quote input */
+  .quote{border:1px solid var(--line-strong);background:var(--surface);border-radius:2px;padding:12px;margin-bottom:12px}
+  .quote label{display:block;font-size:13px;font-weight:500;margin-bottom:6px}
+  .quote input{width:100%;font:inherit;font-family:'JetBrains Mono',monospace;font-size:16px;
+    padding:11px 10px;border:1px solid var(--line-strong);border-radius:2px;min-height:44px;background:#fff;color:var(--ink)}
+  .quote input:focus-visible{outline:2px solid var(--copper);outline-offset:1px}
+  .quote .hint{font-size:12px;color:var(--ink-3);margin:6px 0 0}
+  .verdictline{font-size:13.5px;margin:10px 0 0;line-height:1.5}
+  .verdictline.win{color:var(--verified);font-weight:500}
+  .verdictline.lose{color:var(--warn);font-weight:500}
+
+  .note{margin-top:22px;font-size:12.5px;color:var(--ink-2);border-left:2px solid var(--line-strong);padding-left:10px}
+  .note b{color:var(--ink)}
+  [hidden]{display:none}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <h1>How to book this</h1>
+  <p class="sub">Mockup v2. Programme economics sit in the band at the top and are the same on every property. The card below is the executable plan for this booking. Purple dashed line marks the new block.</p>
+
+  <div class="tabs" role="tablist">
+    <button class="tab" role="tab" aria-selected="true"  data-p="b">Transfer wins</button>
+    <button class="tab" role="tab" aria-selected="false" data-p="a">Portal wins</button>
+    <button class="tab" role="tab" aria-selected="false" data-p="c">Quote needed</button>
+    <button class="tab" role="tab" aria-selected="false" data-p="d">Below minimum</button>
+  </div>
+
+  <!-- ================= B ================= -->
+  <div id="p-b">
+    <div class="prog">
+      <h3>Accor ALL, on your Infinia</h3>
+      <p class="rate">A transferred point is worth <span class="num win">₹1.11</span>. SmartBuy gives <span class="num lose">₹0.99</span> after its fee. <span class="win">Transferring wins by 12%</span> — on every Accor property, not just this one.</p>
+      <p class="src">2,000 points = €40, ALL terms 31 Aug · €1 = ₹110.50, ECB today · ratio 1:0.5, Infinia portal 31 Aug</p>
+    </div>
+
+    <section class="card">
+      <div class="photo"><span>Placeholder — no photo source yet</span></div>
+      <div class="body">
+        <h2 class="hname">Sofitel Bangkok Sukhumvit</h2>
+        <p class="hmeta">2 nights · 14–16 Oct</p>
+        <div class="bill"><span class="lbl">Total, taxes included</span><span class="num">₹12,292</span></div>
+        <p class="elig">Accor excludes some charges from points redemption. We don't yet hold which ones, so the offset below is a ceiling — confirm the eligible amount at checkout.</p>
+      </div>
+      <div class="bal">
+        <div>Infinia <span class="num">11,400</span></div>
+        <div>Accor ALL <span class="num">1,200</span></div>
+      </div>
+
+      <div class="path">
+        <p class="path-tag">▽ new block</p>
+        <h4>How to book this</h4>
+        <ol class="steps">
+          <li>
+            <p class="act">Get your Accor balance to 4,000 points</p>
+            <p class="det">You hold <span class="num">1,200</span>, so you need <span class="num">2,800</span> more — that is <span class="num">5,600</span> Infinia points at 1:0.5. Not <span class="num">11,400</span>: 4,000 is the largest amount Accor lets you spend on a bill this size, so anything beyond it would sit idle in an account you can't transfer back out of.</p>
+            <span class="warn">We don't yet have HDFC's minimum or step size for transfers to Accor, so we won't tell you to send exactly 5,600 — check the portal's own minimum before you send. Transfers take 24 hours and cannot be reversed. Confirm the room is still available first.</span>
+            <p class="keep">Leaves 5,800 Infinia points on the card.</p>
+          </li>
+          <li>
+            <p class="act">Spend 4,000 Accor points on all.accor.com</p>
+            <p class="det">Takes <span class="num">₹8,840</span> off. Nothing is stranded — 4,000 is a permitted amount and it spends whole. Points only apply on a direct booking.</p>
+            <a class="cta" href="#">Open Accor booking</a>
+          </li>
+          <li>
+            <p class="act">Pay the remaining ₹3,452 by card</p>
+            <p class="det">A fixed rupee amount comes off, not a percentage, so there is no cap working against you here.</p>
+          </li>
+        </ol>
+        <p class="alt"><b>The portal instead:</b> <span class="num">8,604</span> points off, <span class="num">₹3,688</span> still payable, plus <span class="num">₹117</span> in fees, and only <span class="num">2,796</span> points left on the card. SmartBuy stops at 70% of any bill.</p>
+      </div>
+      <p class="rates">Spendable amounts marked SOURCE CONFLICT — see the note at the bottom. 4,000 is permitted under every published wording.</p>
+    </section>
+  </div>
+
+  <!-- ================= A ================= -->
+  <div id="p-a" hidden>
+    <div class="prog">
+      <h3>Accor ALL, on your Infinia</h3>
+      <p class="rate">The euro is at <span class="num">₹96.20</span> today, so a transferred point is worth <span class="num lose">₹0.96</span> against SmartBuy's <span class="num">₹0.99</span>. <span class="lose">The portal wins</span> — on every Accor property. This flips at ₹100.</p>
+      <p class="src">Same terms and ratio as above · €1 = ₹96.20, ECB today · was ₹110.50 last month</p>
+    </div>
+
+    <section class="card">
+      <div class="photo"><span>Placeholder — no photo source yet</span></div>
+      <div class="body">
+        <h2 class="hname">Sofitel Bangkok Sukhumvit</h2>
+        <p class="hmeta">2 nights · 14–16 Oct</p>
+        <div class="bill"><span class="lbl">Total, taxes included</span><span class="num">₹12,292</span></div>
+        <p class="elig">Some charges may not be eligible for points — confirm at checkout.</p>
+      </div>
+      <div class="bal">
+        <div>Infinia <span class="num">11,400</span></div>
+        <div>Accor ALL <span class="num">1,200</span></div>
+      </div>
+
+      <div class="path">
+        <p class="path-tag">▽ new block</p>
+        <h4>How to book this</h4>
+        <ol class="steps">
+          <li>
+            <p class="act">Book on HDFC SmartBuy with your points</p>
+            <p class="det"><span class="num">8,604</span> points take <span class="num">₹8,604</span> off — 70% of the bill, which is SmartBuy's ceiling on any transaction.</p>
+            <a class="cta" href="#">Open SmartBuy</a>
+          </li>
+          <li>
+            <p class="act">Pay ₹3,688 by card, plus ₹117 in fees</p>
+            <p class="det">₹99 + GST per redemption, which is what pulls your rate down to <span class="num">₹0.99</span> a point. Leaves <span class="num">2,796</span> points on the card.</p>
+          </li>
+        </ol>
+        <p class="alt"><b>Nothing here is irreversible.</b> You can change your mind until you pay.<br><br><b>Your 1,200 Accor points:</b> we can't tell you to spend them. Every published version of Accor's terms permits 2,000; only one permits 1,000, and spending 1,000 here would be worth about ₹1,924. Check the amount field at Accor's checkout before assuming either way.</p>
+      </div>
+      <p class="rates">Infinia SmartBuy ₹1.00/point, 70% cap, ₹99 + GST — HDFC rewards page and live checkout, 31 Aug.</p>
+    </section>
+  </div>
+
+  <!-- ================= C ================= -->
+  <div id="p-c" hidden>
+    <div class="prog">
+      <h3>Marriott Bonvoy, on your Infinia</h3>
+      <p class="rate">Bonvoy prices award nights by demand and publishes no chart, so there is no programme-level rate to quote. Get Marriott's number and we'll price it.</p>
+      <p class="src">Ratio 1:0.5, transfer 48–96h, Infinia portal 31 Aug · no published award chart</p>
+    </div>
+
+    <section class="card">
+      <div class="photo"><span>Placeholder — no photo source yet</span></div>
+      <div class="body">
+        <h2 class="hname">JW Marriott Bangkok</h2>
+        <p class="hmeta">2 nights · 14–16 Oct</p>
+        <div class="bill"><span class="lbl">Total, taxes included</span><span class="num">₹18,640</span></div>
+      </div>
+      <div class="bal">
+        <div>Infinia <span class="num">11,400</span></div>
+        <div>Bonvoy <span class="num">8,000</span></div>
+      </div>
+
+      <div class="path">
+        <p class="path-tag">▽ new block</p>
+        <h4>How to book this</h4>
+        <ol class="steps">
+          <li>
+            <p class="act">Ask Marriott what these nights cost in points</p>
+            <p class="det">Search the same dates on marriott.com. Award prices move, so the number is only good for today.</p>
+            <a class="cta" href="#">Open Marriott search</a>
+          </li>
+          <li>
+            <p class="act">Put their number here</p>
+            <div class="quote">
+              <label for="q">Bonvoy points for both nights</label>
+              <input id="q" type="number" inputmode="numeric" value="50000" min="0" step="1000">
+              <p class="hint">You already hold 8,000, so only the shortfall needs transferring.</p>
+              <p class="verdictline" id="qv"></p>
+            </div>
+            <p class="det" id="qd"></p>
+            <span class="warn" id="qw"></span>
+          </li>
+        </ol>
+        <p class="alt"><b>The portal instead:</b> <span class="num">11,400</span> points take <span class="num">₹11,400</span> off, under the 70% ceiling of <span class="num">₹13,048</span>. <span class="num">₹7,240</span> payable plus <span class="num">₹117</span> in fees, at <span class="num">₹0.99</span> a point. That is the number any Marriott quote has to beat.</p>
+      </div>
+      <p class="rates">Award taxes on Bonvoy redemptions not yet captured — the comparison above assumes none, which flatters the transfer. Verify before this ships.</p>
+    </section>
+  </div>
+
+  <!-- ================= D ================= -->
+  <div id="p-d" hidden>
+    <div class="prog">
+      <h3>Accor ALL, on your Infinia</h3>
+      <p class="rate">A transferred point is worth <span class="num win">₹1.11</span> against SmartBuy's <span class="num">₹0.99</span> — but only once you can reach a spendable amount.</p>
+      <p class="src">2,000 points = €40, ALL terms 31 Aug · €1 = ₹110.50, ECB today · ratio 1:0.5</p>
+    </div>
+
+    <section class="card">
+      <div class="photo"><span>Placeholder — no photo source yet</span></div>
+      <div class="body">
+        <h2 class="hname">Novotel Bangkok Ploenchit</h2>
+        <p class="hmeta">1 night · 14–15 Oct</p>
+        <div class="bill"><span class="lbl">Total, taxes included</span><span class="num">₹5,180</span></div>
+      </div>
+      <div class="bal">
+        <div>Infinia <span class="num">1,600</span></div>
+        <div>Accor ALL <span class="num">0</span></div>
+      </div>
+
+      <div class="path">
+        <p class="path-tag">▽ new block</p>
+        <h4>Two ways to go, and they're close</h4>
+        <p class="det" style="margin-bottom:12px">Your <span class="num">1,600</span> points convert to <span class="num">800</span> Accor points. The smallest amount Accor certainly lets you spend is <span class="num">2,000</span>, which needs <span class="num">4,000</span> Infinia points — <span class="num">2,400</span> more than you hold. So transferring is off the table today.</p>
+        <div class="opts">
+          <div class="opt">
+            <h5>Use them on SmartBuy now</h5>
+            <p><span class="num">₹1,600</span> off, <span class="num">₹3,580</span> payable, plus the <span class="num">₹117</span> fee. On a redemption this small the flat fee eats <span class="num">₹0.07</span> of every point, so you get <span class="num">₹0.93</span> each.</p>
+          </div>
+          <div class="opt pick">
+            <h5>Pay cash and hold them</h5>
+            <p>At <span class="num">4,000</span> points they buy <span class="num">2,000</span> Accor points, worth <span class="num">₹4,420</span> — <span class="num">₹1.11</span> each, no fee. Waiting is worth about <span class="num">₹285</span> more on this balance.</p>
+          </div>
+        </div>
+        <span class="warn">Only if they last that long. Infinia points have a validity period and we don't yet hold what it is for this balance — check your statement before choosing to wait.</span>
+        <p class="alt"><b>If your Accor balance weren't zero</b> this could go the other way. Even 1,200 existing Accor points would put a spendable redemption within reach of the points you already have.</p>
+      </div>
+      <p class="rates">Accor minimum spendable amount marked SOURCE CONFLICT — 2,000 is the figure every published wording agrees on.</p>
+    </section>
+  </div>
+
+  <p class="note"><b>The Accor amount rule is unresolved and it changes three of these four tabs.</b> One reading permits 1,000 then 2,000-point steps; the July terms read 1,000 or 2,000, then multiples of 2,000. Every reading permits 2,000 and its multiples, so the engine plans against that set and refuses to instruct on any amount only one source allows. Resolving it needs the logged-in Accor checkout, not another terms page.</p>
+
+</div>
+<script>
+  var tabs = document.querySelectorAll('.tab');
+  tabs.forEach(function(t){
+    t.addEventListener('click', function(){
+      tabs.forEach(function(x){
+        x.setAttribute('aria-selected','false');
+        document.getElementById('p-'+x.dataset.p).hidden = true;
+      });
+      t.setAttribute('aria-selected','true');
+      document.getElementById('p-'+t.dataset.p).hidden = false;
+      window.scrollTo({top:0,behavior:'smooth'});
+    });
+  });
+
+  // Marriott quote flow — all figures in BANK-point currency
+  var BILL=18640, BONVOY_BAL=8000, BANK_BAL=11400, RATIO=0.5, PORTAL=0.9864;
+  var q=document.getElementById('q'), qv=document.getElementById('qv'),
+      qd=document.getElementById('qd'), qw=document.getElementById('qw');
+  function inr(n){return '₹'+Math.round(n).toLocaleString('en-IN')}
+  function price(){
+    var P=parseInt(q.value||'0',10);
+    var need=Math.max(0,P-BONVOY_BAL);
+    if(P<=0){qv.textContent='';qd.textContent='';qw.textContent='';return}
+    if(need===0){
+      qv.className='verdictline win';
+      qv.textContent='You already hold enough. No transfer needed.';
+      qd.textContent='Book it direct and keep all 11,400 Infinia points.';
+      qw.textContent='';return;
+    }
+    var bank=Math.ceil(need/RATIO);
+    var vpp=BILL/bank;
+    var afford=bank<=BANK_BAL;
+    var beats=vpp>PORTAL;
+    qd.innerHTML='Short by <b>'+need.toLocaleString('en-IN')+'</b> Bonvoy points, which is <b>'+
+      bank.toLocaleString('en-IN')+'</b> Infinia points at 1:0.5. That values each Infinia point at <b>'+
+      vpp.toFixed(2)+'</b> against the portal\u2019s ₹0.99.';
+    if(!afford){
+      qv.className='verdictline lose';
+      qv.textContent='You hold 11,400 Infinia points — '+(bank-BANK_BAL).toLocaleString('en-IN')+' short of this booking.';
+      qw.textContent='Marriott would have to quote 13,700 points or fewer for your balance to reach it at all.';
+    } else if(beats){
+      qv.className='verdictline win';
+      qv.textContent='Transfer beats the portal on this quote.';
+      qw.textContent='Transfers to Bonvoy take 48 to 96 hours and cannot be reversed. Hold the room before you send anything — an award price this good will not wait four days. We also have no verified minimum transfer amount for Bonvoy, so check the portal.';
+    } else {
+      qv.className='verdictline lose';
+      qv.textContent='The portal wins on this quote.';
+      qw.textContent='Transfer would need to come in at 18,897 Infinia points or fewer — that is a Marriott quote of 17,448 points or less — to beat ₹0.99 a point.';
+    }
+  }
+  q.addEventListener('input',price); price();
+</script>
+</body>
+</html>
