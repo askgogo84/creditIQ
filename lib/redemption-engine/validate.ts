@@ -58,9 +58,6 @@ export function validateRedemptionInput(input: RedemptionInput): void {
     assertSafeInteger('fixed_value.points', rules.fixed_value.value.points, { positive: true });
     assertSafeInteger('fixed_value.amount_minor', rules.fixed_value.value.amount_minor, { positive: true });
     requireConflictReadings('fixed_value', rules.fixed_value);
-    // Permitted amounts are set-valued. Their conservative intersection is carried
-    // directly in value.conservative, so raw readings are useful provenance but are
-    // not required for safe arithmetic the way numeric conflict readings are.
 
     const p = rules.permitted_amounts.value.conservative;
     assertSafeInteger('permitted.min', p.min, { positive: true });
@@ -113,8 +110,22 @@ export function validateRedemptionInput(input: RedemptionInput): void {
     assertSafeInteger('ratio.fromUnits', ratio.fromUnits, { positive: true });
     assertSafeInteger('ratio.toUnits', ratio.toUnits, { positive: true });
     requireConflictReadings('transfer ratio', route.ratio);
-    if (route.min_transfer) assertSafeInteger('min_transfer', route.min_transfer.value, { positive: true });
-    if (route.transfer_increment) assertSafeInteger('transfer_increment', route.transfer_increment.value, { positive: true });
+    // A ratio marked UNKNOWN cannot price a transfer. SOURCE_CONFLICT is handled
+    // explicitly by the engine; UNKNOWN is a malformed active edge for arithmetic.
+    if (route.ratio.state === 'UNKNOWN') throw new Error('ACTIVE transfer ratio cannot be UNKNOWN');
+
+    if (route.min_transfer) {
+      assertSafeInteger('min_transfer', route.min_transfer.value, { positive: true });
+      if (route.min_transfer.state !== 'VERIFIED') {
+        throw new Error('present min_transfer must be VERIFIED; omit it when unknown');
+      }
+    }
+    if (route.transfer_increment) {
+      assertSafeInteger('transfer_increment', route.transfer_increment.value, { positive: true });
+      if (route.transfer_increment.state !== 'VERIFIED') {
+        throw new Error('present transfer_increment must be VERIFIED; omit it when unknown');
+      }
+    }
     assertSafeInteger('duration min', route.duration_hours.value.min, { min: 0 });
     assertSafeInteger('duration max', route.duration_hours.value.max, { min: 0 });
     if (route.duration_hours.value.min > route.duration_hours.value.max) throw new Error('duration min cannot exceed duration max');
