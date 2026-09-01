@@ -66,6 +66,10 @@ const BASE: ComponentProps<typeof StayOnPointsView> = {
   programmeCount: 5,
 };
 
+function normalizedText(node: HTMLElement): string {
+  return (node.textContent ?? '').replace(/\s+/g, ' ').trim();
+}
+
 describe('StayOnPointsView — executable-path honesty', () => {
   it('never says transfer exactly when issuer min/increment is not verified', () => {
     render(<StayOnPointsView {...BASE} />);
@@ -76,10 +80,16 @@ describe('StayOnPointsView — executable-path honesty', () => {
   });
 
   it('keeps point currencies explicit and carries the irreversible 24-hour warning', () => {
-    render(<StayOnPointsView {...BASE} />);
-    expect(screen.getByText(/Target 4,000 Accor points/i)).toBeInTheDocument();
-    expect(screen.getByText(/within 24 hours/i)).toBeInTheDocument();
-    expect(screen.getByText(/transfer is irreversible/i)).toBeInTheDocument();
+    const { container } = render(<StayOnPointsView {...BASE} />);
+    const text = normalizedText(container);
+
+    // The target sentence intentionally contains nested <b> spans for the two
+    // point currencies. Assert on the rendered textContent so the test protects
+    // the user-visible wording without depending on element boundaries.
+    expect(text).toMatch(/Target 4,000 Accor points/i);
+    expect(text).toMatch(/at least 8,000 HDFC Reward Points/i);
+    expect(text).toMatch(/within 24 hours/i);
+    expect(text).toMatch(/transfer is irreversible/i);
   });
 
   it('does not invent a personal path when the balance is missing', () => {
