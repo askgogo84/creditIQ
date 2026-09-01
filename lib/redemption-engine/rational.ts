@@ -1,48 +1,64 @@
 // lib/redemption-engine/rational.ts
-//
-// Exact integer arithmetic for the redemption engine (v3.1, §1).
-//
-// The whole point of this module: NO JS float ever drives a recommendation.
-// v3 computed a per-point value in paise and floored it before multiplying;
-// at €1 = ₹96.20 that floored 192.4 → 192 and produced ₹7,680 where the correct
-// figure is ₹7,696 (§0). Everything here is integer rationals, rounded ONCE at
-// the presentation/storage boundary, never mid-chain, and only ever in the
-// direction that cannot flatter the recommendation (§1.2).
-//
-// The single permitted float touch in the entire engine is the FX boundary
-// conversion (`quoteMinorFromRate` below): an external provider hands us a
-// decimal rate exactly once, we round it to an integer paise-per-base-unit, and
-// no float is ever read again.
+// Exact arithmetic primitives for the redemption engine.
+// Financial inputs remain Numbers at the public boundary for ergonomics, but every
+// multiplicative intermediate is evaluated with BigInt so cross-products cannot
+// silently leave Number.MAX_SAFE_INTEGER.
 
-/** Integers only, den > 0. Never a JS float in decision logic. */
 export interface Rational {
   num: number;
   den: number;
 }
 
-/**
- * Construct a normalised rational. Sign is carried on the numerator, den is
- * always > 0. Throws on den === 0 or non-integer inputs — a non-integer here
- * means a float leaked into decision arithmetic, which is exactly the class of
- * bug this module exists to prevent.
- */
-export function rational(num: number, den: number): Rational {
-  if (!Number.isInteger(num) || !Number.isInteger(den)) {
-    throw new Error(`rational() requires integers, got ${num}/${den}`);
+export function assertSafeInteger(name: string, value: number, opts: { min?: number; positive?: boolean } = {}): void {
+  if (!Number.isSafeInteger(value)) {
+    throw new Error(`${name} must be a safe integer, got ${value}`);
   }
-  if (den === 0) throw new Error('rational() denominator must be non-zero');
-  if (den < 0) return { num: -num, den: -den };
+  if (opts.positive && value <= 0) {
+    throw new Error(`${name} must be > 0, got ${value}`);
+  }
+  if (opts.min !== undefined && value < opts.min) {
+    throw new Error(`${name} must be >= ${opts.min}, got ${value}`);
+  }
+}
+
+function bigintToSafeNumber(name: string, value: bigint): number {
+  const max = BigInt(Number.MAX_SAFE_INTEGER);
+  const min = BigInt(Number.MIN_SAFE_INTEGER);
+  if (value > max || value < min) {
+    throw new Error(`${name} exceeds Number safe-integer range`);
+  }
+  return Number(value);
+}
+
+function floorBigInt(num: bigint, den: bigint): bigint {
+  if (den <= 0n) throw new Error('division denominator must be > 0');
+  let q = num / den;
+  const r = num % den;
+  if (r !== 0n && num < 0n) q -= 1n;
+  return q;
+}
+
+function ceilBigInt(num: bigint, den: bigint): bigint {
+  if (den <= 0n) throw new Error('division denominator must be > 0');
+  let q = num / den;
+  const r = num % den;
+  if (r !== 0n && num > 0n) q += 1n;
+  return q;
+}
+
+export function rational(num: number, den: number): Rational {
+  assertSafeInteger('rational numerator', num);
+  assertSafeInteger('rational denominator', den, { positive: true });
   return { num, den };
 }
 
-/**
- * compare(a, b) → sign of (a - b), by cross-multiplication. Never divides, so
- * never introduces a float. Returns -1, 0 or 1. Denominators are guaranteed
- * positive by rational(), so the inequality direction is preserved.
- */
 export function compareRational(a: Rational, b: Rational): -1 | 0 | 1 {
-  const left = a.num * b.den;
-  const right = b.num * a.den;
+  assertSafeInteger('left numerator', a.num);
+  assertSafeInteger('left denominator', a.den, { positive: true });
+  assertSafeInteger('right numerator', b.num);
+  assertSafeInteger('right denominator', b.den, { positive: true });
+  const left = BigInt(a.num) * BigInt(b.den);
+  const right = BigInt(b.num) * BigInt(a.den);
   if (left < right) return -1;
   if (left > right) return 1;
   return 0;
@@ -52,42 +68,29 @@ export function rationalEquals(a: Rational, b: Rational): boolean {
   return compareRational(a, b) === 0;
 }
 
-/** Integer floor division. Correct for negative numerators too. den must be > 0. */
 export function floorDiv(num: number, den: number): number {
-  if (den <= 0) throw new Error('floorDiv requires den > 0');
-  return Math.floor(num / den);
+  assertSafeInteger('floorDiv numerator', num);
+  assertSafeInteger('floorDiv denominator', den, { positive: true });
+  return bigintToSafeNumber('floorDiv result', floorBigInt(BigInt(num), BigInt(den)));
 }
 
-/** Integer ceil division. den must be > 0. */
 export function ceilDiv(num: number, den: number): number {
-  if (den <= 0) throw new Error('ceilDiv requires den > 0');
-  return Math.ceil(num / den);
+  assertSafeInteger('ceilDiv numerator', num);
+  assertSafeInteger('ceilDiv denominator', den, { positive: true });
+  return bigintToSafeNumber('ceilDiv result', ceilBigInt(BigInt(num), BigInt(den)));
 }
 
-/**
- * FX boundary, stated once (§1.1). The provider hands us a decimal rate for one
- * WHOLE base unit (€1 = ₹110.50). We want paise per one whole base unit as an
- * integer: 110.50 → 11050. This is the ONLY place a float is read in the whole
- * engine; after this, every figure is an integer.
- *
- * `Math.round(rate * 100)` — €1 = ₹110.50 becomes exactly 11050, ₹96.20 becomes
- * 9620. A rate of 110.5 must never survive as `110`, `1105` or `1105000`; the
- * v3.1 unit-guard regression (test 29) exists to catch exactly that.
- */
+/** External float boundary only: INR per one whole base unit -> paise per base unit. */
 export function quoteMinorFromRate(rate: number): number {
-  return Math.round(rate * 100);
+  if (!Number.isFinite(rate) || rate <= 0) {
+    throw new Error(`FX rate must be finite and > 0, got ${rate}`);
+  }
+  const minor = Math.round(rate * 100);
+  assertSafeInteger('FX quoteMinorPerBaseUnit', minor, { positive: true });
+  return minor;
 }
 
-/**
- * The fixed-value offset, in one integer expression with a single floor (§1.1):
- *
- *   offsetPaise = floor( n × amount_minor × quoteMinorPerBaseUnit
- *                        / (rule_points × baseMinorPerBaseUnit) )
- *
- * No per-point rate is computed and floored first — that was the v3 bug. The
- * whole numerator is formed in integers (well within 2^53 for realistic
- * bookings) and floored once, downward, which cannot flatter the recommendation.
- */
+/** Single-floor fixed-value offset. Multiplication is exact via BigInt. */
 export function offsetPaise(
   n: number,
   amountMinor: number,
@@ -95,49 +98,69 @@ export function offsetPaise(
   quoteMinorPerBaseUnit: number,
   baseMinorPerBaseUnit: number,
 ): number {
-  const numerator = n * amountMinor * quoteMinorPerBaseUnit;
-  const denominator = rulePoints * baseMinorPerBaseUnit;
-  return floorDiv(numerator, denominator);
+  assertSafeInteger('programme points', n, { min: 0 });
+  assertSafeInteger('fixed-value amount minor', amountMinor, { positive: true });
+  assertSafeInteger('fixed-value rule points', rulePoints, { positive: true });
+  assertSafeInteger('FX quote minor', quoteMinorPerBaseUnit, { positive: true });
+  assertSafeInteger('base minor per unit', baseMinorPerBaseUnit, { positive: true });
+
+  const numerator = BigInt(n) * BigInt(amountMinor) * BigInt(quoteMinorPerBaseUnit);
+  const denominator = BigInt(rulePoints) * BigInt(baseMinorPerBaseUnit);
+  return bigintToSafeNumber('offsetPaise result', floorBigInt(numerator, denominator));
 }
 
-/** bank → programme points: floor(bank × toUnits / fromUnits) (§1.2, down). */
 export function programmePointsFromBank(
   bankPoints: number,
   ratio: { fromUnits: number; toUnits: number },
 ): number {
-  return floorDiv(bankPoints * ratio.toUnits, ratio.fromUnits);
+  assertSafeInteger('bank points', bankPoints, { min: 0 });
+  assertSafeInteger('ratio.fromUnits', ratio.fromUnits, { positive: true });
+  assertSafeInteger('ratio.toUnits', ratio.toUnits, { positive: true });
+  const numerator = BigInt(bankPoints) * BigInt(ratio.toUnits);
+  return bigintToSafeNumber(
+    'programmePointsFromBank result',
+    floorBigInt(numerator, BigInt(ratio.fromUnits)),
+  );
 }
 
-/** programme points → bank required: ceil(need × fromUnits / toUnits) (§1.2, up). */
 export function bankPointsForProgramme(
   programmePoints: number,
   ratio: { fromUnits: number; toUnits: number },
 ): number {
-  return ceilDiv(programmePoints * ratio.fromUnits, ratio.toUnits);
+  assertSafeInteger('programme points required', programmePoints, { min: 0 });
+  assertSafeInteger('ratio.fromUnits', ratio.fromUnits, { positive: true });
+  assertSafeInteger('ratio.toUnits', ratio.toUnits, { positive: true });
+  const numerator = BigInt(programmePoints) * BigInt(ratio.fromUnits);
+  return bigintToSafeNumber(
+    'bankPointsForProgramme result',
+    ceilBigInt(numerator, BigInt(ratio.toUnits)),
+  );
 }
 
-/**
- * bank required → permitted transfer amount (§1.2): ceil to min_transfer, then
- * to transfer_increment. Both are in BANK points. Rounds up, so the user is
- * never told to transfer fewer points than the programme will accept.
- */
-export function roundUpTransfer(
-  bankRequired: number,
-  minTransfer: number,
-  increment: number,
-): number {
+export function roundUpTransfer(bankRequired: number, minTransfer: number, increment: number): number {
+  assertSafeInteger('bankRequired', bankRequired, { min: 0 });
+  assertSafeInteger('minTransfer', minTransfer, { min: 0 });
+  assertSafeInteger('transfer increment', increment, { positive: true });
   const base = Math.max(bankRequired, minTransfer);
-  if (increment <= 0) return base;
-  const steps = ceilDiv(base - minTransfer, increment);
-  return minTransfer + steps * increment;
+  if (base <= minTransfer) return minTransfer;
+  const delta = BigInt(base - minTransfer);
+  const steps = ceilBigInt(delta, BigInt(increment));
+  return bigintToSafeNumber(
+    'roundUpTransfer result',
+    BigInt(minTransfer) + steps * BigInt(increment),
+  );
 }
 
-/** fee + tax: ceil(fee_minor × (10000 + tax_bp) / 10000) (§1.2, up). */
 export function feeWithTax(feeMinor: number, taxBp: number): number {
-  return ceilDiv(feeMinor * (10000 + taxBp), 10000);
+  assertSafeInteger('portal fee minor', feeMinor, { min: 0 });
+  assertSafeInteger('portal fee tax bp', taxBp, { min: 0 });
+  const numerator = BigInt(feeMinor) * BigInt(10000 + taxBp);
+  return bigintToSafeNumber('feeWithTax result', ceilBigInt(numerator, 10000n));
 }
 
-/** portal cap: floor(eligible × cap_bp / 10000) (§1.2, down). */
 export function portalCapMinor(eligibleMinor: number, capBp: number): number {
-  return floorDiv(eligibleMinor * capBp, 10000);
+  assertSafeInteger('portal eligible minor', eligibleMinor, { min: 0 });
+  assertSafeInteger('portal cap bp', capBp, { min: 0 });
+  const numerator = BigInt(eligibleMinor) * BigInt(capBp);
+  return bigintToSafeNumber('portalCapMinor result', floorBigInt(numerator, 10000n));
 }
