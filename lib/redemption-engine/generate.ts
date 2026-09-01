@@ -33,7 +33,6 @@ export interface EngineContext {
   route: TransferRoute;
   portal: PortalTerms;
   quoteMinorPerBaseUnit: number | null;
-  /** Null for UNAVAILABLE/ENDED. Never fabricate a placeholder ratio. */
   ratio: { fromUnits: number; toUnits: number } | null;
   ratioConflict: boolean;
   minTransfer: number | null;
@@ -112,7 +111,7 @@ function makeCashCandidate(ctx: EngineContext): RedemptionCandidate {
     offsetMinor: null,
     awardTaxesMinor: null,
     benchmarkCashFareMinor: ctx.booking.cashFareMinor ?? null,
-    benchmarkState: ctx.booking.cashFareMinor !== undefined ? (ctx.booking.cashFareState ?? 'UNAVAILABLE') : null,
+    benchmarkState: ctx.booking.cashFareMinor !== undefined ? (ctx.booking.cashFareState ?? 'CAPTURED') : null,
     feeMinor: 0,
     cashPayableMinor: ctx.booking.grossMinor,
     incrementalBookingOffsetPerTransferredBankPointPaise: null,
@@ -183,8 +182,6 @@ function legalCashOffsetSet(ctx: EngineContext): number[] {
       ctx.quoteMinorPerBaseUnit,
       BASE_MINOR_PER_BASE_UNIT,
     );
-    // Programme eligibility is always a hard ceiling, independently of any
-    // additional booking-value rule. Never emit the first over-ceiling amount.
     if (offset > programmeEligibleMinor) break;
     out.push(amount);
   }
@@ -263,7 +260,9 @@ export function findPermittedRedemptions(ctx: EngineContext): GenerationResult {
     }
 
     if (entryPoints == null) {
-      quoteRequired = rules.pricing === 'QUOTE_REQUIRED';
+      // QUOTE_REQUIRED => ask for quote; PUBLISHED_CHART with no matching entry =>
+      // fail closed through variantPath as NO_RECOMMENDATION.
+      quoteRequired = true;
       return { candidates, eliminated, balanceState: 'BELOW_MINIMUM', legalSpendSet: [], quoteRequired };
     }
     benchmarkCashFareMinor = ctx.booking.cashFareMinor ?? null;
@@ -288,8 +287,6 @@ export function findPermittedRedemptions(ctx: EngineContext): GenerationResult {
       eliminated.push({ reason: 'TRANSFER_UNAVAILABLE', wouldHaveSpent: spend });
       continue;
     }
-    // A disputed transfer ratio cannot safely price an irreversible transfer.
-    // Zero-transfer redemptions remain valid because the ratio is irrelevant.
     if (shortfall > 0 && ctx.ratioConflict) {
       eliminated.push({ reason: 'RATIO_CONFLICT', wouldHaveSpent: spend });
       continue;
@@ -306,7 +303,7 @@ export function findPermittedRedemptions(ctx: EngineContext): GenerationResult {
     }
 
     let exact: number | null = null;
-    let instructionBlocked: InstructionBlocked = shortfall === 0
+    const instructionBlocked: InstructionBlocked = shortfall === 0
       ? (ctx.eligibilityUnknown ? 'PROGRAMME_ELIGIBLE_AMOUNT_UNKNOWN' : null)
       : blockedBase;
 
@@ -343,7 +340,7 @@ export function findPermittedRedemptions(ctx: EngineContext): GenerationResult {
       candidateAwardTaxes = awardTaxesMinor;
       candidateBenchmark = benchmarkCashFareMinor;
       cashPayableMinor = awardTaxesMinor;
-      benchmarkState = candidateBenchmark !== null ? (ctx.booking.cashFareState ?? 'UNAVAILABLE') : 'UNAVAILABLE';
+      benchmarkState = candidateBenchmark !== null ? (ctx.booking.cashFareState ?? 'CAPTURED') : 'UNAVAILABLE';
     }
 
     candidates.push({
