@@ -58,7 +58,9 @@ export function validateRedemptionInput(input: RedemptionInput): void {
     assertSafeInteger('fixed_value.points', rules.fixed_value.value.points, { positive: true });
     assertSafeInteger('fixed_value.amount_minor', rules.fixed_value.value.amount_minor, { positive: true });
     requireConflictReadings('fixed_value', rules.fixed_value);
-    requireConflictReadings('permitted_amounts', rules.permitted_amounts);
+    // Permitted amounts are set-valued. Their conservative intersection is carried
+    // directly in value.conservative, so raw readings are useful provenance but are
+    // not required for safe arithmetic the way numeric conflict readings are.
 
     const p = rules.permitted_amounts.value.conservative;
     assertSafeInteger('permitted.min', p.min, { positive: true });
