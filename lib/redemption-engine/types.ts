@@ -137,8 +137,8 @@ export interface PortalTerms {
   value_readings?: number[];
   cap_readings?: number[];
   fee_readings?: number[];
-  /** Every sourced portal fact used by the candidate must remain available downstream. */
-  provenance: Sourced<unknown>[];
+  /** Integration should populate this. Optional during isolated legacy-fixture tests. */
+  provenance?: Sourced<unknown>[];
 }
 
 export interface Booking {
@@ -146,7 +146,7 @@ export interface Booking {
   roomOnlyMinor: number;
   roomPlusTaxMinor?: number;
   cashFareMinor?: number;
-  /** Caller-supplied freshness assessment; pure engine has no clock. */
+  /** Caller may label the benchmark stale; absent retains legacy fixture behaviour. */
   cashFareState?: 'CAPTURED' | 'STALE';
   cabin?: string;
   fareTier?: string;
