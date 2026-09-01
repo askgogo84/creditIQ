@@ -84,7 +84,7 @@ function ratEq(actual: Rational | null | undefined, expected: Rational): boolean
   return actual != null && compareRational(actual, expected) === 0;
 }
 
-function chartRules(taxes: number | undefined = 285_000): ChartAwardRules {
+function chartRules(taxes: number | null = 285_000): ChartAwardRules {
   return {
     programme_id: 'air-india-maharaja',
     currency_label: 'Maharaja Points',
@@ -93,7 +93,7 @@ function chartRules(taxes: number | undefined = 285_000): ChartAwardRules {
     pricing: 'PUBLISHED_CHART',
     mechanic: 'AWARD_PRICE',
     award_chart: S({
-      entries: [{ zone_id: 'SE_ASIA', cabin: 'economy', fare_tier: 'Value', points: 12_000, ...(taxes === undefined ? {} : { taxes_minor: taxes }) }],
+      entries: [{ zone_id: 'SE_ASIA', cabin: 'economy', fare_tier: 'Value', points: 12_000, ...(taxes === null ? {} : { taxes_minor: taxes }) }],
     }),
   };
 }
@@ -332,7 +332,7 @@ describe('v3.1 coverage matrix 1–30', () => {
   });
 
   it('20 unknown award taxes suppress programme cash figure and cannot win accidentally', () => {
-    const input = awardInput(chartRules(undefined));
+    const input = awardInput(chartRules(null));
     for (const objective of ['MINIMISE_CASH_TODAY', 'MAXIMISE_BANK_POINT_EFFICIENCY'] as const) {
       const plan = planRedemption({ ...input, objective });
       const award = plan.candidates.find((c) => c.kind === 'PROGRAMME');
@@ -497,7 +497,7 @@ describe('adversarial regressions', () => {
   });
 
   it('39 unknown cash figure never sorts as zero/best under either objective', () => {
-    const input = awardInput(chartRules(undefined));
+    const input = awardInput(chartRules(null));
     for (const objective of ['MINIMISE_CASH_TODAY', 'MAXIMISE_BANK_POINT_EFFICIENCY'] as const) {
       const plan = planRedemption({ ...input, objective });
       expect(plan.candidates.find((c) => c.kind === 'PROGRAMME')?.cashPayableMinor).toBeNull();
@@ -563,8 +563,8 @@ describe('adversarial regressions', () => {
       programmeBalance: null,
     }));
     const portal = plan.candidates.find((c) => c.kind === 'PORTAL');
-    expect(portal?.bankPointsRequiredMinimum).toBe(8400); // 70% of gross, not room-only
-    expect(prog(plan, 4000)).toBeUndefined(); // ₹8,840 exceeds room-only eligibility
+    expect(portal?.bankPointsRequiredMinimum).toBe(8400);
+    expect(prog(plan, 4000)).toBeUndefined();
   });
 
   it('46 cash/portal boundary around the ₹116.82 flat fee is exact', () => {
