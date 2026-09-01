@@ -51,7 +51,7 @@ interface TransferInfo {
 function sourcedList(input: RedemptionInput): Sourced<unknown>[] {
   const out: Sourced<unknown>[] = [
     input.rules.requires_direct_booking as Sourced<unknown>,
-    ...input.portal.provenance,
+    ...(input.portal.provenance ?? []),
   ];
   const { rules, route } = input;
   if (rules.pricing === 'FIXED_VALUE') {
@@ -200,12 +200,6 @@ function evaluateVariant(
   };
 }
 
-/**
- * Numeric conflicts are safe only when the executable recommendation is stable,
- * not merely when the broad path label matches. This prevents an arbitrary
- * reading from leaking a different transfer target/cash figure under the same
- * TRANSFER_THEN_BOOK or PORTAL label.
- */
 function recommendationSignature(variant: VariantResult): string {
   const winner = variant.winner;
   if (!winner) return `${variant.path}|none`;
