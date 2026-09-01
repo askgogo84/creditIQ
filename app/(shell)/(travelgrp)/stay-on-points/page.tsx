@@ -17,7 +17,6 @@ import {
 import type {
   NotPricedRules,
   PortalTerms,
-  RedemptionCandidate,
   RedemptionPlan,
   TransferRoute,
 } from '@/lib/redemption-engine/types';
@@ -113,9 +112,9 @@ export default async function StayOnPointsPage({
             absence_state: 'NOT_CAPTURED',
           };
 
-    // A missing balance is represented as zero only for programme-level facts
-    // (e.g. conversion economics). We do not surface the resulting personal
-    // recommendation when the balance is unknown.
+    // A missing balance is represented as zero only so the engine can still
+    // return programme-level conversion facts. No personal path or candidate is
+    // surfaced when balanceKnown=false.
     const plan = planRedemption({
       booking,
       bank: {
@@ -198,9 +197,12 @@ function mapStayCard({
   plan: RedemptionPlan;
 }): StayCard {
   const recommended = balanceKnown ? plan.recommended : null;
-  const programmeCandidate = bestProgrammeCandidate(plan.candidates);
-  const portalCandidate = plan.candidates.find((c) => c.kind === 'PORTAL') ?? null;
-  const execution = recommended?.kind === 'PROGRAMME' ? recommended : programmeCandidate;
+  const portalCandidate = balanceKnown
+    ? plan.candidates.find((c) => c.kind === 'PORTAL') ?? null
+    : null;
+  // Only a candidate the engine actually recommends may become an execution
+  // path. We never surface a losing/unsafe base-variant candidate as advice.
+  const execution = recommended?.kind === 'PROGRAMME' ? recommended : null;
 
   return {
     id: r.hotel.id,
@@ -220,33 +222,40 @@ function mapStayCard({
     balance_state: plan.balanceState,
     rule_state: plan.ruleState,
     recommended_path: balanceKnown ? plan.recommendedPath : 'NO_RECOMMENDATION',
-    blocked_reason: balanceKnown ? plan.blockedReason : 'Add your HDFC Reward Points balance to generate a personal redemption path.',
+    blocked_reason: balanceKnown
+      ? plan.blockedReason
+      : 'Add your HDFC Reward Points balance to generate a personal redemption path.',
 
-    programme_points_spent: execution?.kind === 'PROGRAMME' ? execution.programmePointsSpent : null,
-    bank_points_target: execution?.kind === 'PROGRAMME' ? execution.bankPointsRequiredMinimum : null,
-    bank_points_exact: execution?.kind === 'PROGRAMME' ? execution.bankPointsToTransferExact : null,
-    bank_points_retained: execution?.kind === 'PROGRAMME' ? execution.bankPointsRetained : null,
-    existing_programme_points_consumed: execution?.kind === 'PROGRAMME' ? execution.existingProgrammePointsConsumed : null,
-    programme_points_received: execution?.kind === 'PROGRAMME' ? execution.programmePointsReceived : null,
-    residual_programme_balance: execution?.kind === 'PROGRAMME' ? execution.residualProgrammeBalance : null,
-    stranded_programme_points: execution?.kind === 'PROGRAMME' ? execution.strandedResidualProgrammePoints : null,
-    points_offset_inr: execution?.kind === 'PROGRAMME' && execution.offsetMinor !== null ? execution.offsetMinor / 100 : null,
-    execution_cash_payable_inr: execution?.kind === 'PROGRAMME' && execution.cashPayableMinor !== null ? execution.cashPayableMinor / 100 : null,
-    instruction_blocked: execution?.kind === 'PROGRAMME' ? execution.instructionBlocked : null,
-    transfer_duration_hours: execution?.kind === 'PROGRAMME' ? execution.durationHours : null,
-    transfer_irreversible: execution?.kind === 'PROGRAMME' ? execution.irreversible : false,
+    programme_points_spent: execution?.programmePointsSpent ?? null,
+    bank_points_target: execution?.bankPointsRequiredMinimum ?? null,
+    bank_points_exact: execution?.bankPointsToTransferExact ?? null,
+    bank_points_retained: execution?.bankPointsRetained ?? null,
+    existing_programme_points_consumed: execution?.existingProgrammePointsConsumed ?? null,
+    programme_points_received: execution?.programmePointsReceived ?? null,
+    residual_programme_balance: execution?.residualProgrammeBalance ?? null,
+    stranded_programme_points: execution?.strandedResidualProgrammePoints ?? null,
+    points_offset_inr: execution?.offsetMinor !== null && execution?.offsetMinor !== undefined
+      ? execution.offsetMinor / 100
+      : null,
+    execution_cash_payable_inr:
+      execution?.cashPayableMinor !== null && execution?.cashPayableMinor !== undefined
+        ? execution.cashPayableMinor / 100
+        : null,
+    instruction_blocked: execution?.instructionBlocked ?? null,
+    transfer_duration_hours: execution?.durationHours ?? null,
+    transfer_irreversible: execution?.irreversible ?? false,
 
     portal_points_used: portalCandidate?.bankPointsRequiredMinimum ?? null,
-    portal_cash_payable_inr: portalCandidate?.cashPayableMinor !== null && portalCandidate?.cashPayableMinor !== undefined
-      ? portalCandidate.cashPayableMinor / 100
-      : null,
+    portal_cash_payable_inr:
+      portalCandidate?.cashPayableMinor !== null && portalCandidate?.cashPayableMinor !== undefined
+        ? portalCandidate.cashPayableMinor / 100
+        : null,
     portal_fee_inr: portalCandidate ? portalCandidate.feeMinor / 100 : null,
 
     conversion_value_per_bank_point_inr: rationalPaiseToInr(plan.conversionValuePerBankPointPaise),
-    booking_specific_value_per_bank_point_inr:
-      execution?.kind === 'PROGRAMME'
-        ? rationalPaiseToInr(execution.incrementalBookingOffsetPerTransferredBankPointPaise)
-        : null,
+    booking_specific_value_per_bank_point_inr: execution
+      ? rationalPaiseToInr(execution.incrementalBookingOffsetPerTransferredBankPointPaise)
+      : null,
 
     conflicts: plan.conflicts.map((c) => c.effect),
     rate_age_label: rateAgeLabel(r.captured_at),
@@ -254,19 +263,6 @@ function mapStayCard({
     rate_is_live: r.is_live,
     booking_url: r.hotel.booking_url,
   };
-}
-
-function bestProgrammeCandidate(candidates: RedemptionCandidate[]): RedemptionCandidate | null {
-  const programme = candidates.filter((c) => c.kind === 'PROGRAMME');
-  if (programme.length === 0) return null;
-  return programme.reduce((best, candidate) => {
-    if (candidate.programmePointsSpent !== best.programmePointsSpent) {
-      return candidate.programmePointsSpent > best.programmePointsSpent ? candidate : best;
-    }
-    const candidateCash = candidate.cashPayableMinor ?? Number.MAX_SAFE_INTEGER;
-    const bestCash = best.cashPayableMinor ?? Number.MAX_SAFE_INTEGER;
-    return candidateCash < bestCash ? candidate : best;
-  });
 }
 
 function rationalPaiseToInr(value: RedemptionPlan['conversionValuePerBankPointPaise']): number | null {
