@@ -79,6 +79,14 @@ describe('StayOnPointsView — executable-path honesty', () => {
     expect(screen.getByText(/HDFC transfer minimum\/increment is not yet sourced/i)).toBeInTheDocument();
   });
 
+  it('does not call a blocked transfer path executable or present it as an unconditional best path', () => {
+    render(<StayOnPointsView {...BASE} />);
+    expect(screen.getByText(/0 executable · 1 transfer paths need verification/i)).toBeInTheDocument();
+    expect(screen.getByText(/Best-ranked path: transfer — verification needed/i)).toBeInTheDocument();
+    expect(screen.getByText(/not yet an executable transfer instruction/i)).toBeInTheDocument();
+    expect(screen.queryByText(/Best path: transfer, then book/i)).not.toBeInTheDocument();
+  });
+
   it('keeps point currencies explicit and carries the irreversible 24-hour warning', () => {
     const { container } = render(<StayOnPointsView {...BASE} />);
     const text = normalizedText(container);
