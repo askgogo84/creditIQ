@@ -50,4 +50,25 @@ describe('WalletRailMatrix', () => {
       body: JSON.stringify({ travelKind: 'flight', programmeId: 'krisflyer' }),
     }))
   })
+
+  it('labels a cheaper ratio-only transfer as projected while cash remains executable', async () => {
+    render(
+      <WalletRailMatrix
+        travelKind="flight"
+        programmeId="krisflyer"
+        programmePointsRequired={43_000}
+        awardTaxesMinor={418_000}
+        awardTaxesCurrency="INR"
+        cashPriceMinor={5_260_000}
+        cashCurrency="INR"
+      />,
+    )
+
+    expect(await screen.findByText('Best projected path · verification required')).toBeInTheDocument()
+    expect(screen.getByText('HDFC Infinia Metal Edition → krisflyer')).toBeInTheDocument()
+    expect(screen.getByText(/at least 43,000 bank points/)).toBeInTheDocument()
+    expect(screen.getByText('Best executable now')).toBeInTheDocument()
+    expect(screen.getAllByText('Cash + retain points').length).toBeGreaterThanOrEqual(1)
+    expect(screen.getByText(/Projected paths are never promoted/)).toBeInTheDocument()
+  })
 })
