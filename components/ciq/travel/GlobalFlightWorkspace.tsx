@@ -243,7 +243,12 @@ function GlobalDecisionPanel({ row }: { row: FusionRow | null }) {
       <aside className="ifw-panel">
         <div className="ifw-panel-head"><span>Cash-only itinerary</span><h2>{row.airline || 'Cash flight'} · ₹{row.price.toLocaleString('en-IN')}</h2><p>No award match was returned for this itinerary. CreditIQ keeps it visible instead of deleting it from the search.</p></div>
         <div className="ifw-cash-compare"><div className="ifw-section-label">Decision</div><div className="ifw-cash-row"><span>Pay cash and retain all wallet points</span><b>₹{row.price.toLocaleString('en-IN')}</b></div></div>
-        <WalletRailMatrix travelKind="flight" programmeId={null} />
+        <WalletRailMatrix
+          travelKind="flight"
+          programmeId={null}
+          cashPriceMinor={row.price > 0 ? Math.round(row.price * 100) : null}
+          cashCurrency={row.price > 0 ? 'INR' : null}
+        />
         <div className="ifw-actions">{row.bookingLink ? <a href={row.bookingLink} target="_blank" rel="noopener noreferrer">Check fare directly →</a> : <span /> }<ConciergeRequestButton request={request} /></div>
         <div className="ifw-source-note">No loyalty transfer recommendation is manufactured when no award programme is matched. Generic portal/voucher/native rails can still be shown.</div>
       </aside>
@@ -255,7 +260,15 @@ function GlobalDecisionPanel({ row }: { row: FusionRow | null }) {
   return (
     <aside className="ifw-panel">
       <div className="ifw-panel-head"><span>Award opportunity</span><h2>{award.program}</h2><p>CreditIQ now enumerates every sourced redemption rail from every card in your wallet. A card remains visible even when it has no verified path into this programme.</p><div className="ifw-award-cost"><b>{award.mileageCost.toLocaleString('en-IN')} {award.program} miles</b><span>{taxes ? `+ ${taxes} taxes` : 'taxes not supplied'}</span></div></div>
-      <WalletRailMatrix travelKind="flight" programmeId={programmeId} />
+      <WalletRailMatrix
+        travelKind="flight"
+        programmeId={programmeId}
+        programmePointsRequired={award.mileageCost}
+        awardTaxesMinor={award.trip?.totalTaxes != null ? Math.round(award.trip.totalTaxes) : null}
+        awardTaxesCurrency={award.trip?.taxesCurrency ?? null}
+        cashPriceMinor={row.price > 0 ? Math.round(row.price * 100) : null}
+        cashCurrency={row.price > 0 ? 'INR' : null}
+      />
       <div className="ifw-cash-compare"><div className="ifw-section-label">Cash comparison</div>{row.price > 0 ? <div className="ifw-cash-row"><span>Matched cash fare</span><b>₹{row.price.toLocaleString('en-IN')}</b></div> : <p className="ifw-muted">No matched cash fare was returned. CreditIQ does not invent one.</p>}</div>
       <div className="ifw-guardrail"><b>Guardrail:</b> the rail matrix enumerates sourced possibilities; v3.1 financial arithmetic and direct checkout remain the authority before an irreversible transfer.</div>
       <div className="ifw-actions"><a href={`https://www.google.com/search?q=${encodeURIComponent(award.program + ' award booking')}`} target="_blank" rel="noopener noreferrer">Check award directly →</a><ConciergeRequestButton request={request} /></div>
