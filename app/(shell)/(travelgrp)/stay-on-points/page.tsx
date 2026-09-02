@@ -1,5 +1,5 @@
 // app/(shell)/(travelgrp)/stay-on-points/page.tsx
-// Stay on Points — production integration for redemption-engine v3.1.
+// Hotels workspace — production integration for redemption-engine v3.1.
 //
 // All decision arithmetic comes from lib/redemption-engine. This page owns I/O
 // and presentation mapping only. Unknown issuer/programme facts remain unknown.
@@ -20,12 +20,11 @@ import type {
   RedemptionPlan,
   TransferRoute,
 } from '@/lib/redemption-engine/types';
-import StayOnPointsView, {
-  type StayCard,
-} from '@/components/ciq/stay-points/StayOnPointsView';
+import type { StayCard } from '@/components/ciq/stay-points/StayOnPointsView';
+import InvestorHotelWorkspace from '@/components/ciq/travel/InvestorHotelWorkspace';
 
 export const metadata = {
-  title: 'Stay on Points — exact redemption paths | CreditIQ',
+  title: 'Hotels on points — exact redemption paths | CreditIQ',
   description:
     'Compare bank portal, hotel-programme and cash paths using sourced transfer rules, live FX and explicit execution blockers.',
 };
@@ -141,10 +140,7 @@ export default async function StayOnPointsPage({
     });
   });
 
-  // Execution first. Within a path, lower cash payable first. This deliberately
-  // replaces the old repeated "advantage %" ordering; Accor's conversion rate
-  // is programme-level, while the useful property-level difference is what the
-  // user's balance can actually execute on this bill.
+  // Execution first. Within a path, lower cash payable first.
   cards.sort((a, b) => {
     const pathRank = pathOrder(a.recommended_path) - pathOrder(b.recommended_path);
     if (pathRank !== 0) return pathRank;
@@ -157,7 +153,7 @@ export default async function StayOnPointsPage({
     ?.conversion_value_per_bank_point_inr ?? null;
 
   return (
-    <StayOnPointsView
+    <InvestorHotelWorkspace
       city={city}
       mode={mode}
       nights={NIGHTS}
