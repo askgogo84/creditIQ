@@ -134,13 +134,20 @@ export function parseCreateConciergeCaseInput(raw: unknown): ParseResult {
     return { ok: false, error: 'snapshot too large' }
   }
 
-  const expectedCashMinor = raw.expectedCashMinor
+  const expectedCashMinorRaw = raw.expectedCashMinor
+  if (expectedCashMinorRaw === undefined) {
+    return { ok: false, error: 'invalid expected cash' }
+  }
   if (
-    expectedCashMinor !== null &&
-    (!Number.isSafeInteger(expectedCashMinor) || expectedCashMinor < 0 || expectedCashMinor > MAX_EXPECTED_CASH_MINOR)
+    expectedCashMinorRaw !== null &&
+    (typeof expectedCashMinorRaw !== 'number' ||
+      !Number.isSafeInteger(expectedCashMinorRaw) ||
+      expectedCashMinorRaw < 0 ||
+      expectedCashMinorRaw > MAX_EXPECTED_CASH_MINOR)
   ) {
     return { ok: false, error: 'invalid expected cash' }
   }
+  const expectedCashMinor: number | null = expectedCashMinorRaw
 
   const currencyRaw = typeof raw.currency === 'string' ? raw.currency.trim().toUpperCase() : ''
   if (!/^[A-Z]{3}$/.test(currencyRaw)) return { ok: false, error: 'invalid currency' }
