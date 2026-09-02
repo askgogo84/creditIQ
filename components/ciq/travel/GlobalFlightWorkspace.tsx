@@ -8,7 +8,9 @@ import { labelFor, resolveCity } from '@/lib/data/airports'
 import type { RedemptionOption } from '@/lib/fusion-core'
 import { ConciergeRequestButton } from '@/components/ciq/concierge/ConciergeRequestButton'
 import { buildFlightConciergeRequest } from '@/components/ciq/concierge/travel-requests'
-import { rankWalletOptions, sameWalletOption, walletOptionReason } from './flight-wallet-comparison'
+import { programmeIdForFlightSource } from '@/lib/redemption-rails/programme-resolver'
+import { WalletRailMatrix } from './WalletRailMatrix'
+import { rankWalletOptions } from './flight-wallet-comparison'
 import '@/components/ciq/fly-points/fly-points.css'
 import './investor-flight-workspace.css'
 
@@ -159,7 +161,7 @@ export function GlobalFlightWorkspace() {
       <div className="ifw-title-row">
         <div>
           <h1 className="ifw-title">Any city. All provider-returned options.</h1>
-          <p className="ifw-sub">Cash-only itineraries, award-only availability and matched cash + award rows stay in one search. Your wallet ranks them after inventory is loaded.</p>
+          <p className="ifw-sub">Cash-only itineraries, award-only availability and matched cash + award rows stay in one search. Your wallet is evaluated after inventory is loaded.</p>
         </div>
         <div className="ifw-honesty">No hidden top-5 · no wallet-only default</div>
       </div>
@@ -185,11 +187,11 @@ export function GlobalFlightWorkspace() {
             </div>
             <div className="ifw-filters" role="group" aria-label="Flight result filters">
               <button aria-pressed={scope === 'all'} onClick={() => setScope('all')}>All options</button>
-              <button aria-pressed={scope === 'mine'} onClick={() => setScope('mine')}>Bookable with my cards</button>
+              <button aria-pressed={scope === 'mine'} onClick={() => setScope('mine')}>Legacy mapped transfer estimate</button>
               <button aria-pressed={nonStop} onClick={() => setNonStop((v) => !v)}>Non-stop</button>
             </div>
           </div>
-          <div className="ifw-source-note">Cash provider search now requests its full supported result window instead of five rows. Award summaries remain visible even when only a subset receives expensive trip-detail enrichment.</div>
+          <div className="ifw-source-note">Cash provider search requests its full supported result window. Selected results now load a separate exact-card redemption-rail matrix; the old transfer estimate is retained only as a temporary filter until rail-aware ranking replaces it.</div>
 
           <div className="ifw-workspace">
             <div className="ifw-left">
@@ -220,7 +222,7 @@ function GlobalFlightRow({ row, active, onSelect }: { row: FusionRow; active: bo
       <div className="ifw-programme"><b>{award?.program || row.airline || 'Cash itinerary'}</b><span>{row.from} → {row.to} · {fmtDuration(trip?.durationMinutes || row.duration * 60)} · {fmtStops(stops)}</span><small>{award ? (row.price > 0 ? 'Cash + award' : 'Award-only') : 'Cash-only · still part of the search'}</small></div>
       <div className="ifw-metric"><b>{award ? award.mileageCost.toLocaleString('en-IN') : '—'}</b><span>{award ? `${award.program} miles` : 'no award match'}</span>{taxes && <small>+ {taxes} taxes</small>}</div>
       <div className="ifw-metric"><b>{row.price > 0 ? `₹${row.price.toLocaleString('en-IN')}` : '—'}</b><span>{row.price > 0 ? 'cash fare' : 'cash not matched'}</span></div>
-      <div className="ifw-best"><b>{row.bestOption?.cardName || (award ? 'No wallet route' : 'Cash')}</b><span>{row.bestOption?.cardPointsNeeded != null ? `${row.bestOption.cardPointsNeeded.toLocaleString('en-IN')} card pts` : award ? 'still visible' : 'retain points'}</span></div>
+      <div className="ifw-best"><b>{award ? 'View all paths' : 'Cash'}</b><span>{award ? 'every wallet card' : 'retain points'}</span></div>
     </button>
   )
 }
@@ -229,6 +231,8 @@ function GlobalDecisionPanel({ row }: { row: FusionRow | null }) {
   if (!row) return <aside className="ifw-panel empty"><div><b>Select an option</b><p>Inventory stays visible whether or not CreditIQ can price a redemption path.</p></div></aside>
 
   const award = row.award
+  // Legacy estimated transfer rows are retained only inside the Concierge request
+  // snapshot until the v3.1 execution engine consumes the new rail registry.
   const options = award ? rankWalletOptions(row.redemption) : []
   const best = row.bestOption
   const taxes = nativeTaxes(award?.trip ?? null)
@@ -239,18 +243,21 @@ function GlobalDecisionPanel({ row }: { row: FusionRow | null }) {
       <aside className="ifw-panel">
         <div className="ifw-panel-head"><span>Cash-only itinerary</span><h2>{row.airline || 'Cash flight'} · ₹{row.price.toLocaleString('en-IN')}</h2><p>No award match was returned for this itinerary. CreditIQ keeps it visible instead of deleting it from the search.</p></div>
         <div className="ifw-cash-compare"><div className="ifw-section-label">Decision</div><div className="ifw-cash-row"><span>Pay cash and retain all wallet points</span><b>₹{row.price.toLocaleString('en-IN')}</b></div></div>
+        <WalletRailMatrix travelKind="flight" programmeId={null} />
         <div className="ifw-actions">{row.bookingLink ? <a href={row.bookingLink} target="_blank" rel="noopener noreferrer">Check fare directly →</a> : <span /> }<ConciergeRequestButton request={request} /></div>
-        <div className="ifw-source-note">No transfer recommendation is manufactured when no award programme is matched.</div>
+        <div className="ifw-source-note">No loyalty transfer recommendation is manufactured when no award programme is matched. Generic portal/voucher/native rails can still be shown.</div>
       </aside>
     )
   }
 
+  const programmeId = programmeIdForFlightSource(award.source)
+
   return (
     <aside className="ifw-panel">
-      <div className="ifw-panel-head"><span>Best wallet transfer path</span><h2>{best ? `${best.cardName} → ${award.program}` : `No known wallet route → ${award.program}`}</h2><p>The award stays visible even when none of the user’s cards have a mapped route.</p><div className="ifw-award-cost"><b>{award.mileageCost.toLocaleString('en-IN')} {award.program} miles</b><span>{taxes ? `+ ${taxes} taxes` : 'taxes not supplied'}</span></div></div>
-      <div className="ifw-compare"><div className="ifw-section-label">Compared across your cards</div>{options.length === 0 ? <p className="ifw-muted">No named wallet cards were available for transfer mapping.</p> : options.map((option) => { const winner = sameWalletOption(option, best); return <div key={`${option.bank}|${option.cardName}`} className={`ifw-card-option${winner ? ' winner' : ''}`}><div><b>{option.cardName}</b><span>{option.bank}</span><small>{walletOptionReason(option, award.program)}</small></div><div className="ifw-option-right">{option.status === 'ok' && option.cardPointsNeeded != null ? <><b>{option.cardPointsNeeded.toLocaleString('en-IN')}</b><span>card points</span></> : <><b>—</b><span>{option.status === 'currency-unknown' ? 'not mapped' : 'no route'}</span></>}</div>{winner && <em>Best current route</em>}</div> })}</div>
+      <div className="ifw-panel-head"><span>Award opportunity</span><h2>{award.program}</h2><p>CreditIQ now enumerates every sourced redemption rail from every card in your wallet. A card remains visible even when it has no verified path into this programme.</p><div className="ifw-award-cost"><b>{award.mileageCost.toLocaleString('en-IN')} {award.program} miles</b><span>{taxes ? `+ ${taxes} taxes` : 'taxes not supplied'}</span></div></div>
+      <WalletRailMatrix travelKind="flight" programmeId={programmeId} />
       <div className="ifw-cash-compare"><div className="ifw-section-label">Cash comparison</div>{row.price > 0 ? <div className="ifw-cash-row"><span>Matched cash fare</span><b>₹{row.price.toLocaleString('en-IN')}</b></div> : <p className="ifw-muted">No matched cash fare was returned. CreditIQ does not invent one.</p>}</div>
-      <div className="ifw-guardrail"><b>Guardrail:</b> transfer candidates remain unverified until programme/card rules are sourced. Inventory visibility is not the same thing as redemption confidence.</div>
+      <div className="ifw-guardrail"><b>Guardrail:</b> the rail matrix enumerates sourced possibilities; v3.1 financial arithmetic and direct checkout remain the authority before an irreversible transfer.</div>
       <div className="ifw-actions"><a href={`https://www.google.com/search?q=${encodeURIComponent(award.program + ' award booking')}`} target="_blank" rel="noopener noreferrer">Check award directly →</a><ConciergeRequestButton request={request} /></div>
     </aside>
   )
