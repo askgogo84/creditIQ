@@ -16,13 +16,15 @@ export function buildFlightConciergeRequest(
   const expectedCashMinor =
     trip && trip.taxesCurrency === 'INR' && Number.isSafeInteger(trip.totalTaxes) && trip.totalTaxes >= 0
       ? trip.totalTaxes
-      : null
+      : !award && Number.isSafeInteger(row.price) && row.price >= 0
+        ? row.price * 100
+        : null
 
   return {
     context: 'HNI',
     sourceType: 'FLIGHT',
     sourceRef: String(row.id),
-    title: `${row.from} → ${row.to} · ${award?.program || 'award flight'}${award?.cabin ? ` · ${award.cabin}` : ''}`,
+    title: `${row.from} → ${row.to} · ${award?.program || 'cash flight'}${award?.cabin ? ` · ${award.cabin}` : ''}`,
     selection: {
       from: row.from,
       to: row.to,
@@ -33,7 +35,7 @@ export function buildFlightConciergeRequest(
       mileage_cost: award?.mileageCost ?? null,
       seats: award?.seats ?? null,
       flight_numbers: trip?.flightNumbers ?? null,
-      carriers: trip?.carriers ?? null,
+      carriers: trip?.carriers ?? row.airline ?? null,
       departs_at: trip?.departsAt ?? row.departure ?? null,
       arrives_at: trip?.arrivesAt ?? row.arrival ?? null,
       stops: trip?.stops ?? row.stops ?? null,
@@ -62,19 +64,19 @@ export function buildFlightConciergeRequest(
         self_entered: option.selfEntered ?? false,
         verified: option.verified,
       })),
-      instruction_state: 'NEEDS_OPERATOR_VERIFICATION',
+      instruction_state: award ? 'NEEDS_OPERATOR_VERIFICATION' : 'CASH_ONLY_NO_TRANSFER',
     },
     sourceSnapshot: {
       award: {
         source: award?.source ?? null,
-        state: award ? 'LIVE_OR_PROVIDER_RETURNED' : 'UNKNOWN',
+        state: award ? 'LIVE_OR_PROVIDER_RETURNED' : 'NOT_APPLICABLE',
       },
       cash: {
-        state: row.price > 0 ? 'MATCHED' : 'UNAVAILABLE',
+        state: row.price > 0 ? 'PROVIDER_RETURNED' : 'UNAVAILABLE',
       },
       transfer_candidates: {
-        state: 'UNVERIFIED',
-        reason: 'Current flight fusion returns verified:false for transfer options.',
+        state: award ? 'UNVERIFIED' : 'NOT_APPLICABLE',
+        reason: award ? 'Current flight fusion returns verified:false for transfer options.' : 'Cash-only itinerary has no award transfer instruction.',
       },
     },
     expectedCashMinor,
