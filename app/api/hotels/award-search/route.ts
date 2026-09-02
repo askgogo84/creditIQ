@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { requireAuth } from '@/lib/api-auth'
-import { AwardWalletHotelSearchClient } from '@/lib/award-inventory/providers/awardwallet'
+import { searchHotelAwards } from '@/lib/award-inventory/orchestrator'
 import { hotelAwardProgramme } from '@/lib/award-inventory/programme-registry'
 
 export const runtime = 'nodejs'
@@ -45,37 +45,25 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'destination and valid check-in/check-out dates are required' }, { status: 400 })
   }
 
-  const definition = hotelAwardProgramme(programmeId)!
-  if (definition.discoveryMode === 'DIRECT_REQUIRED') {
-    return NextResponse.json({
-      status: 'DIRECT_REQUIRED',
-      programmeId,
-      rates: [],
-      reason: `${definition.displayName} currently requires direct programme availability verification.`,
-    }, { status: 409 })
-  }
-
   try {
-    const client = new AwardWalletHotelSearchClient()
-    const result = await client.searchGuest(programmeId, {
+    // Only bounded travel fields are forwarded. Body userId, passwords, loyalty
+    // credentials, OTPs and security answers are ignored by construction.
+    const result = await searchHotelAwards({
+      programmeId,
       destination,
       checkInDate,
       checkOutDate,
       numberOfRooms: int(body.numberOfRooms, 1, 2, 1) as 1 | 2,
       numberOfAdults: int(body.numberOfAdults, 1, 4, 2),
       numberOfKids: int(body.numberOfKids, 0, 4, 0),
-      priority: 9,
     })
 
-    // userId from the body is intentionally ignored; the verified bearer identity
-    // is used only as the authentication/rate-abuse boundary and is never sent to
-    // the award provider.
-    if (result.status === 'SUCCESS') return NextResponse.json({ programmeId, ...result })
-    if (result.status === 'PENDING') return NextResponse.json({ programmeId, ...result }, { status: 202 })
-    if (result.status === 'DIRECT_REQUIRED') return NextResponse.json({ programmeId, ...result }, { status: 409 })
-    return NextResponse.json({ programmeId, ...result }, { status: 503 })
+    if (result.status === 'PENDING') return NextResponse.json(result, { status: 202 })
+    if (result.status === 'DIRECT_REQUIRED') return NextResponse.json(result, { status: 409 })
+    if (result.status === 'PROVIDER_UNAVAILABLE') return NextResponse.json(result, { status: 503 })
+    return NextResponse.json(result)
   } catch (error) {
-    console.error('hotel award guest search failed', error)
-    return NextResponse.json({ error: 'hotel award provider unavailable' }, { status: 502 })
+    console.error('hotel award orchestration failed', error)
+    return NextResponse.json({ error: 'hotel award provider orchestration failed' }, { status: 502 })
   }
 }
