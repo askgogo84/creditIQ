@@ -10,7 +10,7 @@ type TravelTab = { label: string; href: string; Icon: LucideIcon }
 
 const primary: TravelTab[] = [
   { label: 'Flights', href: '/trip-planner', Icon: Plane },
-  { label: 'Hotels', href: '/stay-on-points', Icon: Map },
+  { label: 'Hotels', href: '/hotels', Icon: Map },
 ]
 
 const secondary: TravelTab[] = [
@@ -22,6 +22,7 @@ const secondary: TravelTab[] = [
 
 function activeFor(pathname: string, href: string): boolean {
   if (href === '/trip-planner') return pathname.startsWith('/trip-planner') || pathname.startsWith('/flights')
+  if (href === '/hotels') return pathname.startsWith('/hotels') || pathname.startsWith('/stay-on-points')
   return pathname.startsWith(href)
 }
 
