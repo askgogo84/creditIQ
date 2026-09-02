@@ -1,5 +1,6 @@
 export * from './types'
 export * from './redemption-matrix'
 export * from './programme-registry'
+export * from './hotel-join'
 export * from './providers/awardtool'
 export * from './providers/awardwallet'
