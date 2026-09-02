@@ -10,15 +10,16 @@ describe('hotel award programme registry', () => {
     expect(ids).toContain('club-itc')
   })
 
-  it('uses AwardTool only where we have mapped aggregator coverage', () => {
+  it('declares live guest search before cached discovery for aggregator-covered programmes', () => {
     expect(hotelAwardProgramme('marriott-bonvoy')).toMatchObject({
-      discoveryMode: 'AGGREGATOR_CACHED',
-      discoveryProviders: ['awardtool'],
+      discoveryMode: 'AGGREGATOR_LIVE',
+      discoveryProviders: ['awardwallet', 'awardtool'],
     })
-    expect(hotelAwardProgramme('world-of-hyatt')?.discoveryProviders).toContain('awardtool')
+    expect(hotelAwardProgramme('world-of-hyatt')?.discoveryProviders).toEqual(['awardwallet', 'awardtool'])
+    expect(hotelAwardProgramme('hilton-honors')?.discoveryProviders).toEqual(['awardwallet', 'awardtool'])
   })
 
-  it('does not hide Accor or Taj merely because the current aggregator lacks coverage', () => {
+  it('does not hide Accor or Taj merely because current aggregate coverage is unavailable', () => {
     expect(hotelAwardProgramme('accor-all')).toMatchObject({
       discoveryMode: 'DIRECT_REQUIRED',
       discoveryProviders: [],
