@@ -83,7 +83,8 @@ export async function searchFlightAwards(
             reason: 'Live selected-programme award inventory returned.',
           }
         }
-        if (live.status === 'PENDING') attempts.push(attempt('awardwallet', true, 'PENDING', 'LIVE', live.reason))
+        if (live.status === 'SUCCESS') attempts.push(attempt('awardwallet', true, 'EMPTY', 'LIVE', 'Live selected-programme provider completed but returned no award options.'))
+        else if (live.status === 'PENDING') attempts.push(attempt('awardwallet', true, 'PENDING', 'LIVE', live.reason))
         else if (live.status === 'DIRECT_REQUIRED') attempts.push(attempt('awardwallet', true, 'DIRECT_REQUIRED', 'LIVE', live.reason))
         else attempts.push(attempt('awardwallet', true, 'ERROR', 'LIVE', live.reason))
       } catch (error) {
