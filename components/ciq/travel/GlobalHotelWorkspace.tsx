@@ -288,9 +288,17 @@ function HotelOfferPanel({ offer, destination, checkin, checkout }: { offer: Hot
       </div>
       <div className={`ghw-mapping${programmeId ? ' mapped' : ''}`}>
         <b>{programmeId ? `Loyalty programme mapped: ${programmeId}` : 'Loyalty programme not safely mapped'}</b>
-        <p>{programmeId ? 'CreditIQ can now enumerate exact-card transfer/portal/native/voucher rails for this programme. Award pricing and irreversible transfer instructions still require programme inventory and final checkout verification.' : 'CreditIQ keeps the hotel searchable and bookable. It can show generic portal/voucher rails but does not invent a hotel loyalty programme.'}</p>
+        <p>{programmeId ? 'CreditIQ can enumerate exact-card transfer/portal/native/voucher rails for this programme. Until hotel award inventory returns a points price, cash remains the only economically executable comparison.' : 'CreditIQ keeps the hotel searchable and bookable. It can show generic portal/voucher rails but does not invent a hotel loyalty programme.'}</p>
       </div>
-      <WalletRailMatrix travelKind="hotel" programmeId={programmeId} />
+      <WalletRailMatrix
+        travelKind="hotel"
+        programmeId={programmeId}
+        programmePointsRequired={null}
+        awardTaxesMinor={null}
+        awardTaxesCurrency={null}
+        cashPriceMinor={Number.isFinite(offer.totalPrice) ? Math.round(offer.totalPrice * 100) : null}
+        cashCurrency={offer.currency || null}
+      />
       <div className="ghw-actions">{offer.deeplink ? <a href={offer.deeplink} target="_blank" rel="noopener noreferrer">Check provider offer →</a> : <span /> }<ConciergeRequestButton request={request} /></div>
       <div className="ghw-source">Source: {offer.source}. Live inventory, award availability and redemption confidence remain separate facts.</div>
     </aside>
