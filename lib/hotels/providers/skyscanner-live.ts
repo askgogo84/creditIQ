@@ -6,6 +6,7 @@
 
 const BASE = 'https://partners.api.skyscanner.net/apiservices'
 const PAGE_MAX = 50
+const COMPLETE = 'RESULT_STATUS_COMPLETE'
 
 export type GlobalHotelOffer = {
   id: string
@@ -69,7 +70,6 @@ function asDate(iso: string) {
 }
 
 function starNumber(value: unknown): number | null {
-  const s = String(value || '')
   const map: Record<string, number> = {
     STARS_ONE_STAR: 1,
     STARS_TWO_STAR: 2,
@@ -77,7 +77,7 @@ function starNumber(value: unknown): number | null {
     STARS_FOUR_STAR: 4,
     STARS_FIVE_STAR: 5,
   }
-  return map[s] ?? null
+  return map[String(value || '')] ?? null
 }
 
 function money(v: unknown): number | null {
@@ -192,11 +192,22 @@ export async function pollHotelSearch(input: {
   return normalizePage(data, input.destination, input.entityId, offset, limit)
 }
 
+export function normalizeSkyscannerHotelPage(
+  data: any,
+  destination: string,
+  entityId: string,
+  offset: number,
+  limit: number,
+): GlobalHotelPage {
+  return normalizePage(data, destination, entityId, offset, limit)
+}
+
 function normalizePage(data: any, destination: string, entityId: string, offset: number, limit: number): GlobalHotelPage {
   const content = data?.content ?? {}
   const results = content?.results ?? {}
   const pricingMap = results?.hotelsPricingOptions ?? {}
   const infoMap = results?.hotelInfo ?? {}
+  const hotelContentMap = results?.hotelContent ?? {}
   const agentMap = results?.agents ?? {}
   const offers: GlobalHotelOffer[] = []
 
@@ -204,23 +215,24 @@ function normalizePage(data: any, destination: string, entityId: string, offset:
     const hotelId = String(raw?.hotelId || '')
     if (!hotelId) continue
     const info = infoMap[hotelId] ?? {}
+    const hotelContent = hotelContentMap[hotelId] ?? {}
     const agent = agentMap[raw?.agentId] ?? {}
     const price = money(raw?.price?.price)
     if (price === null) continue
     const fees = Array.isArray(raw?.price?.taxesAndFees)
       ? raw.price.taxesAndFees.reduce((sum: number, f: any) => sum + (money(f?.value) ?? 0), 0)
       : null
-    const images = Array.isArray(info?.hotelImages) ? info.hotelImages : []
+    const images = Array.isArray(hotelContent?.hotelImages) ? hotelContent.hotelImages : []
     const image = images[0] ?? null
 
     offers.push({
       id: String(raw?.id || fallbackId),
       hotelId,
-      hotelName: String(info?.hotelName || `Hotel ${hotelId}`),
-      chainName: info?.chainGroup?.chainName ? String(info.chainGroup.chainName) : null,
-      stars: starNumber(info?.stars),
-      latitude: Number.isFinite(Number(info?.coordinates?.latitude)) ? Number(info.coordinates.latitude) : null,
-      longitude: Number.isFinite(Number(info?.coordinates?.longitude)) ? Number(info.coordinates.longitude) : null,
+      hotelName: String(hotelContent?.hotelName || hotelContent?.hotelNameEn || `Hotel ${hotelId}`),
+      chainName: hotelContent?.chainGroup?.chainName ? String(hotelContent.chainGroup.chainName) : null,
+      stars: starNumber(hotelContent?.stars),
+      latitude: Number.isFinite(Number(hotelContent?.coordinates?.latitude)) ? Number(hotelContent.coordinates.latitude) : null,
+      longitude: Number.isFinite(Number(hotelContent?.coordinates?.longitude)) ? Number(hotelContent.coordinates.longitude) : null,
       imageUrl: image?.thumbnailUrl || image?.galleryUrl || image?.fullUrl || null,
       roomName: raw?.roomName ? String(raw.roomName) : null,
       roomType: raw?.roomType ? String(raw.roomType) : null,
@@ -232,15 +244,20 @@ function normalizePage(data: any, destination: string, entityId: string, offset:
       basePrice: money(raw?.price?.basePrice),
       taxesAndFees: fees,
       agentName: agent?.name ? String(agent.name) : null,
-      deeplink: raw?.deeplink ? String(raw.deeplink) : null,
+      deeplink: info?.deeplink ? String(info.deeplink) : null,
       source: 'skyscanner-hotels-live',
     })
   }
 
   const total = Number.isFinite(Number(content?.totalHotelResultCount)) ? Number(content.totalHotelResultCount) : null
-  const distinctHotels = new Set(offers.map((o) => o.hotelId)).size
-  const consumed = offset + distinctHotels
-  const hasMore = total !== null ? consumed < total : data?.status !== 'RESULT_STATUS_COMPLETE'
+  const status = String(data?.status || 'RESULT_STATUS_UNSPECIFIED')
+  const complete = status === COMPLETE
+  // While the async provider is still INCOMPLETE, poll the SAME page again so
+  // late-arriving offers are not skipped. Only advance offset once the current
+  // result stream is complete.
+  const hasNextPageWhenComplete = total !== null ? offset + limit < total : offers.length >= limit
+  const hasMore = !complete || hasNextPageWhenComplete
+  const nextOffset = !complete ? offset : hasNextPageWhenComplete ? offset + limit : null
 
   return {
     sessionToken: String(data.sessionToken || ''),
@@ -255,8 +272,8 @@ function normalizePage(data: any, destination: string, entityId: string, offset:
       offset,
       limit,
       has_more: hasMore,
-      next_offset: hasMore ? offset + limit : null,
-      status: String(data?.status || 'UNKNOWN'),
+      next_offset: nextOffset,
+      status,
       fetched_at: new Date().toISOString(),
     },
   }
