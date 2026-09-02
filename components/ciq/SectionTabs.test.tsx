@@ -80,7 +80,7 @@ describe('SectionTabs — mobile carousel', () => {
   it('next chevron navigates one section forward', () => {
     const { container } = render(<SectionTabs />)
     fireEvent.click(mobile(container).getByRole('button', { name: 'Next section' }))
-    expect(nav.push).toHaveBeenCalledWith('/stay-on-points')
+    expect(nav.push).toHaveBeenCalledWith('/hotels')
   })
 
   it('previous chevron navigates one section back', () => {
@@ -191,7 +191,7 @@ describe('SectionTabs — scroll reset on section change', () => {
     nav.path = '/trip-planner'
     const { container, rerender } = render(<SectionTabs />)
     fireEvent.click(mobile(container).getByRole('button', { name: 'Next section' }))
-    nav.path = '/stay-on-points'
+    nav.path = '/hotels'
     rerender(<SectionTabs />)
     expect(spy).toHaveBeenCalledWith(0, 0)
     spy.mockRestore()
