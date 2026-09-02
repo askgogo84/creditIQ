@@ -20,7 +20,7 @@ vi.mock('next/link', () => ({
 import { TravelWorkspaceShell } from './TravelWorkspaceShell'
 
 describe('TravelWorkspaceShell', () => {
-  it('makes Flights and Hotels the two primary Travel modes', () => {
+  it('makes Flights and global Hotels the two primary Travel modes', () => {
     nav.path = '/trip-planner'
     const { container } = render(<TravelWorkspaceShell><div>flight content</div></TravelWorkspaceShell>)
     const modes = within(container).getByRole('navigation', { name: 'Travel modes' })
@@ -29,17 +29,20 @@ describe('TravelWorkspaceShell', () => {
     expect(links.map(link => link.textContent?.trim())).toEqual(['Flights', 'Hotels'])
     expect(within(modes).getByRole('link', { name: /Flights/ })).toHaveAttribute('href', '/trip-planner')
     expect(within(modes).getByRole('link', { name: /Flights/ })).toHaveAttribute('aria-current', 'page')
-    expect(within(modes).getByRole('link', { name: /Hotels/ })).toHaveAttribute('href', '/stay-on-points')
+    expect(within(modes).getByRole('link', { name: /Hotels/ })).toHaveAttribute('href', '/hotels')
     expect(within(modes).getByRole('link', { name: /Hotels/ })).not.toHaveAttribute('aria-current')
   })
 
-  it('marks Hotels active on the existing stay-on-points route', () => {
-    nav.path = '/stay-on-points'
-    const { container } = render(<TravelWorkspaceShell><div>hotel content</div></TravelWorkspaceShell>)
-    const modes = within(container).getByRole('navigation', { name: 'Travel modes' })
+  it('marks Hotels active on both global inventory and captured redemption-lab routes', () => {
+    for (const path of ['/hotels', '/stay-on-points']) {
+      nav.path = path
+      const { container, unmount } = render(<TravelWorkspaceShell><div>hotel content</div></TravelWorkspaceShell>)
+      const modes = within(container).getByRole('navigation', { name: 'Travel modes' })
 
-    expect(within(modes).getByRole('link', { name: /Hotels/ })).toHaveAttribute('aria-current', 'page')
-    expect(within(modes).getByRole('link', { name: /Flights/ })).not.toHaveAttribute('aria-current')
+      expect(within(modes).getByRole('link', { name: /Hotels/ })).toHaveAttribute('aria-current', 'page')
+      expect(within(modes).getByRole('link', { name: /Flights/ })).not.toHaveAttribute('aria-current')
+      unmount()
+    }
   })
 
   it('keeps existing Travel intelligence tools reachable as secondary actions', () => {
