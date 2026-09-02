@@ -1,99 +1,117 @@
-// app/api/hotels/search/route.ts
-// Hotel prices via Travelpayouts (Hotellook) Data API — cached prices, not live quotes.
-// Docs: https://support.travelpayouts.com/hc/en-us/articles/115000343268-Hotels-data-API
-// Pattern mirrors app/api/flights/search/route.ts (token from env, graceful empty fallback).
+// Global hotel search. Skyscanner Hotels Live Prices is pageable and provides
+// destination-wide live inventory. The retired Hotellook API is deliberately no
+// longer used here.
 import { NextRequest, NextResponse } from 'next/server'
-
-interface HotelResult {
-  id: string
-  name: string
-  stars: number | null
-  priceFrom: number | null   // cheapest cached price for the stay, INR
-  priceAvg: number | null    // average cached price for the stay, INR
-  location: string
-  checkIn: string
-  checkOut: string
-  bookingLink: string
-  dataSource: 'travelpayouts (cached)'
-}
+import { requireAuth } from '@/lib/api-auth'
+import {
+  createHotelSearch,
+  pollHotelSearch,
+  skyscannerHotelsConfigured,
+} from '@/lib/hotels/providers/skyscanner-live'
 
 export const runtime = 'nodejs'
-export const maxDuration = 15
+export const maxDuration = 60
+export const dynamic = 'force-dynamic'
 
-export async function GET(req: NextRequest) {
-  const { searchParams } = new URL(req.url)
-  const location = searchParams.get('location') || ''   // city name or IATA, e.g. 'SIN' or 'Singapore'
-  const checkIn = searchParams.get('check_in') || ''    // YYYY-MM-DD
-  const checkOut = searchParams.get('check_out') || ''  // YYYY-MM-DD
-  const limit = Math.min(parseInt(searchParams.get('limit') || '10', 10) || 10, 25)
+function unavailable() {
+  return NextResponse.json({
+    hotels: [],
+    offers: [],
+    error: 'live hotel provider is not configured',
+    coverage: {
+      provider: 'skyscanner-hotels-live',
+      mode: 'UNAVAILABLE',
+      loaded: 0,
+      provider_total: null,
+      has_more: false,
+      fetched_at: null,
+      note: 'Captured Bangkok fixtures are never substituted for a different destination.',
+    },
+  }, { status: 503 })
+}
 
-  if (!location || !checkIn || !checkOut) {
-    return NextResponse.json(
-      { error: 'Missing location, check_in, or check_out' },
-      { status: 400 }
-    )
-  }
+async function execute(req: NextRequest, body: any) {
+  const gate = await requireAuth(req)
+  if (!gate.ok) return gate.res
+  if (!skyscannerHotelsConfigured()) return unavailable()
 
-  const tpToken = process.env.TRAVELPAYOUTS_TOKEN || ''
-  const tpMarker = process.env.TRAVELPAYOUTS_MARKER || ''
-
-  if (!tpToken) {
-    return NextResponse.json({ hotels: [], source: 'none', error: 'No API keys configured' })
-  }
-
+  const limit = Number.isFinite(Number(body?.limit)) ? Number(body.limit) : 50
   try {
-    const url = new URL('https://engine.hotellook.com/api/v2/cache.json')
-    url.searchParams.set('location', location)
-    url.searchParams.set('checkIn', checkIn)
-    url.searchParams.set('checkOut', checkOut)
-    url.searchParams.set('currency', 'inr')
-    url.searchParams.set('limit', String(limit))
-    // Token goes in the X-Access-Token header ONLY — never the query string, which
-    // would leak it into edge/access logs (same fix as cron/refresh-fares).
-
-    const res = await fetch(url.toString(), {
-      headers: { 'X-Access-Token': tpToken },
-      next: { revalidate: 3600 },
-    })
-
-    if (!res.ok) {
-      console.error('hotellook cache API error:', res.status, await res.text())
-      return NextResponse.json({ hotels: [], source: 'travelpayouts', error: `upstream ${res.status}` })
+    if (body?.sessionToken) {
+      const destination = typeof body.destination === 'string' ? body.destination.trim() : ''
+      const entityId = typeof body.entityId === 'string' ? body.entityId.trim() : ''
+      const offset = Number.isFinite(Number(body.offset)) ? Number(body.offset) : 0
+      if (!destination || !entityId) {
+        return NextResponse.json({ error: 'destination and entityId are required with sessionToken' }, { status: 400 })
+      }
+      const page = await pollHotelSearch({
+        sessionToken: String(body.sessionToken),
+        destination,
+        entityId,
+        offset,
+        limit,
+      })
+      return NextResponse.json({ hotels: page.offers, ...page })
     }
 
-    const data = await res.json()
-    const rows: any[] = Array.isArray(data) ? data : []
+    const destination = typeof body?.destination === 'string' ? body.destination.trim() : ''
+    const checkin = typeof body?.checkin === 'string' ? body.checkin : ''
+    const checkout = typeof body?.checkout === 'string' ? body.checkout : ''
+    if (!destination || !checkin || !checkout) {
+      return NextResponse.json({ error: 'destination, checkin and checkout are required' }, { status: 400 })
+    }
 
-    const bookingBase = 'https://search.hotellook.com/hotels'
-    const hotels: HotelResult[] = rows.slice(0, limit).map((h: any, i: number) => {
-      const link = new URL(bookingBase)
-      link.searchParams.set('destination', location)
-      link.searchParams.set('checkIn', checkIn)
-      link.searchParams.set('checkOut', checkOut)
-      link.searchParams.set('adults', '2')
-      if (tpMarker) link.searchParams.set('marker', tpMarker)
-      if (h.hotelId != null) link.searchParams.set('hotelId', String(h.hotelId))
-
-      return {
-        id: String(h.hotelId ?? `tp-hotel-${i}`),
-        name: h.hotelName || h.hotel_name || 'Unknown hotel',
-        stars: typeof h.stars === 'number' ? h.stars : null,
-        priceFrom: typeof h.priceFrom === 'number' ? Math.round(h.priceFrom) : null,
-        priceAvg: typeof h.priceAvg === 'number' ? Math.round(h.priceAvg) : null,
-        location,
-        checkIn,
-        checkOut,
-        bookingLink: link.toString(),
-        dataSource: 'travelpayouts (cached)' as const,
-      }
+    const page = await createHotelSearch({
+      destination,
+      checkin,
+      checkout,
+      adults: Number.isFinite(Number(body.adults)) ? Number(body.adults) : 2,
+      rooms: Number.isFinite(Number(body.rooms)) ? Number(body.rooms) : 1,
+      limit,
     })
-
-    // Cheapest first; null prices sink to the bottom rather than pretending to be free
-    hotels.sort((a, b) => (a.priceFrom ?? Number.MAX_SAFE_INTEGER) - (b.priceFrom ?? Number.MAX_SAFE_INTEGER))
-
-    return NextResponse.json({ hotels, count: hotels.length, source: 'travelpayouts' })
-  } catch (err: any) {
-    console.error('hotels/search error:', err?.message)
-    return NextResponse.json({ hotels: [], source: 'travelpayouts', error: 'fetch failed' })
+    return NextResponse.json({ hotels: page.offers, ...page })
+  } catch (error: any) {
+    console.error('global hotel search failed', error?.message || error)
+    return NextResponse.json({
+      hotels: [],
+      offers: [],
+      error: error?.message || 'hotel search failed',
+      coverage: {
+        provider: 'skyscanner-hotels-live',
+        mode: 'UNAVAILABLE',
+        loaded: 0,
+        provider_total: null,
+        has_more: false,
+        fetched_at: new Date().toISOString(),
+      },
+    }, { status: 502 })
   }
+}
+
+export async function POST(req: NextRequest) {
+  let body: any
+  try {
+    body = await req.json()
+  } catch {
+    return NextResponse.json({ error: 'invalid json' }, { status: 400 })
+  }
+  return execute(req, body)
+}
+
+// Backward-compatible GET shape for any old caller. It still authenticates and
+// starts a live provider session; subsequent pages should use POST with the
+// returned sessionToken/entityId/next_offset.
+export async function GET(req: NextRequest) {
+  const p = new URL(req.url).searchParams
+  return execute(req, {
+    destination: p.get('location') || p.get('destination') || '',
+    checkin: p.get('check_in') || p.get('checkin') || '',
+    checkout: p.get('check_out') || p.get('checkout') || '',
+    adults: p.get('adults') || 2,
+    rooms: p.get('rooms') || 1,
+    limit: p.get('limit') || 50,
+    sessionToken: p.get('sessionToken') || undefined,
+    entityId: p.get('entityId') || undefined,
+    offset: p.get('offset') || 0,
+  })
 }
