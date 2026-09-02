@@ -4,16 +4,21 @@ import { useEffect, useMemo, useState } from 'react'
 import { authedFetch } from '@/lib/authed-fetch'
 import { joinHotelAwardRates } from '@/lib/award-inventory/hotel-join'
 import type { AwardWalletHotelAwardRate } from '@/lib/award-inventory/providers/awardwallet'
+import type { HotelAwardProperty } from '@/lib/award-inventory/types'
+import type { HotelAwardSourceAttempt, HotelAwardOrchestratorStatus } from '@/lib/award-inventory/orchestrator'
 import { WalletRailMatrix } from './WalletRailMatrix'
 import './hotel-award-join.css'
 
 type AwardSearchResponse = {
-  status?: 'SUCCESS' | 'DIRECT_REQUIRED' | 'PENDING' | 'PROVIDER_ERROR'
+  status?: HotelAwardOrchestratorStatus
   programmeId?: string
   provider?: { code: string; displayName: string; shortName: string; loginRequired: boolean } | null
   rates?: AwardWalletHotelAwardRate[]
+  cachedProperties?: HotelAwardProperty[]
   fetchedAt?: string
   reason?: string
+  attempts?: HotelAwardSourceAttempt[]
+  pricingAuthority?: 'DATE_SPECIFIC_LIVE' | 'DISCOVERY_ONLY' | 'DIRECT_ONLY' | 'NONE'
   error?: string
 }
 
@@ -36,6 +41,17 @@ function moneyMinor(value: number | null, currency: string | null) {
   } catch {
     return `${currency} ${(value / 100).toLocaleString('en-IN')}`
   }
+}
+
+function attemptLabel(state: HotelAwardSourceAttempt['state']) {
+  if (state === 'SUCCESS') return 'Success'
+  if (state === 'CACHED_DISCOVERY') return 'Cached discovery'
+  if (state === 'DIRECT_REQUIRED') return 'Direct gate'
+  if (state === 'UNAVAILABLE') return 'Not configured'
+  if (state === 'SKIPPED') return 'Skipped'
+  if (state === 'PENDING') return 'Pending'
+  if (state === 'EMPTY') return 'No result'
+  return 'Provider error'
 }
 
 export function HotelAwardJoinPanel({
@@ -80,7 +96,7 @@ export function HotelAwardJoinPanel({
         if (!cancelled) setResponse(data)
       })
       .catch(() => {
-        if (!cancelled) setResponse({ status: 'PROVIDER_ERROR', rates: [], reason: 'Award inventory request failed.' })
+        if (!cancelled) setResponse({ status: 'PROVIDER_UNAVAILABLE', rates: [], cachedProperties: [], reason: 'Award inventory request failed.' })
       })
       .finally(() => { if (!cancelled) setLoading(false) })
 
@@ -112,18 +128,30 @@ export function HotelAwardJoinPanel({
 
   return (
     <div className="haj-root">
-      {loading && <div className="haj-status loading"><b>Checking hotel award inventory…</b><span>{programmeId} · {checkInDate} → {checkOutDate}</span></div>}
+      {loading && <div className="haj-status loading"><b>Checking hotel award sources…</b><span>{programmeId} · {checkInDate} → {checkOutDate}</span></div>}
 
       {!loading && response?.status === 'DIRECT_REQUIRED' && (
-        <div className="haj-status direct"><b>Direct programme check required</b><span>{response.reason || 'This programme is not available through a guest-capable award provider yet.'}</span></div>
+        <div className="haj-status direct"><b>Direct programme check required</b><span>{response.reason || 'This programme is not available through an aggregate award provider yet.'}</span></div>
       )}
 
       {!loading && response?.status === 'PENDING' && (
-        <div className="haj-status pending"><b>Award search is still processing</b><span>{response.reason || 'Retry this selected hotel shortly.'}</span></div>
+        <div className="haj-status pending"><b>Live award search is still processing</b><span>{response.reason || 'Cached/direct paths remain visible while the live provider finishes.'}</span></div>
       )}
 
-      {!loading && response?.status === 'PROVIDER_ERROR' && (
-        <div className="haj-status error"><b>Award provider unavailable</b><span>{response.reason || response.error || 'Cash inventory remains usable.'}</span></div>
+      {!loading && response?.status === 'PROVIDER_UNAVAILABLE' && (
+        <div className="haj-status error"><b>Award sources unavailable</b><span>{response.reason || response.error || 'Cash inventory remains usable. Missing provider access is not treated as zero award space.'}</span></div>
+      )}
+
+      {!loading && response?.status === 'NO_LIVE_RATES' && (
+        <div className="haj-status nojoin"><b>Live provider returned no award rates</b><span>{response.reason || 'This is different from a provider/configuration failure; direct programme verification remains available.'}</span></div>
+      )}
+
+      {!loading && response?.status === 'CACHED_DISCOVERY' && (
+        <div className="haj-status cached">
+          <b>Cached award discovery only</b>
+          <span>{response.reason || 'A cached source confirms programme/property coverage, but no date-specific award price is available for ranking.'}</span>
+          {!!response.cachedProperties?.length && <small>{response.cachedProperties.slice(0, 3).map((p) => p.name).join(' · ')}</small>}
+        </div>
       )}
 
       {!loading && response?.status === 'SUCCESS' && !join && (
@@ -139,6 +167,18 @@ export function HotelAwardJoinPanel({
             <div><small>Cash benchmark</small><b>{offer.currency} {Math.round(offer.totalPrice).toLocaleString('en-IN')}</b><span>Selected live cash provider</span></div>
           </div>
           <p>Discovery evidence only. Direct programme checkout must reconfirm room/rate, availability and cash component before any irreversible points transfer.</p>
+        </div>
+      )}
+
+      {!loading && !!response?.attempts?.length && (
+        <div className="haj-attempts">
+          <div className="haj-attempts-title"><b>Award source plan</b><span>{response.pricingAuthority?.replaceAll('_', ' ').toLowerCase()}</span></div>
+          {response.attempts.map((item, index) => (
+            <div className="haj-attempt" key={`${item.source}-${index}`}>
+              <div><b>{index + 1} · {item.source}</b><span>{item.reason}</span></div>
+              <em className={`state-${item.state.toLowerCase()}`}>{attemptLabel(item.state)}</em>
+            </div>
+          ))}
         </div>
       )}
 
