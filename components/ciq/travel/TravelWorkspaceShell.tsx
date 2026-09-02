@@ -3,12 +3,22 @@
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import type { ReactNode } from 'react'
+import { Plane, Map, Sparkles, Target, ArrowLeftRight, Sofa, type LucideIcon } from 'lucide-react'
 import { PanelFade } from '@/components/ciq/PanelFade'
-import { SECTION_TABS } from '@/components/ciq/appNav'
 
-const tabs = SECTION_TABS.travel
-const primary = tabs.slice(0, 2)
-const secondary = tabs.slice(2)
+type TravelTab = { label: string; href: string; Icon: LucideIcon }
+
+const primary: TravelTab[] = [
+  { label: 'Flights', href: '/trip-planner', Icon: Plane },
+  { label: 'Hotels', href: '/stay-on-points', Icon: Map },
+]
+
+const secondary: TravelTab[] = [
+  { label: 'Ask AI', href: '/travel', Icon: Sparkles },
+  { label: 'Sweet Spots', href: '/sweet-spots', Icon: Target },
+  { label: 'Transfer Partners', href: '/transfer-partners', Icon: ArrowLeftRight },
+  { label: 'Lounges', href: '/lounge-tracker', Icon: Sofa },
+]
 
 function activeFor(pathname: string, href: string): boolean {
   if (href === '/trip-planner') return pathname.startsWith('/trip-planner') || pathname.startsWith('/flights')
