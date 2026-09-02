@@ -1,0 +1,1 @@
+Global travel inventory workstream begins after wallet-aware Travel v3.1. Implementation continues on child branch feat/creditiq-global-travel-search-v4.
