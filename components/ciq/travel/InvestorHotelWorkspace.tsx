@@ -1,6 +1,7 @@
 'use client'
 
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
+import { authedFetch } from '@/lib/authed-fetch'
 import type { StayCard } from '@/components/ciq/stay-points/StayOnPointsView'
 import { ConciergeRequestButton } from '@/components/ciq/concierge/ConciergeRequestButton'
 import { buildHotelConciergeRequest } from '@/components/ciq/concierge/travel-requests'
@@ -22,6 +23,14 @@ type Props = {
   ratioSource: string
   ratioAsOf: string
   programmeCount: number
+}
+
+type TravelWalletCard = {
+  bank: string
+  cardName: string | null
+  points: number
+  verified: boolean
+  selfEntered: boolean
 }
 
 const inr = (n: number) => `₹${Math.round(n).toLocaleString('en-IN')}`
@@ -50,12 +59,55 @@ function cashFor(card: StayCard): number {
   return card.cash_total_inr
 }
 
+function isSupportedAccorWalletCard(card: TravelWalletCard): boolean {
+  const bank = (card.bank || '').toLowerCase().replace(/[^a-z0-9]/g, '')
+  const name = (card.cardName || '').toLowerCase()
+  // The current hotel engine is explicitly wired to the HDFC Infinia route.
+  // Do not auto-promote another HDFC product to Infinia economics.
+  return bank.startsWith('hdfc') && name.includes('infinia') && card.points > 0
+}
+
 export default function InvestorHotelWorkspace(p: Props) {
   const [selectedId, setSelectedId] = useState<string | null>(p.cards[0]?.id ?? null)
+  const [walletBridgeState, setWalletBridgeState] = useState<'idle' | 'loading' | 'not-found'>('idle')
   const selected = useMemo(
     () => p.cards.find((card) => card.id === selectedId) ?? p.cards[0] ?? null,
     [p.cards, selectedId],
   )
+
+  // Temporary cut-over bridge: the v3.1 server page still accepts an explicit
+  // `points` query because the redemption engine itself is server-side. When no
+  // balance was supplied, hydrate ONLY the currently-supported Infinia balance
+  // from the authenticated canonical wallet and reload the same URL with it.
+  // This removes the manual demo query-string step without pretending other HDFC
+  // products share Infinia/Accor rules. The query bridge disappears once Hotels
+  // accepts the full wallet server-side.
+  useEffect(() => {
+    if (p.balance !== null || typeof window === 'undefined') return
+    let cancelled = false
+    setWalletBridgeState('loading')
+
+    ;(async () => {
+      try {
+        const res = await authedFetch('/api/travel/wallet')
+        const data = await res.json()
+        if (!res.ok || cancelled) throw new Error(data?.error || 'wallet unavailable')
+        const supported = ((data.cards || []) as TravelWalletCard[]).find(isSupportedAccorWalletCard)
+        if (!supported) {
+          if (!cancelled) setWalletBridgeState('not-found')
+          return
+        }
+
+        const url = new URL(window.location.href)
+        url.searchParams.set('points', String(supported.points))
+        window.location.assign(url.toString())
+      } catch {
+        if (!cancelled) setWalletBridgeState('not-found')
+      }
+    })()
+
+    return () => { cancelled = true }
+  }, [p.balance])
 
   const executable = p.cards.filter((card) => card.recommended_path !== 'NO_RECOMMENDATION' && !transferExecutionBlocked(card)).length
   const guarded = p.cards.filter(transferExecutionBlocked).length
@@ -73,8 +125,8 @@ export default function InvestorHotelWorkspace(p: Props) {
       <div className="ihw-wallet-band">
         <div>
           <span>Current hotel wallet input</span>
-          <b>{p.balance === null ? 'No HDFC balance connected' : `${pts(p.balance)} HDFC Reward Points`}</b>
-          <small>{p.balance === null ? 'Add a balance to unlock personal execution paths.' : `Nominal portal value ${inr(p.balance * p.portalPerPoint)} before cap and fee.`}</small>
+          <b>{p.balance === null ? (walletBridgeState === 'loading' ? 'Connecting your supported wallet balance…' : 'No supported HDFC balance connected') : `${pts(p.balance)} HDFC Reward Points`}</b>
+          <small>{p.balance === null ? (walletBridgeState === 'not-found' ? 'No HDFC Infinia balance was found in the signed-in wallet. Other cards remain visible in Wallet but are not assigned Infinia economics.' : 'CreditIQ is checking the signed-in wallet before asking you to enter anything.') : `Wallet balance loaded · nominal portal value ${inr(p.balance * p.portalPerPoint)} before cap and fee.`}</small>
         </div>
         <div>
           <span>Accor conversion</span>
