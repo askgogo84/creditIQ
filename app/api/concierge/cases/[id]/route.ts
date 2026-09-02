@@ -28,7 +28,38 @@ const DETAIL_SELECT = [
   'booking_reference', 'reconciliation', 'created_at', 'updated_at',
 ].join(',')
 
-function safeCase(row: any) {
+type ConciergeCaseRow = {
+  id: string
+  context: string
+  source_type: string
+  source_ref: string
+  title: string
+  selection: Record<string, unknown> | null
+  redemption_snapshot: Record<string, unknown> | null
+  source_snapshot: Record<string, unknown> | null
+  snapshot_trust: string
+  expected_cash_minor: number | null
+  currency: string
+  contact_channel: string
+  notes: string | null
+  status: string
+  approval_state: string
+  approval_requested_at: string | null
+  approved_at: string | null
+  cancelled_at: string | null
+  operator_verified_at: string | null
+  verified_redemption_snapshot: Record<string, unknown> | null
+  booking_reference: string | null
+  reconciliation: Record<string, unknown> | null
+  created_at: string
+  updated_at: string
+}
+
+function asCaseRow(value: unknown): ConciergeCaseRow {
+  return value as ConciergeCaseRow
+}
+
+function safeCase(row: ConciergeCaseRow) {
   return {
     id: row.id,
     context: row.context,
@@ -83,7 +114,7 @@ export async function GET(
   }
   if (!data) return NextResponse.json({ error: 'not found' }, { status: 404 })
 
-  return NextResponse.json({ case: safeCase(data) })
+  return NextResponse.json({ case: safeCase(asCaseRow(data)) })
 }
 
 export async function PATCH(
@@ -113,13 +144,14 @@ export async function PATCH(
   // IDOR gate: first resolve this case through BOTH case id and the verified
   // bearer user id. A caller probing another user's UUID gets the same 404 as an
   // unknown case; the request body can never select an owner.
-  const { data: current, error: readError } = await getOwnedCase(sb, id, gate.userId)
+  const { data: currentRaw, error: readError } = await getOwnedCase(sb, id, gate.userId)
   if (readError) {
     console.error('concierge case transition lookup failed', readError)
     return NextResponse.json({ error: 'could not load concierge case' }, { status: 500 })
   }
-  if (!current) return NextResponse.json({ error: 'not found' }, { status: 404 })
+  if (!currentRaw) return NextResponse.json({ error: 'not found' }, { status: 404 })
 
+  const current = asCaseRow(currentRaw)
   if (!CONCIERGE_STATUSES.includes(current.status as ConciergeStatus)) {
     return NextResponse.json({ error: 'case state is invalid' }, { status: 409 })
   }
@@ -142,5 +174,5 @@ export async function PATCH(
     return NextResponse.json({ error: 'case changed; refresh and try again' }, { status: 409 })
   }
 
-  return NextResponse.json({ case: safeCase(data) })
+  return NextResponse.json({ case: safeCase(asCaseRow(data)) })
 }
