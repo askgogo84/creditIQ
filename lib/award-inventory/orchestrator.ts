@@ -1,6 +1,6 @@
 import { hotelAwardProgramme } from './programme-registry'
 import { AwardToolHotelProvider } from './providers/awardtool'
-import { AwardWalletHotelSearchClient, type AwardWalletGuestSearchResult, type AwardWalletHotelAwardRate } from './providers/awardwallet'
+import { AwardWalletHotelSearchClient, type AwardWalletGuestSearchResult, type AwardWalletHotelAwardRate, type AwardWalletProviderInfo } from './providers/awardwallet'
 import type { HotelAwardProperty } from './types'
 
 export type HotelAwardAttemptState =
@@ -44,7 +44,7 @@ export interface HotelAwardOrchestratorResult {
   programmeId: string
   rates: AwardWalletHotelAwardRate[]
   cachedProperties: HotelAwardProperty[]
-  provider: AwardWalletGuestSearchResult extends infer _T ? { code: string; displayName: string; shortName: string; loginRequired: boolean } | null : never
+  provider: AwardWalletProviderInfo | null
   fetchedAt: string
   reason: string
   attempts: HotelAwardSourceAttempt[]
