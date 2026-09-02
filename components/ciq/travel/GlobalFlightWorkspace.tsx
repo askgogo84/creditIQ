@@ -10,6 +10,7 @@ import { ConciergeRequestButton } from '@/components/ciq/concierge/ConciergeRequ
 import { buildFlightConciergeRequest } from '@/components/ciq/concierge/travel-requests'
 import { programmeIdForFlightSource } from '@/lib/redemption-rails/programme-resolver'
 import { WalletRailMatrix } from './WalletRailMatrix'
+import { FlightAwardVerificationPanel } from './FlightAwardVerificationPanel'
 import { rankWalletOptions } from './flight-wallet-comparison'
 import '@/components/ciq/fly-points/fly-points.css'
 import './investor-flight-workspace.css'
@@ -128,8 +129,6 @@ export function GlobalFlightWorkspace() {
       })
       const data = await res.json()
       if (!res.ok || data.error) throw new Error(data.error || 'search failed')
-      // Inventory-first: keep cash-only, cash+award and award-only rows. Wallet
-      // reachability is a filter, never a reason to erase provider inventory.
       setRows((data.flights || []) as FusionRow[])
       setCounts(data.counts ?? null)
     } catch {
@@ -161,9 +160,9 @@ export function GlobalFlightWorkspace() {
       <div className="ifw-title-row">
         <div>
           <h1 className="ifw-title">Any city. All provider-returned options.</h1>
-          <p className="ifw-sub">Cash-only itineraries, award-only availability and matched cash + award rows stay in one search. Your wallet is evaluated after inventory is loaded.</p>
+          <p className="ifw-sub">Cash-only itineraries, broad cached awards and live-selected award verification stay in one workflow. Your wallet is evaluated after inventory is loaded.</p>
         </div>
-        <div className="ifw-honesty">No hidden top-5 · no wallet-only default</div>
+        <div className="ifw-honesty">Broad discovery first · live verify selected award</div>
       </div>
 
       <div className="fp-search ifw-search">
@@ -175,7 +174,7 @@ export function GlobalFlightWorkspace() {
         <button className="fp-btn" onClick={search} disabled={loading || !from || !to || from === to}>{loading ? 'Searching…' : 'Search'}</button>
       </div>
 
-      {loading && <div className="fp-loading" role="status">Loading cash and award inventory for {from} → {to}…</div>}
+      {loading && <div className="fp-loading" role="status">Loading cash and broad award inventory for {from} → {to}…</div>}
       {error && !loading && <div className="fp-error ifw-error">{error}</div>}
 
       {rows && !loading && (
@@ -191,7 +190,7 @@ export function GlobalFlightWorkspace() {
               <button aria-pressed={nonStop} onClick={() => setNonStop((v) => !v)}>Non-stop</button>
             </div>
           </div>
-          <div className="ifw-source-note">Cash provider search requests its full supported result window. Selected results now load a separate exact-card redemption-rail matrix; the old transfer estimate is retained only as a temporary filter until rail-aware ranking replaces it.</div>
+          <div className="ifw-source-note">Broad award inventory remains cached discovery. When you select an award, CreditIQ separately asks for live selected-programme verification before promoting those miles/taxes into wallet ranking.</div>
 
           <div className="ifw-workspace">
             <div className="ifw-left">
@@ -219,10 +218,10 @@ function GlobalFlightRow({ row, active, onSelect }: { row: FusionRow; active: bo
   return (
     <button className={`ifw-row${active ? ' active' : ''}`} onClick={onSelect} role="option" aria-selected={active}>
       <div className="ifw-date"><b>{fmtDate(award?.date || row.departure)}</b><span>{fmtTime(trip?.departsAt || row.departure) || 'time n/a'}</span></div>
-      <div className="ifw-programme"><b>{award?.program || row.airline || 'Cash itinerary'}</b><span>{row.from} → {row.to} · {fmtDuration(trip?.durationMinutes || row.duration * 60)} · {fmtStops(stops)}</span><small>{award ? (row.price > 0 ? 'Cash + award' : 'Award-only') : 'Cash-only · still part of the search'}</small></div>
-      <div className="ifw-metric"><b>{award ? award.mileageCost.toLocaleString('en-IN') : '—'}</b><span>{award ? `${award.program} miles` : 'no award match'}</span>{taxes && <small>+ {taxes} taxes</small>}</div>
+      <div className="ifw-programme"><b>{award?.program || row.airline || 'Cash itinerary'}</b><span>{row.from} → {row.to} · {fmtDuration(trip?.durationMinutes || row.duration * 60)} · {fmtStops(stops)}</span><small>{award ? (row.price > 0 ? 'Cash + cached award discovery' : 'Cached award-only discovery') : 'Cash-only · still part of the search'}</small></div>
+      <div className="ifw-metric"><b>{award ? award.mileageCost.toLocaleString('en-IN') : '—'}</b><span>{award ? `${award.program} miles · discovery` : 'no award match'}</span>{taxes && <small>+ {taxes} cached taxes</small>}</div>
       <div className="ifw-metric"><b>{row.price > 0 ? `₹${row.price.toLocaleString('en-IN')}` : '—'}</b><span>{row.price > 0 ? 'cash fare' : 'cash not matched'}</span></div>
-      <div className="ifw-best"><b>{award ? 'View all paths' : 'Cash'}</b><span>{award ? 'every wallet card' : 'retain points'}</span></div>
+      <div className="ifw-best"><b>{award ? 'Verify + compare' : 'Cash'}</b><span>{award ? 'selected programme' : 'retain points'}</span></div>
     </button>
   )
 }
@@ -231,8 +230,6 @@ function GlobalDecisionPanel({ row }: { row: FusionRow | null }) {
   if (!row) return <aside className="ifw-panel empty"><div><b>Select an option</b><p>Inventory stays visible whether or not CreditIQ can price a redemption path.</p></div></aside>
 
   const award = row.award
-  // Legacy estimated transfer rows are retained only inside the Concierge request
-  // snapshot until the v3.1 execution engine consumes the new rail registry.
   const options = award ? rankWalletOptions(row.redemption) : []
   const best = row.bestOption
   const taxes = nativeTaxes(award?.trip ?? null)
@@ -243,12 +240,7 @@ function GlobalDecisionPanel({ row }: { row: FusionRow | null }) {
       <aside className="ifw-panel">
         <div className="ifw-panel-head"><span>Cash-only itinerary</span><h2>{row.airline || 'Cash flight'} · ₹{row.price.toLocaleString('en-IN')}</h2><p>No award match was returned for this itinerary. CreditIQ keeps it visible instead of deleting it from the search.</p></div>
         <div className="ifw-cash-compare"><div className="ifw-section-label">Decision</div><div className="ifw-cash-row"><span>Pay cash and retain all wallet points</span><b>₹{row.price.toLocaleString('en-IN')}</b></div></div>
-        <WalletRailMatrix
-          travelKind="flight"
-          programmeId={null}
-          cashPriceMinor={row.price > 0 ? Math.round(row.price * 100) : null}
-          cashCurrency={row.price > 0 ? 'INR' : null}
-        />
+        <WalletRailMatrix travelKind="flight" programmeId={null} cashPriceMinor={row.price > 0 ? Math.round(row.price * 100) : null} cashCurrency={row.price > 0 ? 'INR' : null} />
         <div className="ifw-actions">{row.bookingLink ? <a href={row.bookingLink} target="_blank" rel="noopener noreferrer">Check fare directly →</a> : <span /> }<ConciergeRequestButton request={request} /></div>
         <div className="ifw-source-note">No loyalty transfer recommendation is manufactured when no award programme is matched. Generic portal/voucher/native rails can still be shown.</div>
       </aside>
@@ -256,21 +248,27 @@ function GlobalDecisionPanel({ row }: { row: FusionRow | null }) {
   }
 
   const programmeId = programmeIdForFlightSource(award.source)
+  const cachedTaxesMinor = award.trip?.totalTaxes != null ? Math.round(award.trip.totalTaxes) : null
+  const cachedTaxesCurrency = award.trip?.taxesCurrency ?? null
 
   return (
     <aside className="ifw-panel">
-      <div className="ifw-panel-head"><span>Award opportunity</span><h2>{award.program}</h2><p>CreditIQ now enumerates every sourced redemption rail from every card in your wallet. A card remains visible even when it has no verified path into this programme.</p><div className="ifw-award-cost"><b>{award.mileageCost.toLocaleString('en-IN')} {award.program} miles</b><span>{taxes ? `+ ${taxes} taxes` : 'taxes not supplied'}</span></div></div>
-      <WalletRailMatrix
-        travelKind="flight"
+      <div className="ifw-panel-head"><span>Award opportunity</span><h2>{award.program}</h2><p>The broad award row is discovery evidence. CreditIQ now attempts a stronger live verification for this exact programme, route, date and cabin before ranking wallet paths.</p><div className="ifw-award-cost"><b>{award.mileageCost.toLocaleString('en-IN')} {award.program} miles</b><span>{taxes ? `+ ${taxes} cached taxes` : 'cached taxes not supplied'}</span></div></div>
+      <FlightAwardVerificationPanel
         programmeId={programmeId}
-        programmePointsRequired={award.mileageCost}
-        awardTaxesMinor={award.trip?.totalTaxes != null ? Math.round(award.trip.totalTaxes) : null}
-        awardTaxesCurrency={award.trip?.taxesCurrency ?? null}
+        programmeName={award.program}
+        origin={row.from}
+        destination={row.to}
+        date={award.date || row.departure.slice(0, 10)}
+        cabin={award.cabin === 'economy' ? 'economy' : 'business'}
+        cachedMiles={award.mileageCost}
+        cachedTaxesMinor={cachedTaxesMinor}
+        cachedTaxesCurrency={cachedTaxesCurrency}
         cashPriceMinor={row.price > 0 ? Math.round(row.price * 100) : null}
         cashCurrency={row.price > 0 ? 'INR' : null}
       />
       <div className="ifw-cash-compare"><div className="ifw-section-label">Cash comparison</div>{row.price > 0 ? <div className="ifw-cash-row"><span>Matched cash fare</span><b>₹{row.price.toLocaleString('en-IN')}</b></div> : <p className="ifw-muted">No matched cash fare was returned. CreditIQ does not invent one.</p>}</div>
-      <div className="ifw-guardrail"><b>Guardrail:</b> the rail matrix enumerates sourced possibilities; v3.1 financial arithmetic and direct checkout remain the authority before an irreversible transfer.</div>
+      <div className="ifw-guardrail"><b>Guardrail:</b> provider failure is never treated as no award space. Cached discovery stays visible, live verification can strengthen it, and direct airline/programme checkout is final before transfer.</div>
       <div className="ifw-actions"><a href={`https://www.google.com/search?q=${encodeURIComponent(award.program + ' award booking')}`} target="_blank" rel="noopener noreferrer">Check award directly →</a><ConciergeRequestButton request={request} /></div>
     </aside>
   )
