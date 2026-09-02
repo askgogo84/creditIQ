@@ -4,9 +4,20 @@ import { useEffect, useMemo, useState } from 'react'
 import { authedFetch } from '@/lib/authed-fetch'
 import type { RedemptionRailDefinition, TravelKind } from '@/lib/redemption-rails/types'
 import type { WalletRailMatrix as Matrix } from '@/lib/redemption-rails/matrix'
+import { rankWalletRails, type RankedRailCandidate, type RailRankingResult } from '@/lib/redemption-ranking'
 import './wallet-rail-matrix.css'
 
 type Response = { matrix?: Matrix; walletCount?: number; error?: string }
+
+type WalletRailMatrixProps = {
+  travelKind: TravelKind
+  programmeId: string | null
+  programmePointsRequired?: number | null
+  awardTaxesMinor?: number | null
+  awardTaxesCurrency?: string | null
+  cashPriceMinor?: number | null
+  cashCurrency?: string | null
+}
 
 function visibleRails(rails: RedemptionRailDefinition[], programmeId: string | null) {
   return rails.filter((rail) => {
@@ -40,13 +51,81 @@ function railStateLabel(rail: RedemptionRailDefinition) {
   return 'Discovery only'
 }
 
+function moneyMinor(value: number | null, currency: string | null) {
+  if (value == null || !currency) return null
+  try {
+    return new Intl.NumberFormat('en-IN', {
+      style: 'currency',
+      currency,
+      maximumFractionDigits: 0,
+    }).format(value / 100)
+  } catch {
+    return `${currency} ${(value / 100).toLocaleString('en-IN')}`
+  }
+}
+
+function candidateLabel(candidate: RankedRailCandidate, programmeId: string | null) {
+  if (candidate.railType === 'CASH_RETAIN') return 'Cash + retain points'
+  if (candidate.railType === 'LOYALTY_TRANSFER') {
+    return `${candidate.cardName}${programmeId ? ` → ${programmeId}` : ' → loyalty transfer'}`
+  }
+  return `${candidate.cardName} · ${candidate.railType.replaceAll('_', ' ').toLowerCase()}`
+}
+
+function RankingSummary({ ranking }: { ranking: RailRankingResult }) {
+  const projected = ranking.bestProjected
+  const executable = ranking.bestExecutable
+  const programmeId = ranking.pricing.programmeId
+
+  if (ranking.recommendationState === 'NO_COMPARABLE_PATH') {
+    return (
+      <div className="wrm-ranking neutral">
+        <div><small>Decision status</small><b>No safe economic winner yet</b><span>Required cash/FX/checkout facts are incomplete. Rails stay visible but unranked.</span></div>
+      </div>
+    )
+  }
+
+  if (ranking.recommendationState === 'PROJECTED_WINNER_NEEDS_VERIFICATION' && projected) {
+    return (
+      <div className="wrm-ranking projected">
+        <div className="wrm-ranking-row">
+          <div><small>Best projected path · verification required</small><b>{candidateLabel(projected, programmeId)}</b><span>{moneyMinor(projected.cashPayableMinor, projected.cashCurrency) ?? 'Cash component unavailable'}{projected.bankPointsTargetMinimum != null ? ` · at least ${projected.bankPointsTargetMinimum.toLocaleString('en-IN')} bank points` : ''}</span></div>
+          <em>Projected</em>
+        </div>
+        {executable && (
+          <div className="wrm-ranking-row executable">
+            <div><small>Best executable now</small><b>{candidateLabel(executable, programmeId)}</b><span>{moneyMinor(executable.cashPayableMinor, executable.cashCurrency) ?? 'Cash amount unavailable'}</span></div>
+            <em>Executable</em>
+          </div>
+        )}
+        <p>Projected paths are never promoted to an exact transfer instruction until the missing issuer/checkout facts are verified.</p>
+      </div>
+    )
+  }
+
+  if (executable) {
+    return (
+      <div className="wrm-ranking executable-only">
+        <div className="wrm-ranking-row executable">
+          <div><small>{ranking.recommendationState === 'CASH_ONLY' ? 'Best executable now' : 'Best executable path'}</small><b>{candidateLabel(executable, programmeId)}</b><span>{moneyMinor(executable.cashPayableMinor, executable.cashCurrency) ?? 'Cash amount unavailable'}</span></div>
+          <em>Executable</em>
+        </div>
+      </div>
+    )
+  }
+
+  return null
+}
+
 export function WalletRailMatrix({
   travelKind,
   programmeId,
-}: {
-  travelKind: TravelKind
-  programmeId: string | null
-}) {
+  programmePointsRequired = null,
+  awardTaxesMinor = null,
+  awardTaxesCurrency = null,
+  cashPriceMinor = null,
+  cashCurrency = null,
+}: WalletRailMatrixProps) {
   const [matrix, setMatrix] = useState<Matrix | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
@@ -86,6 +165,23 @@ export function WalletRailMatrix({
     unsupported: cards.filter((c) => c.displayStatus === 'NO_VERIFIED_REDEMPTION_RAIL').length,
   }), [cards])
 
+  const ranking = useMemo(() => {
+    if (!matrix) return null
+    try {
+      return rankWalletRails(matrix, {
+        travelKind,
+        programmeId,
+        programmePointsRequired,
+        awardTaxesMinor,
+        awardTaxesCurrency,
+        cashPriceMinor,
+        cashCurrency,
+      })
+    } catch {
+      return null
+    }
+  }, [matrix, travelKind, programmeId, programmePointsRequired, awardTaxesMinor, awardTaxesCurrency, cashPriceMinor, cashCurrency])
+
   return (
     <section className="wrm-root" aria-label="Wallet redemption paths">
       <div className="wrm-head">
@@ -93,6 +189,7 @@ export function WalletRailMatrix({
         {programmeId && <small>{programmeId}</small>}
       </div>
 
+      {!loading && !error && ranking && <RankingSummary ranking={ranking} />}
       {loading && <div className="wrm-loading">Loading card-specific rails…</div>}
       {error && !loading && <div className="wrm-error">{error}</div>}
       {!loading && !error && cards.length === 0 && <div className="wrm-empty">No cards are connected to your decision wallet yet. Cash remains available.</div>}
@@ -118,7 +215,7 @@ export function WalletRailMatrix({
       ))}
 
       {!loading && !error && <div className="wrm-cash"><b>Cash + retain points</b><span>Always available · selected booking provider</span><em>Executable</em></div>}
-      <div className="wrm-foot">This panel enumerates sourced rails only. It does not perform irreversible transfer arithmetic; the redemption engine and final checkout verification remain authoritative.</div>
+      <div className="wrm-foot">This panel enumerates sourced rails and bounded comparisons. Exact transfer arithmetic still belongs to the v3.1 engine and final checkout verification.</div>
     </section>
   )
 }
