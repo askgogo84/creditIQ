@@ -70,7 +70,11 @@ function renderView() {
 describe('InvestorHotelWorkspace', () => {
   it('keeps an unverified transfer ranked but explicitly non-executable', () => {
     renderView()
-    expect(screen.getByText(/exact issuer step withheld/i)).toBeInTheDocument()
+    // The same guarded wording intentionally appears in the compact result row,
+    // selected-path heading, and execution step. Target the decision-panel heading
+    // so this assertion protects the user-visible state without requiring uniqueness
+    // across the whole page.
+    expect(screen.getByRole('heading', { name: /exact issuer step withheld/i })).toBeInTheDocument()
     expect(screen.getByText(/ranked · not yet executable/i)).toBeInTheDocument()
     expect(screen.queryByText(/Transfer exactly 5,600/i)).not.toBeInTheDocument()
   })
