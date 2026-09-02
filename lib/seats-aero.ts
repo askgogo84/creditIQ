@@ -3,6 +3,7 @@
 // Docs: https://developers.seats.aero/reference/cached-search
 
 const SEATS_AERO_BASE = 'https://seats.aero/partnerapi';
+const CACHED_SEARCH_MAX = 1000;
 
 // Map program names to seats.aero source codes
 const PROGRAM_TO_SOURCE: Record<string, string> = {
@@ -20,38 +21,31 @@ const PROGRAM_TO_SOURCE: Record<string, string> = {
 
 export interface SeatsAeroResult {
   available: boolean;
-  mileageCost: number;       // mileage cost for the SEARCHED cabin (primary)
-  remainingSeats: number;    // remaining seats for the searched cabin
-  airlines: string;          // e.g. "SQ"
+  mileageCost: number;
+  remainingSeats: number;
+  airlines: string;
   isDirect: boolean;
-  source: string;            // e.g. "krisflyer"
+  source: string;
   date: string;
-  id: string;                // availability record ID — key for the trips lookup
+  id: string;
   originAirport: string;
   destinationAirport: string;
   dataSource: 'seats.aero (live)' | 'estimated';
-  // Both cabins carried alongside the searched one — the cached-search item holds
-  // Y and J costs together, so we surface both rather than discard the other cabin
-  // (lets a single fusion call show economy AND business on one row). 0 = that
-  // cabin not priced/available on this record.
-  yMileageCost: number;      // economy mileage cost
-  jMileageCost: number;      // business mileage cost
+  yMileageCost: number;
+  jMileageCost: number;
 }
 
-// Per-flight detail for ONE availability record. The cached-search endpoint does
-// NOT carry flight numbers, times, or duration — those live only in the trips
-// endpoint, one extra (credit-costing) call per availability.
 export interface SeatsAeroTrip {
-  flightNumbers: string;     // e.g. "SQ509" (comma-joined if multi-segment)
-  carriers: string;          // e.g. "Singapore Airlines"
-  aircraft: string;          // e.g. "Boeing 787-10"
-  departsAt: string;         // ISO datetime
-  arrivesAt: string;         // ISO datetime
+  flightNumbers: string;
+  carriers: string;
+  aircraft: string;
+  departsAt: string;
+  arrivesAt: string;
   durationMinutes: number;
   stops: number;
-  cabin: string;             // 'economy' | 'business' | 'first'
+  cabin: string;
   mileageCost: number;
-  totalTaxes: number;        // minor units of taxesCurrency, per seats.aero
+  totalTaxes: number;
   taxesCurrency: string;
   remainingSeats: number;
   originAirport: string;
@@ -59,11 +53,11 @@ export interface SeatsAeroTrip {
 }
 
 export async function searchAwardAvailability(
-  origin: string,       // e.g. 'BLR'
-  destination: string,  // e.g. 'SIN'
-  startDate: string,    // e.g. '2026-06-28' (YYYY-MM-DD)
-  endDate: string,      // e.g. '2026-07-05'
-  program?: string,     // e.g. 'KrisFlyer'
+  origin: string,
+  destination: string,
+  startDate: string,
+  endDate: string,
+  program?: string,
   cabin: 'economy' | 'business' | 'first' = 'business'
 ): Promise<SeatsAeroResult[]> {
   const apiKey = process.env.SEATS_AERO_API_KEY;
@@ -75,11 +69,14 @@ export async function searchAwardAvailability(
       destination_airport: destination,
       start_date: startDate,
       end_date: endDate,
-      take: '20',
+      // Cached Search accepts up to 1000 rows per request. The old integration
+      // silently asked for only 20, which made Travel look much thinner than the
+      // provider inventory. The Trips enrichment cap remains separate: summary
+      // award rows stay visible even when we only enrich a few of them.
+      take: String(CACHED_SEARCH_MAX),
       order_by: 'lowest_mileage',
     });
 
-    // Add program filter if we know the source code
     if (program && PROGRAM_TO_SOURCE[program]) {
       params.set('sources', PROGRAM_TO_SOURCE[program]);
     }
@@ -89,7 +86,7 @@ export async function searchAwardAvailability(
         'Partner-Authorization': apiKey,
         'Content-Type': 'application/json',
       },
-      next: { revalidate: 3600 }, // Cache 1 hour
+      next: { revalidate: 3600 },
     });
 
     if (!res.ok) {
@@ -101,7 +98,6 @@ export async function searchAwardAvailability(
     const results: SeatsAeroResult[] = [];
 
     for (const item of data.data || []) {
-      // Pick the right cabin fields
       let available = false;
       let mileageCost = 0;
       let remainingSeats = 0;
@@ -141,7 +137,6 @@ export async function searchAwardAvailability(
           originAirport: item.Route?.OriginAirport || item.OriginAirport || '',
           destinationAirport: item.Route?.DestinationAirport || item.DestinationAirport || '',
           dataSource: 'seats.aero (live)',
-          // Both cabins from the same record (0 when that cabin isn't priced here).
           yMileageCost: parseInt(item.YMileageCost || '0') || 0,
           jMileageCost: parseInt(item.JMileageCost || '0') || 0,
         });
@@ -155,12 +150,6 @@ export async function searchAwardAvailability(
   }
 }
 
-// Fetch per-flight trip details for one availability record (flight number,
-// departure/arrival times, duration, exact stop count, taxes). This is a SECOND
-// seats.aero call, keyed on the availability `ID`, and each call costs API
-// credits — callers should cap how many awards they enrich.
-// Returns the best (lowest-mileage, then fewest-stops) trip matching the cabin,
-// or null if none / on error.
 export async function getAvailabilityTrips(
   availabilityId: string,
   cabin: 'economy' | 'business' | 'first' = 'business'
@@ -174,7 +163,7 @@ export async function getAvailabilityTrips(
         'Partner-Authorization': apiKey,
         'Content-Type': 'application/json',
       },
-      next: { revalidate: 3600 }, // Cache 1 hour
+      next: { revalidate: 3600 },
     });
 
     if (!res.ok) {
@@ -186,15 +175,12 @@ export async function getAvailabilityTrips(
     const trips: any[] = data.data || data.Trips || [];
     if (!trips.length) return null;
 
-    // Prefer trips for the requested cabin that carry real mileage; if none
-    // match the cabin, fall back to whatever the record has.
     const matches = trips.filter((t) => {
       const c = String(t.Cabin || '').toLowerCase();
       return c === cabin && (Number(t.MileageCost) || 0) > 0;
     });
     const pool = matches.length ? matches : trips;
 
-    // Best = lowest mileage, then fewest stops.
     const best = pool.reduce((b, t) => {
       const bm = Number(b.MileageCost) || Number.MAX_SAFE_INTEGER;
       const tm = Number(t.MileageCost) || Number.MAX_SAFE_INTEGER;
@@ -226,7 +212,6 @@ export async function getAvailabilityTrips(
   }
 }
 
-// Convenience: get best business class option for a route + date range
 export async function getBestBusinessClass(
   origin: string,
   destination: string,
@@ -240,7 +225,6 @@ export async function getBestBusinessClass(
     return { available: false, minMileage: 0, seats: 0, airlines: '', dataSource: 'seats.aero (no data)' };
   }
 
-  // Sort by mileage cost ascending
   results.sort((a, b) => a.mileageCost - b.mileageCost);
   const best = results[0];
 
