@@ -4,6 +4,8 @@ import { useEffect, useMemo, useState } from 'react'
 import Link from 'next/link'
 import { authedFetch } from '@/lib/authed-fetch'
 import { ConciergeRequestButton, type ConciergeRequest } from '@/components/ciq/concierge/ConciergeRequestButton'
+import { programmeIdForHotelChain } from '@/lib/redemption-rails/programme-resolver'
+import { WalletRailMatrix } from './WalletRailMatrix'
 import './global-hotel-workspace.css'
 
 type HotelOffer = {
@@ -211,7 +213,7 @@ export function GlobalHotelWorkspace() {
       <div className="ghw-title-row">
         <div>
           <h1>Any destination. Live hotel inventory first.</h1>
-          <p>Search Indian or international cities. CreditIQ keeps every provider-returned offer accessible, then layers loyalty/redemption intelligence on top when that programme is mapped.</p>
+          <p>Search Indian or international cities. CreditIQ keeps every provider-returned offer accessible, then evaluates every sourced redemption rail from every card in your wallet.</p>
         </div>
         <div className="ghw-honesty">No Bangkok substitution · pageable provider coverage</div>
       </div>
@@ -255,7 +257,7 @@ export function GlobalHotelWorkspace() {
                   <div className="ghw-thumb">{offer.imageUrl ? <img src={offer.imageUrl} alt="" /> : <span>{offer.hotelName.slice(0, 1)}</span>}</div>
                   <div className="ghw-main"><b>{offer.hotelName}</b><span>{[offer.chainName, offer.stars ? `${offer.stars} star` : null, offer.roomName || offer.roomType].filter(Boolean).join(' · ')}</span><small>{[offer.cancellationPolicy, offer.mealPlan, offer.agentName].filter(Boolean).join(' · ') || 'Rate-plan details returned by provider'}</small></div>
                   <div className="ghw-price"><b>{money(offer.totalPrice, offer.currency)}</b><span>provider total</span>{offer.taxesAndFees != null && <small>tax/fee lines {money(offer.taxesAndFees, offer.currency)}</small>}</div>
-                  <div className="ghw-path"><b>{offer.chainName || 'Unmapped hotel'}</b><span>{offer.chainName ? 'loyalty mapping can be evaluated' : 'cash path visible'}</span></div>
+                  <div className="ghw-path"><b>{offer.chainName || 'Unmapped hotel'}</b><span>{programmeIdForHotelChain(offer.chainName) ? 'wallet rails available to evaluate' : 'cash + generic portal rails'}</span></div>
                 </button>
               ))}
             </div>
@@ -273,7 +275,7 @@ export function GlobalHotelWorkspace() {
 function HotelOfferPanel({ offer, destination, checkin, checkout }: { offer: HotelOffer | null; destination: string; checkin: string; checkout: string }) {
   if (!offer) return <aside className="ghw-panel empty">Select a hotel to inspect its live rate and mapping state.</aside>
   const request = hotelConciergeRequest(offer, destination, checkin, checkout)
-  const explicitlyAccor = /accor/i.test(offer.chainName || '')
+  const programmeId = programmeIdForHotelChain(offer.chainName)
 
   return (
     <aside className="ghw-panel">
@@ -284,12 +286,13 @@ function HotelOfferPanel({ offer, destination, checkin, checkout }: { offer: Hot
         <div><span>Cancellation</span><b>{offer.cancellationPolicy || 'Provider did not label it'}</b></div>
         <div><span>Meal plan</span><b>{offer.mealPlan || 'Not labelled'}</b></div>
       </div>
-      <div className={`ghw-mapping${explicitlyAccor ? ' mapped' : ''}`}>
-        <b>{explicitlyAccor ? 'Accor chain returned by provider' : 'Loyalty programme not yet safely mapped'}</b>
-        <p>{explicitlyAccor ? 'This live offer can be routed into the Accor v3.1 redemption layer next, while exact transfer instructions remain subject to the same eligibility/minimum/increment gates.' : 'CreditIQ keeps the hotel searchable and bookable but does not invent a hotel-points programme or transfer path.'}</p>
+      <div className={`ghw-mapping${programmeId ? ' mapped' : ''}`}>
+        <b>{programmeId ? `Loyalty programme mapped: ${programmeId}` : 'Loyalty programme not safely mapped'}</b>
+        <p>{programmeId ? 'CreditIQ can now enumerate exact-card transfer/portal/native/voucher rails for this programme. Award pricing and irreversible transfer instructions still require programme inventory and final checkout verification.' : 'CreditIQ keeps the hotel searchable and bookable. It can show generic portal/voucher rails but does not invent a hotel loyalty programme.'}</p>
       </div>
+      <WalletRailMatrix travelKind="hotel" programmeId={programmeId} />
       <div className="ghw-actions">{offer.deeplink ? <a href={offer.deeplink} target="_blank" rel="noopener noreferrer">Check provider offer →</a> : <span /> }<ConciergeRequestButton request={request} /></div>
-      <div className="ghw-source">Source: {offer.source}. Live inventory and redemption confidence are separate facts.</div>
+      <div className="ghw-source">Source: {offer.source}. Live inventory, award availability and redemption confidence remain separate facts.</div>
     </aside>
   )
 }
