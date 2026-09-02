@@ -1,4 +1,5 @@
 export * from './types'
 export * from './redemption-matrix'
+export * from './programme-registry'
 export * from './providers/awardtool'
 export * from './providers/awardwallet'
