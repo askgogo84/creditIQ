@@ -2,6 +2,8 @@
 
 import { useMemo, useState } from 'react'
 import type { StayCard } from '@/components/ciq/stay-points/StayOnPointsView'
+import { ConciergeRequestButton } from '@/components/ciq/concierge/ConciergeRequestButton'
+import { buildHotelConciergeRequest } from '@/components/ciq/concierge/travel-requests'
 import './investor-hotel-workspace.css'
 
 type Props = {
@@ -55,7 +57,7 @@ export default function InvestorHotelWorkspace(p: Props) {
     [p.cards, selectedId],
   )
 
-  const executable = p.cards.filter((c) => c.recommended_path !== 'NO_RECOMMENDATION' && !transferExecutionBlocked(c)).length
+  const executable = p.cards.filter((card) => card.recommended_path !== 'NO_RECOMMENDATION' && !transferExecutionBlocked(card)).length
   const guarded = p.cards.filter(transferExecutionBlocked).length
 
   return (
@@ -125,6 +127,14 @@ function HotelDecisionPanel({ card, props: p }: { card: StayCard | null; props: 
   const guarded = transferExecutionBlocked(card)
   const portalCash = card.portal_cash_payable_inr
   const programmeCash = card.execution_cash_payable_inr
+  const conciergeRequest = buildHotelConciergeRequest(card, {
+    city: p.city,
+    nights: p.nights,
+    fx: p.fx,
+    portalAsOf: p.portalAsOf,
+    ratioAsOf: p.ratioAsOf,
+  })
+  const safeForHandoff = card.recommended_path !== 'NO_RECOMMENDATION'
 
   return (
     <aside className="ihw-panel">
@@ -196,10 +206,14 @@ function HotelDecisionPanel({ card, props: p }: { card: StayCard | null; props: 
 
       <div className="ihw-actions">
         <a href={card.booking_url} target="_blank" rel="noopener noreferrer">Check direct →</a>
-        <button disabled title="Concierge case creation is the next build slice">Concierge booking — next build</button>
+        <ConciergeRequestButton
+          request={conciergeRequest}
+          disabled={!safeForHandoff}
+          disabledReason="CreditIQ needs a ranked safe path before handing this hotel to Concierge."
+        />
       </div>
 
-      <div className="ihw-source-note">Portal terms captured {p.portalAsOf}. HDFC transfer source captured {p.ratioAsOf}. Programme registry: {p.programmeCount}. Unknown facts stay unknown.</div>
+      <div className="ihw-source-note">Portal terms captured {p.portalAsOf}. HDFC transfer source captured {p.ratioAsOf}. Programme registry: {p.programmeCount}. Unknown facts stay unknown. A guarded transfer path may be handed to Concierge for verification, but not executed by the customer yet.</div>
     </aside>
   )
 }
