@@ -6,6 +6,8 @@ import { authedFetch } from '@/lib/authed-fetch'
 import { AirportSelect } from '@/components/ciq/fly-points/AirportSelect'
 import { labelFor, resolveCity } from '@/lib/data/airports'
 import type { RedemptionOption } from '@/lib/fusion-core'
+import { ConciergeRequestButton } from '@/components/ciq/concierge/ConciergeRequestButton'
+import { buildFlightConciergeRequest } from '@/components/ciq/concierge/travel-requests'
 import { rankWalletOptions, sameWalletOption, walletOptionReason } from './flight-wallet-comparison'
 import '@/components/ciq/fly-points/fly-points.css'
 import './investor-flight-workspace.css'
@@ -109,7 +111,7 @@ function nativeTaxes(trip: AwardView['trip']): string | null {
 }
 
 function rowReachable(row: FusionRow): boolean {
-  return row.redemption.some((o) => o.status === 'ok')
+  return row.redemption.some((option) => option.status === 'ok')
 }
 
 export function InvestorFlightWorkspace() {
@@ -161,7 +163,10 @@ export function InvestorFlightWorkspace() {
   }, [rows, nonStop, cardsScope])
 
   useEffect(() => {
-    if (!filtered.length) return setSelectedId(null)
+    if (!filtered.length) {
+      setSelectedId(null)
+      return
+    }
     if (!selectedId || !filtered.some((row) => row.id === selectedId)) setSelectedId(filtered[0].id)
   }, [filtered, selectedId])
 
@@ -206,7 +211,7 @@ export function InvestorFlightWorkspace() {
               <div className="ifw-filters" role="group" aria-label="Flight result filters">
                 <button aria-pressed={cardsScope === 'mine'} onClick={() => setCardsScope('mine')}>Bookable with my cards</button>
                 <button aria-pressed={cardsScope === 'all'} onClick={() => setCardsScope('all')}>All award seats</button>
-                <button aria-pressed={nonStop} onClick={() => setNonStop((v) => !v)}>Non-stop</button>
+                <button aria-pressed={nonStop} onClick={() => setNonStop((value) => !value)}>Non-stop</button>
               </div>
             </div>
 
@@ -252,7 +257,8 @@ function FlightDecisionPanel({ row }: { row: FusionRow | null }) {
   const options = rankWalletOptions(row.redemption)
   const best = row.bestOption
   const taxes = nativeTaxes(award.trip)
-  const supportedCount = options.filter((o) => o.status === 'ok').length
+  const supportedCount = options.filter((option) => option.status === 'ok').length
+  const conciergeRequest = buildFlightConciergeRequest(row, options, best)
 
   return (
     <aside className="ifw-panel">
@@ -294,7 +300,14 @@ function FlightDecisionPanel({ row }: { row: FusionRow | null }) {
       </div>
 
       <div className="ifw-guardrail"><b>Guardrail:</b> foreign-currency award taxes are shown in their native currency here. The previous manual USD→INR convenience conversion is deliberately not used in this workspace.</div>
-      <div className="ifw-actions"><a href={bookingUrl(award.source, award.program)} target="_blank" rel="noopener noreferrer">Check award directly →</a><button disabled title="Concierge case creation is the next build slice">Concierge booking — next build</button></div>
+      <div className="ifw-actions">
+        <a href={bookingUrl(award.source, award.program)} target="_blank" rel="noopener noreferrer">Check award directly →</a>
+        <ConciergeRequestButton
+          request={conciergeRequest}
+          disabled={!best}
+          disabledReason="CreditIQ needs at least one known wallet route before handing this option to Concierge."
+        />
+      </div>
       <div className="ifw-source-note">Wallet comparison is card-agnostic: any Indian credit card returned by the wallet is evaluated. Cards without mapped redemption rules remain visible as “not mapped” or “no route” rather than disappearing.</div>
     </aside>
   )
