@@ -8,7 +8,11 @@ vi.mock('next/navigation', () => ({
 }))
 
 vi.mock('next/link', () => ({
-  default: ({ href, children, ...rest }: { href: string; children: React.ReactNode }) => (
+  default: ({ href, children, prefetch: _prefetch, ...rest }: {
+    href: string
+    children: React.ReactNode
+    prefetch?: boolean
+  }) => (
     <a href={href} {...rest}>{children}</a>
   ),
 }))
