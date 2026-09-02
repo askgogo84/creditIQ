@@ -11,9 +11,12 @@ const state = vi.hoisted(() => ({
   rpcs: [] as Array<{ name: string; args: Record<string, unknown> }>,
 }))
 
+const OWN_ID = '11111111-1111-4111-8111-111111111111'
+const VICTIM_ID = '22222222-2222-4222-8222-222222222222'
+
 function ownCase(status = state.status) {
   return {
-    id: '11111111-1111-1111-1111-111111111111',
+    id: OWN_ID,
     user_id: 'user-A',
     context: 'HNI',
     source_type: 'FLIGHT',
@@ -43,7 +46,7 @@ vi.mock('@supabase/supabase-js', () => ({
             },
             maybeSingle: async () => {
               const isOwner = filters.user_id === 'user-A'
-              const isOwnId = filters.id === '11111111-1111-1111-1111-111111111111'
+              const isOwnId = filters.id === OWN_ID
               return { data: isOwner && isOwnId ? ownCase() : null, error: null }
             },
           }
@@ -74,13 +77,13 @@ function req(method: 'GET' | 'PATCH', body?: unknown, auth?: string) {
   const headers: Record<string, string> = {}
   if (auth) headers.Authorization = auth
   if (body !== undefined) headers['Content-Type'] = 'application/json'
-  return new Request('http://localhost/api/concierge/cases/11111111-1111-1111-1111-111111111111', {
+  return new Request(`http://localhost/api/concierge/cases/${OWN_ID}`, {
     method, headers, body: body === undefined ? undefined : JSON.stringify(body),
   }) as any
 }
 
-const ownParams = { params: { id: '11111111-1111-1111-1111-111111111111' } }
-const victimParams = { params: { id: '22222222-2222-2222-2222-222222222222' } }
+const ownParams = { params: { id: OWN_ID } }
+const victimParams = { params: { id: VICTIM_ID } }
 
 beforeEach(() => {
   state.status = 'AWAITING_USER_APPROVAL'
