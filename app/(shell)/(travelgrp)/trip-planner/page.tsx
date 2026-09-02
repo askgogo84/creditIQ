@@ -1,19 +1,15 @@
-// /trip-planner — wallet-aware Flights workspace.
+// /trip-planner — global, wallet-aware Flights workspace.
 //
-// The existing /api/flights/fusion backend remains the source of award inventory,
-// wallet cards and transfer candidates. This page changes presentation only: compact
-// results on the left and one source-aware wallet comparison panel on the right.
-// Legacy inbound links (?q=Trip to <city>, ?points=, ?bank=) remain harmless; the
-// workspace continues to price from the signed-in user's wallet rather than a typed
-// aggregate balance.
+// Inventory is the primary search result. Cash-only, award-only and matched rows
+// remain visible; wallet reachability is an optional filter/decision overlay.
 
 import { Suspense } from 'react'
-import { InvestorFlightWorkspace } from '@/components/ciq/travel/InvestorFlightWorkspace'
+import { GlobalFlightWorkspace } from '@/components/ciq/travel/GlobalFlightWorkspace'
 
 export default function TripPlannerPage() {
   return (
     <Suspense fallback={<div />}>
-      <InvestorFlightWorkspace />
+      <GlobalFlightWorkspace />
     </Suspense>
   )
 }
