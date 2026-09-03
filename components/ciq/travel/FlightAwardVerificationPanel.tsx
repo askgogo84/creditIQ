@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { authedFetch } from '@/lib/authed-fetch'
 import type { FlightAwardOption } from '@/lib/award-inventory/types'
+import type { PublishedFlightAwardGuide } from '@/lib/award-guides'
 import { WalletRailMatrix } from './WalletRailMatrix'
 import './flight-award-verification.css'
 
@@ -12,6 +13,7 @@ type Response = {
   options?: FlightAwardOption[]
   attempts?: Attempt[]
   pricingAuthority?: string
+  publishedGuide?: PublishedFlightAwardGuide | null
   reason?: string
   error?: string
 }
@@ -71,6 +73,7 @@ export function FlightAwardVerificationPanel({
   const taxesMinor = live?.taxesMinor ?? cachedTaxesMinor
   const taxesCurrency = live?.taxesCurrency ?? cachedTaxesCurrency
   const authority = live ? 'LIVE VERIFIED' : 'CACHED DISCOVERY'
+  const publishedGuide = response?.publishedGuide ?? null
 
   return (
     <div className="fav-root">
@@ -78,6 +81,21 @@ export function FlightAwardVerificationPanel({
         <div><small>Award pricing authority</small><b>{authority}</b><span>{programmeName} · {points.toLocaleString('en-IN')} miles{live ? ' · live selected-programme result' : ' · broad cached discovery result'}</span></div>
         {loading ? <em>Verifying…</em> : <em>{response?.status ?? 'cached'}</em>}
       </div>
+
+      {publishedGuide ? <div className="fav-guide">
+        <div className="fav-guide-head">
+          <div><small>Published planning guide · one way, per passenger</small><b>{publishedGuide.programmeName}</b><span>{publishedGuide.origin} → {publishedGuide.destination} · {publishedGuide.cabin} · captured {publishedGuide.evidence.capturedAt}</span></div>
+          <a href={publishedGuide.evidence.sourceUrl} target="_blank" rel="noopener noreferrer">Official calculator ↗</a>
+        </div>
+        <div className="fav-guide-tiers">{publishedGuide.tiers.map((tier) => (
+          <div className={`fav-guide-tier ${tier.id.toLowerCase()}`} key={tier.id}>
+            <small>{tier.label}</small>
+            <b>{tier.pointsMin === tier.pointsMax ? tier.pointsMin.toLocaleString('en-IN') : `${tier.pointsMin.toLocaleString('en-IN')}–${tier.pointsMax.toLocaleString('en-IN')}`}</b>
+            <span>Maharaja Points</span>
+          </div>
+        ))}</div>
+        <p><b>Planning only.</b> {publishedGuide.evidence.caveat} Taxes are not published here. The guide is never substituted for date-specific pricing.</p>
+      </div> : programmeId === 'air-india-maharaja' ? <div className="fav-guide-missing">No directional Maharaja guide has been captured for this route and cabin. Live and direct verification continue normally.</div> : null}
 
       {!!response?.attempts?.length && <div className="fav-attempts">{response.attempts.map((a, i) => (
         <div className="fav-attempt" key={`${a.source}-${i}`}><b>{a.source}</b><span>{a.state}{a.freshness ? ` · ${a.freshness}` : ''}</span><small>{a.reason}</small></div>

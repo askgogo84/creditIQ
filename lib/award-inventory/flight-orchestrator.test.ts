@@ -63,4 +63,19 @@ describe('flight award orchestrator', () => {
     expect(result.status).toBe('PROVIDER_UNAVAILABLE')
     expect(result.reason).toMatch(/No configured award source/)
   })
+
+  it('returns a published Maharaja guide without treating it as inventory', async () => {
+    const result = await searchFlightAwards({
+      origin: 'DEL', destination: 'SIN', date: '2026-10-15', cabin: 'economy', adults: 1,
+      programmeIds: ['air-india-maharaja'],
+    }, {
+      seats: { isConfigured: () => false, search: async () => [] } as any,
+      awardWallet: { isConfigured: () => false } as any,
+    })
+
+    expect(result.status).toBe('PROVIDER_UNAVAILABLE')
+    expect(result.options).toEqual([])
+    expect(result.publishedGuide?.authority).toBe('PLANNING_ONLY')
+    expect(result.publishedGuide?.tiers[0]).toMatchObject({ id: 'VALUE', pointsMin: 12_000, pointsMax: 30_000 })
+  })
 })

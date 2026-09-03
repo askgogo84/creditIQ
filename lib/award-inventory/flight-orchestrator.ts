@@ -1,6 +1,7 @@
 import type { FlightAwardOption, FlightAwardSearchQuery } from './types'
 import { SeatsAeroFlightProvider } from './providers/seats-aero-flight'
 import { AwardWalletFlightSearchClient, type AwardWalletFlightProviderInfo } from './providers/awardwallet-flight'
+import { findAirIndiaMaharajaPublishedGuide, type PublishedFlightAwardGuide } from '@/lib/award-guides'
 
 export type FlightAwardAttemptState = 'SUCCESS' | 'EMPTY' | 'PENDING' | 'UNAVAILABLE' | 'DIRECT_REQUIRED' | 'SKIPPED' | 'ERROR'
 
@@ -27,6 +28,7 @@ export interface FlightAwardOrchestratorResult {
   liveProvider: AwardWalletFlightProviderInfo | null
   attempts: FlightAwardSourceAttempt[]
   pricingAuthority: 'DATE_SPECIFIC_LIVE' | 'CACHED_DISCOVERY' | 'DIRECT_ONLY' | 'NONE'
+  publishedGuide: PublishedFlightAwardGuide | null
   fetchedAt: string
   reason: string
 }
@@ -68,6 +70,12 @@ export async function searchFlightAwards(
   const seats = deps.seats ?? new SeatsAeroFlightProvider()
   const awardWallet = deps.awardWallet ?? new AwardWalletFlightSearchClient()
   const selectedProgramme = query.programmeIds?.length === 1 ? query.programmeIds[0] : null
+  const publishedGuide = selectedProgramme ? findAirIndiaMaharajaPublishedGuide({
+    programmeId: selectedProgramme,
+    origin: query.origin,
+    destination: query.destination,
+    cabin: query.cabin,
+  }) : null
 
   if (selectedProgramme) {
     if (awardWallet.isConfigured()) {
@@ -79,7 +87,7 @@ export async function searchFlightAwards(
           attempts.push(attempt('direct', true, 'DIRECT_REQUIRED', 'DIRECT', 'Final verification remains direct airline/programme checkout.'))
           return {
             status: 'SUCCESS_LIVE_VERIFIED', query, options: dedupe(live.options), liveProvider: live.provider,
-            attempts, pricingAuthority: 'DATE_SPECIFIC_LIVE', fetchedAt: live.fetchedAt,
+            attempts, pricingAuthority: 'DATE_SPECIFIC_LIVE', publishedGuide, fetchedAt: live.fetchedAt,
             reason: 'Live selected-programme award inventory returned.',
           }
         }
@@ -101,7 +109,7 @@ export async function searchFlightAwards(
         attempts.push(attempt('direct', true, 'DIRECT_REQUIRED', 'DIRECT', 'Direct airline/programme checkout remains the final verification boundary.'))
         if (cached.length) return {
           status: 'SUCCESS_CACHED_DISCOVERY', query, options: cached, liveProvider: null, attempts,
-          pricingAuthority: 'CACHED_DISCOVERY', fetchedAt, reason: 'Cached award discovery exists; selected programme was not live-verified.',
+          pricingAuthority: 'CACHED_DISCOVERY', publishedGuide, fetchedAt, reason: 'Cached award discovery exists; selected programme was not live-verified.',
         }
       } catch (error) {
         attempts.push(attempt('seats-aero', true, 'ERROR', 'CACHED', error instanceof Error ? error.message : 'Cached provider failed.'))
@@ -115,7 +123,7 @@ export async function searchFlightAwards(
     const direct = attempts.some((a) => a.source === 'awardwallet' && a.state === 'DIRECT_REQUIRED')
     return {
       status: pending ? 'PENDING_LIVE' : direct ? 'DIRECT_REQUIRED' : 'PROVIDER_UNAVAILABLE',
-      query, options: [], liveProvider: null, attempts, pricingAuthority: direct ? 'DIRECT_ONLY' : 'NONE', fetchedAt,
+      query, options: [], liveProvider: null, attempts, pricingAuthority: direct ? 'DIRECT_ONLY' : 'NONE', publishedGuide, fetchedAt,
       reason: pending ? 'Live award verification is still processing.' : direct ? 'Selected programme requires direct verification.' : 'No configured award source returned usable selected-programme pricing.',
     }
   }
@@ -128,10 +136,10 @@ export async function searchFlightAwards(
       attempts.push(attempt('direct', true, 'DIRECT_REQUIRED', 'DIRECT', 'Selected award must be verified directly/live before transfer.'))
       return cached.length ? {
         status: 'SUCCESS_CACHED_DISCOVERY', query, options: cached, liveProvider: null, attempts,
-        pricingAuthority: 'CACHED_DISCOVERY', fetchedAt, reason: 'Broad cached award inventory returned.',
+        pricingAuthority: 'CACHED_DISCOVERY', publishedGuide: null, fetchedAt, reason: 'Broad cached award inventory returned.',
       } : {
         status: 'NO_AWARD_OPTIONS', query, options: [], liveProvider: null, attempts,
-        pricingAuthority: 'NONE', fetchedAt, reason: 'Configured cached provider returned no award options for this route/date.',
+        pricingAuthority: 'NONE', publishedGuide: null, fetchedAt, reason: 'Configured cached provider returned no award options for this route/date.',
       }
     } catch (error) {
       attempts.push(attempt('seats-aero', true, 'ERROR', 'CACHED', error instanceof Error ? error.message : 'Cached provider failed.'))
@@ -142,6 +150,6 @@ export async function searchFlightAwards(
   attempts.push(attempt('direct', true, 'DIRECT_REQUIRED', 'DIRECT', 'Direct airline/programme verification remains available.'))
   return {
     status: 'PROVIDER_UNAVAILABLE', query, options: [], liveProvider: null, attempts,
-    pricingAuthority: 'NONE', fetchedAt, reason: 'Broad award discovery provider is unavailable.',
+    pricingAuthority: 'NONE', publishedGuide: null, fetchedAt, reason: 'Broad award discovery provider is unavailable.',
   }
 }

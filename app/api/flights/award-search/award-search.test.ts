@@ -32,10 +32,11 @@ describe('flight award search API', () => {
 
   it('ignores forged body userId and sends only validated travel query', async () => {
     const { POST } = await import('./route')
-    const res = await POST(post({ origin: 'blr', destination: 'sin', date: '2026-10-15', cabin: 'business', adults: 2, programmeId: 'krisflyer', userId: 'user-VICTIM' }, 'Bearer tokenA'))
+    const res = await POST(post({ origin: 'blr', destination: 'sin', date: '2026-10-15', cabin: 'business', adults: 2, programmeId: 'krisflyer', userId: 'user-VICTIM', publishedGuide: { points: 1 } }, 'Bearer tokenA'))
     expect(res.status).toBe(200)
     expect(captured.query).toEqual({ origin: 'BLR', destination: 'SIN', date: '2026-10-15', cabin: 'business', adults: 2, programmeIds: ['krisflyer'] })
     expect(JSON.stringify(captured.query)).not.toContain('user-VICTIM')
+    expect(JSON.stringify(captured.query)).not.toContain('publishedGuide')
   })
 
   it('rejects invalid airport/programme input', async () => {
