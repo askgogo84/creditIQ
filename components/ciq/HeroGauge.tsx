@@ -62,7 +62,7 @@ function useCountUp(target: number, ms = 1400) {
  * Copper is an accent only, never a data colour.
  */
 export function HeroGauge({
-  points, verifiedPoints, estimatedPoints, estLow, estHigh, cardCount, flat = false,
+  points, verifiedPoints, estimatedPoints, estLow, estHigh, cardCount, flat = false, balancesHidden = false,
 }: {
   points: number; verifiedPoints: number; estimatedPoints: number;
   estLow: number; estHigh: number; cardCount: number;
@@ -71,6 +71,7 @@ export function HeroGauge({
   // flush inside a parent band that owns the single frame. Defaults to today's
   // stand-alone card so every other caller is byte-identical.
   flat?: boolean;
+  balancesHidden?: boolean;
 }) {
   const counted = useCountUp(points);
   // Bars default to their TRUE width (fill=true): SSR, no-JS, reduced-motion and any rAF
@@ -119,7 +120,7 @@ export function HeroGauge({
           Total reward points
         </div>
         <div className="w-display" style={{ fontWeight: 600, fontSize: 54, lineHeight: 1, letterSpacing: '-.03em', marginTop: 10, color: 'var(--ink)', fontVariantNumeric: 'tabular-nums' }}>
-          {counted.toLocaleString('en-IN')}
+          {balancesHidden ? '••••••' : counted.toLocaleString('en-IN')}
           <span style={{ fontSize: 22, color: 'var(--copper)', marginLeft: 8 }}>pts</span>
         </div>
 
@@ -137,7 +138,7 @@ export function HeroGauge({
                 <span className="mono" style={{ fontSize: 9.5, letterSpacing: '.05em', textTransform: 'uppercase', color: 'var(--ink-3)' }}>Verified</span>
               </div>
               <div className="w-display" style={{ fontWeight: 600, fontSize: 20, marginTop: 5, color: 'var(--prov-verified)', fontVariantNumeric: 'tabular-nums' }}>
-                {verifiedPoints.toLocaleString('en-IN')} <span style={{ fontSize: 12 }}>pts</span>
+                {balancesHidden ? '••••' : verifiedPoints.toLocaleString('en-IN')} <span style={{ fontSize: 12 }}>pts</span>
               </div>
             </div>
             <div>
@@ -146,7 +147,7 @@ export function HeroGauge({
                 <span className="mono" style={{ fontSize: 9.5, letterSpacing: '.05em', textTransform: 'uppercase', color: 'var(--ink-3)' }}>Self-entered</span>
               </div>
               <div className="w-display" style={{ fontWeight: 600, fontSize: 20, marginTop: 5, color: 'var(--ink-2)', fontVariantNumeric: 'tabular-nums' }}>
-                {estimatedPoints.toLocaleString('en-IN')} <span style={{ fontSize: 12 }}>pts</span>
+                {balancesHidden ? '••••' : estimatedPoints.toLocaleString('en-IN')} <span style={{ fontSize: 12 }}>pts</span>
               </div>
             </div>
           </div>
@@ -163,7 +164,7 @@ export function HeroGauge({
 
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: 18, paddingTop: 15, borderTop: '1px solid var(--line)' }}>
           <div style={{ fontSize: 11, color: 'var(--ink-3)' }}>{cardCount} {cardCount === 1 ? 'card' : 'cards'}</div>
-          <EstimateRange low={estLow} high={estHigh} variant="light" />
+          {balancesHidden ? <span className="mono" style={{ fontSize: 11, color: 'var(--ink-3)' }}>Value hidden</span> : <EstimateRange low={estLow} high={estHigh} variant="light" />}
         </div>
       </div>
     </section>
