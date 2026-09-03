@@ -1,0 +1,682 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="description" content="CreditIQ full-width wallet dashboard prototype" />
+  <title>CreditIQ — Full-width Wallet Prototype</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --ink: #10202a;
+      --ink-2: #45535c;
+      --muted: #77828a;
+      --line: #e8e6e0;
+      --line-strong: #d8d5cc;
+      --paper: #fff;
+      --canvas: #f8f8f5;
+      --soft: #f2f2ee;
+      --gold: #a87425;
+      --gold-2: #dca63e;
+      --gold-soft: #fbf4e5;
+      --green: #19734a;
+      --green-soft: #edf7f1;
+      --blue: #203d67;
+      --nav: 232px;
+      --shadow: 0 18px 60px rgba(17, 30, 39, .07);
+      --shadow-soft: 0 8px 26px rgba(17, 30, 39, .045);
+    }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      min-width: 320px;
+      background: var(--canvas);
+      color: var(--ink);
+      font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      -webkit-font-smoothing: antialiased;
+    }
+    button, input { font: inherit; }
+    button { color: inherit; }
+    svg { display: block; }
+    .icon { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+    .mono { font-family: "JetBrains Mono", ui-monospace, monospace; font-variant-numeric: tabular-nums; }
+    .serif { font-family: "Instrument Serif", Georgia, serif; font-weight: 400; }
+
+    .prototype-note {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 80;
+      height: 30px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      border-bottom: 1px solid #eadcbf;
+      background: #fffaf0;
+      color: #76551d;
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: .03em;
+    }
+    .prototype-note i { width: 6px; height: 6px; border-radius: 50%; background: var(--gold-2); }
+
+    .sidebar {
+      position: fixed;
+      inset: 30px auto 0 0;
+      z-index: 50;
+      width: var(--nav);
+      display: flex;
+      flex-direction: column;
+      border-right: 1px solid var(--line);
+      background: rgba(255, 255, 255, .95);
+      backdrop-filter: blur(18px);
+    }
+    .brand {
+      height: 82px;
+      display: flex;
+      align-items: center;
+      gap: 11px;
+      padding: 0 23px;
+      border-bottom: 1px solid var(--line);
+    }
+    .brand-mark {
+      width: 34px;
+      height: 34px;
+      display: grid;
+      place-items: center;
+      border-radius: 9px;
+      background: var(--ink);
+      color: white;
+      box-shadow: 0 8px 20px rgba(16, 32, 42, .16);
+    }
+    .brand-mark .icon { width: 19px; }
+    .brand-copy { display: grid; gap: 1px; font-weight: 700; letter-spacing: -.035em; }
+    .brand-copy small { color: var(--gold); font-size: 7px; letter-spacing: .22em; }
+    .nav-label { padding: 25px 24px 9px; color: #9a9d9c; font-size: 10px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; }
+    .nav-list { display: grid; gap: 3px; padding: 0 12px; }
+    .nav-item {
+      width: 100%;
+      min-height: 46px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      border: 1px solid transparent;
+      border-radius: 10px;
+      padding: 0 12px;
+      background: transparent;
+      color: #56626a;
+      font-size: 13px;
+      font-weight: 550;
+      text-align: left;
+      cursor: pointer;
+      transition: .18s ease;
+    }
+    .nav-item:hover { background: var(--soft); color: var(--ink); transform: translateX(2px); }
+    .nav-item.active { border-color: #e7dfcf; background: #f6f3ed; color: #8d5c11; font-weight: 650; }
+    .nav-item.active::before { content: ""; width: 3px; height: 20px; margin-left: -13px; border-radius: 0 4px 4px 0; background: var(--gold); }
+    .nav-item.active .icon { margin-left: -2px; }
+    .nav-spacer { flex: 1; }
+    .profile {
+      display: grid;
+      grid-template-columns: 34px 1fr auto;
+      align-items: center;
+      gap: 10px;
+      margin: 12px;
+      padding: 13px 12px;
+      border-top: 1px solid var(--line);
+    }
+    .avatar { width: 34px; height: 34px; display: grid; place-items: center; border-radius: 50%; background: var(--ink); color: white; font-size: 12px; font-weight: 700; }
+    .profile b, .profile small { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .profile b { font-size: 12px; }
+    .profile small { margin-top: 2px; color: var(--muted); font-size: 9px; }
+
+    .main { min-height: 100vh; margin-left: var(--nav); padding-top: 30px; }
+    .topbar {
+      position: sticky;
+      top: 30px;
+      z-index: 35;
+      height: 82px;
+      display: grid;
+      grid-template-columns: 1fr minmax(320px, 540px) 1fr;
+      align-items: center;
+      gap: 24px;
+      padding: 0 clamp(24px, 3vw, 52px);
+      border-bottom: 1px solid var(--line);
+      background: rgba(248, 248, 245, .9);
+      backdrop-filter: blur(20px);
+    }
+    .crumb { font-size: 12px; color: var(--muted); }
+    .crumb b { margin-left: 7px; color: var(--ink); }
+    .search {
+      height: 42px;
+      display: grid;
+      grid-template-columns: auto 1fr auto;
+      align-items: center;
+      gap: 10px;
+      padding: 0 13px;
+      border: 1px solid var(--line-strong);
+      border-radius: 11px;
+      background: var(--paper);
+      box-shadow: var(--shadow-soft);
+    }
+    .search .icon { width: 16px; color: var(--muted); }
+    .search input { min-width: 0; border: 0; outline: 0; background: transparent; color: var(--ink); font-size: 12px; }
+    .search kbd { padding: 3px 6px; border: 1px solid var(--line); border-radius: 5px; background: var(--soft); color: var(--muted); font: 10px "JetBrains Mono", monospace; }
+    .top-actions { display: flex; justify-content: flex-end; gap: 8px; }
+    .round-button, .primary-button, .secondary-button, .text-button { cursor: pointer; transition: .18s ease; }
+    .round-button { width: 42px; height: 42px; display: grid; place-items: center; border: 1px solid var(--line-strong); border-radius: 11px; background: white; }
+    .round-button:hover { transform: translateY(-1px); box-shadow: var(--shadow-soft); }
+    .primary-button, .secondary-button {
+      min-height: 42px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      border-radius: 10px;
+      padding: 0 17px;
+      font-size: 12px;
+      font-weight: 650;
+    }
+    .primary-button { border: 1px solid var(--ink); background: var(--ink); color: white; }
+    .primary-button:hover { transform: translateY(-1px); background: #1c3543; box-shadow: 0 8px 22px rgba(16, 32, 42, .16); }
+    .secondary-button { border: 1px solid var(--line-strong); background: white; color: var(--ink); }
+    .secondary-button:hover { border-color: #c6bba8; background: #fffdf8; }
+    .text-button { border: 0; background: transparent; color: var(--gold); font-size: 11px; font-weight: 650; }
+
+    .workspace { width: 100%; padding: 34px clamp(24px, 3vw, 52px) 64px; }
+    .page-head { display: flex; align-items: flex-end; justify-content: space-between; gap: 24px; margin-bottom: 24px; }
+    .eyebrow { margin-bottom: 8px; color: var(--gold); font-size: 10px; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; }
+    .page-head h1 { margin: 0; font-size: clamp(38px, 3.2vw, 59px); line-height: .98; letter-spacing: -.035em; }
+    .page-head p { max-width: 620px; margin: 9px 0 0; color: var(--muted); font-size: 13px; line-height: 1.55; }
+    .page-actions { display: flex; gap: 9px; }
+
+    .dashboard-grid { display: grid; grid-template-columns: minmax(0, 1.65fr) minmax(330px, .65fr); gap: 18px; }
+    .surface { border: 1px solid var(--line); border-radius: 18px; background: var(--paper); box-shadow: var(--shadow-soft); }
+
+    .portfolio {
+      position: relative;
+      min-height: 286px;
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(320px, .78fr);
+      overflow: hidden;
+      padding: clamp(26px, 2.5vw, 42px);
+    }
+    .portfolio::after {
+      content: "";
+      position: absolute;
+      width: 520px;
+      height: 520px;
+      right: -240px;
+      top: -310px;
+      border: 1px solid #e8ddc6;
+      border-radius: 50%;
+      box-shadow: 0 0 0 58px #faf7f0, 0 0 0 59px #ede6d8, 0 0 0 118px #fcfbf8;
+      pointer-events: none;
+    }
+    .live-pill { display: inline-flex; align-items: center; gap: 7px; padding: 6px 9px; border-radius: 999px; background: var(--green-soft); color: var(--green); font-size: 9px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; }
+    .live-pill i { width: 6px; height: 6px; border-radius: 50%; background: var(--green); box-shadow: 0 0 0 3px rgba(25,115,74,.1); }
+    .portfolio h2 { margin: 23px 0 4px; font-size: clamp(20px, 1.5vw, 27px); letter-spacing: -.03em; }
+    .portfolio-copy > p { max-width: 570px; margin: 0; color: var(--muted); font-size: 12px; line-height: 1.55; }
+    .portfolio-number { display: flex; align-items: baseline; gap: 8px; margin-top: 24px; }
+    .portfolio-number strong { font-size: clamp(34px, 3vw, 54px); line-height: 1; letter-spacing: -.055em; }
+    .portfolio-number span { color: var(--gold); font-size: 14px; font-weight: 700; }
+    .estimate { margin-top: 9px; color: var(--muted); font-size: 11px; }
+    .estimate b { color: var(--ink-2); font-weight: 600; }
+    .portfolio-chart { position: relative; z-index: 2; display: grid; place-items: center; }
+    .orbit { position: relative; width: 224px; height: 224px; display: grid; place-items: center; }
+    .orbit-ring { position: absolute; inset: 0; border: 1px solid #e6e2d9; border-radius: 50%; }
+    .orbit-ring.two { inset: 25px; border-style: dashed; animation: rotate 26s linear infinite; }
+    .orbit-ring.three { inset: 57px; background: #fcfbf8; }
+    .orbit-core { position: relative; z-index: 2; text-align: center; }
+    .orbit-core small { display: block; color: var(--muted); font-size: 9px; text-transform: uppercase; letter-spacing: .1em; }
+    .orbit-core strong { display: block; margin-top: 4px; font-size: 23px; letter-spacing: -.04em; }
+    .orbit-dot { position: absolute; z-index: 3; width: 32px; height: 32px; display: grid; place-items: center; border-radius: 50%; background: var(--ink); color: white; box-shadow: 0 0 0 7px rgba(16,32,42,.06); animation: float 3.2s ease-in-out infinite; }
+    .orbit-dot .icon { width: 15px; transform: rotate(45deg); }
+    .verified-tag, .entered-tag { position: absolute; z-index: 4; padding: 7px 9px; border: 1px solid var(--line); border-radius: 8px; background: rgba(255,255,255,.92); box-shadow: var(--shadow-soft); font-size: 9px; }
+    .verified-tag { left: -18px; top: 46px; color: var(--green); }
+    .entered-tag { right: -20px; bottom: 43px; color: var(--muted); }
+    @keyframes rotate { to { transform: rotate(360deg); } }
+    @keyframes float { 0%,100% { transform: translateY(-105px) rotate(0); } 50% { transform: translateY(-109px) rotate(4deg); } }
+
+    .best-move { min-height: 286px; display: flex; flex-direction: column; padding: 26px; background: linear-gradient(145deg, #fffdf9, #f7f0e2); border-color: #e8dcc4; }
+    .best-move .label { display: flex; align-items: center; justify-content: space-between; color: var(--gold); font-size: 9px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; }
+    .best-move h2 { max-width: 320px; margin: 35px 0 9px; font-size: clamp(27px, 2.1vw, 37px); line-height: 1.02; letter-spacing: -.025em; }
+    .best-move p { margin: 0; color: var(--muted); font-size: 11px; line-height: 1.55; }
+    .best-value { display: flex; align-items: baseline; gap: 7px; margin-top: auto; padding-top: 22px; }
+    .best-value strong { font-size: 24px; letter-spacing: -.04em; }
+    .best-value span { color: var(--green); font-size: 10px; font-weight: 600; }
+    .best-move .primary-button { width: 100%; margin-top: 13px; }
+
+    .insight-strip { grid-column: 1 / -1; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); overflow: hidden; }
+    .insight { min-height: 102px; display: grid; grid-template-columns: 39px 1fr; align-items: center; gap: 13px; padding: 19px 22px; border-right: 1px solid var(--line); }
+    .insight:last-child { border-right: 0; }
+    .insight-icon { width: 39px; height: 39px; display: grid; place-items: center; border-radius: 11px; background: var(--soft); color: var(--ink-2); }
+    .insight-icon.gold { background: var(--gold-soft); color: var(--gold); }
+    .insight-icon.green { background: var(--green-soft); color: var(--green); }
+    .insight small, .insight b, .insight span { display: block; }
+    .insight small { color: var(--muted); font-size: 9px; }
+    .insight b { margin: 4px 0 2px; font-size: 16px; letter-spacing: -.03em; }
+    .insight span { color: var(--muted); font-size: 9px; }
+
+    .lower-grid { display: grid; grid-template-columns: minmax(0, 1.52fr) minmax(320px, .68fr); gap: 18px; margin-top: 18px; }
+    .wallet-panel, .attention-panel { overflow: hidden; }
+    .section-head { min-height: 72px; display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 0 22px; border-bottom: 1px solid var(--line); }
+    .section-head h2 { margin: 0; font-size: 18px; letter-spacing: -.025em; }
+    .section-head p { margin: 4px 0 0; color: var(--muted); font-size: 10px; }
+    .section-actions { display: flex; align-items: center; gap: 8px; }
+    .view-toggle { display: flex; padding: 3px; border: 1px solid var(--line); border-radius: 8px; background: var(--soft); }
+    .view-toggle button { border: 0; border-radius: 6px; padding: 6px 9px; background: transparent; color: var(--muted); font-size: 9px; cursor: pointer; }
+    .view-toggle button.active { background: white; color: var(--ink); box-shadow: 0 2px 8px rgba(16,32,42,.06); }
+    .card-list { display: grid; }
+    .wallet-card {
+      width: 100%;
+      min-height: 103px;
+      display: grid;
+      grid-template-columns: 112px minmax(170px, 1fr) 150px 34px;
+      align-items: center;
+      gap: 18px;
+      border: 0;
+      border-bottom: 1px solid var(--line);
+      padding: 13px 20px;
+      background: white;
+      text-align: left;
+      cursor: pointer;
+      transition: background .18s ease;
+    }
+    .wallet-card:last-child { border-bottom: 0; }
+    .wallet-card:hover { background: #fbfaf7; }
+    .wallet-card:hover .card-arrow { transform: translateX(3px); color: var(--gold); }
+    .art-box { width: 112px; height: 70px; display: grid; place-items: center; overflow: hidden; }
+    .art-box img { display: block; max-width: 100%; max-height: 100%; object-fit: contain; filter: drop-shadow(0 8px 9px rgba(20,30,38,.17)); }
+    .art-box img.axis-correction { transform: rotate(-14deg) scale(.9); }
+    .card-name b { display: block; font-size: 13px; }
+    .card-name span { display: flex; align-items: center; gap: 6px; margin-top: 6px; color: var(--muted); font-size: 9px; }
+    .verified { padding: 3px 6px; border-radius: 999px; background: var(--green-soft); color: var(--green); font-weight: 650; }
+    .self { padding: 3px 6px; border-radius: 999px; background: var(--soft); color: var(--muted); font-weight: 650; }
+    .points { text-align: right; }
+    .points strong, .points small { display: block; }
+    .points strong { font-size: 16px; letter-spacing: -.035em; }
+    .points small { margin-top: 4px; color: var(--muted); font-size: 8px; text-transform: uppercase; letter-spacing: .08em; }
+    .card-arrow { color: #adb1b0; transition: .18s ease; }
+    .add-card { width: 100%; min-height: 52px; border: 0; background: #fffdf8; color: var(--gold); font-size: 11px; font-weight: 650; cursor: pointer; }
+    .add-card:hover { background: var(--gold-soft); }
+
+    .attention-list { display: grid; padding: 8px 20px 20px; }
+    .attention {
+      display: grid;
+      grid-template-columns: 37px 1fr auto;
+      align-items: center;
+      gap: 12px;
+      padding: 16px 0;
+      border-bottom: 1px solid var(--line);
+    }
+    .attention:last-child { border-bottom: 0; }
+    .attention-icon { width: 37px; height: 37px; display: grid; place-items: center; border-radius: 10px; background: var(--soft); color: var(--ink-2); }
+    .attention b, .attention small { display: block; }
+    .attention b { font-size: 11px; }
+    .attention small { margin-top: 4px; color: var(--muted); font-size: 9px; line-height: 1.45; }
+    .attention-value { color: var(--green); font-size: 10px; font-weight: 650; white-space: nowrap; }
+    .truth-box { margin: 0 20px 20px; padding: 16px; border: 1px solid #cae1d5; border-radius: 12px; background: var(--green-soft); }
+    .truth-box b { display: block; color: var(--green); font-size: 10px; }
+    .truth-box p { margin: 6px 0 0; color: #4f695b; font-size: 9px; line-height: 1.5; }
+
+    .discover { margin-top: 34px; }
+    .discover-head { display: flex; align-items: flex-end; justify-content: space-between; gap: 18px; margin-bottom: 14px; }
+    .discover-head h2 { margin: 0; font-size: 21px; letter-spacing: -.025em; }
+    .discover-head p { margin: 5px 0 0; color: var(--muted); font-size: 10px; }
+    .discover-grid { display: grid; grid-template-columns: repeat(6, minmax(145px, 1fr)); gap: 12px; }
+    .discover-card { min-width: 0; border: 1px solid var(--line); border-radius: 14px; overflow: hidden; background: white; cursor: pointer; transition: .2s ease; }
+    .discover-card:hover { transform: translateY(-3px); border-color: #d8caaa; box-shadow: var(--shadow); }
+    .discover-art { height: 126px; display: grid; place-items: center; padding: 17px; background: linear-gradient(180deg, #fafaf8, white); }
+    .discover-art img { max-width: 100%; max-height: 92px; object-fit: contain; filter: drop-shadow(0 9px 10px rgba(20,30,38,.16)); }
+    .discover-art img.axis-correction { transform: rotate(-14deg) scale(.9); }
+    .discover-copy { min-height: 91px; padding: 13px; border-top: 1px solid var(--line); }
+    .discover-copy b { display: block; overflow: hidden; color: var(--ink); font-size: 10px; text-overflow: ellipsis; white-space: nowrap; }
+    .discover-copy small { display: block; margin-top: 5px; color: var(--muted); font-size: 8px; line-height: 1.45; }
+    .discover-copy span { display: inline-block; margin-top: 10px; color: var(--gold); font-size: 8px; font-weight: 650; }
+
+    .drawer-backdrop { position: fixed; inset: 0; z-index: 90; display: none; background: rgba(16,32,42,.28); backdrop-filter: blur(3px); }
+    .drawer-backdrop.open { display: block; }
+    .drawer {
+      position: absolute;
+      inset: 0 0 0 auto;
+      width: min(430px, 92vw);
+      display: flex;
+      flex-direction: column;
+      background: white;
+      box-shadow: -20px 0 70px rgba(16,32,42,.16);
+      animation: drawerIn .24s ease both;
+    }
+    @keyframes drawerIn { from { transform: translateX(30px); opacity: .5; } }
+    .drawer-head { display: flex; align-items: center; justify-content: space-between; padding: 22px; border-bottom: 1px solid var(--line); }
+    .drawer-head small { color: var(--gold); font-size: 9px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; }
+    .drawer-head h2 { margin: 5px 0 0; font-size: 27px; }
+    .drawer-art { min-height: 210px; display: grid; place-items: center; padding: 28px; background: var(--canvas); }
+    .drawer-art img { width: min(290px, 75%); max-height: 185px; object-fit: contain; filter: drop-shadow(0 16px 18px rgba(20,30,38,.2)); }
+    .drawer-art img.axis-correction { transform: rotate(-14deg) scale(.9); }
+    .drawer-body { display: grid; gap: 10px; padding: 22px; }
+    .drawer-stat { display: flex; align-items: center; justify-content: space-between; padding: 13px 0; border-bottom: 1px solid var(--line); font-size: 11px; }
+    .drawer-stat span { color: var(--muted); }
+    .drawer-body .primary-button { margin-top: 10px; }
+
+    .toast { position: fixed; right: 28px; bottom: 28px; z-index: 120; max-width: 330px; padding: 13px 16px; border-radius: 10px; background: var(--ink); color: white; box-shadow: var(--shadow); font-size: 11px; opacity: 0; transform: translateY(10px); pointer-events: none; transition: .2s ease; }
+    .toast.show { opacity: 1; transform: none; }
+    .mobile-menu { display: none; }
+
+    @media (min-width: 1700px) {
+      .dashboard-grid { grid-template-columns: minmax(0, 1.8fr) minmax(370px, .6fr); }
+      .lower-grid { grid-template-columns: minmax(0, 1.65fr) minmax(370px, .55fr); }
+      .portfolio { min-height: 300px; }
+      .best-move { min-height: 300px; }
+      .wallet-card { grid-template-columns: 132px minmax(200px, 1fr) 170px 34px; }
+      .art-box { width: 126px; height: 78px; }
+    }
+    @media (max-width: 1240px) {
+      .topbar { grid-template-columns: 1fr minmax(280px, 440px) auto; }
+      .dashboard-grid, .lower-grid { grid-template-columns: 1fr; }
+      .best-move { min-height: 230px; }
+      .best-move h2 { margin-top: 25px; }
+      .insight-strip { grid-template-columns: repeat(2, 1fr); }
+      .insight:nth-child(2) { border-right: 0; }
+      .insight:nth-child(-n+2) { border-bottom: 1px solid var(--line); }
+      .discover-grid { grid-template-columns: repeat(3, 1fr); }
+    }
+    @media (max-width: 900px) {
+      :root { --nav: 0px; }
+      .sidebar { display: none; }
+      .topbar { grid-template-columns: auto 1fr auto; padding-inline: 18px; }
+      .crumb { display: none; }
+      .mobile-menu { width: 42px; height: 42px; display: grid; place-items: center; border: 1px solid var(--line-strong); border-radius: 11px; background: white; }
+      .top-actions .round-button { display: none; }
+      .workspace { padding-inline: 18px; }
+      .portfolio { grid-template-columns: 1fr 280px; }
+    }
+    @media (max-width: 700px) {
+      .prototype-note { padding: 0 12px; font-size: 9px; text-align: center; }
+      .topbar { height: 70px; gap: 9px; }
+      .search { height: 40px; }
+      .search input::placeholder { color: transparent; }
+      .search kbd, .top-actions .primary-button span { display: none; }
+      .top-actions .primary-button { width: 42px; padding: 0; }
+      .workspace { padding-top: 24px; }
+      .page-head { align-items: flex-start; flex-direction: column; }
+      .page-head h1 { font-size: 42px; }
+      .page-actions { width: 100%; }
+      .page-actions button { flex: 1; }
+      .portfolio { grid-template-columns: 1fr; min-height: auto; padding: 24px; }
+      .portfolio-chart { margin-top: 22px; }
+      .orbit { width: 190px; height: 190px; }
+      .orbit-dot { display: none; }
+      .verified-tag { left: -28px; }
+      .entered-tag { right: -34px; }
+      .insight-strip { grid-template-columns: 1fr; }
+      .insight { border-right: 0; border-bottom: 1px solid var(--line); }
+      .insight:last-child { border-bottom: 0; }
+      .wallet-card { grid-template-columns: 92px 1fr auto; gap: 12px; padding-inline: 14px; }
+      .art-box { width: 88px; height: 58px; }
+      .points { grid-column: 2; text-align: left; }
+      .card-arrow { grid-row: 1 / 3; grid-column: 3; }
+      .discover-grid { display: flex; overflow-x: auto; scroll-snap-type: x mandatory; padding-bottom: 8px; }
+      .discover-card { min-width: 210px; scroll-snap-align: start; }
+      .discover-head .text-button { display: none; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { scroll-behavior: auto !important; animation-duration: .01ms !important; transition-duration: .01ms !important; }
+    }
+  </style>
+</head>
+<body>
+  <svg width="0" height="0" style="position:absolute">
+    <symbol id="i-card" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="3"/><path d="M3 10h18M7 15h3"/></symbol>
+    <symbol id="i-wallet" viewBox="0 0 24 24"><path d="M4 7h15a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h12"/><path d="M16 12h5v4h-5a2 2 0 1 1 0-4Z"/></symbol>
+    <symbol id="i-spend" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M16 8.5c-1-1-2-1.5-4-1.5s-3 1-3 2.4c0 3.6 7 1.4 7 5 0 1.4-1.2 2.6-3.5 2.6-2 0-3.4-.6-4.5-1.7M12 5v14"/></symbol>
+    <symbol id="i-plane" viewBox="0 0 24 24"><path d="m2.5 16.5 8.1-4.2V5.7a2 2 0 0 1 4 0v4.5l5.1-2.7c.8-.4 1.8.1 1.8 1v1.4c0 .7-.3 1.3-.9 1.7l-6 4v3.3l2 1.3v1l-4-1.2-4 1.2v-1l2-1.3v-2.3l-7.2 2.2Z"/></symbol>
+    <symbol id="i-user" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4.5 21a7.5 7.5 0 0 1 15 0"/></symbol>
+    <symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/></symbol>
+    <symbol id="i-bell" viewBox="0 0 24 24"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9M10 21h4"/></symbol>
+    <symbol id="i-eye" viewBox="0 0 24 24"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/></symbol>
+    <symbol id="i-refresh" viewBox="0 0 24 24"><path d="M20 6v5h-5M4 18v-5h5"/><path d="M18 9a7 7 0 0 0-12-2M6 15a7 7 0 0 0 12 2"/></symbol>
+    <symbol id="i-upload" viewBox="0 0 24 24"><path d="M12 16V4M7 9l5-5 5 5M4 15v4a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-4"/></symbol>
+    <symbol id="i-spark" viewBox="0 0 24 24"><path d="m12 3 1.6 5.4L19 10l-5.4 1.6L12 17l-1.6-5.4L5 10l5.4-1.6L12 3ZM19 16l.7 2.3L22 19l-2.3.7L19 22l-.7-2.3L16 19l2.3-.7L19 16Z"/></symbol>
+    <symbol id="i-arrow" viewBox="0 0 24 24"><path d="M5 12h14M14 7l5 5-5 5"/></symbol>
+    <symbol id="i-shield" viewBox="0 0 24 24"><path d="M12 22s8-3 8-10V5l-8-3-8 3v7c0 7 8 10 8 10Z"/><path d="m9 12 2 2 4-4"/></symbol>
+    <symbol id="i-menu" viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h16"/></symbol>
+    <symbol id="i-close" viewBox="0 0 24 24"><path d="m6 6 12 12M18 6 6 18"/></symbol>
+  </svg>
+
+  <div class="prototype-note"><i></i>Interactive layout prototype · sample wallet data · no account actions</div>
+
+  <aside class="sidebar" aria-label="Primary navigation">
+    <div class="brand">
+      <span class="brand-mark"><svg class="icon"><use href="#i-card"/></svg></span>
+      <span class="brand-copy">CreditIQ<small>INTELLIGENCE</small></span>
+    </div>
+    <div class="nav-label">Your intelligence</div>
+    <nav class="nav-list">
+      <button class="nav-item active"><svg class="icon"><use href="#i-wallet"/></svg>Wallet</button>
+      <button class="nav-item"><svg class="icon"><use href="#i-spend"/></svg>Spend Smart</button>
+      <button class="nav-item"><svg class="icon"><use href="#i-plane"/></svg>Travel</button>
+      <button class="nav-item"><svg class="icon"><use href="#i-card"/></svg>Cards</button>
+      <button class="nav-item"><svg class="icon"><use href="#i-user"/></svg>You</button>
+    </nav>
+    <div class="nav-spacer"></div>
+    <div class="profile">
+      <span class="avatar">G</span>
+      <span><b>Goverdhan MD</b><small>Premium member</small></span>
+      <span>⌄</span>
+    </div>
+  </aside>
+
+  <main class="main">
+    <header class="topbar">
+      <button class="mobile-menu" aria-label="Open navigation"><svg class="icon"><use href="#i-menu"/></svg></button>
+      <div class="crumb">CreditIQ <b>/ Wallet</b></div>
+      <label class="search">
+        <svg class="icon"><use href="#i-search"/></svg>
+        <input id="searchInput" aria-label="Search CreditIQ" placeholder="Search cards, programmes, benefits…" />
+        <kbd>⌘ K</kbd>
+      </label>
+      <div class="top-actions">
+        <button class="round-button" aria-label="Notifications"><svg class="icon"><use href="#i-bell"/></svg></button>
+        <button class="primary-button" id="askButton"><svg class="icon"><use href="#i-spark"/></svg><span>Ask CIRA</span></button>
+      </div>
+    </header>
+
+    <div class="workspace">
+      <div class="page-head">
+        <div>
+          <div class="eyebrow">Live · verified wallet</div>
+          <h1 class="serif">Good evening, Goverdhan.</h1>
+          <p>Your rewards portfolio, the value you can use today, and the next action worth taking—without the narrow dashboard.</p>
+        </div>
+        <div class="page-actions">
+          <button class="secondary-button" id="hideButton"><svg class="icon"><use href="#i-eye"/></svg><span>Hide balances</span></button>
+          <button class="primary-button" id="uploadButton"><svg class="icon"><use href="#i-upload"/></svg><span>Verify more</span></button>
+        </div>
+      </div>
+
+      <section class="dashboard-grid" aria-label="Wallet overview">
+        <article class="surface portfolio">
+          <div class="portfolio-copy">
+            <span class="live-pill"><i></i>5 cards connected</span>
+            <h2>Your rewards portfolio</h2>
+            <p>Statement-verified and self-entered balances stay visibly separate. We never present an estimate as cash.</p>
+            <div class="portfolio-number balance"><strong class="mono">2,33,118</strong><span>points</span></div>
+            <div class="estimate">Estimated redemption range <b>₹58,280–₹4,19,612</b></div>
+          </div>
+          <div class="portfolio-chart" aria-label="Verified versus self-entered points">
+            <div class="orbit">
+              <div class="orbit-ring"></div><div class="orbit-ring two"></div><div class="orbit-ring three"></div>
+              <span class="orbit-dot"><svg class="icon"><use href="#i-plane"/></svg></span>
+              <div class="orbit-core"><small>Best use</small><strong class="serif">Travel</strong></div>
+              <span class="verified-tag"><b class="mono">66,118</b> verified</span>
+              <span class="entered-tag"><b class="mono">1,67,000</b> self-entered</span>
+            </div>
+          </div>
+        </article>
+
+        <article class="surface best-move">
+          <div class="label"><span>Best move now</span><svg class="icon"><use href="#i-spark"/></svg></div>
+          <h2 class="serif">Turn your points into the next trip.</h2>
+          <p>Travel redemptions can unlock more value than statement credit. We will show executable paths separately from projections.</p>
+          <div class="best-value"><strong class="mono">₹4.19L</strong><span>potential ceiling</span></div>
+          <button class="primary-button action-toast">Show me exactly how <svg class="icon"><use href="#i-arrow"/></svg></button>
+        </article>
+
+        <div class="surface insight-strip">
+          <div class="insight"><span class="insight-icon green"><svg class="icon"><use href="#i-shield"/></svg></span><span><small>Verified points</small><b class="mono balance">66,118</b><span>Read from statements</span></span></div>
+          <div class="insight"><span class="insight-icon"><svg class="icon"><use href="#i-card"/></svg></span><span><small>Cards tracked</small><b class="mono">5</b><span>2 verified · 3 entered</span></span></div>
+          <div class="insight"><span class="insight-icon gold"><svg class="icon"><use href="#i-plane"/></svg></span><span><small>Travel-ready</small><b class="mono balance">2,33,118</b><span>Across known routes</span></span></div>
+          <div class="insight"><span class="insight-icon"><svg class="icon"><use href="#i-spend"/></svg></span><span><small>Value opportunity</small><b class="mono">+₹26,340</b><span>Compared with cash back</span></span></div>
+        </div>
+      </section>
+
+      <section class="lower-grid">
+        <article class="surface wallet-panel">
+          <header class="section-head">
+            <div><h2>Your cards</h2><p>Real artwork, provenance and balances in one scan.</p></div>
+            <div class="section-actions">
+              <button class="text-button" id="refreshButton">Refresh</button>
+              <div class="view-toggle"><button class="active">Comfortable</button><button>Compact</button></div>
+            </div>
+          </header>
+          <div class="card-list">
+            <button class="wallet-card" data-name="HDFC Regalia Gold" data-bank="HDFC Bank" data-points="61,783" data-status="Verified" data-src="../card-art/hdfc-regalia-gold.webp">
+              <span class="art-box"><img src="../card-art/hdfc-regalia-gold.webp" alt="HDFC Regalia Gold" /></span>
+              <span class="card-name"><b>HDFC Regalia Gold</b><span><i class="verified">Verified</i> •••• 9687</span></span>
+              <span class="points"><strong class="mono balance">61,783</strong><small>Reward points</small></span>
+              <svg class="icon card-arrow"><use href="#i-arrow"/></svg>
+            </button>
+            <button class="wallet-card" data-name="HDFC Infinia Metal" data-bank="HDFC Bank" data-points="1,12,000" data-status="Self-entered" data-src="../card-art/hdfc-infinia.webp">
+              <span class="art-box"><img src="../card-art/hdfc-infinia.webp" alt="HDFC Infinia Metal" /></span>
+              <span class="card-name"><b>HDFC Infinia Metal Edition</b><span><i class="self">Self-entered</i> •••• 4416</span></span>
+              <span class="points"><strong class="mono balance">1,12,000</strong><small>Reward points</small></span>
+              <svg class="icon card-arrow"><use href="#i-arrow"/></svg>
+            </button>
+            <button class="wallet-card" data-name="Axis Atlas" data-bank="Axis Bank" data-points="50,000" data-status="Self-entered" data-src="../card-art/axis-atlas.webp" data-axis="true">
+              <span class="art-box"><img class="axis-correction" src="../card-art/axis-atlas.webp" alt="Axis Atlas" /></span>
+              <span class="card-name"><b>Axis Atlas</b><span><i class="self">Self-entered</i> •••• 1234</span></span>
+              <span class="points"><strong class="mono balance">50,000</strong><small>EDGE miles</small></span>
+              <svg class="icon card-arrow"><use href="#i-arrow"/></svg>
+            </button>
+            <button class="wallet-card" data-name="American Express Platinum Travel" data-bank="American Express" data-points="5,000" data-status="Self-entered" data-src="../card-art/amex-platinum-travel.webp">
+              <span class="art-box"><img src="../card-art/amex-platinum-travel.webp" alt="American Express Platinum Travel" /></span>
+              <span class="card-name"><b>American Express Platinum Travel</b><span><i class="self">Self-entered</i> membership rewards</span></span>
+              <span class="points"><strong class="mono balance">5,000</strong><small>Membership rewards</small></span>
+              <svg class="icon card-arrow"><use href="#i-arrow"/></svg>
+            </button>
+          </div>
+          <button class="add-card action-toast">＋ Add another card</button>
+        </article>
+
+        <aside class="surface attention-panel">
+          <header class="section-head"><div><h2>Worth your attention</h2><p>Prioritised for your wallet.</p></div></header>
+          <div class="attention-list">
+            <div class="attention"><span class="attention-icon"><svg class="icon"><use href="#i-plane"/></svg></span><span><b>Singapore award path</b><small>Your HDFC points cover projected economy pricing.</small></span><span class="attention-value">19,000 pts</span></div>
+            <div class="attention"><span class="attention-icon"><svg class="icon"><use href="#i-spend"/></svg></span><span><b>Use Infinia on travel</b><small>Potentially stronger return than Regalia Gold.</small></span><span class="attention-value">5×</span></div>
+            <div class="attention"><span class="attention-icon"><svg class="icon"><use href="#i-upload"/></svg></span><span><b>Verify three balances</b><small>Upload statements before planning a transfer.</small></span><span class="attention-value">3 cards</span></div>
+          </div>
+          <div class="truth-box"><b>We don’t guess your money.</b><p>Verified values come from statements. Self-entered balances remain labelled, and projected redemptions never appear as bookable inventory.</p></div>
+        </aside>
+      </section>
+
+      <section class="discover">
+        <header class="discover-head"><div><h2>Cards to know</h2><p>Editorial picks—not ranked by anyone’s advertising spend.</p></div><button class="text-button action-toast">Explore all cards →</button></header>
+        <div class="discover-grid">
+          <article class="discover-card"><div class="discover-art"><img src="../card-art/hdfc-infinia.webp" alt="HDFC Infinia Metal" /></div><div class="discover-copy"><b>HDFC Infinia Metal</b><small>High-spend travel card with strong transfer options.</small><span>View card →</span></div></article>
+          <article class="discover-card"><div class="discover-art"><img class="axis-correction" src="../card-art/axis-atlas.webp" alt="Axis Atlas" /></div><div class="discover-copy"><b>Axis Atlas</b><small>Travel-first earn structure without Burgundy.</small><span>View card →</span></div></article>
+          <article class="discover-card"><div class="discover-art"><img src="../card-art/icici-amazon-pay.webp" alt="Amazon Pay ICICI" /></div><div class="discover-copy"><b>Amazon Pay ICICI</b><small>Simple lifetime-free Amazon cashback.</small><span>View card →</span></div></article>
+          <article class="discover-card"><div class="discover-art"><img src="../card-art/sbi-cashback.webp" alt="SBI Cashback" /></div><div class="discover-copy"><b>SBI Cashback</b><small>Online cashback with a monthly cap.</small><span>View card →</span></div></article>
+          <article class="discover-card"><div class="discover-art"><img src="../card-art/amex-platinum-travel.webp" alt="Amex Platinum Travel" /></div><div class="discover-copy"><b>Amex Platinum Travel</b><small>Milestone-led rewards for steady spenders.</small><span>View card →</span></div></article>
+          <article class="discover-card"><div class="discover-art"><img src="../card-art/hdfc-regalia-gold.webp" alt="HDFC Regalia Gold" /></div><div class="discover-copy"><b>HDFC Regalia Gold</b><small>Mid-tier travel card with lounge access.</small><span>View card →</span></div></article>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <div class="drawer-backdrop" id="drawerBackdrop" role="dialog" aria-modal="true" aria-labelledby="drawerTitle">
+    <aside class="drawer">
+      <header class="drawer-head"><div><small id="drawerBank">Bank</small><h2 class="serif" id="drawerTitle">Card</h2></div><button class="round-button" id="drawerClose" aria-label="Close card details"><svg class="icon"><use href="#i-close"/></svg></button></header>
+      <div class="drawer-art"><img id="drawerImage" alt="" /></div>
+      <div class="drawer-body">
+        <div class="drawer-stat"><span>Current balance</span><b class="mono" id="drawerPoints">0</b></div>
+        <div class="drawer-stat"><span>Source</span><b id="drawerStatus">Self-entered</b></div>
+        <div class="drawer-stat"><span>Best known use</span><b>Travel partners</b></div>
+        <button class="primary-button action-toast">Optimise this card <svg class="icon"><use href="#i-arrow"/></svg></button>
+      </div>
+    </aside>
+  </div>
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  <script>
+    const toast = document.getElementById('toast');
+    let toastTimer;
+    function showToast(message) {
+      toast.textContent = message;
+      toast.classList.add('show');
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => toast.classList.remove('show'), 2400);
+    }
+
+    document.querySelectorAll('.nav-item').forEach(item => item.addEventListener('click', () => {
+      document.querySelectorAll('.nav-item').forEach(nav => nav.classList.remove('active'));
+      item.classList.add('active');
+      showToast(item.textContent.trim() === 'Wallet' ? 'Wallet is the active prototype page.' : `${item.textContent.trim()} would open in the complete redesign.`);
+    }));
+
+    document.querySelectorAll('.action-toast').forEach(button => button.addEventListener('click', () => showToast('Prototype interaction only—no account or booking action was performed.')));
+    document.getElementById('askButton').addEventListener('click', () => showToast('CIRA would open as a contextual assistant drawer.'));
+    document.getElementById('uploadButton').addEventListener('click', () => showToast('Statement upload would open here.'));
+
+    const hideButton = document.getElementById('hideButton');
+    let balancesHidden = false;
+    hideButton.addEventListener('click', () => {
+      balancesHidden = !balancesHidden;
+      document.querySelectorAll('.balance').forEach(value => {
+        if (!value.dataset.value) value.dataset.value = value.textContent;
+        value.textContent = balancesHidden ? '••••••' : value.dataset.value;
+      });
+      hideButton.querySelector('span').textContent = balancesHidden ? 'Show balances' : 'Hide balances';
+    });
+
+    document.querySelectorAll('.view-toggle button').forEach(button => button.addEventListener('click', () => {
+      document.querySelectorAll('.view-toggle button').forEach(item => item.classList.toggle('active', item === button));
+      document.querySelector('.card-list').style.setProperty('--compact', button.textContent.trim() === 'Compact' ? '1' : '0');
+      document.querySelectorAll('.wallet-card').forEach(row => row.style.minHeight = button.textContent.trim() === 'Compact' ? '82px' : '103px');
+    }));
+
+    document.getElementById('refreshButton').addEventListener('click', event => {
+      event.currentTarget.textContent = 'Refreshing…';
+      setTimeout(() => { event.currentTarget.textContent = 'Refresh'; showToast('Wallet balances refreshed with sample data.'); }, 800);
+    });
+
+    const backdrop = document.getElementById('drawerBackdrop');
+    const drawerImage = document.getElementById('drawerImage');
+    document.querySelectorAll('.wallet-card').forEach(card => card.addEventListener('click', () => {
+      document.getElementById('drawerTitle').textContent = card.dataset.name;
+      document.getElementById('drawerBank').textContent = card.dataset.bank;
+      document.getElementById('drawerPoints').textContent = `${card.dataset.points} points`;
+      document.getElementById('drawerStatus').textContent = card.dataset.status;
+      drawerImage.src = card.dataset.src;
+      drawerImage.alt = card.dataset.name;
+      drawerImage.classList.toggle('axis-correction', card.dataset.axis === 'true');
+      backdrop.classList.add('open');
+    }));
+    function closeDrawer() { backdrop.classList.remove('open'); }
+    document.getElementById('drawerClose').addEventListener('click', closeDrawer);
+    backdrop.addEventListener('click', event => { if (event.target === backdrop) closeDrawer(); });
+    document.addEventListener('keydown', event => {
+      if (event.key === 'Escape') closeDrawer();
+      if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === 'k') { event.preventDefault(); document.getElementById('searchInput').focus(); }
+    });
+    document.getElementById('searchInput').addEventListener('keydown', event => {
+      if (event.key === 'Enter') showToast(`Searching CreditIQ for “${event.currentTarget.value || 'cards'}”…`);
+    });
+  </script>
+</body>
+</html>
