@@ -14,8 +14,8 @@ interface CardArtProps {
   /**
    * The surface's existing CSS card tile (CardMockup / CreditCard3D). Rendered
    * verbatim whenever no self-hosted image exists for this slug — which is
-   * ALWAYS today, since the manifest ships empty. This is what guarantees every
-   * surface looks byte-for-byte identical until real art is added.
+   * whenever an approved self-hosted asset has not been added yet. This keeps
+   * the catalog complete while official artwork is rolled out issuer by issuer.
    */
   children: React.ReactNode;
 }
@@ -30,13 +30,22 @@ interface CardArtProps {
 export function CardArt({ card, width = 1000, height = 630, className, children }: CardArtProps) {
   if (!card?.slug || !hasCardArt(card.slug)) return <>{children}</>;
   return (
-    <Image
-      src={cardArtSrc(card.slug)}
-      alt={card.name || 'Credit card'}
-      width={width}
-      height={height}
+    <span
       className={className}
-      style={{ width: '100%', height: 'auto', display: 'block' }}
-    />
+      style={{
+        width: '100%',
+        aspectRatio: '1.587 / 1',
+        display: 'grid',
+        placeItems: 'center',
+      }}
+    >
+      <Image
+        src={cardArtSrc(card.slug)}
+        alt={card.name || 'Credit card'}
+        width={width}
+        height={height}
+        style={{ width: '100%', height: '100%', display: 'block', objectFit: 'contain' }}
+      />
+    </span>
   );
 }

@@ -6,7 +6,22 @@
 // otherwise.
 //
 // Re-run `npm run gen:card-art` after changing files in public/cards/.
-export const CARD_ART_SLUGS: ReadonlySet<string> = new Set<string>([]);
+export const CARD_ART_SLUGS: ReadonlySet<string> = new Set<string>([
+  'amex-gold',
+  'amex-mrcc',
+  'amex-platinum-travel',
+  'axis-atlas',
+  'hdfc-diners-black',
+  'hdfc-infinia',
+  'hdfc-marriott-bonvoy',
+  'hdfc-millennia',
+  'hdfc-regalia-gold',
+  'hdfc-swiggy',
+  'icici-amazon-pay',
+  'sbi-cashback',
+  'sbi-elite',
+  'tata-neu-infinity-hdfc',
+]);
 
 /** True when a self-hosted face exists for this slug. */
 export function hasCardArt(slug: string): boolean {
