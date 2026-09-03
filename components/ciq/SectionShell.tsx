@@ -29,12 +29,15 @@ export function SectionShell({
   sectionName,
   tone = 'light',
   fill = false,
+  fluid = false,
   paddingBottom = 0,
   children,
 }: {
   sectionName: string
   tone?: 'light' | 'gold'
   fill?: boolean
+  /** Let a section use all available space beside the app rail. */
+  fluid?: boolean
   paddingBottom?: number
   children: ReactNode
 }) {
@@ -49,10 +52,10 @@ export function SectionShell({
     >
       <div
         style={{
-          maxWidth: 1100,
+          maxWidth: fluid ? 'none' : 1100,
           width: '100%',
           margin: '0 auto',
-          padding: '0 20px',
+          padding: fluid ? '0 clamp(20px, 2.6vw, 48px)' : '0 20px',
           ...(fill ? { flex: 1, display: 'flex', flexDirection: 'column', minHeight: 0 } : {}),
         }}
       >

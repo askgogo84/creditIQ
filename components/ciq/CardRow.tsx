@@ -2,6 +2,9 @@
 'use client';
 
 import { useState } from 'react';
+import type { CreditCard } from '@/lib/types';
+import { CardArt } from '@/components/cards/CardArt';
+import { CardMockup } from '@/components/cards/CardMockup';
 
 /**
  * A single held card row (bank monogram · name · verified/self-entered badge · points).
@@ -14,7 +17,7 @@ import { useState } from 'react';
  */
 export function CardRow({
   bank, cardName, last4, points, currency, source, monogram, onClick, variant = 'gold',
-  selfEntered, onSavePoints, onDelete, flat = false,
+  selfEntered, onSavePoints, onDelete, flat = false, card, balancesHidden = false,
 }: {
   bank: string; cardName: string; last4?: string; points: number;
   currency?: string; source: 'statement' | 'manual'; monogram?: string;
@@ -25,6 +28,8 @@ export function CardRow({
   // parent panel separated by hairlines. Defaults to today's stand-alone card so
   // my-cards and every other caller stay byte-identical.
   flat?: boolean;
+  card?: Pick<CreditCard, 'slug' | 'name' | 'bank' | 'color'>;
+  balancesHidden?: boolean;
 }) {
   const verified = source === 'statement' && !selfEntered;
   const mono = monogram || bank.slice(0, 2).toUpperCase();
@@ -73,11 +78,19 @@ export function CardRow({
     onMouseDown={e => (e.currentTarget.style.transform = 'scale(.98)')}
     onMouseUp={e => (e.currentTarget.style.transform = 'none')}
     onMouseLeave={e => (e.currentTarget.style.transform = 'none')}>
-      <div style={{
-        width: 42, height: 42, borderRadius: 12, flex: '0 0 auto', display: 'flex',
-        alignItems: 'center', justifyContent: 'center', color: t.monoInk,
-        fontWeight: 700, fontSize: 12, background: t.monoBg, border: `1px solid ${t.monoLine}`,
-      }}>{mono}</div>
+      {card ? (
+        <div className="wallet-card-art" style={{ width: 86, flex: '0 0 auto' }}>
+          <CardArt card={card}>
+            <CardMockup card={card as CreditCard} size="sm" interactive={false} />
+          </CardArt>
+        </div>
+      ) : (
+        <div style={{
+          width: 42, height: 42, borderRadius: 12, flex: '0 0 auto', display: 'flex',
+          alignItems: 'center', justifyContent: 'center', color: t.monoInk,
+          fontWeight: 700, fontSize: 12, background: t.monoBg, border: `1px solid ${t.monoLine}`,
+        }}>{mono}</div>
+      )}
 
       <div style={{ flex: 1, minWidth: 0 }}>
         <div style={{ fontWeight: 600, fontSize: 14.5, letterSpacing: '-.01em', color: t.ink, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
@@ -124,7 +137,7 @@ export function CardRow({
         ) : (
           <>
             <div style={{ textAlign: 'right' }}>
-              <div className={t.displayCls} style={{ fontWeight: 600, fontSize: 18, color: t.ink }}>{points.toLocaleString('en-IN')}</div>
+              <div className={t.displayCls} style={{ fontWeight: 600, fontSize: 18, color: t.ink }}>{balancesHidden ? '••••••' : points.toLocaleString('en-IN')}</div>
               <div className={t.monoCls} style={{ fontSize: 9, color: t.ink3, marginTop: 1 }}>{currency || 'Reward Pts'}</div>
             </div>
             {(onSavePoints || onDelete) && (

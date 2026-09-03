@@ -25,28 +25,29 @@ const EDITORIAL_IDS = [
   'hdfc-regalia-gold',
 ];
 
-export function EditorialCards() {
+export function EditorialCards({ variant = 'gold' }: { variant?: 'light' | 'gold' }) {
   const byId = new Map(SEED_CARDS.map((c) => [c.id, c]));
   const picks = EDITORIAL_IDS.map((id) => byId.get(id)).filter(Boolean) as typeof SEED_CARDS;
   if (picks.length === 0) return null;
 
   return (
-    <section aria-labelledby="editorial-heading" style={{ marginTop: 28, paddingTop: 22, borderTop: '1px solid var(--ciq-line)' }}>
-      <div style={{ padding: '0 20px', display: 'flex', alignItems: 'baseline', justifyContent: 'space-between' }}>
-        <h2 id="editorial-heading" className="ciq-display" style={{ fontSize: 18, fontWeight: 600, letterSpacing: '-.01em' }}>
+    <section className={variant === 'light' ? 'wallet-editorial' : undefined} aria-labelledby="editorial-heading" style={{ marginTop: 28, paddingTop: 22, borderTop: `1px solid ${variant === 'light' ? 'var(--line)' : 'var(--ciq-line)'}` }}>
+      <div style={{ padding: variant === 'light' ? 0 : '0 20px', display: 'flex', alignItems: 'baseline', justifyContent: 'space-between' }}>
+        <h2 id="editorial-heading" className={variant === 'light' ? 'w-display' : 'ciq-display'} style={{ fontSize: 18, fontWeight: 600, letterSpacing: '-.01em', color: variant === 'light' ? 'var(--ink)' : undefined }}>
           Cards to know
         </h2>
-        <span className="ciq-mono" style={{ fontSize: 9.5, letterSpacing: '.08em', textTransform: 'uppercase', color: 'var(--ciq-ink-3)' }}>
+        <span className={variant === 'light' ? 'mono' : 'ciq-mono'} style={{ fontSize: 9.5, letterSpacing: '.08em', textTransform: 'uppercase', color: variant === 'light' ? 'var(--ink-3)' : 'var(--ciq-ink-3)' }}>
           Editorial
         </span>
       </div>
-      <p style={{ padding: '5px 20px 0', margin: 0, fontSize: 12, lineHeight: 1.45, color: 'var(--ciq-ink-3)' }}>
+      <p style={{ padding: variant === 'light' ? '5px 0 0' : '5px 20px 0', margin: 0, fontSize: 12, lineHeight: 1.45, color: variant === 'light' ? 'var(--ink-3)' : 'var(--ciq-ink-3)' }}>
         Hand-picked by our team — not ranked by anyone&apos;s spending.
       </p>
 
       <div
         style={{
-          display: 'flex', gap: 14, overflowX: 'auto', padding: '16px 20px 6px',
+          display: variant === 'light' ? 'grid' : 'flex', gap: 14, overflowX: 'auto', padding: variant === 'light' ? '16px 0 6px' : '16px 20px 6px',
+          gridTemplateColumns: variant === 'light' ? 'repeat(6, minmax(145px, 1fr))' : undefined,
           scrollSnapType: 'x mandatory', WebkitOverflowScrolling: 'touch',
         }}
       >
@@ -54,18 +55,18 @@ export function EditorialCards() {
           <Link
             key={card.id}
             href={`/card/${card.slug}`}
-            style={{ flex: '0 0 auto', width: 150, scrollSnapAlign: 'start', textDecoration: 'none' }}
+            style={{ flex: '0 0 auto', width: variant === 'light' ? 'auto' : 150, minWidth: 145, scrollSnapAlign: 'start', textDecoration: 'none' }}
           >
             <CardArt card={card}>
               <CardMockup card={card} size="sm" interactive={false} />
             </CardArt>
             <div style={{ marginTop: 10 }}>
-              <div style={{ fontSize: 12.5, fontWeight: 600, color: 'var(--ciq-ink)', lineHeight: 1.2, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+              <div style={{ fontSize: 12.5, fontWeight: 600, color: variant === 'light' ? 'var(--ink)' : 'var(--ciq-ink)', lineHeight: 1.2, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                 {card.name}
               </div>
               <p
                 style={{
-                  margin: '4px 0 0', fontSize: 11, lineHeight: 1.4, color: 'var(--ciq-ink-2)',
+                  margin: '4px 0 0', fontSize: 11, lineHeight: 1.4, color: variant === 'light' ? 'var(--ink-2)' : 'var(--ciq-ink-2)',
                   display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden',
                 }}
               >

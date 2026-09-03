@@ -10,7 +10,7 @@ import { SectionShell } from '@/components/ciq/SectionShell'
 // clearance the pages used to set on their own wrappers.
 export default function WalletLayout({ children }: { children: React.ReactNode }) {
   return (
-    <SectionShell sectionName="Wallet" paddingBottom={112}>
+    <SectionShell sectionName="Wallet" paddingBottom={112} fluid>
       {children}
     </SectionShell>
   )

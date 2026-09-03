@@ -62,6 +62,21 @@ describe('WalletView — holdings ledger', () => {
     expect(screen.getByText('Cashback')).toBeInTheDocument();
   });
 
+  it('uses matching catalogue artwork for a held card', () => {
+    renderWallet();
+    expect(screen.getAllByAltText('HDFC Infinia Metal Edition').some((image) =>
+      image.getAttribute('src')?.includes('hdfc-infinia.webp'))).toBe(true);
+  });
+
+  it('hides every displayed balance without changing the wallet data', () => {
+    renderWallet();
+    fireEvent.click(screen.getByRole('button', { name: 'Hide balances' }));
+    expect(screen.queryByText('1,240')).not.toBeInTheDocument();
+    expect(screen.queryByText('1,200')).not.toBeInTheDocument();
+    expect(screen.queryByText('900')).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Show balances' })).toHaveAttribute('aria-pressed', 'true');
+  });
+
   it('shows every rupee value ONLY as a badged EstimateRange (never a bare ₹)', () => {
     renderWallet();
     const ranges = screen.getAllByText(/≈ ₹[\d,]+–₹[\d,]+/);
