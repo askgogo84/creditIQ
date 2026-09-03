@@ -29,6 +29,8 @@ interface CardArtProps {
  */
 export function CardArt({ card, width = 1000, height = 630, className, children }: CardArtProps) {
   if (!card?.slug || !hasCardArt(card.slug)) return <>{children}</>;
+  const imageTransform = card.slug === 'axis-atlas' ? 'rotate(-10deg) scale(0.9)' : undefined;
+
   return (
     <span
       className={className}
@@ -44,7 +46,14 @@ export function CardArt({ card, width = 1000, height = 630, className, children 
         alt={card.name || 'Credit card'}
         width={width}
         height={height}
-        style={{ width: '100%', height: '100%', display: 'block', objectFit: 'contain' }}
+        style={{
+          width: '100%',
+          height: '100%',
+          display: 'block',
+          objectFit: 'contain',
+          transform: imageTransform,
+          transformOrigin: 'center',
+        }}
       />
     </span>
   );
