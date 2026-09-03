@@ -1,3 +1,11 @@
+<!doctype html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="description" content="Interactive CreditIQ editorial application redesign prototype" />
+  <title>CreditIQ — Editorial Intelligence Redesign</title>
+  <style>
 :root {
   --navy-1000: #06111f;
   --navy-950: #081827;
@@ -539,3 +547,488 @@ html[data-theme="dark"] .compare-head { background: var(--paper-soft); }
 @media (max-width: 720px) {
   .sidebar { border-color: #2d3029; }
 }
+
+  </style>
+</head>
+<body>
+  <svg class="svg-sprite" aria-hidden="true">
+    <symbol id="i-grid" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="2"/><rect x="14" y="3" width="7" height="7" rx="2"/><rect x="3" y="14" width="7" height="7" rx="2"/><rect x="14" y="14" width="7" height="7" rx="2"/></symbol>
+    <symbol id="i-wallet" viewBox="0 0 24 24"><path d="M4 7.5h15a2 2 0 0 1 2 2V18a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h12"/><path d="M16 12h5v4h-5a2 2 0 1 1 0-4Z"/></symbol>
+    <symbol id="i-spend" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M16 8.5c-1-1-2.1-1.5-4-1.5-2 0-3 1-3 2.4 0 3.6 7 1.4 7 5 0 1.4-1.2 2.6-3.5 2.6-2 0-3.4-.6-4.5-1.7M12 5v14"/></symbol>
+    <symbol id="i-plane" viewBox="0 0 24 24"><path d="m2.5 16.5 8.1-4.2V5.7a2 2 0 0 1 4 0v4.5l5.1-2.7c.8-.4 1.8.1 1.8 1v1.4c0 .7-.3 1.3-.9 1.7l-6 4v3.3l2 1.3v1l-4-1.2-4 1.2v-1l2-1.3v-2.3l-7.2 2.2Z"/></symbol>
+    <symbol id="i-card" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="3"/><path d="M3 10h18M7 15h3"/></symbol>
+    <symbol id="i-concierge" viewBox="0 0 24 24"><path d="M5 18v-2a7 7 0 0 1 14 0v2M3 18h18M12 6V3M9 3h6M7 13h10"/></symbol>
+    <symbol id="i-user" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4.5 21a7.5 7.5 0 0 1 15 0"/></symbol>
+    <symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/></symbol>
+    <symbol id="i-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.42 1.42M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.42-1.42M17.66 6.34l1.41-1.41"/></symbol>
+    <symbol id="i-moon" viewBox="0 0 24 24"><path d="M20.4 15.5A8.5 8.5 0 0 1 8.5 3.6 8.5 8.5 0 1 0 20.4 15.5Z"/></symbol>
+    <symbol id="i-bell" viewBox="0 0 24 24"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9M10 21h4"/></symbol>
+    <symbol id="i-arrow" viewBox="0 0 24 24"><path d="M5 12h14M14 7l5 5-5 5"/></symbol>
+    <symbol id="i-chevron" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></symbol>
+    <symbol id="i-hotel" viewBox="0 0 24 24"><path d="M3 21V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16M17 9h2a2 2 0 0 1 2 2v10M7 7h2M12 7h2M7 11h2M12 11h2M7 15h2M12 15h2M2 21h20"/></symbol>
+    <symbol id="i-spark" viewBox="0 0 24 24"><path d="m12 3 1.6 5.4L19 10l-5.4 1.6L12 17l-1.6-5.4L5 10l5.4-1.6L12 3ZM19 16l.7 2.3L22 19l-2.3.7L19 22l-.7-2.3L16 19l2.3-.7L19 16Z"/></symbol>
+    <symbol id="i-upload" viewBox="0 0 24 24"><path d="M12 16V4M7 9l5-5 5 5M4 15v4a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-4"/></symbol>
+    <symbol id="i-check" viewBox="0 0 24 24"><path d="m5 12 4 4L19 6"/></symbol>
+    <symbol id="i-shield" viewBox="0 0 24 24"><path d="M12 22s8-3 8-10V5l-8-3-8 3v7c0 7 8 10 8 10Z"/><path d="m9 12 2 2 4-4"/></symbol>
+    <symbol id="i-send" viewBox="0 0 24 24"><path d="m22 2-7 20-4-9-9-4 20-7Z"/><path d="M22 2 11 13"/></symbol>
+    <symbol id="i-sliders" viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h16M8 4v4M16 10v4M10 16v4"/></symbol>
+    <symbol id="i-eye" viewBox="0 0 24 24"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/></symbol>
+    <symbol id="i-lock" viewBox="0 0 24 24"><rect x="4" y="10" width="16" height="11" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></symbol>
+  </svg>
+
+  <div class="prototype-banner"><span></span> Editorial design prototype · sample data only</div>
+  <div class="app-shell">
+    <aside class="sidebar" aria-label="Primary navigation">
+      <div class="brand">
+        <span class="brand-mark"><svg><use href="#i-card"/></svg></span>
+        <span class="brand-copy">CreditIQ<small>INTELLIGENCE</small></span>
+      </div>
+      <div class="nav-kicker">Your intelligence</div>
+      <nav class="nav-list">
+        <button class="nav-item active" data-page="dashboard"><svg><use href="#i-grid"/></svg><span>Dashboard</span></button>
+        <button class="nav-item" data-page="wallet"><svg><use href="#i-wallet"/></svg><span>Wallet</span><b class="nav-count">3</b></button>
+        <button class="nav-item" data-page="spend"><svg><use href="#i-spend"/></svg><span>Spend Smart</span></button>
+        <button class="nav-item" data-page="travel"><svg><use href="#i-plane"/></svg><span>Travel</span></button>
+        <button class="nav-item" data-page="cards"><svg><use href="#i-card"/></svg><span>Cards</span></button>
+        <button class="nav-item" data-page="concierge"><svg><use href="#i-concierge"/></svg><span>Concierge</span><b class="nav-live">AI</b></button>
+      </nav>
+      <div class="nav-spacer"></div>
+      <nav class="nav-list nav-bottom"><button class="nav-item" data-page="profile"><svg><use href="#i-user"/></svg><span>Profile</span></button></nav>
+      <div class="side-profile">
+        <span class="avatar">G</span><span><b>Goverdhan MD</b><small>Premium member</small></span><svg class="side-arrow"><use href="#i-chevron"/></svg>
+      </div>
+    </aside>
+
+    <main class="app-main">
+      <header class="topbar">
+        <button class="mobile-menu" aria-label="Open menu"><span></span><span></span><span></span></button>
+        <div class="breadcrumb"><span id="breadcrumbParent">CreditIQ</span><b id="breadcrumbPage">Dashboard</b></div>
+        <div class="top-search"><svg><use href="#i-search"/></svg><input id="commandSearch" aria-label="Search CreditIQ" placeholder="Search cards, programmes, benefits…"/><kbd>⌘ K</kbd></div>
+        <div class="top-actions">
+          <button class="icon-btn" id="themeToggle" aria-label="Switch theme"><svg class="sun-icon"><use href="#i-sun"/></svg><svg class="moon-icon"><use href="#i-moon"/></svg></button>
+          <button class="icon-btn notify-btn" aria-label="Notifications"><svg><use href="#i-bell"/></svg><span></span></button>
+          <button class="ask-cira" data-page-jump="concierge"><svg><use href="#i-spark"/></svg><span>Ask CIRA</span></button>
+        </div>
+      </header>
+
+      <div class="page-stage">
+        <section class="page active" id="page-dashboard" data-title="Dashboard">
+          <div class="dashboard-hero">
+            <div class="hero-copy">
+              <div class="eyebrow">Thursday, 3 September</div>
+              <h1>Good morning, Goverdhan.</h1>
+              <p>Your cards can unlock more value this month. Here is what deserves attention first.</p>
+              <div class="hero-actions"><button class="button primary" data-page-jump="spend">Optimise a purchase <svg><use href="#i-arrow"/></svg></button><button class="button ghost" data-page-jump="travel">Plan a trip</button></div>
+            </div>
+            <div class="hero-orbit" aria-label="Rewards overview">
+              <div class="orbit orbit-a"></div><div class="orbit orbit-b"></div>
+              <div class="orbit-plane"><svg><use href="#i-plane"/></svg></div>
+              <div class="orbit-core"><small>Wallet value</small><strong>₹1.84L</strong><span>estimated</span></div>
+              <div class="orbit-tag tag-a">1,51,700 pts</div><div class="orbit-tag tag-b">3 cards</div>
+            </div>
+          </div>
+          <div class="metric-row">
+            <article class="metric-card"><div class="metric-icon copper"><svg><use href="#i-wallet"/></svg></div><div><small>Total points</small><strong>1,51,700</strong><span class="positive">+8,430 this month</span></div><div class="micro-bars"><i style="height:28%"></i><i style="height:45%"></i><i style="height:39%"></i><i style="height:68%"></i><i style="height:88%"></i></div></article>
+            <article class="metric-card"><div class="metric-icon blue"><svg><use href="#i-spend"/></svg></div><div><small>Value unlocked</small><strong>₹28,460</strong><span class="positive">₹6,280 above default card</span></div><div class="ring mini" style="--value:76"><b>76%</b></div></article>
+            <article class="metric-card"><div class="metric-icon green"><svg><use href="#i-plane"/></svg></div><div><small>Travel readiness</small><strong>4 routes</strong><span>Executable from your wallet</span></div><div class="flight-mini"><svg><use href="#i-plane"/></svg><i></i><b>SIN</b></div></article>
+          </div>
+          <div class="dashboard-grid">
+            <article class="surface opportunity-panel">
+              <div class="section-head"><div><span class="section-kicker">Your next best moves</span><h2>Three opportunities worth ₹11,820</h2></div><button class="text-button" data-page-jump="spend">See all <svg><use href="#i-arrow"/></svg></button></div>
+              <div class="opportunity-list">
+                <button class="opportunity" data-page-jump="spend"><span class="merchant-logo amazon">a</span><span class="op-copy"><b>Use Infinia for Amazon</b><small>Buy a SmartBuy voucher before your next ₹20,000 purchase.</small></span><span class="op-value"><b>+₹2,460</b><small>extra value</small></span><svg><use href="#i-arrow"/></svg></button>
+                <button class="opportunity" data-page-jump="travel"><span class="merchant-logo flight"><svg><use href="#i-plane"/></svg></span><span class="op-copy"><b>Singapore is within reach</b><small>Your HDFC points can cover one projected economy award.</small></span><span class="op-value"><b>19,000 pts</b><small>projected</small></span><svg><use href="#i-arrow"/></svg></button>
+                <button class="opportunity" data-page-jump="wallet"><span class="merchant-logo statement"><svg><use href="#i-upload"/></svg></span><span class="op-copy"><b>Refresh your Axis balance</b><small>Your last statement was added 42 days ago.</small></span><span class="op-value"><b>2 min</b><small>to update</small></span><svg><use href="#i-arrow"/></svg></button>
+              </div>
+            </article>
+            <article class="surface spend-chart-card">
+              <div class="section-head compact"><div><span class="section-kicker">August spend</span><h2>₹1,24,680</h2></div><button class="more-btn">•••</button></div>
+              <div class="spend-chart" aria-label="Monthly spending bar chart"><div><i style="height:43%"></i><small>Mar</small></div><div><i style="height:58%"></i><small>Apr</small></div><div><i style="height:49%"></i><small>May</small></div><div><i style="height:76%"></i><small>Jun</small></div><div><i style="height:65%"></i><small>Jul</small></div><div class="current"><b>₹1.25L</b><i style="height:90%"></i><small>Aug</small></div></div>
+              <div class="chart-legend"><span><i class="dot copper-dot"></i>Optimised 72%</span><span><i class="dot grey-dot"></i>Could improve 28%</span></div>
+            </article>
+          </div>
+          <div class="section-head page-section-head"><div><span class="section-kicker">Wallet snapshot</span><h2>Cards working for you</h2></div><button class="text-button" data-page-jump="wallet">Manage wallet <svg><use href="#i-arrow"/></svg></button></div>
+          <div class="mini-card-grid">
+            <article class="mini-credit-card infinia"><div><span>HDFC BANK</span><b>INFINIA</b></div><strong>68,500</strong><small>reward points</small><footer><span>•••• 2184</span><span class="verified"><svg><use href="#i-check"/></svg> Verified</span></footer></article>
+            <article class="mini-credit-card magnus"><div><span>AXIS BANK</span><b>MAGNUS</b></div><strong>31,200</strong><small>EDGE points</small><footer><span>•••• 4412</span><span>Update due</span></footer></article>
+            <article class="mini-credit-card amex"><div><span>AMERICAN EXPRESS</span><b>PLATINUM</b></div><strong>52,000</strong><small>membership rewards</small><footer><span>•••• 1009</span><span>Self-entered</span></footer></article>
+          </div>
+        </section>
+
+        <section class="page" id="page-wallet" data-title="Wallet">
+          <div class="page-header"><div><span class="eyebrow">Your rewards portfolio</span><h1>Wallet</h1><p>Balances, card benefits and transfer readiness in one place.</p></div><button class="button primary simulate-upload"><svg><use href="#i-upload"/></svg>Add statement</button></div>
+          <div class="wallet-summary surface dark-surface">
+            <div><small>Estimated wallet value</small><strong>₹1,84,240</strong><span>Across 1,51,700 reward points</span></div>
+            <div class="value-ring"><div class="ring" style="--value:82"><span><b>82%</b><small>verified</small></span></div></div>
+            <div class="wallet-breakdown"><div><span>HDFC</span><b>₹92,475</b><i><em style="width:62%"></em></i></div><div><span>Amex</span><b>₹52,000</b><i><em style="width:35%"></em></i></div><div><span>Axis</span><b>₹39,765</b><i><em style="width:27%"></em></i></div></div>
+          </div>
+          <div class="section-head page-section-head"><div><span class="section-kicker">My cards</span><h2>3 active cards</h2></div><div class="view-toggle"><button class="active">Cards</button><button>List</button></div></div>
+          <div class="wallet-card-grid">
+            <article class="wallet-card-wrap selected"><div class="wallet-card-visual infinia"><header><span>HDFC BANK</span><b>INFINIA</b></header><div class="chip-shape"></div><strong>•••• 2184</strong><footer><span>GOVERDHAN M D</span><span>VISA ∞</span></footer></div><div class="wallet-card-meta"><div><small>Current balance</small><b>68,500 pts</b></div><span class="status good"><svg><use href="#i-check"/></svg>Statement verified</span></div><button class="card-link">View benefits <svg><use href="#i-arrow"/></svg></button></article>
+            <article class="wallet-card-wrap"><div class="wallet-card-visual magnus"><header><span>AXIS BANK</span><b>MAGNUS</b></header><div class="chip-shape"></div><strong>•••• 4412</strong><footer><span>GOVERDHAN M D</span><span>VISA</span></footer></div><div class="wallet-card-meta"><div><small>Current balance</small><b>31,200 pts</b></div><span class="status warn">Update recommended</span></div><button class="card-link simulate-upload">Upload latest statement <svg><use href="#i-upload"/></svg></button></article>
+            <article class="wallet-card-wrap"><div class="wallet-card-visual amex"><header><span>AMERICAN EXPRESS</span><b>PLATINUM</b></header><div class="chip-shape"></div><strong>•••• 1009</strong><footer><span>GOVERDHAN M D</span><span>AMEX</span></footer></div><div class="wallet-card-meta"><div><small>Current balance</small><b>52,000 pts</b></div><span class="status neutral">Self-entered</span></div><button class="card-link simulate-upload">Verify with statement <svg><use href="#i-upload"/></svg></button></article>
+          </div>
+          <div class="wallet-lower-grid">
+            <article class="surface transfer-readiness"><div class="section-head compact"><div><span class="section-kicker">Transfer readiness</span><h2>Where your points can go</h2></div><button class="text-button" data-page-jump="travel">Explore travel</button></div><div class="partner-flow"><div class="flow-bank">HDFC<br><b>68.5K</b></div><div class="flow-lines"><i></i><i></i><i></i></div><div class="flow-partners"><span>SQ<br><b>KrisFlyer</b></span><span>AI<br><b>Maharaja</b></span><span>ALL<br><b>Accor</b></span></div></div></article>
+            <article class="surface statement-drop simulate-upload" tabindex="0"><div class="drop-icon"><svg><use href="#i-upload"/></svg></div><h3>Refresh your wallet</h3><p>Drop a statement here to update balances and unlock personalised recommendations.</p><button class="button secondary">Choose statement</button><small>Prototype only—no file is uploaded</small></article>
+          </div>
+        </section>
+
+        <section class="page" id="page-spend" data-title="Spend Smart">
+          <div class="page-header"><div><span class="eyebrow">Merchant-level intelligence</span><h1>Spend Smart</h1><p>Know the best card, route and expected reward before you pay.</p></div></div>
+          <div class="smart-search surface">
+            <div class="category-strip" aria-label="Purchase categories"><button class="category-chip active">Online shopping</button><button class="category-chip">Travel</button><button class="category-chip">Dining</button><button class="category-chip">Bills</button><button class="category-chip">Fuel</button><button class="category-chip">International</button></div>
+            <div class="merchant-form"><label class="merchant-input"><span>Merchant</span><div><span class="merchant-logo amazon">a</span><input id="merchantName" value="Amazon India" /></div></label><label><span>Purchase amount</span><div class="amount-input"><b>₹</b><input id="spendAmount" type="number" value="20000" /></div></label><button class="button primary optimise-btn"><svg><use href="#i-spark"/></svg>Find my best card</button></div>
+          </div>
+          <div class="smart-result">
+            <article class="winner-card surface">
+              <div class="winner-glow"></div><div class="winner-top"><span class="winner-badge"><svg><use href="#i-spark"/></svg>Best way to pay</span><span class="confidence">High confidence</span></div>
+              <div class="winner-main"><div class="winner-card-art infinia"><span>HDFC</span><b>INFINIA</b><small>•••• 2184</small></div><div><span class="overline">Buy through SmartBuy</span><h2>Use HDFC Infinia</h2><p>Purchase an Amazon Pay voucher first, then complete the purchase using that balance.</p></div><div class="winner-value"><small>Expected value</small><strong id="winnerValue">₹3,300</strong><span id="winnerRate">16.5% effective return</span></div></div>
+              <div class="winner-steps"><div><b>1</b><span>Open SmartBuy</span></div><i></i><div><b>2</b><span>Buy voucher</span></div><i></i><div><b>3</b><span>Pay on Amazon</span></div><button class="button primary prototype-action">Show exact steps <svg><use href="#i-arrow"/></svg></button></div>
+            </article>
+            <aside class="surface value-meter"><div class="section-kicker">Value comparison</div><div class="meter-ring"><div class="ring" style="--value:88"><span><b>5×</b><small>reward rate</small></span></div></div><div class="meter-row best"><span>SmartBuy route</span><b id="smartRouteValue">₹3,300</b></div><div class="meter-row"><span>Pay card directly</span><b>₹660</b></div><div class="meter-row"><span>Wrong card</span><b>₹200</b></div><div class="meter-save"><small>Extra value unlocked</small><strong id="extraUnlocked">₹2,640</strong></div></aside>
+          </div>
+          <div class="section-head page-section-head"><div><span class="section-kicker">All wallet options</span><h2>Why this card wins</h2></div><button class="text-button">Reward assumptions ▾</button></div>
+          <div class="comparison-table surface"><div class="compare-head"><span>Card & route</span><span>Reward earned</span><span>Estimated value</span><span>Effective return</span><span></span></div><div class="compare-row highlighted"><span><i class="card-swatch infinia"></i><b>HDFC Infinia</b><small>SmartBuy voucher</small></span><b>3,300 pts</b><b>₹3,300</b><strong>16.5%</strong><span class="status good">Best</span></div><div class="compare-row"><span><i class="card-swatch magnus"></i><b>Axis Magnus</b><small>Pay directly</small></span><b>960 pts</b><b>₹960</b><strong>4.8%</strong><span></span></div><div class="compare-row"><span><i class="card-swatch amex"></i><b>Amex Platinum</b><small>Reward Multiplier</small></span><b>800 pts</b><b>₹800</b><strong>4.0%</strong><span></span></div></div>
+        </section>
+
+        <section class="page" id="page-travel" data-title="Travel">
+          <div class="page-header travel-header"><div><span class="eyebrow">Wallet-aware travel</span><h1>Find the smartest way to book.</h1><p>Compare points, cash and transfer paths using the cards you already own.</p></div><button class="button secondary" data-page-jump="concierge"><svg><use href="#i-concierge"/></svg>Ask Concierge</button></div>
+          <div class="travel-tabs" role="tablist"><button class="travel-tab active" data-travel="flights"><svg><use href="#i-plane"/></svg>Flights</button><button class="travel-tab" data-travel="hotels"><svg><use href="#i-hotel"/></svg>Hotels</button><button class="travel-tab" data-travel="explore"><svg><use href="#i-spark"/></svg>Explore</button></div>
+          <div class="travel-view active" id="travel-flights">
+            <div class="travel-search surface"><div class="route-field"><small>From</small><b>BLR</b><span>Bengaluru</span></div><button class="route-swap" aria-label="Swap cities">⇄</button><div class="route-field"><small>To</small><b>SIN</b><span>Singapore</span></div><div class="travel-field"><small>Departure</small><b>17 Sept 2026</b><span>± 3 days</span></div><div class="travel-field"><small>Travellers & cabin</small><b>1 · All cabins</b><span>One-way</span></div><button class="button primary flight-search-btn">Search awards <svg><use href="#i-arrow"/></svg></button></div>
+            <div class="flight-search-animation" aria-live="polite"><div class="search-sky"><div class="search-route"></div><div class="search-airport start"><b>BLR</b><span>Bengaluru</span></div><div class="flying-plane"><svg><use href="#i-plane"/></svg></div><div class="search-airport end"><b>SIN</b><span>Singapore</span></div></div><h3>Searching award programmes</h3><p id="flightSearchStatus">Checking routes your wallet can reach…</p><div class="search-progress"><i></i></div></div>
+            <div class="travel-filter-row"><button class="filter active">All stops</button><button class="filter">Non-stop</button><button class="filter">Economy</button><button class="filter">Business</button><button class="filter">Programmes ▾</button><span></span><div class="segmented"><button class="active">All cards</button><button>My cards</button></div></div>
+            <div class="result-summary"><div><b>20 award options</b><span>13–19 Sept · sample design data</span></div><button>Recommended first ▾</button></div>
+            <div class="award-list surface">
+              <div class="award-head"><span>Date</span><span>Programme & route</span><span>Economy</span><span>Business</span><span>Best wallet path</span><span></span></div>
+              <article class="award-item open"><button class="award-row" aria-expanded="true"><span><b>17 Sept</b><small>Thursday</small></span><span class="award-route"><i class="airline-logo sq">SQ</i><span><b>Singapore Airlines · KrisFlyer</b><small>BLR 17:05 → SIN 00:30 · 4h 55m · non-stop</small></span><em class="tag green">Best match</em></span><span><b>19,000</b><small>miles</small></span><span><b>45,000</b><small>miles</small></span><span class="wallet-path"><b>19,000 pts</b><small>HDFC Infinia</small></span><svg class="row-chevron"><use href="#i-chevron"/></svg></button>
+                <div class="award-detail"><div class="decision-hero"><div><span class="section-kicker">CreditIQ recommendation</span><h3>Transfer HDFC points to KrisFlyer</h3><p>Lowest projected points path your wallet can fund.</p></div><div><small>You need</small><b>19,000 pts</b></div><div><small>Card to use</small><b>HDFC Infinia</b></div><div><small>Confidence</small><b>Projected</b></div></div><div class="decision-tabs"><button class="active" data-detail="compare">Points vs cash</button><button data-detail="book">How to book</button><button data-detail="sources">Source & safety</button></div><div class="decision-panel active" data-detail-panel="compare"><div class="path-grid"><article class="path-choice winner"><span>Recommended · transfer</span><b>HDFC → KrisFlyer</b><strong>19,000 points</strong><small>Taxes confirmed at checkout</small></article><article class="path-choice"><span>Cash alternative</span><b>Pay airline directly</b><strong>Fare unavailable</strong><small>No live number returned—nothing invented</small></article><article class="path-choice"><span>Keep your points</span><b>Wait for a better fare</b><strong>0 points</strong><small>Useful when availability is uncertain</small></article></div></div><div class="decision-panel" data-detail-panel="book"><div class="book-layout"><ol><li><b>Check the seat on Singapore Airlines</b><span>Confirm award availability before moving points.</span></li><li><b>Transfer the verified requirement</b><span>Use HDFC only after current ratio and timing are verified.</span></li><li><b>Book and pay taxes</b><span>Complete redemption directly with KrisFlyer.</span></li></ol><div><button class="button primary prototype-action">Check on KrisFlyer ↗</button><button class="button secondary" data-page-jump="concierge">Ask Concierge</button><p><b>Important:</b> transfers cannot be reversed.</p></div></div></div><div class="decision-panel" data-detail-panel="sources"><div class="source-cards"><article><b>Award price <em class="tag blue">Guide</em></b><p>Programme guidance, not a live-seat claim.</p></article><article><b>Wallet route <em class="tag amber">Self-entered</em></b><p>Prototype balance used for the UX walkthrough.</p></article></div><details><summary>Technical provider attempts</summary><p>Provider and cache attempts are kept here for auditability without overwhelming the primary decision.</p></details></div></div>
+              </article>
+              <article class="award-item"><button class="award-row" aria-expanded="false"><span><b>16 Sept</b><small>Wednesday</small></span><span class="award-route"><i class="airline-logo sq">SQ</i><span><b>Singapore Airlines · KrisFlyer</b><small>BLR 04:35 → SIN 11:40 · non-stop</small></span></span><span><b>19,000</b><small>miles</small></span><span><b>45,000</b><small>miles</small></span><span class="wallet-path"><b>19,000 pts</b><small>HDFC Infinia</small></span><svg class="row-chevron"><use href="#i-chevron"/></svg></button><div class="award-detail compact-detail"><div class="decision-hero"><div><span class="section-kicker">Alternative departure</span><h3>Same programme, earlier flight</h3><p>Every selection opens directly below its result.</p></div><div><small>You need</small><b>19,000 pts</b></div><div><small>Card</small><b>HDFC Infinia</b></div><div><small>Confidence</small><b>Projected</b></div></div></div></article>
+              <article class="award-item"><button class="award-row" aria-expanded="false"><span><b>17 Sept</b><small>Thursday</small></span><span class="award-route"><i class="airline-logo ua">UA</i><span><b>United · MileagePlus</b><small>BLR → SIN · partner itinerary · 1 stop</small></span><em class="tag amber">Verify route</em></span><span><b>22,500</b><small>miles</small></span><span><b>65,000</b><small>miles</small></span><span class="wallet-path"><b>Not priced</b><small>No known route</small></span><svg class="row-chevron"><use href="#i-chevron"/></svg></button><div class="award-detail compact-detail"><div class="decision-hero blocked"><div><span class="section-kicker">CreditIQ recommendation</span><h3>Do not transfer yet</h3><p>The award price exists, but your wallet has no verified route.</p></div><div><small>Status</small><b>Not executable</b></div><div><small>Next step</small><b>Verify</b></div><div><small>Confidence</small><b>Blocked</b></div></div></div></article>
+              <article class="award-item"><button class="award-row" aria-expanded="false"><span><b>18 Sept</b><small>Friday</small></span><span class="award-route"><i class="airline-logo ai">AI</i><span><b>Air India · Maharaja Club</b><small>BLR → SIN · award-chart guidance</small></span><em class="tag blue">Published guide</em></span><span><b>12,000</b><small>guide</small></span><span><b>—</b><small>not supplied</small></span><span class="wallet-path"><b>Projected</b><small>Verify first</small></span><svg class="row-chevron"><use href="#i-chevron"/></svg></button><div class="award-detail compact-detail"><div class="decision-hero"><div><span class="section-kicker">Published guidance</span><h3>Check both Maharaja fare tiers</h3><p>Guide pricing remains separate from live availability.</p></div><div><small>Guide price</small><b>12,000 pts</b></div><div><small>Availability</small><b>Not live</b></div><div><small>Confidence</small><b>Projected</b></div></div></div></article>
+            </div>
+          </div>
+          <div class="travel-view" id="travel-hotels">
+            <div class="travel-search hotel-search surface"><div class="route-field hotel-destination"><small>Destination</small><b>Bangkok</b><span>Thailand</span></div><div class="travel-field"><small>Check-in</small><b>15 Oct 2026</b><span>Thursday</span></div><div class="travel-field"><small>Check-out</small><b>18 Oct 2026</b><span>3 nights</span></div><div class="travel-field"><small>Guests & rooms</small><b>2 adults · 1 room</b><span>Flexible rates</span></div><button class="button primary hotel-search-btn">Search hotels <svg><use href="#i-arrow"/></svg></button></div>
+            <div class="hotel-search-animation"><div class="hotel-pulse"><svg><use href="#i-hotel"/></svg><i></i><i></i></div><h3>Comparing hotel paths</h3><p>Checking cash, portal and loyalty options…</p></div>
+            <div class="travel-filter-row"><button class="filter active">Recommended</button><button class="filter">Lowest cash</button><button class="filter">Refundable</button><button class="filter">Breakfast</button><button class="filter">Programmes ▾</button><span></span><div class="segmented"><button class="active">All cards</button><button>My cards</button></div></div>
+            <div class="hotel-grid">
+              <article class="hotel-result selected"><div class="hotel-visual novotel"><span>Bangkok · Sukhumvit</span><b>NOVOTEL</b><small>Property image slot</small></div><div class="hotel-info"><div><span class="tag green">Best wallet match</span><h3>Novotel Bangkok Sukhumvit</h3><p>Superior King · breakfast · flexible cancellation</p></div><div class="hotel-price"><span>Cash total</span><b>₹12,292</b><small>3 nights</small></div></div><div class="hotel-path"><div><small>Best points option</small><b>4,000 ALL + ₹3,452</b><span>Projected saving ₹8,840</span></div><button class="button primary hotel-expand">View best path</button></div><div class="hotel-expanded"><div class="decision-hero"><div><span class="section-kicker">CreditIQ recommendation</span><h3>Use ALL points, then pay the remainder</h3><p>Lowest projected cash outlay across your wallet.</p></div><div><small>Use</small><b>4,000 ALL</b></div><div><small>You pay</small><b>₹3,452</b></div><div><small>Confidence</small><b>Projected</b></div></div><div class="path-grid"><article class="path-choice winner"><span>Recommended · transfer</span><b>HDFC → ALL Accor</b><strong>₹3,452</strong><small>After 4,000 ALL</small></article><article class="path-choice"><span>Bank portal</span><b>Use points in portal</b><strong>₹3,805</strong><small>Projected remainder</small></article><article class="path-choice"><span>Pay cash</span><b>Keep your points</b><strong>₹12,292</strong><small>Captured comparison rate</small></article></div></div></article>
+              <article class="hotel-result"><div class="hotel-visual pullman"><span>Bangkok · Silom</span><b>PULLMAN</b><small>Property image slot</small></div><div class="hotel-info"><div><span class="tag blue">Portal leads</span><h3>Pullman Bangkok Hotel G</h3><p>Deluxe room · refundable</p></div><div class="hotel-price"><span>Cash total</span><b>₹18,640</b><small>3 nights</small></div></div><div class="hotel-path"><div><small>Best wallet option</small><b>Portal + ₹6,210</b><span>Projected path</span></div><button class="button secondary hotel-expand">Compare paths</button></div></article>
+              <article class="hotel-result"><div class="hotel-visual ibis"><span>Bangkok · Sukhumvit</span><b>IBIS STYLES</b><small>Property image slot</small></div><div class="hotel-info"><div><span class="tag amber">Partial offset</span><h3>ibis Styles Bangkok</h3><p>Standard room · breakfast included</p></div><div class="hotel-price"><span>Cash total</span><b>₹9,880</b><small>3 nights</small></div></div><div class="hotel-path"><div><small>Points option</small><b>2,000 ALL + ₹6,032</b><span>Compare value first</span></div><button class="button secondary hotel-expand">Compare paths</button></div></article>
+            </div>
+          </div>
+          <div class="travel-view" id="travel-explore">
+            <div class="explore-hero"><div><span class="eyebrow">Explore the rewards universe</span><h2>Know where your points can take you.</h2><p>Sweet spots, transfer routes and lounge access—connected to your actual wallet.</p></div><div class="explore-radar"><div class="radar-ring r1"></div><div class="radar-ring r2"></div><div class="radar-ring r3"></div><span class="radar-point p1">BLR</span><span class="radar-point p2">SIN</span><span class="radar-point p3">DXB</span><i></i></div></div>
+            <div class="explore-grid"><article class="explore-card"><span class="metric-icon copper"><svg><use href="#i-spark"/></svg></span><small>Sweet spots</small><h3>High-value redemptions</h3><p>Routes where points consistently outperform cash.</p><b>12 matched to your wallet</b><button class="text-button">Explore sweet spots <svg><use href="#i-arrow"/></svg></button></article><article class="explore-card"><span class="metric-icon blue"><svg><use href="#i-arrow"/></svg></span><small>Transfer partners</small><h3>Move points confidently</h3><p>Ratios, expected timing and issuer rules in one map.</p><b>22 HDFC partners tracked</b><button class="text-button">View transfer map <svg><use href="#i-arrow"/></svg></button></article><article class="explore-card"><span class="metric-icon green"><svg><use href="#i-card"/></svg></span><small>Airport lounges</small><h3>Access before you fly</h3><p>See the cards and conditions that unlock each lounge.</p><b>6 visits available</b><button class="text-button">Check lounge access <svg><use href="#i-arrow"/></svg></button></article></div>
+          </div>
+        </section>
+
+        <section class="page" id="page-cards" data-title="Cards">
+          <div class="page-header"><div><span class="eyebrow">Find your next card</span><h1>Card Explorer</h1><p>Compare real rewards, fees and benefits for how you actually spend.</p></div><button class="button secondary"><svg><use href="#i-sliders"/></svg>My preferences</button></div>
+          <div class="card-finder surface"><div class="finder-copy"><span class="section-kicker">AI card finder</span><h2>What matters most to you?</h2></div><div class="finder-chips"><button class="active">Travel rewards</button><button>Cashback</button><button>Lounge access</button><button>Low fees</button><button>Business spend</button></div><button class="button primary cards-search"><svg><use href="#i-spark"/></svg>Find my matches</button></div>
+          <div class="card-toolbar"><div><b>93 cards tracked</b><span>Sorted for your profile</span></div><div><button class="filter active">Recommended</button><button class="filter">Bank ▾</button><button class="filter">Annual fee ▾</button></div></div>
+          <div class="catalog-grid">
+            <article class="catalog-card"><div class="catalog-top"><span class="tag green">92% match</span><button class="heart">♡</button></div><div class="catalog-art infinia"><span>HDFC BANK</span><b>INFINIA</b><small>VISA INFINITE</small></div><h3>HDFC Infinia Metal</h3><p>Best for premium travel and accelerated SmartBuy rewards.</p><div class="catalog-stats"><span><small>Reward rate</small><b>3.3%–16.5%</b></span><span><small>Annual fee</small><b>₹12,500</b></span></div><div class="catalog-actions"><button class="button secondary prototype-action">View details</button><button class="compare-add" data-card="HDFC Infinia">+ Compare</button></div></article>
+            <article class="catalog-card"><div class="catalog-top"><span class="tag blue">87% match</span><button class="heart">♡</button></div><div class="catalog-art magnus"><span>AXIS BANK</span><b>MAGNUS</b><small>BURGUNDY</small></div><h3>Axis Magnus Burgundy</h3><p>Strong transfer ecosystem and high-value milestone benefits.</p><div class="catalog-stats"><span><small>Reward rate</small><b>4.8%–12%</b></span><span><small>Annual fee</small><b>₹30,000</b></span></div><div class="catalog-actions"><button class="button secondary prototype-action">View details</button><button class="compare-add" data-card="Axis Magnus">+ Compare</button></div></article>
+            <article class="catalog-card"><div class="catalog-top"><span class="tag amber">81% match</span><button class="heart">♡</button></div><div class="catalog-art amex"><span>AMERICAN EXPRESS</span><b>PLATINUM</b><small>CHARGE</small></div><h3>Amex Platinum Charge</h3><p>Premium hospitality, concierge and lifestyle privileges.</p><div class="catalog-stats"><span><small>Reward rate</small><b>2%–10%</b></span><span><small>Annual fee</small><b>₹66,000</b></span></div><div class="catalog-actions"><button class="button secondary prototype-action">View details</button><button class="compare-add" data-card="Amex Platinum">+ Compare</button></div></article>
+            <article class="catalog-card"><div class="catalog-top"><span class="tag neutral">76% match</span><button class="heart">♡</button></div><div class="catalog-art emerald"><span>ICICI BANK</span><b>EMERALDE</b><small>PRIVATE METAL</small></div><h3>ICICI Emeralde Private</h3><p>Flexible rewards with premium airport and golf benefits.</p><div class="catalog-stats"><span><small>Reward rate</small><b>3%–6%</b></span><span><small>Annual fee</small><b>₹12,499</b></span></div><div class="catalog-actions"><button class="button secondary prototype-action">View details</button><button class="compare-add" data-card="ICICI Emeralde">+ Compare</button></div></article>
+          </div>
+          <div class="compare-tray"><div><span class="compare-count">0</span><p><b>Compare cards</b><small>Add up to three cards</small></p></div><div class="compare-names"></div><button class="button primary prototype-action" disabled>Compare now</button><button class="tray-close">×</button></div>
+        </section>
+
+        <section class="page concierge-page" id="page-concierge" data-title="Concierge">
+          <div class="concierge-shell">
+            <aside class="chat-sidebar"><div class="chat-side-head"><div><span class="eyebrow">CIRA</span><h2>Concierge</h2></div><button class="new-chat">＋</button></div><button class="new-conversation"><svg><use href="#i-spark"/></svg>New conversation</button><div class="chat-label">Recent</div><button class="chat-history active"><span>Plan Singapore with points</span><small>Just now</small></button><button class="chat-history"><span>Best card for ₹2L tax</span><small>Yesterday</small></button><button class="chat-history"><span>Review Axis statement</span><small>28 Aug</small></button><div class="chat-safety"><svg><use href="#i-shield"/></svg><span><b>Approval-first</b><small>CIRA never transfers points or pays without you.</small></span></div></aside>
+            <div class="chat-main"><header class="chat-header"><div><span class="cira-avatar"><svg><use href="#i-spark"/></svg></span><span><b>CIRA</b><small><i></i> CreditIQ rewards concierge</small></span></div><button class="more-btn">•••</button></header><div class="chat-messages" id="chatMessages"><div class="chat-intro"><div class="cira-hero-mark"><svg><use href="#i-spark"/></svg></div><h2>How can I help you use your rewards?</h2><p>I can compare cards, plan a points trip or explain a recommendation.</p><div class="prompt-grid"><button class="suggestion">Plan a Bengaluru–Singapore trip</button><button class="suggestion">Which card should I use today?</button><button class="suggestion">Find expiring benefits</button><button class="suggestion">Explain my wallet value</button></div></div></div><div class="chat-composer"><div class="composer-box"><button aria-label="Attach">＋</button><textarea id="chatInput" rows="1" placeholder="Ask about cards, points, flights or hotels…"></textarea><button class="send-btn" id="sendChat" aria-label="Send message"><svg><use href="#i-send"/></svg></button></div><p>CIRA prepares recommendations. You approve every irreversible action.</p></div></div>
+          </div>
+        </section>
+
+        <section class="page" id="page-profile" data-title="Profile">
+          <div class="page-header"><div><span class="eyebrow">Your CreditIQ</span><h1>Profile & preferences</h1><p>Control how CreditIQ personalises recommendations and protects your data.</p></div><button class="button primary save-profile">Save changes</button></div>
+          <div class="profile-layout">
+            <aside class="profile-nav surface"><button class="active" data-profile-tab="personal">Personal details</button><button data-profile-tab="preferences">Rewards preferences</button><button data-profile-tab="notifications">Notifications</button><button data-profile-tab="privacy">Privacy & security</button></aside>
+            <div class="profile-panels">
+              <section class="profile-panel surface active" data-profile-panel="personal"><div class="profile-panel-head"><div><h2>Personal details</h2><p>Used to personalise your CreditIQ experience.</p></div><span class="large-avatar">G</span></div><div class="form-grid"><label><span>Full name</span><input value="Goverdhan M D" /></label><label><span>Email address</span><input value="goverdhan.md@gmail.com" /></label><label><span>Home city</span><input value="Bengaluru" /></label><label><span>Preferred currency</span><select><option>INR · Indian Rupee</option></select></label></div></section>
+              <section class="profile-panel surface" data-profile-panel="preferences"><div class="profile-panel-head"><div><h2>Rewards preferences</h2><p>Tell CreditIQ what a valuable recommendation means to you.</p></div></div><div class="preference-list"><label><span><b>Primary goal</b><small>How should recommendations be ranked?</small></span><select><option>Maximum travel value</option><option>Lowest cash outlay</option></select></label><label><span><b>Preferred cabin</b><small>Used as the default in flight search.</small></span><select><option>All cabins</option><option>Business</option></select></label><label><span><b>Transfer comfort</b><small>How much complexity are you comfortable with?</small></span><select><option>Show verified transfers</option><option>Direct redemptions only</option></select></label></div></section>
+              <section class="profile-panel surface" data-profile-panel="notifications"><div class="profile-panel-head"><div><h2>Notifications</h2><p>Choose which opportunities CreditIQ should surface.</p></div></div><div class="toggle-list"><label><span><b>Points expiry alerts</b><small>Get notified before rewards expire.</small></span><button class="switch on" role="switch" aria-checked="true"><i></i></button></label><label><span><b>High-value redemption alerts</b><small>New sweet spots matched to your wallet.</small></span><button class="switch on" role="switch" aria-checked="true"><i></i></button></label><label><span><b>Statement refresh reminders</b><small>Know when wallet balances may be stale.</small></span><button class="switch" role="switch" aria-checked="false"><i></i></button></label></div></section>
+              <section class="profile-panel surface" data-profile-panel="privacy"><div class="profile-panel-head"><div><h2>Privacy & security</h2><p>Your financial documents remain under your control.</p></div><span class="metric-icon green"><svg><use href="#i-lock"/></svg></span></div><div class="security-list"><div><span><b>Account security</b><small>Google sign-in · last active today</small></span><button class="button secondary prototype-action">Review</button></div><div><span><b>Statement data</b><small>Manage parsed statements and balances</small></span><button class="button secondary prototype-action">Manage</button></div><div><span><b>Download my data</b><small>Export your CreditIQ information</small></span><button class="button secondary prototype-action">Request export</button></div></div></section>
+            </div>
+          </div>
+        </section>
+      </div>
+    </main>
+  </div>
+
+  <div class="modal-backdrop" id="uploadModal" role="dialog" aria-modal="true" aria-labelledby="uploadTitle"><div class="modal"><button class="modal-close" aria-label="Close">×</button><span class="modal-icon"><svg><use href="#i-upload"/></svg></span><h2 id="uploadTitle">Statement upload experience</h2><p>This design prototype does not accept real files. In production, the upload flow will show encryption, parsing progress and a confirmation before updating balances.</p><button class="button primary modal-close-action">Got it</button></div></div>
+  <div class="toast" role="status" aria-live="polite"></div>
+  <script>
+(() => {
+  const root = document.documentElement;
+  const pages = [...document.querySelectorAll('.page')];
+  const navItems = [...document.querySelectorAll('.nav-item[data-page]')];
+  const breadcrumbPage = document.getElementById('breadcrumbPage');
+  const toast = document.querySelector('.toast');
+  let toastTimer;
+
+  const showToast = (message) => {
+    toast.textContent = message;
+    toast.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => toast.classList.remove('show'), 2600);
+  };
+
+  const showPage = (pageName) => {
+    const next = document.getElementById(`page-${pageName}`);
+    if (!next) return;
+    pages.forEach(page => page.classList.toggle('active', page === next));
+    navItems.forEach(item => item.classList.toggle('active', item.dataset.page === pageName));
+    breadcrumbPage.textContent = next.dataset.title;
+    document.title = `CreditIQ — ${next.dataset.title}`;
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    try {
+      history.replaceState(null, '', `#${pageName}`);
+    } catch {
+      // Local file previews can block history updates; navigation still works.
+    }
+  };
+
+  navItems.forEach(item => item.addEventListener('click', () => showPage(item.dataset.page)));
+  document.querySelectorAll('[data-page-jump]').forEach(button => button.addEventListener('click', () => showPage(button.dataset.pageJump)));
+
+  const startPage = location.hash.replace('#', '');
+  if (startPage && document.getElementById(`page-${startPage}`)) showPage(startPage);
+
+  document.getElementById('themeToggle').addEventListener('click', () => {
+    const nextTheme = root.dataset.theme === 'dark' ? 'light' : 'dark';
+    root.dataset.theme = nextTheme;
+    showToast(`${nextTheme === 'dark' ? 'Dark' : 'Light'} theme selected.`);
+  });
+
+  const commandSearch = document.getElementById('commandSearch');
+  const commandRoutes = [
+    ['wallet', 'wallet points balance statement'],
+    ['spend', 'spend merchant amazon optimise best card'],
+    ['travel', 'travel flight hotel points route programme lounge'],
+    ['cards', 'cards finder compare hdfc axis amex'],
+    ['concierge', 'cira concierge ask ai'],
+    ['profile', 'profile preferences privacy notifications']
+  ];
+  commandSearch.addEventListener('keydown', (event) => {
+    if (event.key !== 'Enter') return;
+    const query = commandSearch.value.trim().toLowerCase();
+    const match = commandRoutes.find(([, words]) => words.includes(query) || query.includes(words.split(' ')[0]));
+    if (match) {
+      showPage(match[0]);
+      showToast(`Opened ${document.getElementById(`page-${match[0]}`).dataset.title}.`);
+      commandSearch.blur();
+    } else {
+      showToast('Try “wallet”, “travel”, “cards” or “concierge”.');
+    }
+  });
+  document.addEventListener('keydown', (event) => {
+    if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === 'k') {
+      event.preventDefault();
+      commandSearch.focus();
+      commandSearch.select();
+    }
+  });
+
+  const travelTabs = [...document.querySelectorAll('.travel-tab')];
+  const travelViews = [...document.querySelectorAll('.travel-view')];
+  travelTabs.forEach(tab => tab.addEventListener('click', () => {
+    const view = tab.dataset.travel;
+    travelTabs.forEach(item => item.classList.toggle('active', item === tab));
+    travelViews.forEach(item => item.classList.toggle('active', item.id === `travel-${view}`));
+  }));
+
+  document.querySelectorAll('.filter, .category-chip').forEach(button => button.addEventListener('click', () => {
+    const parent = button.parentElement;
+    parent.querySelectorAll('.filter, .category-chip').forEach(item => item.classList.remove('active'));
+    button.classList.add('active');
+  }));
+  document.querySelectorAll('.finder-chips button').forEach(button => button.addEventListener('click', () => button.classList.toggle('active')));
+  document.querySelectorAll('.segmented, .view-toggle').forEach(group => group.querySelectorAll('button').forEach(button => button.addEventListener('click', () => {
+    group.querySelectorAll('button').forEach(item => item.classList.toggle('active', item === button));
+  })));
+
+  const flightSearchButton = document.querySelector('.flight-search-btn');
+  const flightAnimation = document.querySelector('.flight-search-animation');
+  const flightStatus = document.getElementById('flightSearchStatus');
+  const searchProgress = flightAnimation.querySelector('.search-progress');
+  let flightTimer;
+  flightSearchButton.addEventListener('click', () => {
+    clearTimeout(flightTimer);
+    flightAnimation.classList.add('active');
+    searchProgress.classList.remove('done');
+    flightStatus.textContent = 'Checking routes your wallet can reach…';
+    flightSearchButton.disabled = true;
+    flightSearchButton.textContent = 'Searching…';
+    flightTimer = setTimeout(() => { flightStatus.textContent = 'Comparing programme prices and transfer paths…'; }, 900);
+    setTimeout(() => {
+      flightStatus.textContent = '20 award options ready. Best wallet paths ranked first.';
+      searchProgress.classList.add('done');
+      flightSearchButton.disabled = false;
+      flightSearchButton.innerHTML = 'Search awards <svg><use href="#i-arrow"/></svg>';
+      showToast('Flight results refreshed with sample prototype data.');
+      setTimeout(() => flightAnimation.classList.remove('active'), 1150);
+    }, 2250);
+  });
+
+  const hotelSearchButton = document.querySelector('.hotel-search-btn');
+  const hotelAnimation = document.querySelector('.hotel-search-animation');
+  hotelSearchButton.addEventListener('click', () => {
+    hotelAnimation.classList.add('active');
+    hotelSearchButton.disabled = true;
+    hotelSearchButton.textContent = 'Comparing…';
+    setTimeout(() => {
+      hotelAnimation.classList.remove('active');
+      hotelSearchButton.disabled = false;
+      hotelSearchButton.innerHTML = 'Search hotels <svg><use href="#i-arrow"/></svg>';
+      showToast('Hotel paths compared across cash, portal and loyalty options.');
+    }, 1800);
+  });
+
+  document.querySelectorAll('.award-row').forEach(row => row.addEventListener('click', () => {
+    const item = row.closest('.award-item');
+    const list = row.closest('.award-list');
+    const shouldOpen = !item.classList.contains('open');
+    list.querySelectorAll('.award-item').forEach(other => {
+      other.classList.remove('open');
+      other.querySelector('.award-row').setAttribute('aria-expanded', 'false');
+    });
+    if (shouldOpen) {
+      item.classList.add('open');
+      row.setAttribute('aria-expanded', 'true');
+    }
+  }));
+
+  document.querySelectorAll('.decision-tabs').forEach(tabset => tabset.querySelectorAll('button').forEach(tab => tab.addEventListener('click', () => {
+    const detail = tab.closest('.award-detail');
+    tabset.querySelectorAll('button').forEach(item => item.classList.toggle('active', item === tab));
+    detail.querySelectorAll('.decision-panel').forEach(panel => panel.classList.toggle('active', panel.dataset.detailPanel === tab.dataset.detail));
+  })));
+
+  document.querySelectorAll('.hotel-expand').forEach(button => button.addEventListener('click', () => {
+    const hotel = button.closest('.hotel-result');
+    const expandable = hotel.querySelector('.hotel-expanded');
+    if (!expandable) {
+      showToast('A detailed inline comparison would open here in production.');
+      return;
+    }
+    const isExpanded = hotel.classList.toggle('expanded');
+    button.textContent = isExpanded ? 'Hide best path' : 'View best path';
+  }));
+
+  const optimiseButton = document.querySelector('.optimise-btn');
+  optimiseButton.addEventListener('click', () => {
+    const amount = Math.max(0, Number(document.getElementById('spendAmount').value) || 0);
+    const value = Math.round(amount * .165);
+    const direct = Math.round(amount * .033);
+    document.getElementById('winnerValue').textContent = `₹${value.toLocaleString('en-IN')}`;
+    document.getElementById('winnerRate').textContent = '16.5% effective return';
+    document.getElementById('smartRouteValue').textContent = `₹${value.toLocaleString('en-IN')}`;
+    document.getElementById('extraUnlocked').textContent = `₹${Math.max(0, value - direct).toLocaleString('en-IN')}`;
+    const result = document.querySelector('.winner-card');
+    result.animate([{ transform: 'translateY(4px)', opacity: .55 }, { transform: 'translateY(0)', opacity: 1 }], { duration: 340, easing: 'ease-out' });
+    showToast(`Best card recalculated for ${document.getElementById('merchantName').value || 'this purchase'}.`);
+  });
+
+  document.querySelector('.cards-search').addEventListener('click', () => {
+    document.querySelectorAll('.catalog-card').forEach((card, index) => {
+      card.animate([{ opacity: .25, transform: 'translateY(10px)' }, { opacity: 1, transform: 'none' }], { duration: 280, delay: index * 70, fill: 'both' });
+    });
+    showToast('Card matches refreshed for your selected priorities.');
+  });
+  document.querySelectorAll('.heart').forEach(button => button.addEventListener('click', () => {
+    button.classList.toggle('liked');
+    button.textContent = button.classList.contains('liked') ? '♥' : '♡';
+  }));
+
+  const selectedCards = new Set();
+  const compareTray = document.querySelector('.compare-tray');
+  const compareNames = document.querySelector('.compare-names');
+  const compareCount = document.querySelector('.compare-count');
+  const compareAction = compareTray.querySelector('.button');
+  const renderCompare = () => {
+    compareCount.textContent = selectedCards.size;
+    compareNames.innerHTML = [...selectedCards].map(name => `<span>${name}</span>`).join('');
+    compareTray.classList.toggle('show', selectedCards.size > 0);
+    compareAction.disabled = selectedCards.size < 2;
+  };
+  document.querySelectorAll('.compare-add').forEach(button => button.addEventListener('click', () => {
+    const name = button.dataset.card;
+    if (selectedCards.has(name)) {
+      selectedCards.delete(name);
+      button.classList.remove('added');
+      button.textContent = '+ Compare';
+    } else if (selectedCards.size < 3) {
+      selectedCards.add(name);
+      button.classList.add('added');
+      button.textContent = '✓ Added';
+    } else {
+      showToast('You can compare up to three cards.');
+    }
+    renderCompare();
+  }));
+  document.querySelector('.tray-close').addEventListener('click', () => {
+    selectedCards.clear();
+    document.querySelectorAll('.compare-add').forEach(button => { button.classList.remove('added'); button.textContent = '+ Compare'; });
+    renderCompare();
+  });
+
+  const chatMessages = document.getElementById('chatMessages');
+  const chatInput = document.getElementById('chatInput');
+  const escapeHtml = value => value.replace(/[&<>'"]/g, char => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' })[char]);
+  const sendMessage = (preset) => {
+    const message = (preset || chatInput.value).trim();
+    if (!message) return;
+    const intro = chatMessages.querySelector('.chat-intro');
+    if (intro) intro.remove();
+    chatMessages.insertAdjacentHTML('beforeend', `<div class="message user"><div class="bubble">${escapeHtml(message)}</div></div>`);
+    chatInput.value = '';
+    chatMessages.insertAdjacentHTML('beforeend', '<div class="message typing"><span class="cira-avatar"><svg><use href="#i-spark"/></svg></span><div class="bubble"><span class="typing-dots"><i></i><i></i><i></i></span></div></div>');
+    chatMessages.scrollTop = chatMessages.scrollHeight;
+    setTimeout(() => {
+      const typing = chatMessages.querySelector('.typing');
+      if (typing) typing.remove();
+      const response = message.toLowerCase().includes('singapore')
+        ? 'Your current HDFC balance can cover a projected 19,000-mile KrisFlyer economy option from Bengaluru. I would first recheck live award availability, then show you the exact transfer path before you approve anything.'
+        : 'I can compare this against your HDFC, Axis and Amex cards. I will keep projected value separate from executable instructions and show the source behind every material number.';
+      chatMessages.insertAdjacentHTML('beforeend', `<div class="message"><span class="cira-avatar"><svg><use href="#i-spark"/></svg></span><div class="bubble">${response}</div></div>`);
+      chatMessages.scrollTop = chatMessages.scrollHeight;
+    }, 1050);
+  };
+  document.getElementById('sendChat').addEventListener('click', () => sendMessage());
+  chatInput.addEventListener('keydown', event => { if (event.key === 'Enter' && !event.shiftKey) { event.preventDefault(); sendMessage(); } });
+  document.querySelectorAll('.suggestion').forEach(button => button.addEventListener('click', () => sendMessage(button.textContent)));
+  document.querySelector('.new-conversation').addEventListener('click', () => {
+    chatMessages.innerHTML = '<div class="chat-intro"><div class="cira-hero-mark"><svg><use href="#i-spark"/></svg></div><h2>How can I help you use your rewards?</h2><p>I can compare cards, plan a points trip or explain a recommendation.</p><div class="prompt-grid"><button class="suggestion">Plan a Bengaluru–Singapore trip</button><button class="suggestion">Which card should I use today?</button></div></div>';
+    chatMessages.querySelectorAll('.suggestion').forEach(button => button.addEventListener('click', () => sendMessage(button.textContent)));
+  });
+
+  const profileTabs = [...document.querySelectorAll('[data-profile-tab]')];
+  const profilePanels = [...document.querySelectorAll('[data-profile-panel]')];
+  profileTabs.forEach(tab => tab.addEventListener('click', () => {
+    profileTabs.forEach(item => item.classList.toggle('active', item === tab));
+    profilePanels.forEach(panel => panel.classList.toggle('active', panel.dataset.profilePanel === tab.dataset.profileTab));
+  }));
+  document.querySelectorAll('.switch').forEach(control => control.addEventListener('click', () => {
+    const active = control.classList.toggle('on');
+    control.setAttribute('aria-checked', active ? 'true' : 'false');
+  }));
+  document.querySelector('.save-profile').addEventListener('click', () => showToast('Profile preferences saved in this prototype.'));
+
+  const uploadModal = document.getElementById('uploadModal');
+  document.querySelectorAll('.simulate-upload').forEach(trigger => trigger.addEventListener('click', () => uploadModal.classList.add('show')));
+  document.querySelectorAll('.modal-close, .modal-close-action').forEach(button => button.addEventListener('click', () => uploadModal.classList.remove('show')));
+  uploadModal.addEventListener('click', event => { if (event.target === uploadModal) uploadModal.classList.remove('show'); });
+
+  document.querySelectorAll('.prototype-action').forEach(button => button.addEventListener('click', () => showToast('This action is represented for UX review. No account or booking action was performed.')));
+})();
+
+  </script>
+</body>
+</html>

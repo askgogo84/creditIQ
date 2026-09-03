@@ -5,7 +5,7 @@ import { fileURLToPath } from "node:url";
 const scriptDirectory = dirname(fileURLToPath(import.meta.url));
 const projectRoot = resolve(scriptDirectory, "..");
 const sourceDirectory = resolve(projectRoot, "public/mockups/creditiq-app-v3");
-const outputPath = resolve(projectRoot, "public/mockups/creditiq-app-v3-full.html");
+const outputPath = resolve(projectRoot, "public/mockups/creditiq-app-editorial-v1.html");
 
 const [html, css, javascript] = await Promise.all([
   readFile(resolve(sourceDirectory, "index.html"), "utf8"),
