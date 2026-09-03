@@ -1,6 +1,6 @@
 # Official card artwork sources
 
-CreditIQ self-hosts card artwork under `public/cards/` so product pages never
+CreditIQ self-hosts card artwork under `public/card-art/` so product pages never
 depend on third-party hotlinks. Assets in this batch were taken from the
 issuer's own product page or issuer-owned asset host on 3 September 2026.
 

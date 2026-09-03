@@ -6,7 +6,7 @@ import { SEED_CARDS } from './seed-cards';
 
 describe('card art manifest', () => {
   it('only exposes self-hosted WebP files for live catalog cards', () => {
-    const files = readdirSync(join(process.cwd(), 'public', 'cards'))
+    const files = readdirSync(join(process.cwd(), 'public', 'card-art'))
       .filter((file) => file.endsWith('.webp'))
       .map((file) => file.replace(/\.webp$/, ''))
       .sort();
@@ -18,7 +18,7 @@ describe('card art manifest', () => {
 
   it('returns local paths and leaves unknown cards on the fallback', () => {
     expect(hasCardArt('hdfc-infinia')).toBe(true);
-    expect(cardArtSrc('hdfc-infinia')).toBe('/cards/hdfc-infinia.webp');
+    expect(cardArtSrc('hdfc-infinia')).toBe('/card-art/hdfc-infinia.webp');
     expect(hasCardArt('not-a-real-card')).toBe(false);
   });
 });

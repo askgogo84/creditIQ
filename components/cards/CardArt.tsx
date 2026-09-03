@@ -23,7 +23,7 @@ interface CardArtProps {
 /**
  * CardArt — one place that decides "real image vs CSS fallback" for a card face.
  *
- * If public/cards/<slug>.webp exists (per card-art-manifest), it renders that
+ * If public/card-art/<slug>.webp exists (per card-art-manifest), it renders that
  * self-hosted image. Otherwise it renders `children` unchanged. It never
  * hotlinks and never shows a broken image: an absent slug simply falls back.
  */
