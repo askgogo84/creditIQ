@@ -11,7 +11,7 @@ describe('CardArt', () => {
     );
 
     expect(screen.getByRole('img', { name: 'Axis Atlas' })).toHaveStyle({
-      transform: 'rotate(-10deg) scale(0.9)',
+      transform: 'rotate(-14deg) scale(0.9)',
       transformOrigin: 'center',
     });
   });
@@ -24,7 +24,7 @@ describe('CardArt', () => {
     );
 
     expect(screen.getByRole('img', { name: 'HDFC Infinia' })).not.toHaveStyle({
-      transform: 'rotate(-10deg) scale(0.9)',
+      transform: 'rotate(-14deg) scale(0.9)',
     });
   });
 });

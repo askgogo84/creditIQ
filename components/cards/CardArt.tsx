@@ -29,7 +29,7 @@ interface CardArtProps {
  */
 export function CardArt({ card, width = 1000, height = 630, className, children }: CardArtProps) {
   if (!card?.slug || !hasCardArt(card.slug)) return <>{children}</>;
-  const imageTransform = card.slug === 'axis-atlas' ? 'rotate(-10deg) scale(0.9)' : undefined;
+  const imageTransform = card.slug === 'axis-atlas' ? 'rotate(-14deg) scale(0.9)' : undefined;
 
   return (
     <span
