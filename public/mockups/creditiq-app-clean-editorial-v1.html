@@ -3,8 +3,8 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <meta name="description" content="Interactive CreditIQ clean editorial application redesign prototype" />
-  <title>CreditIQ — Clean Editorial Redesign</title>
+  <meta name="description" content="Interactive CreditIQ full product redesign prototype" />
+  <title>CreditIQ — Full Product Redesign</title>
   <style>
 :root {
   --navy-1000: #06111f;
@@ -446,15 +446,21 @@ body {
 }
 
 .sidebar {
-  background:
-    radial-gradient(circle at 14% 12%, rgba(189, 145, 61, .1), transparent 14rem),
-    linear-gradient(180deg, #151613, #10110f 64%, #0c0d0b);
+  background: rgba(255, 255, 255, .97);
+  color: var(--ink);
+  border-right-color: var(--line);
 }
 
-.sidebar::before { background: rgba(189, 145, 61, .055); }
+.sidebar::before { background: transparent; }
 .brand-copy { font-family: var(--font-editorial); font-weight: 600; letter-spacing: -.025em; }
 .brand-copy small, .nav-kicker, .eyebrow, .section-kicker { font-family: var(--font-interface); }
-.nav-item.active { background: linear-gradient(90deg, rgba(189,145,61,.21), rgba(189,145,61,.035)); }
+.brand, .side-profile { color: var(--ink); }
+.nav-kicker { color: var(--subtle); }
+.nav-item { color: var(--muted); }
+.nav-item:hover { color: var(--ink); background: #f4f2ed; }
+.nav-item.active { color: var(--copper-700); background: #f3f0e9; box-shadow: inset 2px 0 0 var(--copper-600); }
+.nav-count { background: #eee9de; color: var(--copper-700); }
+.side-profile { border-color: var(--line); }
 
 .topbar {
   background: color-mix(in srgb, var(--paper) 94%, transparent);
@@ -566,7 +572,7 @@ html[data-theme="dark"] .compare-head { background: var(--paper-soft); }
     <symbol id="i-lock" viewBox="0 0 24 24"><rect x="4" y="10" width="16" height="11" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></symbol>
   </svg>
 
-  <div class="prototype-banner"><span></span> Clean editorial prototype · sample data only</div>
+  <div class="prototype-banner"><span></span> Full product redesign · interactive sample data only · production remains untouched</div>
   <div class="app-shell">
     <aside class="sidebar" aria-label="Primary navigation">
       <div class="brand">

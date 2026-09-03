@@ -43,16 +43,16 @@ export default async function CardsIndexPage() {
   const banks = [...new Set(cards.map((c: any) => c.bank))].sort();
 
   return (
-    <>
+    <div className="ciq-product-page">
       {/* Panel-only: the (cards) layout owns the "Cards" name + SectionTabs strip. A
           left-aligned PageHeader replaces the centred marketing hero (aurora dropped) so the
           catalogue is reachable in ~one screen at 375px. H1 wording unchanged; "ranked
           honestly." is roman copper emphasis (DESIGN.md — never italic). The two acquisition
           CTAs stay, left-aligned — they're the page's job. Metadata/OG untouched. */}
       <PageHeader
-        eyebrow={`The full catalog · ${totalCards} cards · ${banks.length} banks`}
-        title={<>Every card in India, <span style={{ color: 'var(--copper)' }}>ranked honestly.</span></>}
-        subtitle="Real annual value, live devaluation tracking and IQ scores for all cards. No affiliate bias -- no bank pays us to move a card up the list."
+        eyebrow={`Card intelligence · ${totalCards} cards · ${banks.length} banks`}
+        title={<>Find the card that fits <span style={{ color: 'var(--copper)' }}>your life.</span></>}
+        subtitle="Explore real Indian cards with original artwork, transparent fees and practical reward context. No bank pays to move up the list."
         maxWidth={1100}
         showTabs={false}
       />
@@ -65,6 +65,6 @@ export default async function CardsIndexPage() {
       <CardsClient initialCards={cards} />
 
       <DesignFooter />
-    </>
+    </div>
   );
 }

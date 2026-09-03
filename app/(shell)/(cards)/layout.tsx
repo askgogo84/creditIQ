@@ -9,7 +9,7 @@ import { SectionShell } from '@/components/ciq/SectionShell'
 // used to set on their own hero wrappers.
 export default function CardsLayout({ children }: { children: React.ReactNode }) {
   return (
-    <SectionShell sectionName="Cards" paddingBottom={112}>
+    <SectionShell sectionName="Cards" paddingBottom={112} fluid>
       {children}
     </SectionShell>
   )

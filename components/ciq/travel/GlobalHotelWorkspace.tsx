@@ -200,8 +200,9 @@ export function GlobalHotelWorkspace() {
     <div className="ghw-root">
       <div className="ghw-title-row">
         <div>
-          <h1>Any destination. Cash + hotel award inventory.</h1>
-          <p>CreditIQ keeps every provider-returned cash offer accessible, then searches the mapped loyalty programme independently and joins only exact/high-confidence properties before ranking every card in your wallet.</p>
+          <div className="ghw-eyebrow">Hotel award desk</div>
+          <h1>Stay better. Spend <em>smarter.</em></h1>
+          <p>Compare live cash rates with mapped hotel award inventory, then rank the exact paths your wallet can fund. Weak property matches are never promoted as certainty.</p>
         </div>
         <div className="ghw-honesty">No derived hotel points · weak joins fail closed</div>
       </div>

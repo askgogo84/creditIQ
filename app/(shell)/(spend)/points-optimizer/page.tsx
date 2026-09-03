@@ -165,21 +165,22 @@ Respond ONLY with valid JSON (no markdown, no code fences):
   const maxVal = result ? Math.max(...result.paths.map(p => p.estimatedValue)) : 1;
 
   return (
-    <>
+    <div className="ciq-product-page">
       {/* Section name + SectionTabs live in the (spend) layout above this panel. This
           panel owns the page's own display headline + subtitle (eyebrow dropped as
           redundant with the section name) and the tool. The grid keeps its 760 measure
           but left-aligns (no margin:0 auto) so its left edge sits flush under the
           headline in the shared 1100 container. */}
       <PageHeader
-        title="Squeeze every rupee from your reward points"
-        subtitle="Pick a card, tell us your goal — we rank every redemption path by actual value."
+        eyebrow="Redemption intelligence"
+        title={<>Turn points into something <span style={{ color: 'var(--copper)' }}>worth remembering.</span></>}
+        subtitle="Choose a balance and a goal. CreditIQ ranks every supported redemption path by real value and shows the trade-offs clearly."
         maxWidth={1100}
         showTabs={false}
       />
 
       {/* Two-column tool beneath the headline. */}
-      <div style={{ maxWidth: 760, marginTop: 24, display: 'grid', gridTemplateColumns: 'minmax(0,1fr) minmax(0,1.4fr)', gap: 20 }}
+      <div style={{ maxWidth: 1180, marginTop: 28, display: 'grid', gridTemplateColumns: 'minmax(300px,.72fr) minmax(0,1.45fr)', gap: 20 }}
         className="points-grid">
           <style>{`
             @media (max-width: 640px) { .points-grid { grid-template-columns: 1fr !important; } }
@@ -416,6 +417,6 @@ Respond ONLY with valid JSON (no markdown, no code fences):
             )}
           </div>
         </div>
-    </>
+    </div>
   );
 }

@@ -92,8 +92,8 @@ export function PageHeader({
         </div>
       ))}
       <h1 style={{
-        fontFamily: 'var(--font-display, inherit)', fontWeight: 600,
-        fontSize: 30, letterSpacing: '-0.02em', lineHeight: 1.1,
+        fontFamily: 'var(--font-serif, Georgia, serif)', fontWeight: 400,
+        fontSize: 'clamp(34px, 3.3vw, 48px)', letterSpacing: '-0.035em', lineHeight: 1.02,
         color: c.title, margin: 0,
       }}>
         {title}

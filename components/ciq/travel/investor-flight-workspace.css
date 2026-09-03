@@ -1,11 +1,21 @@
-.ifw-root { max-width: 1240px; width: 100%; }
+.ifw-root { width: 100%; }
 .ifw-title-row { display: flex; align-items: flex-end; justify-content: space-between; gap: 24px; margin: 4px 0 18px; }
-.ifw-title { margin: 0 0 7px; font-family: var(--font-serif); font-size: 31px; font-weight: 300; letter-spacing: -0.02em; color: var(--ink); }
+.ifw-eyebrow { margin-bottom: 9px; color: var(--copper); font-family: var(--font-mono); font-size: 10px; font-weight: 750; letter-spacing: .14em; text-transform: uppercase; }
+.ifw-title { margin: 0 0 10px; font-family: var(--font-serif); font-size: clamp(42px, 4vw, 68px); line-height: .98; font-weight: 350; letter-spacing: -0.045em; color: var(--ink); }
+.ifw-title em { color: var(--copper); font-weight: 350; }
 .ifw-sub { margin: 0; max-width: 760px; font-size: 13.5px; line-height: 1.55; color: var(--ink-3); }
 .ifw-honesty { flex: 0 0 auto; padding: 7px 10px; border: 1px solid var(--line); border-radius: 999px; background: var(--surface); font-size: 11px; color: var(--ink-3); }
 
-.ifw-search { grid-template-columns: 1fr auto 1fr .8fr .8fr auto; }
+.ifw-search { grid-template-columns: 1fr auto 1fr .8fr .8fr auto; border-radius: 18px; padding: 11px; box-shadow: 0 12px 34px color-mix(in srgb, var(--ink) 5%, transparent); }
 .ifw-error { margin-top: 16px; }
+
+.ifw-flight-loader { min-height: 168px; display: grid; place-items: center; align-content: center; gap: 9px; margin-top: 18px; border: 1px solid var(--line); border-radius: 18px; background: linear-gradient(180deg, var(--surface), color-mix(in srgb, var(--copper) 4%, var(--surface))); text-align: center; box-shadow: var(--shadow-sm); overflow: hidden; }
+.ifw-flight-loader > b { color: var(--ink); font-family: var(--font-serif); font-size: 23px; font-weight: 450; }
+.ifw-flight-loader > span { color: var(--ink-3); font-size: 11px; }
+.ifw-flight-route { position: relative; width: min(440px, 75vw); display: grid; grid-template-columns: auto 1fr 28px 1fr auto; align-items: center; gap: 8px; color: var(--ink-2); font-family: var(--font-mono); font-size: 10px; font-weight: 750; }
+.ifw-flight-route i { border-top: 1px dashed color-mix(in srgb, var(--copper) 52%, var(--line)); }
+.ifw-loader-plane { display: grid; place-items: center; color: var(--copper); will-change: transform, opacity; animation: ifw-takeoff 1.7s cubic-bezier(.2,.7,.2,1) infinite; }
+@keyframes ifw-takeoff { 0% { transform: translate(-70px, 16px) rotate(-7deg); opacity: 0; } 18% { opacity: 1; } 78% { opacity: 1; } 100% { transform: translate(70px, -16px) rotate(-7deg); opacity: 0; } }
 
 .ifw-workspace { display: grid; grid-template-columns: minmax(0, 1fr) 380px; gap: 18px; align-items: start; margin-top: 20px; }
 .ifw-left { min-width: 0; }

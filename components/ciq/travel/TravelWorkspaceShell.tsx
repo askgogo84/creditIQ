@@ -30,29 +30,30 @@ export function TravelWorkspaceShell({ children }: { children: ReactNode }) {
   const pathname = usePathname() || '/trip-planner'
 
   return (
-    <div style={{ minHeight: '100dvh', paddingTop: 14, paddingBottom: 80 }}>
-      <div style={{ maxWidth: 1240, width: '100%', margin: '0 auto', padding: '0 20px' }}>
+    <div style={{ minHeight: '100dvh', paddingTop: 16, paddingBottom: 80 }}>
+      <div style={{ width: '100%', padding: '0 clamp(20px, 2.6vw, 48px)' }}>
         <div
           style={{
             display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between',
-            gap: 18, paddingBottom: 10,
+            gap: 18, paddingBottom: 14,
           }}
         >
           <div>
-            <div style={{ fontSize: 13, fontWeight: 650, color: 'var(--ink-2)', marginBottom: 5 }}>Travel</div>
+            <div style={{ fontSize: 14, fontWeight: 700, color: 'var(--ink)', marginBottom: 5 }}>Travel intelligence</div>
             <div style={{ fontSize: 12, color: 'var(--ink-3)', lineHeight: 1.45 }}>
-              Find the inventory, compare the path, then book with confidence.
+              Search live supply, compare every route, then act with confidence.
             </div>
           </div>
           <div style={{ fontSize: 11, color: 'var(--ink-3)', whiteSpace: 'nowrap' }}>
-            Wallet-aware · source-aware
+            Wallet-aware · provider-transparent
           </div>
         </div>
 
         <div
           style={{
             display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 14,
-            borderBottom: '1px solid var(--line)', marginBottom: 18,
+            border: '1px solid var(--line)', borderRadius: 14, background: 'var(--surface)',
+            boxShadow: 'var(--shadow-sm)', marginBottom: 26, padding: '0 6px',
           }}
         >
           <nav aria-label="Travel modes" style={{ display: 'flex', alignItems: 'stretch', minWidth: 0 }}>
@@ -65,11 +66,12 @@ export function TravelWorkspaceShell({ children }: { children: ReactNode }) {
                   prefetch
                   aria-current={active ? 'page' : undefined}
                   style={{
-                    minHeight: 48, padding: '0 18px', textDecoration: 'none',
+                    minHeight: 50, padding: '0 18px', textDecoration: 'none',
                     display: 'inline-flex', alignItems: 'center', gap: 8,
-                    color: active ? 'var(--ink)' : 'var(--ink-3)',
                     fontSize: 14, fontWeight: active ? 700 : 600,
-                    borderBottom: active ? '2px solid var(--copper)' : '2px solid transparent',
+                    borderRadius: 10,
+                    background: active ? 'var(--ink)' : 'transparent',
+                    color: active ? 'var(--surface)' : 'var(--ink-3)',
                   }}
                 >
                   <Icon size={17} strokeWidth={1.8} />

@@ -125,21 +125,22 @@ Respond ONLY with valid JSON (no markdown, no backticks, no explanation outside 
   };
 
   return (
-    <>
+    <div className="ciq-product-page">
       {/* Section name + SectionTabs live in the (spend) layout above this panel. This
           panel owns the page's own display headline + subtitle (eyebrow dropped as
           redundant with the section name) and the tool. The tool keeps its 700 reading
           measure but left-aligns (no margin:0 auto) so its left edge sits flush under
           the headline in the shared 1100 container. */}
       <PageHeader
-        title="Which card earns you the most money?"
-        subtitle={`Enter your monthly spends — our AI picks from our ${CARD_COUNT} tracked cards by what each earns.`}
+        eyebrow="Spend intelligence"
+        title={<>Make every rupee <span style={{ color: 'var(--copper)' }}>work harder.</span></>}
+        subtitle={`Tell us how you spend. CreditIQ compares ${CARD_COUNT} tracked cards and shows the highest-value way to pay.`}
         maxWidth={1100}
         showTabs={false}
       />
 
       {/* The tool, on its own reading measure beneath the headline. */}
-      <div style={{ maxWidth: 700, marginTop: 24 }}>
+      <div style={{ maxWidth: 1180, marginTop: 28 }} className="spend-tool">
 
           {step === 'input' && (
             <>
@@ -376,6 +377,6 @@ Respond ONLY with valid JSON (no markdown, no backticks, no explanation outside 
             </div>
           )}
       </div>
-    </>
+    </div>
   );
 }

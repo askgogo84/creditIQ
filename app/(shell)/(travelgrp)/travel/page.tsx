@@ -98,7 +98,7 @@ function TravelPageInner() {
   const empty = messages.length === 0;
 
   return (
-    <>
+    <div className="ciq-product-page" style={{ flex: 1, display: 'flex', flexDirection: 'column', minHeight: 0 }}>
       {/* Section name + SectionTabs live in the (travelgrp) layout above this panel;
           this panel owns the display headline + subtitle (eyebrow dropped as redundant
           with the section name). The chat FILLS the remaining height under the header —
@@ -106,14 +106,15 @@ function TravelPageInner() {
           the page itself would overflow past the header). It keeps its own 720 reading
           measure, left-aligned (no margin:0 auto); gutters come from the layout. */}
       <PageHeader
-        title="Your AI travel advisor"
-        subtitle="Ask anything about flights, lounges, points transfers and redemptions."
+        eyebrow="CIRA travel concierge"
+        title={<>Ask a better question. Get a <span style={{ color: 'var(--copper)' }}>bookable answer.</span></>}
+        subtitle="Plan flights, hotels, lounge access and transfers with recommendations grounded in your wallet and clearly labelled sources."
         maxWidth={1100}
         showTabs={false}
       />
 
       {/* Chat column — fills remaining height, its own 720 measure, left-aligned */}
-      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', maxWidth: 720, width: '100%', paddingTop: 24, paddingBottom: 120, position: 'relative', zIndex: 1 }}>
+      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', maxWidth: 980, width: '100%', paddingTop: 28, paddingBottom: 26, position: 'relative', zIndex: 1 }}>
 
         {/* Suggested prompts - only when empty */}
         {empty && (
@@ -191,15 +192,16 @@ function TravelPageInner() {
         </div>
       </div>
 
-      {/* Fixed input bar */}
+      {/* Composer stays inside the travel workspace so it never overlaps the app rail. */}
       <div style={{
-        position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 50,
-        backgroundColor: 'var(--bg,#F5EFE6)',
-        borderTop: '1px solid var(--line,rgba(20,41,80,0.08))',
-        padding: '12px 16px 18px',
+        position: 'sticky', bottom: 0, zIndex: 20, width: '100%', maxWidth: 980,
+        backgroundColor: 'color-mix(in srgb, var(--bg) 92%, transparent)',
+        border: '1px solid var(--line,rgba(20,41,80,0.08))', borderRadius: 18,
+        padding: '12px 14px 10px',
         backdropFilter: 'blur(12px)',
+        boxShadow: '0 -8px 34px color-mix(in srgb, var(--ink) 6%, transparent)',
       }}>
-        <div style={{ maxWidth: 720, margin: '0 auto', display: 'flex', gap: 10, alignItems: 'center' }}>
+        <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
           <input
             value={input}
             onChange={e => setInput(e.target.value)}
@@ -242,7 +244,7 @@ function TravelPageInner() {
           .grid-1-mobile { grid-template-columns: 1fr !important; }
         }
       `}</style>
-    </>
+    </div>
   );
 }
 
