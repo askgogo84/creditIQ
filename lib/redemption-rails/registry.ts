@@ -1,4 +1,5 @@
 import { HDFC_INFINIA_AS_OF, HDFC_INFINIA_SOURCE, HDFC_INFINIA_TRANSFER_PARTNERS } from '@/lib/data/hdfc-transfer-partners'
+import { flightProgrammeBookingUrl } from '@/lib/data/flight-programme-booking'
 import type {
   RailQuery,
   RationalRatio,
@@ -51,6 +52,7 @@ const hdfcInfiniaTransferRails: RedemptionRailDefinition[] = HDFC_INFINIA_TRANSF
     incrementBankPoints: null,
   },
   bookingDestination: partner.display_name,
+  ...(flightProgrammeBookingUrl(partner.id) ? { bookingUrl: flightProgrammeBookingUrl(partner.id)! } : {}),
 }))
 
 /**
@@ -65,6 +67,7 @@ const discoveryRails: RedemptionRailDefinition[] = [
     evidence: [{ kind: 'ISSUER_PUBLIC', sourceId: 'hdfc-smartbuy-travel', note: 'SmartBuy flight/hotel redemption exists; checkout/card-specific mechanics remain authoritative.' }],
     portal: { portalName: 'HDFC SmartBuy', supportsPointsPlusCash: true, valuePerPointPaise: null, maxPointsShareBps: null, feeMinor: null },
     bookingDestination: 'HDFC SmartBuy',
+    bookingUrl: 'https://offers.smartbuy.hdfcbank.com/',
   },
   {
     id: 'axis-atlas-travel-edge',

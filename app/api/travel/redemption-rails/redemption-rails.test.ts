@@ -49,13 +49,21 @@ beforeEach(() => {
 describe('travel redemption rail matrix IDOR', () => {
   it('uses only the bearer identity and ignores a forged body userId', async () => {
     const { POST } = await import('@/app/api/travel/redemption-rails/route')
-    const res = await POST(request({ travelKind: 'flight', programmeId: 'krisflyer', userId: 'user-VICTIM' }, 'Bearer tokenA'))
+    const res = await POST(request({
+      travelKind: 'flight',
+      programmeId: 'krisflyer',
+      userId: 'user-VICTIM',
+      cards: [{ cardName: 'Victim Platinum', points: 99_999_999 }],
+      matrix: { cards: [{ walletKey: 'victim-wallet', rails: [{ executionState: 'EXECUTABLE' }] }] },
+    }, 'Bearer tokenA'))
     const data = await res.json()
 
     expect(res.status).toBe(200)
     expect(captured.portfolioUserIds).toEqual(['user-A'])
     expect(data.matrix.cards[0].cardName).toBe('HDFC Infinia Metal Edition')
     expect(data.matrix.cards[0].rails.some((r: any) => r.transfer?.programmeId === 'krisflyer')).toBe(true)
+    expect(JSON.stringify(data.matrix)).not.toContain('Victim Platinum')
+    expect(JSON.stringify(data.matrix)).not.toContain('victim-wallet')
   })
 
   it('rejects unauthenticated requests before loading the wallet', async () => {

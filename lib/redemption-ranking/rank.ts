@@ -154,9 +154,47 @@ function transferCandidate(
 function genericRailCandidate(
   rail: RedemptionRailDefinition,
   card: WalletRailMatrix['cards'][number],
+  pricing: SelectedTravelPricing,
 ): RankedRailCandidate {
   const state = railComparisonState(rail)
   const reasons: string[] = []
+
+  if (rail.type === 'BANK_TRAVEL_PORTAL' || rail.type === 'MERCHANT_PAY_WITH_POINTS') {
+    const cashPrice = safeNonNegative('cash price minor', pricing.cashPriceMinor)
+    const portal = rail.portal
+    const balance = card.pointsBalance
+    if (
+      cashPrice != null && normalizedCurrency(pricing.cashCurrency) === 'INR' && balance != null && balance > 0 &&
+      portal?.supportsPointsPlusCash === true &&
+      portal.valuePerPointPaise != null && portal.valuePerPointPaise > 0 &&
+      portal.maxPointsShareBps != null && portal.maxPointsShareBps >= 0 && portal.maxPointsShareBps <= 10_000 &&
+      portal.feeMinor != null && portal.feeMinor >= 0
+    ) {
+      assertSafeInteger('wallet points balance', balance, { min: 0 })
+      const capMinor = Math.floor((cashPrice * portal.maxPointsShareBps) / 10_000)
+      const pointsByCap = Math.floor(capMinor / portal.valuePerPointPaise)
+      const pointsUsed = Math.min(balance, pointsByCap)
+      const cashPayable = cashPrice - (pointsUsed * portal.valuePerPointPaise) + portal.feeMinor
+      reasons.push(`${portal.portalName} uses ${pointsUsed.toLocaleString('en-IN')} points within its sourced booking cap.`)
+      if (rail.executionState !== 'EXECUTABLE') reasons.push('Issuer/merchant checkout remains the authoritative execution boundary.')
+      return {
+        id: `${card.walletKey}|${rail.id}`,
+        walletKey: card.walletKey,
+        bank: card.bank,
+        cardName: card.cardName,
+        railId: rail.id,
+        railType: rail.type,
+        railExecutionState: rail.executionState,
+        comparisonState: state,
+        affordability: 'AFFORDABLE',
+        bankPointsTargetMinimum: null,
+        bankPointsToTransferExact: null,
+        cashPayableMinor: cashPayable,
+        cashCurrency: normalizedCurrency(pricing.cashCurrency),
+        reasons,
+      }
+    }
+  }
 
   if (rail.type === 'BANK_TRAVEL_PORTAL' || rail.type === 'MERCHANT_PAY_WITH_POINTS') {
     if (rail.portal?.valuePerPointPaise == null || rail.portal.maxPointsShareBps == null) {
@@ -236,7 +274,7 @@ export function rankWalletRails(
       candidates.push(
         rail.type === 'LOYALTY_TRANSFER'
           ? transferCandidate(rail, card, pricing)
-          : genericRailCandidate(rail, card),
+          : genericRailCandidate(rail, card, pricing),
       )
     }
   }

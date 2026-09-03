@@ -4,7 +4,13 @@ import { useEffect, useMemo, useState } from 'react'
 import { authedFetch } from '@/lib/authed-fetch'
 import type { RedemptionRailDefinition, TravelKind } from '@/lib/redemption-rails/types'
 import type { WalletRailMatrix as Matrix } from '@/lib/redemption-rails/matrix'
-import { rankWalletRails, type RankedRailCandidate, type RailRankingResult } from '@/lib/redemption-ranking'
+import {
+  buildFlightRedemptionPaths,
+  rankWalletRails,
+  type FlightRedemptionPath,
+  type RankedRailCandidate,
+  type RailRankingResult,
+} from '@/lib/redemption-ranking'
 import './wallet-rail-matrix.css'
 
 type Response = { matrix?: Matrix; walletCount?: number; error?: string }
@@ -117,6 +123,71 @@ function RankingSummary({ ranking }: { ranking: RailRankingResult }) {
   return null
 }
 
+function ratioLabel(path: Extract<FlightRedemptionPath, { kind: 'TRANSFER_THEN_BOOK' }>) {
+  return `${path.ratio.fromUnits}:${path.ratio.toUnits}`
+}
+
+function FlightPathCard({ path, label }: { path: FlightRedemptionPath; label: string }) {
+  const stateLabel = path.state === 'EXECUTABLE' ? 'Executable' : 'Projected · verify first'
+
+  if (path.kind === 'TRANSFER_THEN_BOOK') {
+    const bankAmount = path.bankPointsToTransferExact ?? path.bankPointsTargetMinimum
+    return (
+      <article className={`wrm-path ${path.state === 'EXECUTABLE' ? 'executable' : 'projected'}`}>
+        <div className="wrm-path-head">
+          <div><small>{label}</small><b>{path.cardName} → {path.programmeName}</b><span>{bankAmount.toLocaleString('en-IN')} {path.bankPointsToTransferExact == null ? 'minimum target' : 'bank points'} · {ratioLabel(path)}</span></div>
+          <em>{stateLabel}</em>
+        </div>
+        <div className="wrm-path-steps">
+          <div><i>1</i><p><b>Reconfirm this exact award first</b><span>Check the same flight, date, cabin, {path.programmePointsRequired.toLocaleString('en-IN')} {path.destinationCurrency} and {moneyMinor(path.awardTaxesMinor, path.awardTaxesCurrency)} taxes before any points move. <a href={path.bookingUrl} target="_blank" rel="noopener noreferrer">Check directly →</a></span></p></div>
+          {path.bankPointsToTransferExact == null && <div><i>2</i><p><b>Verify the issuer minimum and increment</b><span>The ratio-derived target is at least {path.bankPointsTargetMinimum.toLocaleString('en-IN')} {path.bank} points. This is not an exact transfer instruction yet.</span></p></div>}
+          <div><i>{path.bankPointsToTransferExact == null ? '3' : '2'}</i><p><b>{path.bankPointsToTransferExact == null ? 'Transfer only after both checks pass' : `Transfer ${path.bankPointsToTransferExact.toLocaleString('en-IN')} bank points`}</b><span>Transfer timing: {path.durationText}. The transfer cannot be reversed.</span></p></div>
+          <div><i>{path.bankPointsToTransferExact == null ? '4' : '3'}</i><p><b>Book direct and pay taxes</b><span>Redeem {path.programmePointsRequired.toLocaleString('en-IN')} {path.destinationCurrency}; pay {moneyMinor(path.awardTaxesMinor, path.awardTaxesCurrency)} separately in cash.</span></p></div>
+        </div>
+        <div className="wrm-path-warning"><b>Availability-before-transfer gate</b><span>{path.warning}</span></div>
+      </article>
+    )
+  }
+
+  if (path.kind === 'PORTAL_NO_TRANSFER') {
+    return (
+      <article className={`wrm-path ${path.state === 'EXECUTABLE' ? 'executable' : 'projected'}`}>
+        <div className="wrm-path-head"><div><small>{label}</small><b>Use {path.portalName}</b><span>{path.portalPointsUsed.toLocaleString('en-IN')} points · {(path.portalMaxPointsShareBps / 100).toLocaleString('en-IN')}% booking cap</span></div><em>{stateLabel}</em></div>
+        <div className="wrm-path-steps">
+          <div><i>1</i><p><b>Book in {path.portalName}</b><span>Apply {path.portalPointsUsed.toLocaleString('en-IN')} {path.cardName} points at {moneyMinor(path.portalValuePerPointPaise, 'INR')} per point. <a href={path.bookingUrl} target="_blank" rel="noopener noreferrer">Open portal →</a></span></p></div>
+          <div><i>2</i><p><b>Pay the cash remainder</b><span>Pay {moneyMinor(path.cashPayableMinor, path.cashCurrency)}, including the {moneyMinor(path.portalFeeMinor, path.cashCurrency)} redemption fee.</span></p></div>
+        </div>
+        <div className="wrm-path-safe">No transfer, no waiting, and no irreversible points move before payment.</div>
+      </article>
+    )
+  }
+
+  return (
+    <article className="wrm-path executable">
+      <div className="wrm-path-head"><div><small>{label}</small><b>Pay cash and retain points</b><span>{moneyMinor(path.cashPayableMinor, path.cashCurrency)} · wallet points untouched</span></div><em>Executable</em></div>
+      <div className="wrm-path-steps">
+        <div><i>1</i><p><b>Recheck the matched cash itinerary</b><span>Confirm the current fare and conditions at the selected booking provider.</span></p></div>
+        <div><i>2</i><p><b>Pay cash</b><span>Complete the booking for {moneyMinor(path.cashPayableMinor, path.cashCurrency)} without transferring bank points.</span></p></div>
+        <div><i>3</i><p><b>Keep your points</b><span>Retain every wallet point for a later redemption with fully verified execution terms.</span></p></div>
+      </div>
+    </article>
+  )
+}
+
+function FlightExecutionPaths({ ranking }: { ranking: RailRankingResult }) {
+  if (ranking.pricing.travelKind !== 'flight') return null
+  const paths = buildFlightRedemptionPaths(ranking)
+  if (!paths.bestProjected && !paths.bestExecutable) return null
+
+  return (
+    <div className="wrm-paths" aria-label="Flight redemption execution paths">
+      <div className="wrm-section-title"><b>What happens next</b><span>Projected economics and executable action stay separate.</span></div>
+      {paths.bestProjected && <FlightPathCard path={paths.bestProjected} label="Best projected path" />}
+      {paths.bestExecutable && <FlightPathCard path={paths.bestExecutable} label="Best executable now" />}
+    </div>
+  )
+}
+
 export function WalletRailMatrix({
   travelKind,
   programmeId,
@@ -190,6 +261,7 @@ export function WalletRailMatrix({
       </div>
 
       {!loading && !error && ranking && <RankingSummary ranking={ranking} />}
+      {!loading && !error && ranking && <FlightExecutionPaths ranking={ranking} />}
       {loading && <div className="wrm-loading">Loading card-specific rails…</div>}
       {error && !loading && <div className="wrm-error">{error}</div>}
       {!loading && !error && cards.length === 0 && <div className="wrm-empty">No cards are connected to your decision wallet yet. Cash remains available.</div>}
@@ -215,7 +287,7 @@ export function WalletRailMatrix({
       ))}
 
       {!loading && !error && <div className="wrm-cash"><b>Cash + retain points</b><span>Always available · selected booking provider</span><em>Executable</em></div>}
-      <div className="wrm-foot">This panel enumerates sourced rails and bounded comparisons. Exact transfer arithmetic still belongs to the v3.1 engine and final checkout verification.</div>
+      <div className="wrm-foot">This panel assembles safe next steps from sourced rails. Exact transfer amounts remain withheld until issuer minimum/increment and final checkout are verified.</div>
     </section>
   )
 }

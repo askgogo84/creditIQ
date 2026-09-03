@@ -91,6 +91,8 @@ export interface RedemptionRailDefinition {
   portal?: PortalMechanics
   voucher?: VoucherMechanics
   bookingDestination?: string
+  /** Direct issuer/programme checkout. Never synthesize a search URL here. */
+  bookingUrl?: string
   notes?: string[]
 }
 
