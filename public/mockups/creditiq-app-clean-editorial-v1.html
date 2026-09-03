@@ -1,0 +1,1024 @@
+<!doctype html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="description" content="Interactive CreditIQ clean editorial application redesign prototype" />
+  <title>CreditIQ — Clean Editorial Redesign</title>
+  <style>
+:root {
+  --navy-1000: #06111f;
+  --navy-950: #081827;
+  --navy-900: #0d2135;
+  --navy-800: #173650;
+  --navy-700: #294b67;
+  --copper-700: #88581f;
+  --copper-600: #aa7227;
+  --copper-500: #d3983d;
+  --copper-200: #ecd2a8;
+  --copper-100: #f9edd9;
+  --cyan: #6bc7d6;
+  --cyan-soft: #e8f8fa;
+  --green: #15805a;
+  --green-soft: #e8f7ef;
+  --blue: #39709e;
+  --blue-soft: #eaf3fb;
+  --amber: #8b651d;
+  --amber-soft: #fff6df;
+  --red: #a3473f;
+  --red-soft: #feeeec;
+  --bg: #f5f7f8;
+  --paper: #ffffff;
+  --paper-raised: #ffffff;
+  --paper-soft: #f8fafb;
+  --ink: #112438;
+  --muted: #617287;
+  --subtle: #8794a4;
+  --line: #dee5eb;
+  --line-strong: #cad4de;
+  --sidebar: 238px;
+  --topbar: 68px;
+  --banner: 28px;
+  --shadow-xs: 0 1px 2px rgba(5, 17, 30, .035);
+  --shadow-sm: 0 8px 24px rgba(5, 17, 30, .055);
+  --shadow-md: 0 18px 50px rgba(5, 17, 30, .09);
+  --shadow-lg: 0 30px 80px rgba(5, 17, 30, .14);
+}
+
+html[data-theme="dark"] {
+  --bg: #07131f;
+  --paper: #0d1d2b;
+  --paper-raised: #112437;
+  --paper-soft: #0a1927;
+  --ink: #edf5fa;
+  --muted: #9babbc;
+  --subtle: #708195;
+  --line: #203448;
+  --line-strong: #30475c;
+  --copper-100: #2f281e;
+  --cyan-soft: #102e36;
+  --green-soft: #102d24;
+  --blue-soft: #112a40;
+  --amber-soft: #30291a;
+  --red-soft: #321f20;
+  --shadow-xs: 0 1px 2px rgba(0, 0, 0, .14);
+  --shadow-sm: 0 8px 24px rgba(0, 0, 0, .2);
+  --shadow-md: 0 18px 50px rgba(0, 0, 0, .28);
+  --shadow-lg: 0 30px 80px rgba(0, 0, 0, .38);
+}
+
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body {
+  margin: 0;
+  min-width: 320px;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-size: 16px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  transition: background .25s ease, color .25s ease;
+}
+button, input, textarea, select { font: inherit; }
+button { color: inherit; }
+button, [tabindex] { -webkit-tap-highlight-color: transparent; }
+button:focus-visible, input:focus-visible, textarea:focus-visible, select:focus-visible, summary:focus-visible, [tabindex]:focus-visible {
+  outline: 3px solid rgba(211, 152, 61, .32);
+  outline-offset: 2px;
+}
+svg { width: 1.15rem; height: 1.15rem; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+.svg-sprite { position: absolute; width: 0; height: 0; overflow: hidden; }
+
+.prototype-banner {
+  position: fixed;
+  inset: 0 0 auto;
+  z-index: 100;
+  height: var(--banner);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: .45rem;
+  background: linear-gradient(90deg, #fff6df, #f8ead2, #fff6df);
+  border-bottom: 1px solid #e6cea6;
+  color: #76551d;
+  font-size: .7rem;
+  font-weight: 760;
+  letter-spacing: .035em;
+}
+.prototype-banner span { width: .42rem; height: .42rem; border-radius: 50%; background: var(--copper-500); box-shadow: 0 0 0 .23rem rgba(211,152,61,.16); }
+html[data-theme="dark"] .prototype-banner { background: #292316; border-color: #46391f; color: #e6c486; }
+
+.app-shell { display: grid; grid-template-columns: var(--sidebar) minmax(0, 1fr); min-height: 100vh; padding-top: var(--banner); }
+.sidebar {
+  position: fixed;
+  inset: var(--banner) auto 0 0;
+  z-index: 40;
+  width: var(--sidebar);
+  display: flex;
+  flex-direction: column;
+  padding: 1.25rem .9rem .85rem;
+  background: linear-gradient(180deg, var(--navy-950), #0a1b2c 62%, #071522);
+  color: #dce9f2;
+  overflow-y: auto;
+}
+.sidebar::before { content: ""; position: absolute; width: 12rem; height: 12rem; right: -7rem; top: 3rem; border-radius: 50%; background: rgba(107,199,214,.08); filter: blur(25px); pointer-events: none; }
+.brand { min-height: 3.2rem; display: flex; align-items: center; gap: .7rem; padding: 0 .6rem 1.25rem; }
+.brand-mark { width: 2.35rem; height: 2.35rem; display: grid; place-items: center; flex: 0 0 auto; border-radius: .72rem; background: linear-gradient(145deg, var(--copper-500), #b57425); color: var(--navy-950); box-shadow: 0 10px 24px rgba(211,152,61,.16); }
+.brand-mark svg { width: 1.3rem; height: 1.3rem; stroke-width: 2.2; }
+.brand-copy { color: white; font-size: 1.15rem; font-weight: 850; letter-spacing: -.04em; }
+.brand-copy small { display: block; margin-top: -.12rem; color: var(--copper-500); font-size: .47rem; font-weight: 850; letter-spacing: .22em; }
+.nav-kicker { margin: .45rem .75rem .55rem; color: #607b93; font-size: .66rem; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; }
+.nav-list { display: grid; gap: .25rem; }
+.nav-item {
+  position: relative;
+  width: 100%;
+  min-height: 2.85rem;
+  display: flex;
+  align-items: center;
+  gap: .78rem;
+  border: 0;
+  border-radius: .78rem;
+  padding: 0 .78rem;
+  background: transparent;
+  color: #91a7ba;
+  font-size: .83rem;
+  font-weight: 700;
+  text-align: left;
+  cursor: pointer;
+  transition: color .18s, background .18s, transform .18s;
+}
+.nav-item svg { width: 1.15rem; height: 1.15rem; }
+.nav-item:hover { color: white; background: rgba(255,255,255,.055); transform: translateX(2px); }
+.nav-item.active { color: white; background: linear-gradient(90deg, rgba(211,152,61,.24), rgba(211,152,61,.07)); box-shadow: inset 2px 0 0 var(--copper-500); }
+.nav-count, .nav-live { margin-left: auto; min-width: 1.25rem; padding: .1rem .33rem; border-radius: 999px; text-align: center; font-size: .58rem; }
+.nav-count { background: #1b354a; color: #b8d0e2; }
+.nav-live { background: rgba(107,199,214,.13); color: var(--cyan); letter-spacing: .05em; }
+.nav-spacer { flex: 1; min-height: 1.5rem; }
+.nav-bottom { padding-top: .75rem; border-top: 1px solid rgba(255,255,255,.08); }
+.side-profile { display: grid; grid-template-columns: 2.1rem 1fr 1rem; gap: .65rem; align-items: center; margin-top: .65rem; padding: .75rem .55rem .25rem; border-top: 1px solid rgba(255,255,255,.08); }
+.avatar { width: 2.1rem; height: 2.1rem; display: grid; place-items: center; border-radius: 50%; background: linear-gradient(145deg, var(--copper-200), var(--copper-500)); color: var(--navy-950); font-size: .78rem; font-weight: 850; }
+.side-profile b, .side-profile small { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.side-profile b { color: white; font-size: .72rem; }
+.side-profile small { color: #7890a4; font-size: .62rem; }
+.side-arrow { width: .85rem; color: #607b91; transform: rotate(-90deg); }
+
+.app-main { min-width: 0; grid-column: 2; }
+.topbar {
+  position: fixed;
+  inset: var(--banner) 0 auto var(--sidebar);
+  z-index: 35;
+  height: var(--topbar);
+  display: grid;
+  grid-template-columns: minmax(150px, 1fr) minmax(260px, 34rem) minmax(220px, 1fr);
+  gap: 1.25rem;
+  align-items: center;
+  padding: 0 clamp(1.1rem, 2.5vw, 2.5rem);
+  background: color-mix(in srgb, var(--bg) 86%, transparent);
+  border-bottom: 1px solid color-mix(in srgb, var(--line) 85%, transparent);
+  backdrop-filter: blur(20px);
+}
+.breadcrumb { display: flex; gap: .5rem; align-items: center; color: var(--subtle); font-size: .76rem; }
+.breadcrumb b::before { content: "/"; margin-right: .5rem; color: var(--line-strong); }
+.breadcrumb b { color: var(--ink); }
+.top-search { min-height: 2.45rem; display: grid; grid-template-columns: 1.2rem 1fr auto; gap: .55rem; align-items: center; padding: 0 .75rem; border: 1px solid var(--line); border-radius: .75rem; background: color-mix(in srgb, var(--paper) 90%, transparent); box-shadow: var(--shadow-xs); }
+.top-search svg { color: var(--subtle); width: 1rem; }
+.top-search input { min-width: 0; border: 0; outline: 0; background: transparent; color: var(--ink); font-size: .77rem; }
+.top-search input::placeholder { color: var(--subtle); }
+.top-search kbd { padding: .15rem .35rem; border: 1px solid var(--line); border-radius: .3rem; background: var(--paper-soft); color: var(--subtle); font: 600 .6rem/1.2 ui-monospace, SFMono-Regular, Menlo, monospace; }
+.top-actions { display: flex; justify-content: flex-end; gap: .45rem; }
+.icon-btn, .mobile-menu { border: 1px solid var(--line); background: var(--paper); cursor: pointer; }
+.icon-btn { position: relative; width: 2.45rem; height: 2.45rem; display: grid; place-items: center; border-radius: .72rem; box-shadow: var(--shadow-xs); }
+.icon-btn svg { width: 1rem; }
+.moon-icon { display: none; }
+html[data-theme="dark"] .sun-icon { display: none; }
+html[data-theme="dark"] .moon-icon { display: block; }
+.notify-btn span { position: absolute; top: .48rem; right: .5rem; width: .4rem; height: .4rem; border-radius: 50%; background: var(--copper-500); border: 2px solid var(--paper); }
+.ask-cira { min-height: 2.45rem; display: flex; align-items: center; gap: .45rem; border: 0; border-radius: .72rem; padding: 0 .85rem; background: var(--navy-900); color: white; font-size: .72rem; font-weight: 770; cursor: pointer; box-shadow: var(--shadow-sm); }
+.ask-cira svg { width: .92rem; color: var(--copper-500); }
+.mobile-menu { display: none; }
+
+.page-stage { min-height: 100vh; padding-top: var(--topbar); }
+.page { display: none; width: min(100% - clamp(2rem, 5vw, 5rem), 94rem); margin: 0 auto; padding: clamp(1.7rem, 3vw, 2.8rem) 0 5rem; animation: pageIn .26s ease both; }
+.page.active { display: block; }
+@keyframes pageIn { from { opacity: 0; transform: translateY(.45rem); } to { opacity: 1; transform: translateY(0); } }
+.page h1 { margin: 0; color: var(--ink); font-size: clamp(2rem, 3vw, 3rem); line-height: 1.05; letter-spacing: -.05em; }
+.page h2, .page h3 { color: var(--ink); letter-spacing: -.035em; }
+.eyebrow, .section-kicker { color: var(--copper-600); font-size: .66rem; font-weight: 850; letter-spacing: .11em; text-transform: uppercase; }
+.page-header { display: flex; align-items: end; justify-content: space-between; gap: 1.5rem; margin-bottom: 1.6rem; }
+.page-header p, .hero-copy p { max-width: 42rem; margin: .55rem 0 0; color: var(--muted); font-size: .86rem; }
+.surface { border: 1px solid var(--line); border-radius: 1rem; background: var(--paper); box-shadow: var(--shadow-xs); }
+.button { min-height: 2.65rem; display: inline-flex; align-items: center; justify-content: center; gap: .45rem; border-radius: .72rem; padding: 0 .95rem; font-size: .75rem; font-weight: 790; white-space: nowrap; cursor: pointer; transition: transform .16s, box-shadow .16s, background .16s; }
+.button svg { width: .95rem; }
+.button:hover { transform: translateY(-1px); box-shadow: var(--shadow-sm); }
+.button.primary { border: 0; background: linear-gradient(135deg, var(--copper-500), #c5822f); color: #101b26; }
+.button.secondary { border: 1px solid var(--line-strong); background: var(--paper); color: var(--ink); }
+.button.ghost { border: 1px solid rgba(255,255,255,.2); background: rgba(255,255,255,.06); color: white; }
+.text-button { display: inline-flex; align-items: center; gap: .35rem; border: 0; background: transparent; color: var(--copper-600); font-size: .7rem; font-weight: 780; cursor: pointer; }
+.text-button svg { width: .8rem; transition: transform .15s; }
+.text-button:hover svg { transform: translateX(3px); }
+.more-btn { border: 0; background: transparent; color: var(--subtle); cursor: pointer; letter-spacing: .12em; }
+
+/* Dashboard */
+.dashboard-hero { position: relative; min-height: 17rem; display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(25rem, .75fr); align-items: center; gap: 2rem; overflow: hidden; padding: 2.25rem 2.5rem; border-radius: 1.35rem; background: radial-gradient(circle at 80% 30%, rgba(107,199,214,.17), transparent 27%), radial-gradient(circle at 42% 110%, rgba(211,152,61,.16), transparent 34%), linear-gradient(135deg, #071827 0%, #0e2940 58%, #153d53 100%); color: white; box-shadow: var(--shadow-md); }
+.dashboard-hero::after { content: ""; position: absolute; inset: auto -8% -70% 35%; height: 130%; border: 1px solid rgba(255,255,255,.07); border-radius: 50%; transform: rotate(-8deg); }
+.hero-copy { position: relative; z-index: 2; }
+.hero-copy .eyebrow { color: var(--copper-500); }
+.hero-copy h1 { color: white; font-size: clamp(2.2rem, 3.2vw, 3.4rem); }
+.hero-copy p { color: #a9bdcc; font-size: .9rem; }
+.hero-actions { display: flex; gap: .6rem; margin-top: 1.35rem; }
+.hero-orbit { position: relative; z-index: 2; width: 16rem; height: 16rem; justify-self: center; display: grid; place-items: center; }
+.orbit { position: absolute; border: 1px solid rgba(255,255,255,.12); border-radius: 50%; }
+.orbit-a { inset: .75rem; }
+.orbit-b { inset: 2.8rem; border-style: dashed; animation: spin 20s linear infinite; }
+.orbit-core { width: 8.4rem; height: 8.4rem; display: grid; align-content: center; place-items: center; border: 1px solid rgba(255,255,255,.14); border-radius: 50%; background: radial-gradient(circle, rgba(255,255,255,.13), rgba(255,255,255,.04)); box-shadow: inset 0 0 40px rgba(107,199,214,.06), 0 0 55px rgba(107,199,214,.08); backdrop-filter: blur(8px); }
+.orbit-core small, .orbit-core span { color: #92a9bb; font-size: .62rem; }
+.orbit-core strong { font-size: 1.9rem; letter-spacing: -.05em; }
+.orbit-plane { position: absolute; top: .15rem; left: 50%; width: 2.15rem; height: 2.15rem; display: grid; place-items: center; border-radius: 50%; background: var(--copper-500); color: var(--navy-950); transform: translateX(-50%) rotate(45deg); box-shadow: 0 0 0 .45rem rgba(211,152,61,.08); }
+.orbit-plane svg { width: 1rem; }
+.orbit-tag { position: absolute; padding: .38rem .6rem; border: 1px solid rgba(255,255,255,.12); border-radius: 999px; background: rgba(5,17,30,.56); color: #c9d8e3; font-size: .62rem; font-weight: 760; backdrop-filter: blur(8px); }
+.tag-a { left: -.7rem; top: 4.2rem; }
+.tag-b { right: -.8rem; bottom: 3rem; }
+@keyframes spin { to { transform: rotate(360deg); } }
+.metric-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: .85rem; margin-top: .85rem; }
+.metric-card { min-height: 7.7rem; display: grid; grid-template-columns: 2.75rem 1fr auto; gap: .8rem; align-items: center; padding: 1.1rem; border: 1px solid var(--line); border-radius: 1rem; background: var(--paper); box-shadow: var(--shadow-xs); }
+.metric-icon { width: 2.7rem; height: 2.7rem; display: grid; place-items: center; border-radius: .8rem; }
+.metric-icon.copper { background: var(--copper-100); color: var(--copper-700); }.metric-icon.blue { background: var(--blue-soft); color: var(--blue); }.metric-icon.green { background: var(--green-soft); color: var(--green); }
+.metric-card small, .metric-card span { display: block; color: var(--muted); font-size: .64rem; }
+.metric-card strong { display: block; margin: .1rem 0; font-size: 1.45rem; letter-spacing: -.035em; }
+.metric-card .positive { color: var(--green); }
+.micro-bars { height: 3rem; display: flex; gap: .16rem; align-items: end; }
+.micro-bars i { width: .24rem; min-height: .35rem; border-radius: 99px; background: linear-gradient(var(--copper-500), var(--copper-200)); }
+.ring { --value: 70; width: 6.3rem; aspect-ratio: 1; display: grid; place-items: center; border-radius: 50%; background: conic-gradient(var(--copper-500) calc(var(--value) * 1%), color-mix(in srgb, var(--line) 85%, transparent) 0); position: relative; }
+.ring::after { content: ""; position: absolute; inset: .55rem; border-radius: 50%; background: var(--paper); }
+.ring > * { position: relative; z-index: 2; }
+.ring.mini { width: 3.2rem; }
+.ring.mini::after { inset: .34rem; }
+.ring.mini b { font-size: .65rem; }
+.flight-mini { position: relative; width: 4.4rem; height: 2.8rem; display: flex; align-items: center; gap: .25rem; color: var(--green); }
+.flight-mini svg { width: 1rem; transform: rotate(55deg); }
+.flight-mini i { flex: 1; border-top: 1px dashed var(--line-strong); }
+.flight-mini b { font-size: .58rem; }
+.dashboard-grid { display: grid; grid-template-columns: minmax(0, 1.45fr) minmax(19rem, .55fr); gap: .85rem; margin-top: .85rem; }
+.opportunity-panel, .spend-chart-card { padding: 1.3rem; }
+.section-head { display: flex; align-items: end; justify-content: space-between; gap: 1rem; }
+.section-head h2 { margin: .2rem 0 0; font-size: 1.18rem; }
+.section-head.compact { align-items: start; }
+.opportunity-list { margin-top: 1rem; border-top: 1px solid var(--line); }
+.opportunity { width: 100%; min-height: 4.5rem; display: grid; grid-template-columns: 2.55rem 1fr auto 1rem; gap: .75rem; align-items: center; border: 0; border-bottom: 1px solid var(--line); padding: .7rem .2rem; background: transparent; text-align: left; cursor: pointer; }
+.opportunity:last-child { border-bottom: 0; }
+.opportunity:hover .op-copy b { color: var(--copper-600); }
+.merchant-logo { width: 2.35rem; height: 2.35rem; display: grid; place-items: center; flex: 0 0 auto; border-radius: .7rem; font-size: 1.25rem; font-weight: 850; }
+.merchant-logo.amazon { background: #fff1d9; color: #a55b00; font-family: Georgia, serif; }.merchant-logo.flight { background: var(--blue-soft); color: var(--blue); }.merchant-logo.statement { background: var(--green-soft); color: var(--green); }
+.op-copy b, .op-copy small, .op-value b, .op-value small { display: block; }
+.op-copy b { font-size: .77rem; }.op-copy small { margin-top: .15rem; color: var(--muted); font-size: .66rem; }.op-value { text-align: right; }.op-value b { color: var(--green); font-size: .76rem; }.op-value small { color: var(--subtle); font-size: .57rem; }
+.opportunity > svg { width: .8rem; color: var(--subtle); }
+.spend-chart { height: 9.2rem; display: flex; gap: .55rem; align-items: end; margin-top: .4rem; padding-top: 1.8rem; border-bottom: 1px solid var(--line); }
+.spend-chart > div { position: relative; flex: 1; height: 100%; display: flex; flex-direction: column; justify-content: end; align-items: center; gap: .3rem; }
+.spend-chart i { width: 70%; min-height: .5rem; border-radius: .3rem .3rem 0 0; background: color-mix(in srgb, var(--copper-500) 32%, var(--line)); }
+.spend-chart .current i { background: linear-gradient(var(--copper-500), #b97927); }
+.spend-chart small { color: var(--subtle); font-size: .55rem; }
+.spend-chart .current b { position: absolute; top: .05rem; color: var(--ink); font-size: .58rem; }
+.chart-legend { display: flex; gap: 1rem; margin-top: .8rem; color: var(--muted); font-size: .61rem; }
+.dot { display: inline-block; width: .45rem; height: .45rem; margin-right: .3rem; border-radius: 50%; }.copper-dot { background: var(--copper-500); }.grey-dot { background: var(--line-strong); }
+.page-section-head { margin: 1.8rem 0 .8rem; }
+.mini-card-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: .85rem; }
+.mini-credit-card { min-height: 10rem; padding: 1.2rem; border-radius: 1rem; color: white; box-shadow: var(--shadow-sm); overflow: hidden; position: relative; }
+.mini-credit-card::after { content: ""; position: absolute; width: 9rem; height: 9rem; right: -3rem; top: -4rem; border: 1px solid rgba(255,255,255,.12); border-radius: 50%; }
+.infinia { background: linear-gradient(140deg, #111820, #35414b); }.magnus { background: linear-gradient(140deg, #5a1538, #b14f75); }.amex { background: linear-gradient(140deg, #80745f, #c2b79e); }.emerald { background: linear-gradient(140deg, #063c3b, #15807b); }
+.mini-credit-card > div { display: flex; justify-content: space-between; color: rgba(255,255,255,.76); font-size: .59rem; letter-spacing: .08em; }.mini-credit-card strong { display: block; margin-top: 1.1rem; font-size: 1.55rem; }.mini-credit-card small { color: rgba(255,255,255,.65); font-size: .62rem; }.mini-credit-card footer { display: flex; justify-content: space-between; align-items: center; margin-top: 1.2rem; color: rgba(255,255,255,.72); font-size: .58rem; }.mini-credit-card .verified { display: flex; align-items: center; gap: .2rem; }.mini-credit-card .verified svg { width: .7rem; }
+
+/* Wallet */
+.wallet-summary { min-height: 14rem; display: grid; grid-template-columns: 1.1fr .5fr 1fr; gap: 2rem; align-items: center; padding: 1.8rem 2rem; }
+.dark-surface { background: radial-gradient(circle at 32% 110%, rgba(211,152,61,.17), transparent 38%), linear-gradient(130deg, #081827, #113149); border-color: #213d52; color: white; box-shadow: var(--shadow-md); }
+.wallet-summary > div:first-child small, .wallet-summary > div:first-child span { display: block; color: #93aabd; font-size: .72rem; }.wallet-summary > div:first-child strong { display: block; margin: .25rem 0; font-size: clamp(2.4rem, 4vw, 3.7rem); letter-spacing: -.06em; }
+.value-ring { display: grid; place-items: center; }.value-ring .ring { --paper: #0d283d; }.value-ring .ring span { display: grid; place-items: center; }.value-ring .ring b { font-size: 1.1rem; }.value-ring .ring small { color: #8fa6b8; font-size: .58rem; }
+.wallet-breakdown { display: grid; gap: .8rem; }.wallet-breakdown > div { display: grid; grid-template-columns: 1fr auto; gap: .25rem .7rem; color: #a9bdca; font-size: .66rem; }.wallet-breakdown b { color: white; }.wallet-breakdown i { grid-column: 1/-1; height: .3rem; overflow: hidden; border-radius: 99px; background: rgba(255,255,255,.1); }.wallet-breakdown em { display: block; height: 100%; border-radius: inherit; background: linear-gradient(90deg, var(--copper-500), var(--cyan)); }
+.view-toggle, .segmented { display: flex; padding: .2rem; border: 1px solid var(--line); border-radius: 999px; background: var(--paper-soft); }.view-toggle button, .segmented button { min-height: 1.8rem; border: 0; border-radius: 999px; padding: 0 .72rem; background: transparent; color: var(--muted); font-size: .62rem; font-weight: 730; cursor: pointer; }.view-toggle button.active, .segmented button.active { background: var(--navy-900); color: white; }
+.wallet-card-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: .9rem; }
+.wallet-card-wrap { padding: .75rem; border: 1px solid var(--line); border-radius: 1.05rem; background: var(--paper); box-shadow: var(--shadow-xs); transition: transform .18s, box-shadow .18s; }.wallet-card-wrap:hover { transform: translateY(-3px); box-shadow: var(--shadow-md); }.wallet-card-wrap.selected { border-color: var(--copper-200); }
+.wallet-card-visual { min-height: 11.5rem; display: flex; flex-direction: column; justify-content: space-between; padding: 1.15rem; border-radius: .8rem; color: white; overflow: hidden; position: relative; box-shadow: inset 0 0 0 1px rgba(255,255,255,.08); }.wallet-card-visual::after { content: ""; position: absolute; width: 13rem; height: 13rem; right: -5rem; top: -6rem; border: 1px solid rgba(255,255,255,.15); border-radius: 50%; }.wallet-card-visual header, .wallet-card-visual footer { display: flex; justify-content: space-between; color: rgba(255,255,255,.78); font-size: .61rem; letter-spacing: .07em; }.wallet-card-visual strong { font-size: .9rem; letter-spacing: .16em; }.chip-shape { width: 2.05rem; height: 1.45rem; border-radius: .28rem; background: linear-gradient(135deg, #f2d8a1, #9e7b3e); box-shadow: inset 0 0 0 1px rgba(0,0,0,.2); }
+.wallet-card-meta { display: flex; justify-content: space-between; align-items: center; gap: .5rem; padding: .8rem .25rem .45rem; }.wallet-card-meta small, .wallet-card-meta b { display: block; }.wallet-card-meta small { color: var(--subtle); font-size: .59rem; }.wallet-card-meta b { font-size: .82rem; }.status { display: inline-flex; align-items: center; gap: .2rem; border-radius: 999px; padding: .25rem .42rem; font-size: .53rem; font-weight: 780; }.status svg { width: .65rem; }.status.good { background: var(--green-soft); color: var(--green); }.status.warn { background: var(--amber-soft); color: var(--amber); }.status.neutral, .tag.neutral { background: var(--paper-soft); color: var(--muted); }
+.card-link { width: 100%; min-height: 2.3rem; display: flex; align-items: center; justify-content: space-between; border: 0; border-top: 1px solid var(--line); padding: .5rem .25rem 0; background: transparent; color: var(--copper-600); font-size: .65rem; font-weight: 750; cursor: pointer; }.card-link svg { width: .8rem; }
+.wallet-lower-grid { display: grid; grid-template-columns: 1.4fr .6fr; gap: .9rem; margin-top: 1.5rem; }.transfer-readiness { padding: 1.3rem; }.partner-flow { display: grid; grid-template-columns: 6rem 1fr minmax(10rem, .9fr); align-items: center; margin-top: 1rem; min-height: 8.2rem; }.flow-bank { width: 5.5rem; height: 5.5rem; display: grid; place-items: center; align-content: center; border-radius: 50%; background: var(--navy-900); color: white; text-align: center; font-size: .62rem; box-shadow: 0 0 0 .5rem var(--blue-soft); }.flow-bank b { font-size: .9rem; }.flow-lines { display: grid; gap: 1.25rem; }.flow-lines i { height: 1px; background: linear-gradient(90deg, var(--copper-500), var(--line)); }.flow-partners { display: grid; gap: .45rem; }.flow-partners span { padding: .45rem .65rem; border: 1px solid var(--line); border-radius: .6rem; background: var(--paper-soft); color: var(--subtle); font-size: .55rem; }.flow-partners b { color: var(--ink); font-size: .65rem; }
+.statement-drop { min-height: 14rem; display: grid; place-items: center; align-content: center; padding: 1.3rem; border-style: dashed; text-align: center; cursor: pointer; }.drop-icon { width: 3rem; height: 3rem; display: grid; place-items: center; border-radius: .9rem; background: var(--copper-100); color: var(--copper-700); }.statement-drop h3 { margin: .7rem 0 .2rem; font-size: .95rem; }.statement-drop p { max-width: 18rem; margin: 0 0 .75rem; color: var(--muted); font-size: .65rem; }.statement-drop > small { margin-top: .5rem; color: var(--subtle); font-size: .55rem; }
+
+/* Spend Smart */
+.smart-search { padding: 1.1rem; }.category-strip { display: flex; gap: .45rem; overflow-x: auto; padding-bottom: .9rem; }.category-chip, .finder-chips button, .filter { min-height: 2.05rem; border: 1px solid var(--line); border-radius: 999px; padding: 0 .75rem; background: var(--paper); color: var(--muted); font-size: .62rem; font-weight: 740; white-space: nowrap; cursor: pointer; }.category-chip.active, .finder-chips button.active, .filter.active { border-color: var(--navy-900); background: var(--navy-900); color: white; }
+.merchant-form { display: grid; grid-template-columns: 1.2fr .75fr auto; gap: .65rem; align-items: end; }.merchant-form label { display: block; }.merchant-form label > span { display: block; margin-bottom: .3rem; color: var(--subtle); font-size: .59rem; font-weight: 770; letter-spacing: .07em; text-transform: uppercase; }.merchant-input > div, .amount-input { min-height: 3.2rem; display: flex; align-items: center; gap: .6rem; border: 1px solid var(--line); border-radius: .72rem; padding: 0 .7rem; background: var(--paper-soft); }.merchant-input .merchant-logo { width: 2rem; height: 2rem; font-size: 1rem; }.merchant-input input, .amount-input input { width: 100%; min-width: 0; border: 0; outline: 0; background: transparent; color: var(--ink); font-weight: 760; }.amount-input b { color: var(--copper-600); }.merchant-form .button { min-height: 3.2rem; }
+.smart-result { display: grid; grid-template-columns: minmax(0, 1.45fr) minmax(16rem, .55fr); gap: .9rem; margin-top: .9rem; }.winner-card { position: relative; overflow: hidden; padding: 1.35rem; }.winner-glow { position: absolute; width: 17rem; height: 17rem; top: -10rem; right: -4rem; border-radius: 50%; background: rgba(107,199,214,.14); filter: blur(20px); pointer-events: none; }.winner-top { position: relative; display: flex; justify-content: space-between; }.winner-badge { display: inline-flex; align-items: center; gap: .35rem; padding: .3rem .5rem; border-radius: 999px; background: var(--green-soft); color: var(--green); font-size: .58rem; font-weight: 800; }.winner-badge svg { width: .72rem; }.confidence { color: var(--subtle); font-size: .59rem; }.winner-main { position: relative; display: grid; grid-template-columns: 8.2rem 1fr auto; gap: 1rem; align-items: center; margin-top: 1rem; }.winner-card-art { width: 8.2rem; height: 5.1rem; display: flex; flex-direction: column; justify-content: space-between; padding: .7rem; border-radius: .65rem; color: white; box-shadow: var(--shadow-md); }.winner-card-art span, .winner-card-art small { font-size: .48rem; letter-spacing: .08em; }.winner-card-art b { font-size: .75rem; }.overline { color: var(--copper-600); font-size: .59rem; font-weight: 780; text-transform: uppercase; }.winner-main h2 { margin: .15rem 0 .25rem; font-size: 1.25rem; }.winner-main p { max-width: 28rem; margin: 0; color: var(--muted); font-size: .67rem; }.winner-value { text-align: right; }.winner-value small, .winner-value span { display: block; color: var(--muted); font-size: .59rem; }.winner-value strong { display: block; color: var(--green); font-size: 1.75rem; letter-spacing: -.04em; }.winner-steps { display: grid; grid-template-columns: auto 1fr auto 1fr auto auto; gap: .5rem; align-items: center; margin-top: 1.15rem; padding-top: 1rem; border-top: 1px solid var(--line); }.winner-steps > div { display: flex; align-items: center; gap: .35rem; color: var(--muted); font-size: .61rem; }.winner-steps > div b { width: 1.25rem; height: 1.25rem; display: grid; place-items: center; border-radius: 50%; background: var(--copper-100); color: var(--copper-700); font-size: .58rem; }.winner-steps > i { border-top: 1px dashed var(--line-strong); }
+.value-meter { padding: 1.3rem; }.meter-ring { display: grid; place-items: center; margin: .8rem 0; }.meter-ring .ring span { display: grid; place-items: center; }.meter-ring .ring b { font-size: 1.15rem; }.meter-ring .ring small { color: var(--muted); font-size: .55rem; }.meter-row { display: flex; justify-content: space-between; gap: .7rem; padding: .55rem 0; border-bottom: 1px solid var(--line); color: var(--muted); font-size: .62rem; }.meter-row b { color: var(--ink); }.meter-row.best b { color: var(--green); }.meter-save { margin-top: .9rem; padding: .75rem; border-radius: .65rem; background: var(--green-soft); }.meter-save small { display: block; color: var(--green); font-size: .57rem; }.meter-save strong { display: block; color: var(--green); font-size: 1.2rem; }
+.comparison-table { overflow: hidden; }.compare-head, .compare-row { display: grid; grid-template-columns: 1.4fr repeat(3, .65fr) .4fr; gap: .75rem; align-items: center; }.compare-head { min-height: 2.7rem; padding: 0 1rem; background: var(--paper-soft); color: var(--subtle); font-size: .57rem; font-weight: 780; letter-spacing: .06em; text-transform: uppercase; }.compare-row { min-height: 4.2rem; padding: .7rem 1rem; border-top: 1px solid var(--line); font-size: .69rem; }.compare-row.highlighted { background: linear-gradient(90deg, var(--green-soft), transparent 70%); }.compare-row > span:first-child { display: grid; grid-template-columns: 2rem 1fr; gap: 0 .55rem; align-items: center; }.compare-row > span:first-child b, .compare-row > span:first-child small { grid-column: 2; }.compare-row small { color: var(--muted); font-size: .58rem; }.compare-row strong { color: var(--green); }.card-swatch { grid-row: 1/3; width: 2rem; height: 1.35rem; border-radius: .25rem; }
+
+/* Travel */
+.travel-header { margin-bottom: 1.25rem; }.travel-tabs { display: inline-flex; gap: .25rem; padding: .25rem; margin-bottom: .8rem; border: 1px solid var(--line); border-radius: .78rem; background: var(--paper-soft); }.travel-tab { min-width: 7rem; min-height: 2.4rem; display: flex; align-items: center; justify-content: center; gap: .4rem; border: 0; border-radius: .58rem; background: transparent; color: var(--muted); font-size: .7rem; font-weight: 760; cursor: pointer; }.travel-tab svg { width: .9rem; }.travel-tab.active { background: var(--paper); color: var(--ink); box-shadow: var(--shadow-sm); }.travel-view { display: none; }.travel-view.active { display: block; animation: pageIn .2s ease both; }
+.travel-search { display: grid; grid-template-columns: 1fr 2.3rem 1fr .9fr 1fr auto; gap: .55rem; align-items: stretch; padding: .8rem; }.route-field, .travel-field { min-width: 0; min-height: 4rem; display: grid; align-content: center; padding: .45rem .7rem; border: 1px solid var(--line); border-radius: .7rem; background: var(--paper-soft); }.route-field small, .travel-field small { color: var(--subtle); font-size: .53rem; font-weight: 780; letter-spacing: .07em; text-transform: uppercase; }.route-field b { font-size: 1.1rem; }.travel-field b { font-size: .7rem; }.route-field span, .travel-field span { color: var(--muted); font-size: .58rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }.route-swap { align-self: center; width: 2.3rem; height: 2.3rem; border: 1px solid var(--line); border-radius: 50%; background: var(--paper); cursor: pointer; }.travel-search .button { min-width: 8.5rem; }
+.flight-search-animation, .hotel-search-animation { display: none; min-height: 12.5rem; place-items: center; align-content: center; margin-top: .8rem; padding: 1rem; border: 1px solid var(--line); border-radius: 1rem; background: radial-gradient(circle at 50% 30%, var(--blue-soft), var(--paper) 62%); text-align: center; overflow: hidden; }.flight-search-animation.active, .hotel-search-animation.active { display: grid; animation: pageIn .25s ease both; }.flight-search-animation h3, .hotel-search-animation h3 { margin: .65rem 0 .15rem; font-size: .95rem; }.flight-search-animation p, .hotel-search-animation p { margin: 0; color: var(--muted); font-size: .65rem; }
+.search-sky { position: relative; width: min(100%, 38rem); height: 5.4rem; }.search-route { position: absolute; left: 10%; right: 10%; top: 2.1rem; height: 2.2rem; border-top: 2px dashed color-mix(in srgb, var(--copper-500) 52%, var(--line)); border-radius: 50% 50% 0 0; }.search-airport { position: absolute; top: 2.75rem; display: grid; }.search-airport.start { left: 2%; text-align: left; }.search-airport.end { right: 2%; text-align: right; }.search-airport b { font-size: .8rem; }.search-airport span { color: var(--muted); font-size: .55rem; }.flying-plane { position: absolute; left: 7%; top: 1.18rem; width: 2.15rem; height: 2.15rem; display: grid; place-items: center; border-radius: 50%; background: var(--copper-500); color: var(--navy-950); box-shadow: 0 0 0 .5rem rgba(211,152,61,.12); animation: takeoff 2.25s cubic-bezier(.35,.05,.2,1) infinite; }.flying-plane svg { width: 1.05rem; transform: rotate(65deg); }
+@keyframes takeoff { 0% { left: 7%; top: 2rem; transform: rotate(-8deg) scale(.82); } 48% { top: .65rem; transform: rotate(4deg) scale(1.05); } 100% { left: 87%; top: 1.7rem; transform: rotate(8deg) scale(.86); } }
+.search-progress { width: min(100%, 19rem); height: .25rem; overflow: hidden; margin-top: .65rem; border-radius: 99px; background: var(--line); }.search-progress i { display: block; width: 35%; height: 100%; border-radius: inherit; background: linear-gradient(90deg, var(--copper-500), var(--cyan)); animation: progress 1.35s ease-in-out infinite; }.search-progress.done i { width: 100%; animation: none; }.search-progress.done { background: var(--green-soft); }
+@keyframes progress { from { transform: translateX(-110%); } to { transform: translateX(300%); } }
+.hotel-search { grid-template-columns: 1.25fr repeat(3, .8fr) auto; }.hotel-destination b { font-size: .85rem; }.hotel-pulse { position: relative; width: 4rem; height: 4rem; display: grid; place-items: center; border-radius: 50%; background: var(--copper-100); color: var(--copper-700); }.hotel-pulse > svg { width: 1.5rem; height: 1.5rem; }.hotel-pulse i { position: absolute; inset: -.5rem; border: 1px solid var(--copper-500); border-radius: 50%; animation: pulse 1.8s ease-out infinite; }.hotel-pulse i:last-child { animation-delay: .65s; }
+@keyframes pulse { 0% { opacity: .7; transform: scale(.72); } 100% { opacity: 0; transform: scale(1.45); } }
+.travel-filter-row { display: grid; grid-template-columns: repeat(5, auto) 1fr auto; gap: .4rem; align-items: center; margin: .8rem 0; }.result-summary { display: flex; justify-content: space-between; align-items: center; margin: 1rem .1rem .55rem; }.result-summary div { display: flex; gap: .45rem; align-items: baseline; }.result-summary b { font-size: .82rem; }.result-summary span, .result-summary button { border: 0; background: transparent; color: var(--muted); font-size: .61rem; }
+.award-list { overflow: hidden; }.award-head, .award-row { display: grid; grid-template-columns: 5.6rem minmax(20rem, 1.5fr) minmax(6.8rem,.55fr) minmax(6.8rem,.55fr) minmax(8.5rem,.7fr) 1.3rem; gap: .75rem; align-items: center; }.award-head { min-height: 2.65rem; padding: 0 1rem; background: var(--paper-soft); color: var(--subtle); font-size: .54rem; font-weight: 810; letter-spacing: .06em; text-transform: uppercase; }.award-head span:nth-child(n+3) { text-align: right; }.award-item { border-top: 1px solid var(--line); }.award-row { width: 100%; min-height: 5rem; border: 0; padding: .72rem 1rem; background: var(--paper); text-align: left; cursor: pointer; }.award-row:hover { background: var(--paper-soft); }.award-item.open > .award-row { background: linear-gradient(90deg, var(--copper-100), var(--paper) 42%); box-shadow: inset 3px 0 0 var(--copper-500); }.award-row > span:not(.award-route) { text-align: right; }.award-row > span:first-child { text-align: left; }.award-row b, .award-row small { display: block; }.award-row b { font-size: .7rem; }.award-row small { color: var(--muted); font-size: .57rem; }.award-route { min-width: 0; display: grid; grid-template-columns: 2.15rem minmax(0,1fr) auto; gap: .6rem; align-items: center; }.airline-logo { width: 2rem; height: 2rem; display: grid; place-items: center; border-radius: .55rem; color: white; font-style: normal; font-size: .55rem; font-weight: 850; }.airline-logo.sq { background: #172b52; }.airline-logo.ua { background: #25518a; }.airline-logo.ai { background: #9d2741; }.tag { display: inline-flex; align-items: center; border-radius: 999px; padding: .22rem .38rem; font-size: .49rem; font-style: normal; font-weight: 800; text-transform: uppercase; white-space: nowrap; }.tag.green { background: var(--green-soft); color: var(--green); }.tag.blue { background: var(--blue-soft); color: var(--blue); }.tag.amber { background: var(--amber-soft); color: var(--amber); }.wallet-path b { color: var(--green); }.row-chevron { width: .85rem; color: var(--subtle); transition: transform .18s; }.award-item.open .row-chevron { transform: rotate(180deg); color: var(--copper-600); }
+.award-detail { display: none; padding: 0 1rem 1rem; background: linear-gradient(180deg, color-mix(in srgb, var(--copper-100) 46%, var(--paper)), var(--paper)); }.award-item.open .award-detail { display: block; animation: detailIn .22s ease both; } @keyframes detailIn { from { opacity: 0; transform: translateY(-.35rem); } to { opacity: 1; transform: none; } }
+.award-detail > * { border-left: 1px solid color-mix(in srgb, var(--copper-200) 70%, var(--line)); border-right: 1px solid color-mix(in srgb, var(--copper-200) 70%, var(--line)); }.award-detail > :first-child { border-radius: .8rem .8rem 0 0; }.award-detail > :last-child { border-bottom: 1px solid color-mix(in srgb, var(--copper-200) 70%, var(--line)); border-radius: 0 0 .8rem .8rem; }
+.decision-hero { display: grid; grid-template-columns: minmax(0,1.3fr) repeat(3,minmax(7rem,.55fr)); gap: .8rem; align-items: center; padding: 1rem 1.15rem; background: linear-gradient(110deg, var(--copper-100), var(--paper) 65%); border-top: 1px solid color-mix(in srgb, var(--copper-200) 70%, var(--line)); border-bottom: 1px solid var(--line); }.decision-hero h3 { margin: .18rem 0; font-size: 1rem; }.decision-hero p { margin: 0; color: var(--muted); font-size: .59rem; }.decision-hero > div:not(:first-child) { padding-left: .8rem; border-left: 1px solid var(--line); }.decision-hero small { display: block; color: var(--subtle); font-size: .52rem; text-transform: uppercase; }.decision-hero b { font-size: .7rem; }.decision-hero.blocked { background: linear-gradient(110deg, var(--red-soft), var(--paper)); }
+.decision-tabs { display: flex; gap: .15rem; padding: .5rem .75rem; background: var(--paper); border-bottom: 1px solid var(--line); }.decision-tabs button { min-height: 1.9rem; border: 0; border-radius: .48rem; padding: 0 .65rem; background: transparent; color: var(--muted); font-size: .57rem; font-weight: 760; cursor: pointer; }.decision-tabs button.active { background: var(--navy-900); color: white; }.decision-panel { display: none; padding: .85rem 1rem 1rem; background: var(--paper); }.decision-panel.active { display: block; }.path-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: .55rem; }.path-choice { min-height: 6.4rem; display: grid; align-content: start; padding: .75rem; border: 1px solid var(--line); border-radius: .68rem; background: var(--paper-soft); }.path-choice.winner { border-color: color-mix(in srgb, var(--green) 25%, var(--line)); background: var(--green-soft); }.path-choice span { color: var(--subtle); font-size: .5rem; text-transform: uppercase; }.path-choice b { margin-top: .3rem; font-size: .66rem; }.path-choice strong { margin-top: .55rem; font-size: 1rem; }.path-choice small { color: var(--muted); font-size: .53rem; }.book-layout { display: grid; grid-template-columns: 1fr 14rem; gap: 1rem; }.book-layout ol { display: grid; gap: .6rem; margin: 0; padding: 0; list-style: none; counter-reset: steps; }.book-layout li { position: relative; padding-left: 2rem; counter-increment: steps; }.book-layout li::before { content: counter(steps); position: absolute; left: 0; top: .05rem; width: 1.35rem; height: 1.35rem; display: grid; place-items: center; border-radius: 50%; background: var(--copper-100); color: var(--copper-700); font-size: .55rem; font-weight: 820; }.book-layout li b, .book-layout li span { display: block; }.book-layout li b { font-size: .65rem; }.book-layout li span { color: var(--muted); font-size: .56rem; }.book-layout > div { display: grid; gap: .45rem; align-content: start; }.book-layout > div p { margin: .1rem 0 0; padding: .55rem; border: 1px solid color-mix(in srgb, var(--amber) 25%, var(--line)); border-radius: .55rem; background: var(--amber-soft); color: var(--amber); font-size: .52rem; }.source-cards { display: grid; grid-template-columns: 1fr 1fr; gap: .55rem; }.source-cards article { padding: .65rem; border: 1px solid var(--line); border-radius: .55rem; }.source-cards b { display: flex; justify-content: space-between; font-size: .64rem; }.source-cards p, .decision-panel details p { margin: .3rem 0 0; color: var(--muted); font-size: .55rem; }.decision-panel details { margin-top: .55rem; padding: .5rem .65rem; border: 1px solid var(--line); border-radius: .55rem; background: var(--paper-soft); }.decision-panel summary { color: var(--muted); font-size: .57rem; font-weight: 740; cursor: pointer; }.compact-detail .decision-hero { border-radius: .8rem; border-bottom: 1px solid color-mix(in srgb, var(--copper-200) 70%, var(--line)); }
+.hotel-grid { display: grid; gap: .75rem; margin-top: 1rem; }.hotel-result { display: grid; grid-template-columns: 12rem minmax(16rem,1fr) minmax(16rem,.8fr); gap: .9rem; align-items: center; padding: .75rem; border: 1px solid var(--line); border-radius: 1rem; background: var(--paper); box-shadow: var(--shadow-xs); }.hotel-result.selected { border-color: var(--copper-200); }.hotel-visual { min-height: 7.8rem; display: flex; flex-direction: column; justify-content: end; padding: .75rem; border-radius: .75rem; color: white; overflow: hidden; position: relative; }.hotel-visual::before { content: ""; position: absolute; inset: 0; background: radial-gradient(circle at 72% 16%, rgba(255,255,255,.3), transparent 10%), linear-gradient(145deg, transparent, rgba(0,0,0,.38)); }.hotel-visual > * { position: relative; }.hotel-visual span, .hotel-visual small { font-size: .5rem; color: rgba(255,255,255,.72); }.hotel-visual b { font-size: .92rem; letter-spacing: .13em; }.hotel-visual.novotel { background: linear-gradient(145deg,#27546d,#6fa2ac); }.hotel-visual.pullman { background: linear-gradient(145deg,#493d60,#ae8496); }.hotel-visual.ibis { background: linear-gradient(145deg,#755133,#d29c63); }.hotel-info { display: flex; justify-content: space-between; gap: .8rem; }.hotel-info h3 { margin: .35rem 0 .15rem; font-size: .95rem; }.hotel-info p { margin: 0; color: var(--muted); font-size: .59rem; }.hotel-price { text-align: right; }.hotel-price span, .hotel-price small { display: block; color: var(--muted); font-size: .55rem; }.hotel-price b { font-size: .95rem; }.hotel-path { min-height: 5.8rem; display: flex; justify-content: space-between; align-items: center; gap: .65rem; padding-left: .9rem; border-left: 1px solid var(--line); }.hotel-path small, .hotel-path b, .hotel-path span { display: block; }.hotel-path small { color: var(--subtle); font-size: .53rem; }.hotel-path b { font-size: .72rem; }.hotel-path span { color: var(--green); font-size: .55rem; }.hotel-expanded { display: none; grid-column: 1/-1; }.hotel-result.expanded .hotel-expanded { display: block; animation: detailIn .22s ease both; }.hotel-expanded .decision-hero { border: 1px solid var(--line); border-radius: .8rem .8rem 0 0; }.hotel-expanded .path-grid { padding: .75rem; border: 1px solid var(--line); border-top: 0; border-radius: 0 0 .8rem .8rem; }
+.explore-hero { min-height: 14rem; display: grid; grid-template-columns: 1fr 22rem; align-items: center; gap: 2rem; overflow: hidden; padding: 1.7rem 2rem; border-radius: 1.1rem; background: linear-gradient(130deg,#071827,#153c53); color: white; box-shadow: var(--shadow-md); }.explore-hero h2 { margin: .3rem 0; color: white; font-size: 1.8rem; }.explore-hero p { max-width: 34rem; margin: 0; color: #9fb5c5; font-size: .73rem; }.explore-radar { position: relative; width: 11rem; height: 11rem; justify-self: center; border-radius: 50%; background: radial-gradient(circle, rgba(107,199,214,.12), transparent 65%); }.radar-ring { position: absolute; border: 1px solid rgba(255,255,255,.12); border-radius: 50%; }.r1 { inset: 0; }.r2 { inset: 2rem; }.r3 { inset: 4rem; }.radar-point { position: absolute; min-width: 2rem; height: 2rem; display: grid; place-items: center; border-radius: 50%; background: var(--copper-500); color: var(--navy-950); font-size: .48rem; font-weight: 850; box-shadow: 0 0 0 .4rem rgba(211,152,61,.1); }.p1 { left: .6rem; top: 4rem; }.p2 { right: .2rem; top: 1.7rem; }.p3 { right: 1.7rem; bottom: .55rem; }.explore-radar > i { position: absolute; left: 50%; top: 50%; width: 50%; height: 1px; transform-origin: left; background: linear-gradient(90deg,var(--cyan),transparent); animation: spin 4s linear infinite; }.explore-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: .8rem; margin-top: .8rem; }.explore-card { padding: 1.2rem; border: 1px solid var(--line); border-radius: 1rem; background: var(--paper); box-shadow: var(--shadow-xs); }.explore-card > small { display: block; margin-top: .8rem; color: var(--copper-600); font-size: .55rem; font-weight: 800; text-transform: uppercase; }.explore-card h3 { margin: .2rem 0; font-size: 1rem; }.explore-card p { margin: 0; color: var(--muted); font-size: .63rem; }.explore-card > b { display: block; margin: .85rem 0 .5rem; color: var(--green); font-size: .66rem; }
+
+/* Card explorer */
+.card-finder { display: grid; grid-template-columns: auto 1fr auto; gap: 1.2rem; align-items: center; padding: 1.1rem 1.25rem; }.finder-copy h2 { margin: .15rem 0 0; font-size: .95rem; }.finder-chips { display: flex; gap: .4rem; overflow-x: auto; }.card-toolbar { display: flex; justify-content: space-between; align-items: center; margin: 1.2rem 0 .7rem; }.card-toolbar > div { display: flex; align-items: center; gap: .45rem; }.card-toolbar b { font-size: .8rem; }.card-toolbar span { color: var(--muted); font-size: .6rem; }.catalog-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: .75rem; }.catalog-card { padding: .85rem; border: 1px solid var(--line); border-radius: 1rem; background: var(--paper); box-shadow: var(--shadow-xs); transition: transform .18s, box-shadow .18s; }.catalog-card:hover { transform: translateY(-4px); box-shadow: var(--shadow-md); }.catalog-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: .65rem; }.heart { border: 0; background: transparent; color: var(--subtle); font-size: 1.25rem; cursor: pointer; }.heart.liked { color: #c65b68; }.catalog-art { height: 8.8rem; display: flex; flex-direction: column; justify-content: space-between; padding: .9rem; border-radius: .75rem; color: white; box-shadow: var(--shadow-sm); }.catalog-art span, .catalog-art small { font-size: .5rem; letter-spacing: .08em; }.catalog-art b { font-size: .85rem; }.catalog-card h3 { margin: .8rem 0 .2rem; font-size: .9rem; }.catalog-card > p { min-height: 2.3rem; margin: 0; color: var(--muted); font-size: .6rem; }.catalog-stats { display: grid; grid-template-columns: 1fr 1fr; gap: .5rem; margin-top: .8rem; padding: .7rem 0; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); }.catalog-stats small, .catalog-stats b { display: block; }.catalog-stats small { color: var(--subtle); font-size: .52rem; }.catalog-stats b { font-size: .64rem; }.catalog-actions { display: grid; grid-template-columns: 1fr 1fr; gap: .45rem; margin-top: .75rem; }.catalog-actions .button { min-height: 2.25rem; font-size: .62rem; }.compare-add { border: 0; border-radius: .6rem; background: transparent; color: var(--copper-600); font-size: .62rem; font-weight: 760; cursor: pointer; }.compare-add.added { background: var(--green-soft); color: var(--green); }
+.compare-tray { position: fixed; left: calc(var(--sidebar) + 50%); bottom: 1rem; z-index: 60; width: min(45rem, calc(100vw - var(--sidebar) - 2rem)); display: flex; align-items: center; gap: .8rem; padding: .65rem .8rem; border: 1px solid #31485d; border-radius: .9rem; background: rgba(7,24,39,.96); color: white; box-shadow: var(--shadow-lg); transform: translate(-50%, calc(100% + 2rem)); transition: transform .25s ease; backdrop-filter: blur(18px); }.compare-tray.show { transform: translate(-50%, 0); }.compare-tray > div:first-child { display: flex; gap: .55rem; align-items: center; }.compare-count { width: 1.9rem; height: 1.9rem; display: grid; place-items: center; border-radius: 50%; background: var(--copper-500); color: var(--navy-950); font-size: .65rem; font-weight: 850; }.compare-tray p { margin: 0; }.compare-tray p b, .compare-tray p small { display: block; }.compare-tray p b { font-size: .66rem; }.compare-tray p small { color: #8fa5b6; font-size: .52rem; }.compare-names { flex: 1; display: flex; gap: .35rem; overflow: hidden; }.compare-names span { padding: .3rem .5rem; border: 1px solid rgba(255,255,255,.12); border-radius: 999px; color: #b7c7d3; font-size: .54rem; white-space: nowrap; }.compare-tray .button { min-height: 2.25rem; }.compare-tray .button:disabled { opacity: .45; cursor: not-allowed; }.tray-close { border: 0; background: transparent; color: #8fa5b6; font-size: 1.1rem; cursor: pointer; }
+
+/* Concierge */
+.concierge-page { width: min(100% - 2rem, 96rem); padding-block: 1rem 2rem; }.concierge-shell { height: calc(100vh - var(--topbar) - var(--banner) - 3rem); min-height: 38rem; display: grid; grid-template-columns: 16rem 1fr; overflow: hidden; border: 1px solid #1e3b51; border-radius: 1.2rem; background: #081826; color: white; box-shadow: var(--shadow-lg); }.chat-sidebar { display: flex; flex-direction: column; padding: 1rem; border-right: 1px solid rgba(255,255,255,.08); background: #091522; }.chat-side-head { display: flex; justify-content: space-between; align-items: center; }.chat-side-head h2 { margin: .1rem 0; color: white; font-size: 1.2rem; }.new-chat { width: 2rem; height: 2rem; border: 1px solid rgba(255,255,255,.1); border-radius: .55rem; background: rgba(255,255,255,.05); color: white; cursor: pointer; }.new-conversation { min-height: 2.6rem; display: flex; align-items: center; gap: .45rem; margin: 1rem 0; border: 1px solid rgba(211,152,61,.28); border-radius: .65rem; padding: 0 .75rem; background: rgba(211,152,61,.1); color: #f0cd92; font-size: .66rem; font-weight: 760; cursor: pointer; }.new-conversation svg { width: .8rem; }.chat-label { margin: .35rem .55rem; color: #587287; font-size: .55rem; font-weight: 780; text-transform: uppercase; }.chat-history { min-height: 3.15rem; display: grid; align-content: center; border: 0; border-radius: .6rem; padding: .45rem .6rem; background: transparent; color: #9bb0c0; text-align: left; cursor: pointer; }.chat-history span, .chat-history small { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }.chat-history span { font-size: .62rem; }.chat-history small { color: #506a7f; font-size: .52rem; }.chat-history.active { background: #12283a; color: white; }.chat-safety { display: grid; grid-template-columns: 1.6rem 1fr; gap: .5rem; margin-top: auto; padding: .75rem; border: 1px solid rgba(255,255,255,.08); border-radius: .7rem; background: rgba(255,255,255,.025); }.chat-safety svg { color: var(--green); }.chat-safety b, .chat-safety small { display: block; }.chat-safety b { font-size: .59rem; }.chat-safety small { margin-top: .1rem; color: #6f899c; font-size: .51rem; }
+.chat-main { min-width: 0; display: grid; grid-template-rows: auto 1fr auto; background: radial-gradient(circle at 50% -10%, rgba(107,199,214,.07), transparent 35%), #0b1d2c; }.chat-header { min-height: 4.2rem; display: flex; align-items: center; justify-content: space-between; padding: 0 1.2rem; border-bottom: 1px solid rgba(255,255,255,.08); }.chat-header > div { display: flex; gap: .65rem; align-items: center; }.cira-avatar { width: 2.35rem; height: 2.35rem; display: grid; place-items: center; border-radius: .75rem; background: linear-gradient(145deg,var(--copper-500),#a76b20); color: var(--navy-950); box-shadow: 0 0 0 .32rem rgba(211,152,61,.08); }.cira-avatar svg { width: 1rem; }.chat-header b, .chat-header small { display: block; }.chat-header b { font-size: .72rem; }.chat-header small { color: #718b9f; font-size: .54rem; }.chat-header small i { display: inline-block; width: .42rem; height: .42rem; margin-right: .2rem; border-radius: 50%; background: #43c68b; box-shadow: 0 0 0 .18rem rgba(67,198,139,.1); }.chat-messages { overflow-y: auto; padding: 1.5rem; }.chat-intro { min-height: 100%; display: grid; place-items: center; align-content: center; text-align: center; }.cira-hero-mark { width: 4rem; height: 4rem; display: grid; place-items: center; border: 1px solid rgba(255,255,255,.12); border-radius: 1.2rem; background: linear-gradient(145deg,rgba(211,152,61,.2),rgba(107,199,214,.07)); color: var(--copper-500); box-shadow: 0 0 45px rgba(211,152,61,.08); }.cira-hero-mark svg { width: 1.7rem; height: 1.7rem; }.chat-intro h2 { margin: 1rem 0 .3rem; color: white; font-size: 1.45rem; }.chat-intro > p { margin: 0; color: #7d95a8; font-size: .68rem; }.prompt-grid { width: min(100%, 34rem); display: grid; grid-template-columns: 1fr 1fr; gap: .5rem; margin-top: 1.4rem; }.suggestion { min-height: 3rem; border: 1px solid rgba(255,255,255,.1); border-radius: .68rem; padding: .55rem .7rem; background: rgba(255,255,255,.03); color: #b6c6d2; font-size: .62rem; text-align: left; cursor: pointer; transition: border-color .15s, background .15s; }.suggestion:hover { border-color: rgba(211,152,61,.36); background: rgba(211,152,61,.06); }.chat-composer { padding: .8rem 1.1rem 1rem; }.composer-box { min-height: 3.3rem; display: grid; grid-template-columns: 2rem 1fr 2.25rem; gap: .4rem; align-items: end; padding: .45rem; border: 1px solid rgba(255,255,255,.13); border-radius: .82rem; background: #102738; box-shadow: 0 12px 32px rgba(0,0,0,.16); }.composer-box > button:first-child { width: 2rem; height: 2rem; border: 0; background: transparent; color: #718a9d; font-size: 1rem; cursor: pointer; }.composer-box textarea { max-height: 7rem; resize: none; border: 0; outline: 0; padding: .45rem .2rem; background: transparent; color: white; font-size: .68rem; }.composer-box textarea::placeholder { color: #587386; }.send-btn { width: 2.25rem; height: 2.25rem; display: grid; place-items: center; border: 0; border-radius: .65rem; background: var(--copper-500); color: var(--navy-950); cursor: pointer; }.send-btn svg { width: .9rem; }.chat-composer > p { margin: .4rem 0 0; color: #526c80; font-size: .5rem; text-align: center; }.message { max-width: 75%; display: grid; grid-template-columns: 2rem 1fr; gap: .55rem; margin-bottom: 1rem; animation: detailIn .22s ease; }.message.user { grid-template-columns: 1fr; margin-left: auto; }.message .bubble { padding: .7rem .85rem; border: 1px solid rgba(255,255,255,.09); border-radius: .8rem .8rem .8rem .18rem; background: #112a3c; color: #c7d5df; font-size: .65rem; }.message.user .bubble { background: var(--copper-500); color: var(--navy-950); border-radius: .8rem .8rem .18rem .8rem; }.message .cira-avatar { width: 2rem; height: 2rem; border-radius: .6rem; }.typing-dots { display: inline-flex; gap: .2rem; }.typing-dots i { width: .3rem; height: .3rem; border-radius: 50%; background: #8198a9; animation: typing .9s infinite alternate; }.typing-dots i:nth-child(2) { animation-delay: .2s; }.typing-dots i:nth-child(3) { animation-delay: .4s; } @keyframes typing { to { opacity: .25; transform: translateY(-2px); } }
+
+/* Profile */
+.profile-layout { display: grid; grid-template-columns: 14rem 1fr; gap: .9rem; align-items: start; }.profile-nav { display: grid; gap: .2rem; padding: .55rem; position: sticky; top: calc(var(--topbar) + var(--banner) + 1rem); }.profile-nav button { min-height: 2.55rem; border: 0; border-radius: .58rem; padding: 0 .7rem; background: transparent; color: var(--muted); font-size: .65rem; font-weight: 700; text-align: left; cursor: pointer; }.profile-nav button.active { background: var(--navy-900); color: white; }.profile-panel { display: none; padding: 1.3rem; }.profile-panel.active { display: block; animation: pageIn .2s ease; }.profile-panel-head { display: flex; justify-content: space-between; align-items: center; padding-bottom: 1rem; border-bottom: 1px solid var(--line); }.profile-panel-head h2 { margin: 0; font-size: 1.1rem; }.profile-panel-head p { margin: .2rem 0 0; color: var(--muted); font-size: .63rem; }.large-avatar { width: 3.4rem; height: 3.4rem; display: grid; place-items: center; border-radius: 50%; background: linear-gradient(145deg,var(--copper-200),var(--copper-500)); color: var(--navy-950); font-weight: 850; }.form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: .9rem; margin-top: 1.1rem; }.form-grid label > span { display: block; margin-bottom: .35rem; color: var(--muted); font-size: .61rem; font-weight: 720; }.form-grid input, .form-grid select, .preference-list select { width: 100%; min-height: 2.75rem; border: 1px solid var(--line); border-radius: .65rem; padding: 0 .7rem; background: var(--paper-soft); color: var(--ink); font-size: .68rem; outline: none; }.preference-list, .toggle-list, .security-list { display: grid; margin-top: .4rem; }.preference-list label, .toggle-list label, .security-list > div { min-height: 4.5rem; display: flex; align-items: center; justify-content: space-between; gap: 1rem; border-bottom: 1px solid var(--line); }.preference-list label:last-child, .toggle-list label:last-child, .security-list > div:last-child { border-bottom: 0; }.preference-list span b, .preference-list span small, .toggle-list span b, .toggle-list span small, .security-list span b, .security-list span small { display: block; }.preference-list span b, .toggle-list span b, .security-list span b { font-size: .7rem; }.preference-list span small, .toggle-list span small, .security-list span small { color: var(--muted); font-size: .59rem; }.preference-list select { width: 14rem; }.switch { width: 2.45rem; height: 1.4rem; display: flex; align-items: center; border: 0; border-radius: 999px; padding: .17rem; background: var(--line-strong); cursor: pointer; transition: background .15s; }.switch i { width: 1.05rem; height: 1.05rem; border-radius: 50%; background: white; box-shadow: 0 1px 3px rgba(0,0,0,.18); transition: transform .15s; }.switch.on { background: var(--green); }.switch.on i { transform: translateX(1.05rem); }
+
+/* Modal, toast and utilities */
+.modal-backdrop { position: fixed; inset: 0; z-index: 200; display: none; place-items: center; padding: 1rem; background: rgba(4,13,22,.64); backdrop-filter: blur(7px); }.modal-backdrop.show { display: grid; animation: pageIn .18s ease; }.modal { position: relative; width: min(100%, 28rem); padding: 1.7rem; border: 1px solid var(--line); border-radius: 1rem; background: var(--paper-raised); color: var(--ink); text-align: center; box-shadow: var(--shadow-lg); }.modal-close { position: absolute; top: .65rem; right: .65rem; width: 2rem; height: 2rem; border: 1px solid var(--line); border-radius: .55rem; background: var(--paper); color: var(--muted); cursor: pointer; }.modal-icon { width: 3.4rem; height: 3.4rem; display: grid; place-items: center; margin: 0 auto; border-radius: 1rem; background: var(--copper-100); color: var(--copper-700); }.modal h2 { margin: .8rem 0 .3rem; font-size: 1.15rem; }.modal p { margin: 0 0 1rem; color: var(--muted); font-size: .67rem; }.toast { position: fixed; right: 1.2rem; bottom: 1.2rem; z-index: 220; max-width: 22rem; padding: .75rem .9rem; border: 1px solid #28445a; border-radius: .7rem; background: #071827; color: white; box-shadow: var(--shadow-lg); font-size: .62rem; opacity: 0; pointer-events: none; transform: translateY(.7rem); transition: opacity .18s, transform .18s; }.toast.show { opacity: 1; transform: none; }
+
+@media (max-width: 1260px) {
+  :root { --sidebar: 82px; }
+  .brand { justify-content: center; padding-inline: 0; }.brand-copy, .nav-kicker, .nav-item span, .nav-count, .nav-live, .side-profile > :not(.avatar) { display: none; }.nav-item { justify-content: center; padding: 0; }.side-profile { grid-template-columns: 1fr; justify-items: center; padding-inline: 0; }
+  .topbar { grid-template-columns: minmax(90px,.5fr) minmax(260px,34rem) minmax(160px,.5fr); }.dashboard-hero { grid-template-columns: 1fr 21rem; }.catalog-grid { grid-template-columns: repeat(2,1fr); }.compare-tray { left: calc(var(--sidebar) + (100vw - var(--sidebar))/2); }
+  .award-head, .award-row { grid-template-columns: 4.7rem minmax(18rem,1.3fr) 6.5rem 6.5rem 1.3rem; }.award-head > :nth-child(5), .award-row > :nth-child(5) { display: none; }
+}
+
+@media (max-width: 980px) {
+  .topbar { grid-template-columns: auto 1fr auto; }.breadcrumb { display: none; }.top-search { max-width: none; }.dashboard-hero { grid-template-columns: 1fr; }.hero-orbit { display: none; }.metric-row, .mini-card-grid, .wallet-card-grid, .explore-grid { grid-template-columns: 1fr 1fr; }.metric-row > :last-child, .mini-card-grid > :last-child, .wallet-card-grid > :last-child { grid-column: 1/-1; }.dashboard-grid, .smart-result { grid-template-columns: 1fr; }.wallet-summary { grid-template-columns: 1fr .5fr; }.wallet-breakdown { grid-column: 1/-1; grid-template-columns: repeat(3,1fr); }.wallet-lower-grid { grid-template-columns: 1fr; }.winner-main { grid-template-columns: 8.2rem 1fr; }.winner-value { grid-column: 1/-1; display: flex; align-items: baseline; gap: .5rem; text-align: left; }.winner-steps { grid-template-columns: auto 1fr auto 1fr auto; }.winner-steps .button { grid-column: 1/-1; }.travel-search { grid-template-columns: 1fr 2.3rem 1fr 1fr; }.travel-search .travel-field:nth-of-type(4) { grid-column: 1/3; }.travel-search .button { grid-column: 3/5; }.hotel-search { grid-template-columns: repeat(2,1fr); }.hotel-search .button { grid-column: 1/-1; }.travel-filter-row { grid-template-columns: repeat(5,auto); overflow-x: auto; }.travel-filter-row > span, .travel-filter-row .segmented { display: none; }.award-head, .award-row { grid-template-columns: 4.7rem minmax(16rem,1fr) 6.5rem 1.3rem; }.award-head > :nth-child(4), .award-row > :nth-child(4) { display: none; }.decision-hero { grid-template-columns: 1fr 1fr; }.decision-hero > div:first-child { grid-column: 1/-1; }.decision-hero > div:last-child { display: none; }.hotel-result { grid-template-columns: 10rem 1fr; }.hotel-path { grid-column: 1/-1; border-left: 0; border-top: 1px solid var(--line); padding: .7rem 0 0; }.card-finder { grid-template-columns: 1fr auto; }.finder-chips { grid-column: 1/-1; grid-row: 2; }.profile-layout { grid-template-columns: 1fr; }.profile-nav { position: static; display: flex; overflow-x: auto; }.profile-nav button { white-space: nowrap; }.concierge-shell { grid-template-columns: 1fr; }.chat-sidebar { display: none; }
+}
+
+@media (max-width: 720px) {
+  :root { --sidebar: 0px; --topbar: 58px; }
+  .sidebar { inset: auto 0 0; width: 100%; height: 4.2rem; display: block; padding: .35rem .45rem; border-top: 1px solid #20384a; overflow: hidden; }.brand, .nav-kicker, .nav-spacer, .nav-bottom, .side-profile { display: none; }.nav-list { grid-template-columns: repeat(6,1fr); gap: .12rem; }.nav-item { min-height: 3.45rem; display: grid; place-items: center; align-content: center; gap: .08rem; border-radius: .55rem; font-size: .48rem; }.nav-item span { display: block; }.nav-item svg { width: 1rem; height: 1rem; }.nav-item.active { box-shadow: inset 0 -2px 0 var(--copper-500); }
+  .app-shell { display: block; }.app-main { grid-column: auto; }.topbar { left: 0; grid-template-columns: auto 1fr auto; padding: 0 .7rem; gap: .55rem; }.mobile-menu { width: 2.25rem; height: 2.25rem; display: grid; place-content: center; gap: .18rem; border-radius: .65rem; }.mobile-menu span { width: .9rem; border-top: 1.5px solid var(--ink); }.top-search { min-height: 2.25rem; }.top-search kbd { display: none; }.ask-cira span { display: none; }.ask-cira { width: 2.25rem; min-height: 2.25rem; justify-content: center; padding: 0; }.top-actions .icon-btn:nth-child(2) { display: none; }
+  .page { width: calc(100% - 1.4rem); padding-top: 1.3rem; padding-bottom: 6rem; }.page-header { align-items: start; }.page-header p { max-width: 22rem; }.page-header > .button span { display: none; }.page h1 { font-size: 2rem; }
+  .dashboard-hero { min-height: 18rem; padding: 1.5rem; }.hero-copy h1 { font-size: 2.35rem; }.hero-actions { flex-wrap: wrap; }.metric-row, .mini-card-grid, .wallet-card-grid, .explore-grid { grid-template-columns: 1fr; }.metric-row > :last-child, .mini-card-grid > :last-child, .wallet-card-grid > :last-child { grid-column: auto; }.dashboard-grid { grid-template-columns: 1fr; }.opportunity { grid-template-columns: 2.3rem 1fr 1rem; }.op-value { display: none; }.metric-card { min-height: 6.7rem; }.wallet-summary { grid-template-columns: 1fr; padding: 1.35rem; }.value-ring { position: absolute; opacity: 0; }.wallet-breakdown { grid-column: auto; grid-template-columns: 1fr; }.wallet-card-grid { overflow-x: auto; grid-auto-flow: column; grid-auto-columns: 85%; }.partner-flow { grid-template-columns: 5rem 1fr 8rem; }
+  .merchant-form { grid-template-columns: 1fr; }.winner-main { grid-template-columns: 1fr; }.winner-card-art { width: 9rem; }.winner-value { grid-column: auto; }.winner-steps { grid-template-columns: 1fr; }.winner-steps > i { display: none; }.comparison-table { overflow-x: auto; }.compare-head, .compare-row { min-width: 42rem; }
+  .travel-header .button { width: 2.65rem; padding: 0; }.travel-tabs { width: 100%; }.travel-tab { flex: 1; min-width: 0; }.travel-search, .hotel-search { grid-template-columns: 1fr 1fr; }.route-swap { display: none; }.travel-search .travel-field:nth-of-type(4), .travel-search .button { grid-column: 1/-1; }.hotel-search .button { grid-column: 1/-1; }.award-head { display: none; }.award-row { grid-template-columns: 4rem 1fr 5.3rem 1.1rem; padding: .7rem; gap: .5rem; }.award-route { grid-template-columns: 1.8rem minmax(0,1fr); }.award-route .tag { display: none; }.airline-logo { width: 1.7rem; height: 1.7rem; }.path-grid, .source-cards { grid-template-columns: 1fr; }.book-layout { grid-template-columns: 1fr; }.award-detail { padding-inline: .55rem; }.hotel-result { grid-template-columns: 1fr; }.hotel-visual { min-height: 9rem; }.hotel-info { flex-wrap: wrap; }.hotel-price { text-align: left; }.explore-hero { grid-template-columns: 1fr; padding: 1.4rem; }.explore-radar { display: none; }
+  .card-finder { grid-template-columns: 1fr; }.finder-chips { grid-row: auto; }.catalog-grid { grid-template-columns: 1fr; }.catalog-art { height: 10.5rem; }.card-toolbar { align-items: start; flex-direction: column; gap: .6rem; }.compare-tray { left: .7rem; right: .7rem; bottom: 4.8rem; width: auto; transform: translateY(calc(100% + 6rem)); }.compare-tray.show { transform: none; }.compare-names { display: none; }
+  .concierge-page { width: calc(100% - 1rem); padding-top: .5rem; }.concierge-shell { height: calc(100vh - var(--topbar) - var(--banner) - 5.5rem); min-height: 33rem; }.chat-intro h2 { font-size: 1.15rem; }.prompt-grid { grid-template-columns: 1fr; }.message { max-width: 90%; }.profile-nav { margin-bottom: .25rem; }.profile-panel { padding: 1rem; }.form-grid { grid-template-columns: 1fr; }.preference-list label { align-items: start; flex-direction: column; padding: .8rem 0; }.preference-list select { width: 100%; }.toast { bottom: 5rem; left: .7rem; right: .7rem; max-width: none; }
+}
+
+@media (max-width: 450px) {
+  .prototype-banner { font-size: .61rem; }.top-search input::placeholder { color: transparent; }.top-search { grid-template-columns: 1.1rem 1fr; }.dashboard-hero { min-height: 20rem; }.page-header p { font-size: .75rem; }.metric-card { grid-template-columns: 2.5rem 1fr auto; }.opportunity > svg { display: none; }.opportunity { grid-template-columns: 2.3rem 1fr; }.route-field, .travel-field { min-height: 3.6rem; }.travel-search { grid-template-columns: 1fr; }.travel-search .travel-field:nth-of-type(4), .travel-search .button { grid-column: auto; }.award-row { grid-template-columns: 3.6rem 1fr 4.4rem 1rem; }.award-row > span:nth-child(3) small { display: none; }.decision-hero { grid-template-columns: 1fr; }.decision-hero > div:not(:first-child) { border-left: 0; border-top: 1px solid var(--line); padding: .4rem 0 0; }.decision-tabs { overflow-x: auto; }.chat-messages { padding: 1rem; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { scroll-behavior: auto !important; animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
+}
+
+/* Editorial intelligence theme — warm paper, precise typography, quiet luxury. */
+:root {
+  --navy-1000: #0f100e;
+  --navy-950: #141512;
+  --navy-900: #1a1c18;
+  --navy-800: #2d302a;
+  --navy-700: #494d43;
+  --copper-700: #76551f;
+  --copper-600: #98702b;
+  --copper-500: #bd913d;
+  --copper-200: #e3d1a8;
+  --copper-100: #f3ead4;
+  --cyan: #94aeb0;
+  --cyan-soft: #edf1ef;
+  --green: #346b50;
+  --green-soft: #e9f0e9;
+  --blue: #526d79;
+  --blue-soft: #e9eeef;
+  --amber: #846624;
+  --amber-soft: #f4edd9;
+  --red: #8b4c44;
+  --red-soft: #f4e7e3;
+  --bg: #f7f6f1;
+  --paper: #ffffff;
+  --paper-raised: #ffffff;
+  --paper-soft: #f3f2ed;
+  --ink: #1b1c18;
+  --muted: #68675f;
+  --subtle: #8b887e;
+  --line: #e4e1d9;
+  --line-strong: #d2cec3;
+  --shadow-xs: 0 1px 2px rgba(37, 31, 19, .018);
+  --shadow-sm: 0 8px 22px rgba(37, 31, 19, .04);
+  --shadow-md: 0 18px 46px rgba(37, 31, 19, .065);
+  --shadow-lg: 0 30px 72px rgba(20, 18, 13, .13);
+  --font-editorial: "Iowan Old Style", Baskerville, "Times New Roman", Times, serif;
+  --font-interface: "Avenir Next", Avenir, "Helvetica Neue", Inter, ui-sans-serif, system-ui, sans-serif;
+}
+
+html[data-theme="dark"] {
+  --bg: #121310;
+  --paper: #1b1c18;
+  --paper-raised: #22231e;
+  --paper-soft: #171814;
+  --ink: #f3f0e7;
+  --muted: #aaa69b;
+  --subtle: #7f7c73;
+  --line: #33342d;
+  --line-strong: #46473e;
+  --copper-100: #30291d;
+  --cyan-soft: #202726;
+  --green-soft: #1c2a21;
+  --blue-soft: #20272a;
+  --amber-soft: #2d291d;
+  --red-soft: #2d211f;
+}
+
+body {
+  background-color: var(--bg);
+  background-image: none;
+  font-family: var(--font-interface);
+}
+
+.prototype-banner {
+  background: #e9e3d4;
+  border-color: #d7cdb9;
+  color: #66583d;
+  font-family: var(--font-interface);
+  font-weight: 650;
+}
+
+.sidebar {
+  background:
+    radial-gradient(circle at 14% 12%, rgba(189, 145, 61, .1), transparent 14rem),
+    linear-gradient(180deg, #151613, #10110f 64%, #0c0d0b);
+}
+
+.sidebar::before { background: rgba(189, 145, 61, .055); }
+.brand-copy { font-family: var(--font-editorial); font-weight: 600; letter-spacing: -.025em; }
+.brand-copy small, .nav-kicker, .eyebrow, .section-kicker { font-family: var(--font-interface); }
+.nav-item.active { background: linear-gradient(90deg, rgba(189,145,61,.21), rgba(189,145,61,.035)); }
+
+.topbar {
+  background: color-mix(in srgb, var(--paper) 94%, transparent);
+  border-color: color-mix(in srgb, var(--line) 92%, transparent);
+}
+
+.page h1,
+.hero-copy h1,
+.section-title h2,
+.explore-hero h2,
+.chat-intro h2,
+.profile-panel-head h2,
+.modal h2 {
+  font-family: var(--font-editorial);
+  font-weight: 500;
+  letter-spacing: -.035em;
+}
+
+.page h1 { font-size: clamp(2.2rem, 3.3vw, 3.35rem); line-height: 1; }
+.page h2, .page h3 { letter-spacing: -.02em; }
+.page-header p, .hero-copy p { line-height: 1.65; }
+
+.surface,
+.metric-card,
+.wallet-card-wrap,
+.hotel-result,
+.explore-card,
+.catalog-card {
+  border-color: var(--line);
+  background: var(--paper);
+  box-shadow: var(--shadow-xs);
+}
+
+.surface { border-radius: .78rem; }
+.metric-card, .wallet-card-wrap, .hotel-result, .explore-card, .catalog-card { border-radius: .78rem; }
+
+.button.primary {
+  background: #1b1c18;
+  color: #fbfaf5;
+  box-shadow: 0 8px 22px rgba(20, 21, 18, .13);
+}
+
+html[data-theme="dark"] .button.primary { background: #eee9de; color: #171814; }
+.button.secondary { background: var(--paper-raised); }
+.category-chip.active, .finder-chips button.active, .filter.active,
+.view-toggle button.active, .segmented button.active,
+.profile-nav button.active { background: #1b1c18; color: #fbfaf5; }
+
+.dashboard-hero {
+  background: #171815;
+}
+
+.dashboard-hero::after { border-color: rgba(235, 226, 204, .09); }
+.hero-copy p { color: #bbb7ac; }
+.dark-surface,
+.explore-hero {
+  background: #1b1c18;
+  border-color: #3a3c33;
+}
+
+.flight-search-animation,
+.hotel-search-animation {
+  background: var(--paper);
+}
+
+.award-head,
+.compare-head { background: #eae6dc; }
+html[data-theme="dark"] .award-head,
+html[data-theme="dark"] .compare-head { background: var(--paper-soft); }
+.award-row:hover { background: color-mix(in srgb, var(--copper-100) 46%, transparent); }
+
+.concierge-shell {
+  border-color: #34372f;
+  background: #131410;
+}
+.chat-sidebar { background: #10110e; }
+.chat-main { background: radial-gradient(circle at 50% -10%, rgba(189,145,61,.07), transparent 35%), #181a16; }
+.composer-box { background: #23261f; }
+
+@media (max-width: 720px) {
+  .sidebar { border-color: #2d3029; }
+}
+
+  </style>
+</head>
+<body>
+  <svg class="svg-sprite" aria-hidden="true">
+    <symbol id="i-grid" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="2"/><rect x="14" y="3" width="7" height="7" rx="2"/><rect x="3" y="14" width="7" height="7" rx="2"/><rect x="14" y="14" width="7" height="7" rx="2"/></symbol>
+    <symbol id="i-wallet" viewBox="0 0 24 24"><path d="M4 7.5h15a2 2 0 0 1 2 2V18a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h12"/><path d="M16 12h5v4h-5a2 2 0 1 1 0-4Z"/></symbol>
+    <symbol id="i-spend" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M16 8.5c-1-1-2.1-1.5-4-1.5-2 0-3 1-3 2.4 0 3.6 7 1.4 7 5 0 1.4-1.2 2.6-3.5 2.6-2 0-3.4-.6-4.5-1.7M12 5v14"/></symbol>
+    <symbol id="i-plane" viewBox="0 0 24 24"><path d="m2.5 16.5 8.1-4.2V5.7a2 2 0 0 1 4 0v4.5l5.1-2.7c.8-.4 1.8.1 1.8 1v1.4c0 .7-.3 1.3-.9 1.7l-6 4v3.3l2 1.3v1l-4-1.2-4 1.2v-1l2-1.3v-2.3l-7.2 2.2Z"/></symbol>
+    <symbol id="i-card" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="3"/><path d="M3 10h18M7 15h3"/></symbol>
+    <symbol id="i-concierge" viewBox="0 0 24 24"><path d="M5 18v-2a7 7 0 0 1 14 0v2M3 18h18M12 6V3M9 3h6M7 13h10"/></symbol>
+    <symbol id="i-user" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4.5 21a7.5 7.5 0 0 1 15 0"/></symbol>
+    <symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/></symbol>
+    <symbol id="i-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.42 1.42M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.42-1.42M17.66 6.34l1.41-1.41"/></symbol>
+    <symbol id="i-moon" viewBox="0 0 24 24"><path d="M20.4 15.5A8.5 8.5 0 0 1 8.5 3.6 8.5 8.5 0 1 0 20.4 15.5Z"/></symbol>
+    <symbol id="i-bell" viewBox="0 0 24 24"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9M10 21h4"/></symbol>
+    <symbol id="i-arrow" viewBox="0 0 24 24"><path d="M5 12h14M14 7l5 5-5 5"/></symbol>
+    <symbol id="i-chevron" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></symbol>
+    <symbol id="i-hotel" viewBox="0 0 24 24"><path d="M3 21V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16M17 9h2a2 2 0 0 1 2 2v10M7 7h2M12 7h2M7 11h2M12 11h2M7 15h2M12 15h2M2 21h20"/></symbol>
+    <symbol id="i-spark" viewBox="0 0 24 24"><path d="m12 3 1.6 5.4L19 10l-5.4 1.6L12 17l-1.6-5.4L5 10l5.4-1.6L12 3ZM19 16l.7 2.3L22 19l-2.3.7L19 22l-.7-2.3L16 19l2.3-.7L19 16Z"/></symbol>
+    <symbol id="i-upload" viewBox="0 0 24 24"><path d="M12 16V4M7 9l5-5 5 5M4 15v4a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-4"/></symbol>
+    <symbol id="i-check" viewBox="0 0 24 24"><path d="m5 12 4 4L19 6"/></symbol>
+    <symbol id="i-shield" viewBox="0 0 24 24"><path d="M12 22s8-3 8-10V5l-8-3-8 3v7c0 7 8 10 8 10Z"/><path d="m9 12 2 2 4-4"/></symbol>
+    <symbol id="i-send" viewBox="0 0 24 24"><path d="m22 2-7 20-4-9-9-4 20-7Z"/><path d="M22 2 11 13"/></symbol>
+    <symbol id="i-sliders" viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h16M8 4v4M16 10v4M10 16v4"/></symbol>
+    <symbol id="i-eye" viewBox="0 0 24 24"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/></symbol>
+    <symbol id="i-lock" viewBox="0 0 24 24"><rect x="4" y="10" width="16" height="11" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></symbol>
+  </svg>
+
+  <div class="prototype-banner"><span></span> Clean editorial prototype · sample data only</div>
+  <div class="app-shell">
+    <aside class="sidebar" aria-label="Primary navigation">
+      <div class="brand">
+        <span class="brand-mark"><svg><use href="#i-card"/></svg></span>
+        <span class="brand-copy">CreditIQ<small>INTELLIGENCE</small></span>
+      </div>
+      <div class="nav-kicker">Your intelligence</div>
+      <nav class="nav-list">
+        <button class="nav-item active" data-page="dashboard"><svg><use href="#i-grid"/></svg><span>Dashboard</span></button>
+        <button class="nav-item" data-page="wallet"><svg><use href="#i-wallet"/></svg><span>Wallet</span><b class="nav-count">3</b></button>
+        <button class="nav-item" data-page="spend"><svg><use href="#i-spend"/></svg><span>Spend Smart</span></button>
+        <button class="nav-item" data-page="travel"><svg><use href="#i-plane"/></svg><span>Travel</span></button>
+        <button class="nav-item" data-page="cards"><svg><use href="#i-card"/></svg><span>Cards</span></button>
+        <button class="nav-item" data-page="concierge"><svg><use href="#i-concierge"/></svg><span>Concierge</span><b class="nav-live">AI</b></button>
+      </nav>
+      <div class="nav-spacer"></div>
+      <nav class="nav-list nav-bottom"><button class="nav-item" data-page="profile"><svg><use href="#i-user"/></svg><span>Profile</span></button></nav>
+      <div class="side-profile">
+        <span class="avatar">G</span><span><b>Goverdhan MD</b><small>Premium member</small></span><svg class="side-arrow"><use href="#i-chevron"/></svg>
+      </div>
+    </aside>
+
+    <main class="app-main">
+      <header class="topbar">
+        <button class="mobile-menu" aria-label="Open menu"><span></span><span></span><span></span></button>
+        <div class="breadcrumb"><span id="breadcrumbParent">CreditIQ</span><b id="breadcrumbPage">Dashboard</b></div>
+        <div class="top-search"><svg><use href="#i-search"/></svg><input id="commandSearch" aria-label="Search CreditIQ" placeholder="Search cards, programmes, benefits…"/><kbd>⌘ K</kbd></div>
+        <div class="top-actions">
+          <button class="icon-btn" id="themeToggle" aria-label="Switch theme"><svg class="sun-icon"><use href="#i-sun"/></svg><svg class="moon-icon"><use href="#i-moon"/></svg></button>
+          <button class="icon-btn notify-btn" aria-label="Notifications"><svg><use href="#i-bell"/></svg><span></span></button>
+          <button class="ask-cira" data-page-jump="concierge"><svg><use href="#i-spark"/></svg><span>Ask CIRA</span></button>
+        </div>
+      </header>
+
+      <div class="page-stage">
+        <section class="page active" id="page-dashboard" data-title="Dashboard">
+          <div class="dashboard-hero">
+            <div class="hero-copy">
+              <div class="eyebrow">Thursday, 3 September</div>
+              <h1>Good morning, Goverdhan.</h1>
+              <p>Your cards can unlock more value this month. Here is what deserves attention first.</p>
+              <div class="hero-actions"><button class="button primary" data-page-jump="spend">Optimise a purchase <svg><use href="#i-arrow"/></svg></button><button class="button ghost" data-page-jump="travel">Plan a trip</button></div>
+            </div>
+            <div class="hero-orbit" aria-label="Rewards overview">
+              <div class="orbit orbit-a"></div><div class="orbit orbit-b"></div>
+              <div class="orbit-plane"><svg><use href="#i-plane"/></svg></div>
+              <div class="orbit-core"><small>Wallet value</small><strong>₹1.84L</strong><span>estimated</span></div>
+              <div class="orbit-tag tag-a">1,51,700 pts</div><div class="orbit-tag tag-b">3 cards</div>
+            </div>
+          </div>
+          <div class="metric-row">
+            <article class="metric-card"><div class="metric-icon copper"><svg><use href="#i-wallet"/></svg></div><div><small>Total points</small><strong>1,51,700</strong><span class="positive">+8,430 this month</span></div><div class="micro-bars"><i style="height:28%"></i><i style="height:45%"></i><i style="height:39%"></i><i style="height:68%"></i><i style="height:88%"></i></div></article>
+            <article class="metric-card"><div class="metric-icon blue"><svg><use href="#i-spend"/></svg></div><div><small>Value unlocked</small><strong>₹28,460</strong><span class="positive">₹6,280 above default card</span></div><div class="ring mini" style="--value:76"><b>76%</b></div></article>
+            <article class="metric-card"><div class="metric-icon green"><svg><use href="#i-plane"/></svg></div><div><small>Travel readiness</small><strong>4 routes</strong><span>Executable from your wallet</span></div><div class="flight-mini"><svg><use href="#i-plane"/></svg><i></i><b>SIN</b></div></article>
+          </div>
+          <div class="dashboard-grid">
+            <article class="surface opportunity-panel">
+              <div class="section-head"><div><span class="section-kicker">Your next best moves</span><h2>Three opportunities worth ₹11,820</h2></div><button class="text-button" data-page-jump="spend">See all <svg><use href="#i-arrow"/></svg></button></div>
+              <div class="opportunity-list">
+                <button class="opportunity" data-page-jump="spend"><span class="merchant-logo amazon">a</span><span class="op-copy"><b>Use Infinia for Amazon</b><small>Buy a SmartBuy voucher before your next ₹20,000 purchase.</small></span><span class="op-value"><b>+₹2,460</b><small>extra value</small></span><svg><use href="#i-arrow"/></svg></button>
+                <button class="opportunity" data-page-jump="travel"><span class="merchant-logo flight"><svg><use href="#i-plane"/></svg></span><span class="op-copy"><b>Singapore is within reach</b><small>Your HDFC points can cover one projected economy award.</small></span><span class="op-value"><b>19,000 pts</b><small>projected</small></span><svg><use href="#i-arrow"/></svg></button>
+                <button class="opportunity" data-page-jump="wallet"><span class="merchant-logo statement"><svg><use href="#i-upload"/></svg></span><span class="op-copy"><b>Refresh your Axis balance</b><small>Your last statement was added 42 days ago.</small></span><span class="op-value"><b>2 min</b><small>to update</small></span><svg><use href="#i-arrow"/></svg></button>
+              </div>
+            </article>
+            <article class="surface spend-chart-card">
+              <div class="section-head compact"><div><span class="section-kicker">August spend</span><h2>₹1,24,680</h2></div><button class="more-btn">•••</button></div>
+              <div class="spend-chart" aria-label="Monthly spending bar chart"><div><i style="height:43%"></i><small>Mar</small></div><div><i style="height:58%"></i><small>Apr</small></div><div><i style="height:49%"></i><small>May</small></div><div><i style="height:76%"></i><small>Jun</small></div><div><i style="height:65%"></i><small>Jul</small></div><div class="current"><b>₹1.25L</b><i style="height:90%"></i><small>Aug</small></div></div>
+              <div class="chart-legend"><span><i class="dot copper-dot"></i>Optimised 72%</span><span><i class="dot grey-dot"></i>Could improve 28%</span></div>
+            </article>
+          </div>
+          <div class="section-head page-section-head"><div><span class="section-kicker">Wallet snapshot</span><h2>Cards working for you</h2></div><button class="text-button" data-page-jump="wallet">Manage wallet <svg><use href="#i-arrow"/></svg></button></div>
+          <div class="mini-card-grid">
+            <article class="mini-credit-card infinia"><div><span>HDFC BANK</span><b>INFINIA</b></div><strong>68,500</strong><small>reward points</small><footer><span>•••• 2184</span><span class="verified"><svg><use href="#i-check"/></svg> Verified</span></footer></article>
+            <article class="mini-credit-card magnus"><div><span>AXIS BANK</span><b>MAGNUS</b></div><strong>31,200</strong><small>EDGE points</small><footer><span>•••• 4412</span><span>Update due</span></footer></article>
+            <article class="mini-credit-card amex"><div><span>AMERICAN EXPRESS</span><b>PLATINUM</b></div><strong>52,000</strong><small>membership rewards</small><footer><span>•••• 1009</span><span>Self-entered</span></footer></article>
+          </div>
+        </section>
+
+        <section class="page" id="page-wallet" data-title="Wallet">
+          <div class="page-header"><div><span class="eyebrow">Your rewards portfolio</span><h1>Wallet</h1><p>Balances, card benefits and transfer readiness in one place.</p></div><button class="button primary simulate-upload"><svg><use href="#i-upload"/></svg>Add statement</button></div>
+          <div class="wallet-summary surface dark-surface">
+            <div><small>Estimated wallet value</small><strong>₹1,84,240</strong><span>Across 1,51,700 reward points</span></div>
+            <div class="value-ring"><div class="ring" style="--value:82"><span><b>82%</b><small>verified</small></span></div></div>
+            <div class="wallet-breakdown"><div><span>HDFC</span><b>₹92,475</b><i><em style="width:62%"></em></i></div><div><span>Amex</span><b>₹52,000</b><i><em style="width:35%"></em></i></div><div><span>Axis</span><b>₹39,765</b><i><em style="width:27%"></em></i></div></div>
+          </div>
+          <div class="section-head page-section-head"><div><span class="section-kicker">My cards</span><h2>3 active cards</h2></div><div class="view-toggle"><button class="active">Cards</button><button>List</button></div></div>
+          <div class="wallet-card-grid">
+            <article class="wallet-card-wrap selected"><div class="wallet-card-visual infinia"><header><span>HDFC BANK</span><b>INFINIA</b></header><div class="chip-shape"></div><strong>•••• 2184</strong><footer><span>GOVERDHAN M D</span><span>VISA ∞</span></footer></div><div class="wallet-card-meta"><div><small>Current balance</small><b>68,500 pts</b></div><span class="status good"><svg><use href="#i-check"/></svg>Statement verified</span></div><button class="card-link">View benefits <svg><use href="#i-arrow"/></svg></button></article>
+            <article class="wallet-card-wrap"><div class="wallet-card-visual magnus"><header><span>AXIS BANK</span><b>MAGNUS</b></header><div class="chip-shape"></div><strong>•••• 4412</strong><footer><span>GOVERDHAN M D</span><span>VISA</span></footer></div><div class="wallet-card-meta"><div><small>Current balance</small><b>31,200 pts</b></div><span class="status warn">Update recommended</span></div><button class="card-link simulate-upload">Upload latest statement <svg><use href="#i-upload"/></svg></button></article>
+            <article class="wallet-card-wrap"><div class="wallet-card-visual amex"><header><span>AMERICAN EXPRESS</span><b>PLATINUM</b></header><div class="chip-shape"></div><strong>•••• 1009</strong><footer><span>GOVERDHAN M D</span><span>AMEX</span></footer></div><div class="wallet-card-meta"><div><small>Current balance</small><b>52,000 pts</b></div><span class="status neutral">Self-entered</span></div><button class="card-link simulate-upload">Verify with statement <svg><use href="#i-upload"/></svg></button></article>
+          </div>
+          <div class="wallet-lower-grid">
+            <article class="surface transfer-readiness"><div class="section-head compact"><div><span class="section-kicker">Transfer readiness</span><h2>Where your points can go</h2></div><button class="text-button" data-page-jump="travel">Explore travel</button></div><div class="partner-flow"><div class="flow-bank">HDFC<br><b>68.5K</b></div><div class="flow-lines"><i></i><i></i><i></i></div><div class="flow-partners"><span>SQ<br><b>KrisFlyer</b></span><span>AI<br><b>Maharaja</b></span><span>ALL<br><b>Accor</b></span></div></div></article>
+            <article class="surface statement-drop simulate-upload" tabindex="0"><div class="drop-icon"><svg><use href="#i-upload"/></svg></div><h3>Refresh your wallet</h3><p>Drop a statement here to update balances and unlock personalised recommendations.</p><button class="button secondary">Choose statement</button><small>Prototype only—no file is uploaded</small></article>
+          </div>
+        </section>
+
+        <section class="page" id="page-spend" data-title="Spend Smart">
+          <div class="page-header"><div><span class="eyebrow">Merchant-level intelligence</span><h1>Spend Smart</h1><p>Know the best card, route and expected reward before you pay.</p></div></div>
+          <div class="smart-search surface">
+            <div class="category-strip" aria-label="Purchase categories"><button class="category-chip active">Online shopping</button><button class="category-chip">Travel</button><button class="category-chip">Dining</button><button class="category-chip">Bills</button><button class="category-chip">Fuel</button><button class="category-chip">International</button></div>
+            <div class="merchant-form"><label class="merchant-input"><span>Merchant</span><div><span class="merchant-logo amazon">a</span><input id="merchantName" value="Amazon India" /></div></label><label><span>Purchase amount</span><div class="amount-input"><b>₹</b><input id="spendAmount" type="number" value="20000" /></div></label><button class="button primary optimise-btn"><svg><use href="#i-spark"/></svg>Find my best card</button></div>
+          </div>
+          <div class="smart-result">
+            <article class="winner-card surface">
+              <div class="winner-glow"></div><div class="winner-top"><span class="winner-badge"><svg><use href="#i-spark"/></svg>Best way to pay</span><span class="confidence">High confidence</span></div>
+              <div class="winner-main"><div class="winner-card-art infinia"><span>HDFC</span><b>INFINIA</b><small>•••• 2184</small></div><div><span class="overline">Buy through SmartBuy</span><h2>Use HDFC Infinia</h2><p>Purchase an Amazon Pay voucher first, then complete the purchase using that balance.</p></div><div class="winner-value"><small>Expected value</small><strong id="winnerValue">₹3,300</strong><span id="winnerRate">16.5% effective return</span></div></div>
+              <div class="winner-steps"><div><b>1</b><span>Open SmartBuy</span></div><i></i><div><b>2</b><span>Buy voucher</span></div><i></i><div><b>3</b><span>Pay on Amazon</span></div><button class="button primary prototype-action">Show exact steps <svg><use href="#i-arrow"/></svg></button></div>
+            </article>
+            <aside class="surface value-meter"><div class="section-kicker">Value comparison</div><div class="meter-ring"><div class="ring" style="--value:88"><span><b>5×</b><small>reward rate</small></span></div></div><div class="meter-row best"><span>SmartBuy route</span><b id="smartRouteValue">₹3,300</b></div><div class="meter-row"><span>Pay card directly</span><b>₹660</b></div><div class="meter-row"><span>Wrong card</span><b>₹200</b></div><div class="meter-save"><small>Extra value unlocked</small><strong id="extraUnlocked">₹2,640</strong></div></aside>
+          </div>
+          <div class="section-head page-section-head"><div><span class="section-kicker">All wallet options</span><h2>Why this card wins</h2></div><button class="text-button">Reward assumptions ▾</button></div>
+          <div class="comparison-table surface"><div class="compare-head"><span>Card & route</span><span>Reward earned</span><span>Estimated value</span><span>Effective return</span><span></span></div><div class="compare-row highlighted"><span><i class="card-swatch infinia"></i><b>HDFC Infinia</b><small>SmartBuy voucher</small></span><b>3,300 pts</b><b>₹3,300</b><strong>16.5%</strong><span class="status good">Best</span></div><div class="compare-row"><span><i class="card-swatch magnus"></i><b>Axis Magnus</b><small>Pay directly</small></span><b>960 pts</b><b>₹960</b><strong>4.8%</strong><span></span></div><div class="compare-row"><span><i class="card-swatch amex"></i><b>Amex Platinum</b><small>Reward Multiplier</small></span><b>800 pts</b><b>₹800</b><strong>4.0%</strong><span></span></div></div>
+        </section>
+
+        <section class="page" id="page-travel" data-title="Travel">
+          <div class="page-header travel-header"><div><span class="eyebrow">Wallet-aware travel</span><h1>Find the smartest way to book.</h1><p>Compare points, cash and transfer paths using the cards you already own.</p></div><button class="button secondary" data-page-jump="concierge"><svg><use href="#i-concierge"/></svg>Ask Concierge</button></div>
+          <div class="travel-tabs" role="tablist"><button class="travel-tab active" data-travel="flights"><svg><use href="#i-plane"/></svg>Flights</button><button class="travel-tab" data-travel="hotels"><svg><use href="#i-hotel"/></svg>Hotels</button><button class="travel-tab" data-travel="explore"><svg><use href="#i-spark"/></svg>Explore</button></div>
+          <div class="travel-view active" id="travel-flights">
+            <div class="travel-search surface"><div class="route-field"><small>From</small><b>BLR</b><span>Bengaluru</span></div><button class="route-swap" aria-label="Swap cities">⇄</button><div class="route-field"><small>To</small><b>SIN</b><span>Singapore</span></div><div class="travel-field"><small>Departure</small><b>17 Sept 2026</b><span>± 3 days</span></div><div class="travel-field"><small>Travellers & cabin</small><b>1 · All cabins</b><span>One-way</span></div><button class="button primary flight-search-btn">Search awards <svg><use href="#i-arrow"/></svg></button></div>
+            <div class="flight-search-animation" aria-live="polite"><div class="search-sky"><div class="search-route"></div><div class="search-airport start"><b>BLR</b><span>Bengaluru</span></div><div class="flying-plane"><svg><use href="#i-plane"/></svg></div><div class="search-airport end"><b>SIN</b><span>Singapore</span></div></div><h3>Searching award programmes</h3><p id="flightSearchStatus">Checking routes your wallet can reach…</p><div class="search-progress"><i></i></div></div>
+            <div class="travel-filter-row"><button class="filter active">All stops</button><button class="filter">Non-stop</button><button class="filter">Economy</button><button class="filter">Business</button><button class="filter">Programmes ▾</button><span></span><div class="segmented"><button class="active">All cards</button><button>My cards</button></div></div>
+            <div class="result-summary"><div><b>20 award options</b><span>13–19 Sept · sample design data</span></div><button>Recommended first ▾</button></div>
+            <div class="award-list surface">
+              <div class="award-head"><span>Date</span><span>Programme & route</span><span>Economy</span><span>Business</span><span>Best wallet path</span><span></span></div>
+              <article class="award-item open"><button class="award-row" aria-expanded="true"><span><b>17 Sept</b><small>Thursday</small></span><span class="award-route"><i class="airline-logo sq">SQ</i><span><b>Singapore Airlines · KrisFlyer</b><small>BLR 17:05 → SIN 00:30 · 4h 55m · non-stop</small></span><em class="tag green">Best match</em></span><span><b>19,000</b><small>miles</small></span><span><b>45,000</b><small>miles</small></span><span class="wallet-path"><b>19,000 pts</b><small>HDFC Infinia</small></span><svg class="row-chevron"><use href="#i-chevron"/></svg></button>
+                <div class="award-detail"><div class="decision-hero"><div><span class="section-kicker">CreditIQ recommendation</span><h3>Transfer HDFC points to KrisFlyer</h3><p>Lowest projected points path your wallet can fund.</p></div><div><small>You need</small><b>19,000 pts</b></div><div><small>Card to use</small><b>HDFC Infinia</b></div><div><small>Confidence</small><b>Projected</b></div></div><div class="decision-tabs"><button class="active" data-detail="compare">Points vs cash</button><button data-detail="book">How to book</button><button data-detail="sources">Source & safety</button></div><div class="decision-panel active" data-detail-panel="compare"><div class="path-grid"><article class="path-choice winner"><span>Recommended · transfer</span><b>HDFC → KrisFlyer</b><strong>19,000 points</strong><small>Taxes confirmed at checkout</small></article><article class="path-choice"><span>Cash alternative</span><b>Pay airline directly</b><strong>Fare unavailable</strong><small>No live number returned—nothing invented</small></article><article class="path-choice"><span>Keep your points</span><b>Wait for a better fare</b><strong>0 points</strong><small>Useful when availability is uncertain</small></article></div></div><div class="decision-panel" data-detail-panel="book"><div class="book-layout"><ol><li><b>Check the seat on Singapore Airlines</b><span>Confirm award availability before moving points.</span></li><li><b>Transfer the verified requirement</b><span>Use HDFC only after current ratio and timing are verified.</span></li><li><b>Book and pay taxes</b><span>Complete redemption directly with KrisFlyer.</span></li></ol><div><button class="button primary prototype-action">Check on KrisFlyer ↗</button><button class="button secondary" data-page-jump="concierge">Ask Concierge</button><p><b>Important:</b> transfers cannot be reversed.</p></div></div></div><div class="decision-panel" data-detail-panel="sources"><div class="source-cards"><article><b>Award price <em class="tag blue">Guide</em></b><p>Programme guidance, not a live-seat claim.</p></article><article><b>Wallet route <em class="tag amber">Self-entered</em></b><p>Prototype balance used for the UX walkthrough.</p></article></div><details><summary>Technical provider attempts</summary><p>Provider and cache attempts are kept here for auditability without overwhelming the primary decision.</p></details></div></div>
+              </article>
+              <article class="award-item"><button class="award-row" aria-expanded="false"><span><b>16 Sept</b><small>Wednesday</small></span><span class="award-route"><i class="airline-logo sq">SQ</i><span><b>Singapore Airlines · KrisFlyer</b><small>BLR 04:35 → SIN 11:40 · non-stop</small></span></span><span><b>19,000</b><small>miles</small></span><span><b>45,000</b><small>miles</small></span><span class="wallet-path"><b>19,000 pts</b><small>HDFC Infinia</small></span><svg class="row-chevron"><use href="#i-chevron"/></svg></button><div class="award-detail compact-detail"><div class="decision-hero"><div><span class="section-kicker">Alternative departure</span><h3>Same programme, earlier flight</h3><p>Every selection opens directly below its result.</p></div><div><small>You need</small><b>19,000 pts</b></div><div><small>Card</small><b>HDFC Infinia</b></div><div><small>Confidence</small><b>Projected</b></div></div></div></article>
+              <article class="award-item"><button class="award-row" aria-expanded="false"><span><b>17 Sept</b><small>Thursday</small></span><span class="award-route"><i class="airline-logo ua">UA</i><span><b>United · MileagePlus</b><small>BLR → SIN · partner itinerary · 1 stop</small></span><em class="tag amber">Verify route</em></span><span><b>22,500</b><small>miles</small></span><span><b>65,000</b><small>miles</small></span><span class="wallet-path"><b>Not priced</b><small>No known route</small></span><svg class="row-chevron"><use href="#i-chevron"/></svg></button><div class="award-detail compact-detail"><div class="decision-hero blocked"><div><span class="section-kicker">CreditIQ recommendation</span><h3>Do not transfer yet</h3><p>The award price exists, but your wallet has no verified route.</p></div><div><small>Status</small><b>Not executable</b></div><div><small>Next step</small><b>Verify</b></div><div><small>Confidence</small><b>Blocked</b></div></div></div></article>
+              <article class="award-item"><button class="award-row" aria-expanded="false"><span><b>18 Sept</b><small>Friday</small></span><span class="award-route"><i class="airline-logo ai">AI</i><span><b>Air India · Maharaja Club</b><small>BLR → SIN · award-chart guidance</small></span><em class="tag blue">Published guide</em></span><span><b>12,000</b><small>guide</small></span><span><b>—</b><small>not supplied</small></span><span class="wallet-path"><b>Projected</b><small>Verify first</small></span><svg class="row-chevron"><use href="#i-chevron"/></svg></button><div class="award-detail compact-detail"><div class="decision-hero"><div><span class="section-kicker">Published guidance</span><h3>Check both Maharaja fare tiers</h3><p>Guide pricing remains separate from live availability.</p></div><div><small>Guide price</small><b>12,000 pts</b></div><div><small>Availability</small><b>Not live</b></div><div><small>Confidence</small><b>Projected</b></div></div></div></article>
+            </div>
+          </div>
+          <div class="travel-view" id="travel-hotels">
+            <div class="travel-search hotel-search surface"><div class="route-field hotel-destination"><small>Destination</small><b>Bangkok</b><span>Thailand</span></div><div class="travel-field"><small>Check-in</small><b>15 Oct 2026</b><span>Thursday</span></div><div class="travel-field"><small>Check-out</small><b>18 Oct 2026</b><span>3 nights</span></div><div class="travel-field"><small>Guests & rooms</small><b>2 adults · 1 room</b><span>Flexible rates</span></div><button class="button primary hotel-search-btn">Search hotels <svg><use href="#i-arrow"/></svg></button></div>
+            <div class="hotel-search-animation"><div class="hotel-pulse"><svg><use href="#i-hotel"/></svg><i></i><i></i></div><h3>Comparing hotel paths</h3><p>Checking cash, portal and loyalty options…</p></div>
+            <div class="travel-filter-row"><button class="filter active">Recommended</button><button class="filter">Lowest cash</button><button class="filter">Refundable</button><button class="filter">Breakfast</button><button class="filter">Programmes ▾</button><span></span><div class="segmented"><button class="active">All cards</button><button>My cards</button></div></div>
+            <div class="hotel-grid">
+              <article class="hotel-result selected"><div class="hotel-visual novotel"><span>Bangkok · Sukhumvit</span><b>NOVOTEL</b><small>Property image slot</small></div><div class="hotel-info"><div><span class="tag green">Best wallet match</span><h3>Novotel Bangkok Sukhumvit</h3><p>Superior King · breakfast · flexible cancellation</p></div><div class="hotel-price"><span>Cash total</span><b>₹12,292</b><small>3 nights</small></div></div><div class="hotel-path"><div><small>Best points option</small><b>4,000 ALL + ₹3,452</b><span>Projected saving ₹8,840</span></div><button class="button primary hotel-expand">View best path</button></div><div class="hotel-expanded"><div class="decision-hero"><div><span class="section-kicker">CreditIQ recommendation</span><h3>Use ALL points, then pay the remainder</h3><p>Lowest projected cash outlay across your wallet.</p></div><div><small>Use</small><b>4,000 ALL</b></div><div><small>You pay</small><b>₹3,452</b></div><div><small>Confidence</small><b>Projected</b></div></div><div class="path-grid"><article class="path-choice winner"><span>Recommended · transfer</span><b>HDFC → ALL Accor</b><strong>₹3,452</strong><small>After 4,000 ALL</small></article><article class="path-choice"><span>Bank portal</span><b>Use points in portal</b><strong>₹3,805</strong><small>Projected remainder</small></article><article class="path-choice"><span>Pay cash</span><b>Keep your points</b><strong>₹12,292</strong><small>Captured comparison rate</small></article></div></div></article>
+              <article class="hotel-result"><div class="hotel-visual pullman"><span>Bangkok · Silom</span><b>PULLMAN</b><small>Property image slot</small></div><div class="hotel-info"><div><span class="tag blue">Portal leads</span><h3>Pullman Bangkok Hotel G</h3><p>Deluxe room · refundable</p></div><div class="hotel-price"><span>Cash total</span><b>₹18,640</b><small>3 nights</small></div></div><div class="hotel-path"><div><small>Best wallet option</small><b>Portal + ₹6,210</b><span>Projected path</span></div><button class="button secondary hotel-expand">Compare paths</button></div></article>
+              <article class="hotel-result"><div class="hotel-visual ibis"><span>Bangkok · Sukhumvit</span><b>IBIS STYLES</b><small>Property image slot</small></div><div class="hotel-info"><div><span class="tag amber">Partial offset</span><h3>ibis Styles Bangkok</h3><p>Standard room · breakfast included</p></div><div class="hotel-price"><span>Cash total</span><b>₹9,880</b><small>3 nights</small></div></div><div class="hotel-path"><div><small>Points option</small><b>2,000 ALL + ₹6,032</b><span>Compare value first</span></div><button class="button secondary hotel-expand">Compare paths</button></div></article>
+            </div>
+          </div>
+          <div class="travel-view" id="travel-explore">
+            <div class="explore-hero"><div><span class="eyebrow">Explore the rewards universe</span><h2>Know where your points can take you.</h2><p>Sweet spots, transfer routes and lounge access—connected to your actual wallet.</p></div><div class="explore-radar"><div class="radar-ring r1"></div><div class="radar-ring r2"></div><div class="radar-ring r3"></div><span class="radar-point p1">BLR</span><span class="radar-point p2">SIN</span><span class="radar-point p3">DXB</span><i></i></div></div>
+            <div class="explore-grid"><article class="explore-card"><span class="metric-icon copper"><svg><use href="#i-spark"/></svg></span><small>Sweet spots</small><h3>High-value redemptions</h3><p>Routes where points consistently outperform cash.</p><b>12 matched to your wallet</b><button class="text-button">Explore sweet spots <svg><use href="#i-arrow"/></svg></button></article><article class="explore-card"><span class="metric-icon blue"><svg><use href="#i-arrow"/></svg></span><small>Transfer partners</small><h3>Move points confidently</h3><p>Ratios, expected timing and issuer rules in one map.</p><b>22 HDFC partners tracked</b><button class="text-button">View transfer map <svg><use href="#i-arrow"/></svg></button></article><article class="explore-card"><span class="metric-icon green"><svg><use href="#i-card"/></svg></span><small>Airport lounges</small><h3>Access before you fly</h3><p>See the cards and conditions that unlock each lounge.</p><b>6 visits available</b><button class="text-button">Check lounge access <svg><use href="#i-arrow"/></svg></button></article></div>
+          </div>
+        </section>
+
+        <section class="page" id="page-cards" data-title="Cards">
+          <div class="page-header"><div><span class="eyebrow">Find your next card</span><h1>Card Explorer</h1><p>Compare real rewards, fees and benefits for how you actually spend.</p></div><button class="button secondary"><svg><use href="#i-sliders"/></svg>My preferences</button></div>
+          <div class="card-finder surface"><div class="finder-copy"><span class="section-kicker">AI card finder</span><h2>What matters most to you?</h2></div><div class="finder-chips"><button class="active">Travel rewards</button><button>Cashback</button><button>Lounge access</button><button>Low fees</button><button>Business spend</button></div><button class="button primary cards-search"><svg><use href="#i-spark"/></svg>Find my matches</button></div>
+          <div class="card-toolbar"><div><b>93 cards tracked</b><span>Sorted for your profile</span></div><div><button class="filter active">Recommended</button><button class="filter">Bank ▾</button><button class="filter">Annual fee ▾</button></div></div>
+          <div class="catalog-grid">
+            <article class="catalog-card"><div class="catalog-top"><span class="tag green">92% match</span><button class="heart">♡</button></div><div class="catalog-art infinia"><span>HDFC BANK</span><b>INFINIA</b><small>VISA INFINITE</small></div><h3>HDFC Infinia Metal</h3><p>Best for premium travel and accelerated SmartBuy rewards.</p><div class="catalog-stats"><span><small>Reward rate</small><b>3.3%–16.5%</b></span><span><small>Annual fee</small><b>₹12,500</b></span></div><div class="catalog-actions"><button class="button secondary prototype-action">View details</button><button class="compare-add" data-card="HDFC Infinia">+ Compare</button></div></article>
+            <article class="catalog-card"><div class="catalog-top"><span class="tag blue">87% match</span><button class="heart">♡</button></div><div class="catalog-art magnus"><span>AXIS BANK</span><b>MAGNUS</b><small>BURGUNDY</small></div><h3>Axis Magnus Burgundy</h3><p>Strong transfer ecosystem and high-value milestone benefits.</p><div class="catalog-stats"><span><small>Reward rate</small><b>4.8%–12%</b></span><span><small>Annual fee</small><b>₹30,000</b></span></div><div class="catalog-actions"><button class="button secondary prototype-action">View details</button><button class="compare-add" data-card="Axis Magnus">+ Compare</button></div></article>
+            <article class="catalog-card"><div class="catalog-top"><span class="tag amber">81% match</span><button class="heart">♡</button></div><div class="catalog-art amex"><span>AMERICAN EXPRESS</span><b>PLATINUM</b><small>CHARGE</small></div><h3>Amex Platinum Charge</h3><p>Premium hospitality, concierge and lifestyle privileges.</p><div class="catalog-stats"><span><small>Reward rate</small><b>2%–10%</b></span><span><small>Annual fee</small><b>₹66,000</b></span></div><div class="catalog-actions"><button class="button secondary prototype-action">View details</button><button class="compare-add" data-card="Amex Platinum">+ Compare</button></div></article>
+            <article class="catalog-card"><div class="catalog-top"><span class="tag neutral">76% match</span><button class="heart">♡</button></div><div class="catalog-art emerald"><span>ICICI BANK</span><b>EMERALDE</b><small>PRIVATE METAL</small></div><h3>ICICI Emeralde Private</h3><p>Flexible rewards with premium airport and golf benefits.</p><div class="catalog-stats"><span><small>Reward rate</small><b>3%–6%</b></span><span><small>Annual fee</small><b>₹12,499</b></span></div><div class="catalog-actions"><button class="button secondary prototype-action">View details</button><button class="compare-add" data-card="ICICI Emeralde">+ Compare</button></div></article>
+          </div>
+          <div class="compare-tray"><div><span class="compare-count">0</span><p><b>Compare cards</b><small>Add up to three cards</small></p></div><div class="compare-names"></div><button class="button primary prototype-action" disabled>Compare now</button><button class="tray-close">×</button></div>
+        </section>
+
+        <section class="page concierge-page" id="page-concierge" data-title="Concierge">
+          <div class="concierge-shell">
+            <aside class="chat-sidebar"><div class="chat-side-head"><div><span class="eyebrow">CIRA</span><h2>Concierge</h2></div><button class="new-chat">＋</button></div><button class="new-conversation"><svg><use href="#i-spark"/></svg>New conversation</button><div class="chat-label">Recent</div><button class="chat-history active"><span>Plan Singapore with points</span><small>Just now</small></button><button class="chat-history"><span>Best card for ₹2L tax</span><small>Yesterday</small></button><button class="chat-history"><span>Review Axis statement</span><small>28 Aug</small></button><div class="chat-safety"><svg><use href="#i-shield"/></svg><span><b>Approval-first</b><small>CIRA never transfers points or pays without you.</small></span></div></aside>
+            <div class="chat-main"><header class="chat-header"><div><span class="cira-avatar"><svg><use href="#i-spark"/></svg></span><span><b>CIRA</b><small><i></i> CreditIQ rewards concierge</small></span></div><button class="more-btn">•••</button></header><div class="chat-messages" id="chatMessages"><div class="chat-intro"><div class="cira-hero-mark"><svg><use href="#i-spark"/></svg></div><h2>How can I help you use your rewards?</h2><p>I can compare cards, plan a points trip or explain a recommendation.</p><div class="prompt-grid"><button class="suggestion">Plan a Bengaluru–Singapore trip</button><button class="suggestion">Which card should I use today?</button><button class="suggestion">Find expiring benefits</button><button class="suggestion">Explain my wallet value</button></div></div></div><div class="chat-composer"><div class="composer-box"><button aria-label="Attach">＋</button><textarea id="chatInput" rows="1" placeholder="Ask about cards, points, flights or hotels…"></textarea><button class="send-btn" id="sendChat" aria-label="Send message"><svg><use href="#i-send"/></svg></button></div><p>CIRA prepares recommendations. You approve every irreversible action.</p></div></div>
+          </div>
+        </section>
+
+        <section class="page" id="page-profile" data-title="Profile">
+          <div class="page-header"><div><span class="eyebrow">Your CreditIQ</span><h1>Profile & preferences</h1><p>Control how CreditIQ personalises recommendations and protects your data.</p></div><button class="button primary save-profile">Save changes</button></div>
+          <div class="profile-layout">
+            <aside class="profile-nav surface"><button class="active" data-profile-tab="personal">Personal details</button><button data-profile-tab="preferences">Rewards preferences</button><button data-profile-tab="notifications">Notifications</button><button data-profile-tab="privacy">Privacy & security</button></aside>
+            <div class="profile-panels">
+              <section class="profile-panel surface active" data-profile-panel="personal"><div class="profile-panel-head"><div><h2>Personal details</h2><p>Used to personalise your CreditIQ experience.</p></div><span class="large-avatar">G</span></div><div class="form-grid"><label><span>Full name</span><input value="Goverdhan M D" /></label><label><span>Email address</span><input value="goverdhan.md@gmail.com" /></label><label><span>Home city</span><input value="Bengaluru" /></label><label><span>Preferred currency</span><select><option>INR · Indian Rupee</option></select></label></div></section>
+              <section class="profile-panel surface" data-profile-panel="preferences"><div class="profile-panel-head"><div><h2>Rewards preferences</h2><p>Tell CreditIQ what a valuable recommendation means to you.</p></div></div><div class="preference-list"><label><span><b>Primary goal</b><small>How should recommendations be ranked?</small></span><select><option>Maximum travel value</option><option>Lowest cash outlay</option></select></label><label><span><b>Preferred cabin</b><small>Used as the default in flight search.</small></span><select><option>All cabins</option><option>Business</option></select></label><label><span><b>Transfer comfort</b><small>How much complexity are you comfortable with?</small></span><select><option>Show verified transfers</option><option>Direct redemptions only</option></select></label></div></section>
+              <section class="profile-panel surface" data-profile-panel="notifications"><div class="profile-panel-head"><div><h2>Notifications</h2><p>Choose which opportunities CreditIQ should surface.</p></div></div><div class="toggle-list"><label><span><b>Points expiry alerts</b><small>Get notified before rewards expire.</small></span><button class="switch on" role="switch" aria-checked="true"><i></i></button></label><label><span><b>High-value redemption alerts</b><small>New sweet spots matched to your wallet.</small></span><button class="switch on" role="switch" aria-checked="true"><i></i></button></label><label><span><b>Statement refresh reminders</b><small>Know when wallet balances may be stale.</small></span><button class="switch" role="switch" aria-checked="false"><i></i></button></label></div></section>
+              <section class="profile-panel surface" data-profile-panel="privacy"><div class="profile-panel-head"><div><h2>Privacy & security</h2><p>Your financial documents remain under your control.</p></div><span class="metric-icon green"><svg><use href="#i-lock"/></svg></span></div><div class="security-list"><div><span><b>Account security</b><small>Google sign-in · last active today</small></span><button class="button secondary prototype-action">Review</button></div><div><span><b>Statement data</b><small>Manage parsed statements and balances</small></span><button class="button secondary prototype-action">Manage</button></div><div><span><b>Download my data</b><small>Export your CreditIQ information</small></span><button class="button secondary prototype-action">Request export</button></div></div></section>
+            </div>
+          </div>
+        </section>
+      </div>
+    </main>
+  </div>
+
+  <div class="modal-backdrop" id="uploadModal" role="dialog" aria-modal="true" aria-labelledby="uploadTitle"><div class="modal"><button class="modal-close" aria-label="Close">×</button><span class="modal-icon"><svg><use href="#i-upload"/></svg></span><h2 id="uploadTitle">Statement upload experience</h2><p>This design prototype does not accept real files. In production, the upload flow will show encryption, parsing progress and a confirmation before updating balances.</p><button class="button primary modal-close-action">Got it</button></div></div>
+  <div class="toast" role="status" aria-live="polite"></div>
+  <script>
+(() => {
+  const root = document.documentElement;
+  const pages = [...document.querySelectorAll('.page')];
+  const navItems = [...document.querySelectorAll('.nav-item[data-page]')];
+  const breadcrumbPage = document.getElementById('breadcrumbPage');
+  const toast = document.querySelector('.toast');
+  let toastTimer;
+
+  const showToast = (message) => {
+    toast.textContent = message;
+    toast.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => toast.classList.remove('show'), 2600);
+  };
+
+  const showPage = (pageName) => {
+    const next = document.getElementById(`page-${pageName}`);
+    if (!next) return;
+    pages.forEach(page => page.classList.toggle('active', page === next));
+    navItems.forEach(item => item.classList.toggle('active', item.dataset.page === pageName));
+    breadcrumbPage.textContent = next.dataset.title;
+    document.title = `CreditIQ — ${next.dataset.title}`;
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    try {
+      history.replaceState(null, '', `#${pageName}`);
+    } catch {
+      // Local file previews can block history updates; navigation still works.
+    }
+  };
+
+  navItems.forEach(item => item.addEventListener('click', () => showPage(item.dataset.page)));
+  document.querySelectorAll('[data-page-jump]').forEach(button => button.addEventListener('click', () => showPage(button.dataset.pageJump)));
+
+  const startPage = location.hash.replace('#', '');
+  if (startPage && document.getElementById(`page-${startPage}`)) showPage(startPage);
+
+  document.getElementById('themeToggle').addEventListener('click', () => {
+    const nextTheme = root.dataset.theme === 'dark' ? 'light' : 'dark';
+    root.dataset.theme = nextTheme;
+    showToast(`${nextTheme === 'dark' ? 'Dark' : 'Light'} theme selected.`);
+  });
+
+  const commandSearch = document.getElementById('commandSearch');
+  const commandRoutes = [
+    ['wallet', 'wallet points balance statement'],
+    ['spend', 'spend merchant amazon optimise best card'],
+    ['travel', 'travel flight hotel points route programme lounge'],
+    ['cards', 'cards finder compare hdfc axis amex'],
+    ['concierge', 'cira concierge ask ai'],
+    ['profile', 'profile preferences privacy notifications']
+  ];
+  commandSearch.addEventListener('keydown', (event) => {
+    if (event.key !== 'Enter') return;
+    const query = commandSearch.value.trim().toLowerCase();
+    const match = commandRoutes.find(([, words]) => words.includes(query) || query.includes(words.split(' ')[0]));
+    if (match) {
+      showPage(match[0]);
+      showToast(`Opened ${document.getElementById(`page-${match[0]}`).dataset.title}.`);
+      commandSearch.blur();
+    } else {
+      showToast('Try “wallet”, “travel”, “cards” or “concierge”.');
+    }
+  });
+  document.addEventListener('keydown', (event) => {
+    if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === 'k') {
+      event.preventDefault();
+      commandSearch.focus();
+      commandSearch.select();
+    }
+  });
+
+  const travelTabs = [...document.querySelectorAll('.travel-tab')];
+  const travelViews = [...document.querySelectorAll('.travel-view')];
+  travelTabs.forEach(tab => tab.addEventListener('click', () => {
+    const view = tab.dataset.travel;
+    travelTabs.forEach(item => item.classList.toggle('active', item === tab));
+    travelViews.forEach(item => item.classList.toggle('active', item.id === `travel-${view}`));
+  }));
+
+  document.querySelectorAll('.filter, .category-chip').forEach(button => button.addEventListener('click', () => {
+    const parent = button.parentElement;
+    parent.querySelectorAll('.filter, .category-chip').forEach(item => item.classList.remove('active'));
+    button.classList.add('active');
+  }));
+  document.querySelectorAll('.finder-chips button').forEach(button => button.addEventListener('click', () => button.classList.toggle('active')));
+  document.querySelectorAll('.segmented, .view-toggle').forEach(group => group.querySelectorAll('button').forEach(button => button.addEventListener('click', () => {
+    group.querySelectorAll('button').forEach(item => item.classList.toggle('active', item === button));
+  })));
+
+  const flightSearchButton = document.querySelector('.flight-search-btn');
+  const flightAnimation = document.querySelector('.flight-search-animation');
+  const flightStatus = document.getElementById('flightSearchStatus');
+  const searchProgress = flightAnimation.querySelector('.search-progress');
+  let flightTimer;
+  flightSearchButton.addEventListener('click', () => {
+    clearTimeout(flightTimer);
+    flightAnimation.classList.add('active');
+    searchProgress.classList.remove('done');
+    flightStatus.textContent = 'Checking routes your wallet can reach…';
+    flightSearchButton.disabled = true;
+    flightSearchButton.textContent = 'Searching…';
+    flightTimer = setTimeout(() => { flightStatus.textContent = 'Comparing programme prices and transfer paths…'; }, 900);
+    setTimeout(() => {
+      flightStatus.textContent = '20 award options ready. Best wallet paths ranked first.';
+      searchProgress.classList.add('done');
+      flightSearchButton.disabled = false;
+      flightSearchButton.innerHTML = 'Search awards <svg><use href="#i-arrow"/></svg>';
+      showToast('Flight results refreshed with sample prototype data.');
+      setTimeout(() => flightAnimation.classList.remove('active'), 1150);
+    }, 2250);
+  });
+
+  const hotelSearchButton = document.querySelector('.hotel-search-btn');
+  const hotelAnimation = document.querySelector('.hotel-search-animation');
+  hotelSearchButton.addEventListener('click', () => {
+    hotelAnimation.classList.add('active');
+    hotelSearchButton.disabled = true;
+    hotelSearchButton.textContent = 'Comparing…';
+    setTimeout(() => {
+      hotelAnimation.classList.remove('active');
+      hotelSearchButton.disabled = false;
+      hotelSearchButton.innerHTML = 'Search hotels <svg><use href="#i-arrow"/></svg>';
+      showToast('Hotel paths compared across cash, portal and loyalty options.');
+    }, 1800);
+  });
+
+  document.querySelectorAll('.award-row').forEach(row => row.addEventListener('click', () => {
+    const item = row.closest('.award-item');
+    const list = row.closest('.award-list');
+    const shouldOpen = !item.classList.contains('open');
+    list.querySelectorAll('.award-item').forEach(other => {
+      other.classList.remove('open');
+      other.querySelector('.award-row').setAttribute('aria-expanded', 'false');
+    });
+    if (shouldOpen) {
+      item.classList.add('open');
+      row.setAttribute('aria-expanded', 'true');
+    }
+  }));
+
+  document.querySelectorAll('.decision-tabs').forEach(tabset => tabset.querySelectorAll('button').forEach(tab => tab.addEventListener('click', () => {
+    const detail = tab.closest('.award-detail');
+    tabset.querySelectorAll('button').forEach(item => item.classList.toggle('active', item === tab));
+    detail.querySelectorAll('.decision-panel').forEach(panel => panel.classList.toggle('active', panel.dataset.detailPanel === tab.dataset.detail));
+  })));
+
+  document.querySelectorAll('.hotel-expand').forEach(button => button.addEventListener('click', () => {
+    const hotel = button.closest('.hotel-result');
+    const expandable = hotel.querySelector('.hotel-expanded');
+    if (!expandable) {
+      showToast('A detailed inline comparison would open here in production.');
+      return;
+    }
+    const isExpanded = hotel.classList.toggle('expanded');
+    button.textContent = isExpanded ? 'Hide best path' : 'View best path';
+  }));
+
+  const optimiseButton = document.querySelector('.optimise-btn');
+  optimiseButton.addEventListener('click', () => {
+    const amount = Math.max(0, Number(document.getElementById('spendAmount').value) || 0);
+    const value = Math.round(amount * .165);
+    const direct = Math.round(amount * .033);
+    document.getElementById('winnerValue').textContent = `₹${value.toLocaleString('en-IN')}`;
+    document.getElementById('winnerRate').textContent = '16.5% effective return';
+    document.getElementById('smartRouteValue').textContent = `₹${value.toLocaleString('en-IN')}`;
+    document.getElementById('extraUnlocked').textContent = `₹${Math.max(0, value - direct).toLocaleString('en-IN')}`;
+    const result = document.querySelector('.winner-card');
+    result.animate([{ transform: 'translateY(4px)', opacity: .55 }, { transform: 'translateY(0)', opacity: 1 }], { duration: 340, easing: 'ease-out' });
+    showToast(`Best card recalculated for ${document.getElementById('merchantName').value || 'this purchase'}.`);
+  });
+
+  document.querySelector('.cards-search').addEventListener('click', () => {
+    document.querySelectorAll('.catalog-card').forEach((card, index) => {
+      card.animate([{ opacity: .25, transform: 'translateY(10px)' }, { opacity: 1, transform: 'none' }], { duration: 280, delay: index * 70, fill: 'both' });
+    });
+    showToast('Card matches refreshed for your selected priorities.');
+  });
+  document.querySelectorAll('.heart').forEach(button => button.addEventListener('click', () => {
+    button.classList.toggle('liked');
+    button.textContent = button.classList.contains('liked') ? '♥' : '♡';
+  }));
+
+  const selectedCards = new Set();
+  const compareTray = document.querySelector('.compare-tray');
+  const compareNames = document.querySelector('.compare-names');
+  const compareCount = document.querySelector('.compare-count');
+  const compareAction = compareTray.querySelector('.button');
+  const renderCompare = () => {
+    compareCount.textContent = selectedCards.size;
+    compareNames.innerHTML = [...selectedCards].map(name => `<span>${name}</span>`).join('');
+    compareTray.classList.toggle('show', selectedCards.size > 0);
+    compareAction.disabled = selectedCards.size < 2;
+  };
+  document.querySelectorAll('.compare-add').forEach(button => button.addEventListener('click', () => {
+    const name = button.dataset.card;
+    if (selectedCards.has(name)) {
+      selectedCards.delete(name);
+      button.classList.remove('added');
+      button.textContent = '+ Compare';
+    } else if (selectedCards.size < 3) {
+      selectedCards.add(name);
+      button.classList.add('added');
+      button.textContent = '✓ Added';
+    } else {
+      showToast('You can compare up to three cards.');
+    }
+    renderCompare();
+  }));
+  document.querySelector('.tray-close').addEventListener('click', () => {
+    selectedCards.clear();
+    document.querySelectorAll('.compare-add').forEach(button => { button.classList.remove('added'); button.textContent = '+ Compare'; });
+    renderCompare();
+  });
+
+  const chatMessages = document.getElementById('chatMessages');
+  const chatInput = document.getElementById('chatInput');
+  const escapeHtml = value => value.replace(/[&<>'"]/g, char => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' })[char]);
+  const sendMessage = (preset) => {
+    const message = (preset || chatInput.value).trim();
+    if (!message) return;
+    const intro = chatMessages.querySelector('.chat-intro');
+    if (intro) intro.remove();
+    chatMessages.insertAdjacentHTML('beforeend', `<div class="message user"><div class="bubble">${escapeHtml(message)}</div></div>`);
+    chatInput.value = '';
+    chatMessages.insertAdjacentHTML('beforeend', '<div class="message typing"><span class="cira-avatar"><svg><use href="#i-spark"/></svg></span><div class="bubble"><span class="typing-dots"><i></i><i></i><i></i></span></div></div>');
+    chatMessages.scrollTop = chatMessages.scrollHeight;
+    setTimeout(() => {
+      const typing = chatMessages.querySelector('.typing');
+      if (typing) typing.remove();
+      const response = message.toLowerCase().includes('singapore')
+        ? 'Your current HDFC balance can cover a projected 19,000-mile KrisFlyer economy option from Bengaluru. I would first recheck live award availability, then show you the exact transfer path before you approve anything.'
+        : 'I can compare this against your HDFC, Axis and Amex cards. I will keep projected value separate from executable instructions and show the source behind every material number.';
+      chatMessages.insertAdjacentHTML('beforeend', `<div class="message"><span class="cira-avatar"><svg><use href="#i-spark"/></svg></span><div class="bubble">${response}</div></div>`);
+      chatMessages.scrollTop = chatMessages.scrollHeight;
+    }, 1050);
+  };
+  document.getElementById('sendChat').addEventListener('click', () => sendMessage());
+  chatInput.addEventListener('keydown', event => { if (event.key === 'Enter' && !event.shiftKey) { event.preventDefault(); sendMessage(); } });
+  document.querySelectorAll('.suggestion').forEach(button => button.addEventListener('click', () => sendMessage(button.textContent)));
+  document.querySelector('.new-conversation').addEventListener('click', () => {
+    chatMessages.innerHTML = '<div class="chat-intro"><div class="cira-hero-mark"><svg><use href="#i-spark"/></svg></div><h2>How can I help you use your rewards?</h2><p>I can compare cards, plan a points trip or explain a recommendation.</p><div class="prompt-grid"><button class="suggestion">Plan a Bengaluru–Singapore trip</button><button class="suggestion">Which card should I use today?</button></div></div>';
+    chatMessages.querySelectorAll('.suggestion').forEach(button => button.addEventListener('click', () => sendMessage(button.textContent)));
+  });
+
+  const profileTabs = [...document.querySelectorAll('[data-profile-tab]')];
+  const profilePanels = [...document.querySelectorAll('[data-profile-panel]')];
+  profileTabs.forEach(tab => tab.addEventListener('click', () => {
+    profileTabs.forEach(item => item.classList.toggle('active', item === tab));
+    profilePanels.forEach(panel => panel.classList.toggle('active', panel.dataset.profilePanel === tab.dataset.profileTab));
+  }));
+  document.querySelectorAll('.switch').forEach(control => control.addEventListener('click', () => {
+    const active = control.classList.toggle('on');
+    control.setAttribute('aria-checked', active ? 'true' : 'false');
+  }));
+  document.querySelector('.save-profile').addEventListener('click', () => showToast('Profile preferences saved in this prototype.'));
+
+  const uploadModal = document.getElementById('uploadModal');
+  document.querySelectorAll('.simulate-upload').forEach(trigger => trigger.addEventListener('click', () => uploadModal.classList.add('show')));
+  document.querySelectorAll('.modal-close, .modal-close-action').forEach(button => button.addEventListener('click', () => uploadModal.classList.remove('show')));
+  uploadModal.addEventListener('click', event => { if (event.target === uploadModal) uploadModal.classList.remove('show'); });
+
+  document.querySelectorAll('.prototype-action').forEach(button => button.addEventListener('click', () => showToast('This action is represented for UX review. No account or booking action was performed.')));
+})();
+
+  </script>
+</body>
+</html>
