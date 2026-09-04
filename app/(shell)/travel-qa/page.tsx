@@ -1,6 +1,6 @@
 'use client'
 
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { authedFetch } from '@/lib/authed-fetch'
 import { TRAVEL_COVERAGE_MATRIX, type TravelCoverageCase } from '@/lib/travel/coverage-matrix'
 
@@ -13,6 +13,16 @@ type Result = {
   programmes: string[]
   message: string
   elapsedMs?: number
+}
+
+type Provider = {
+  id: string
+  name: string
+  kinds: string[]
+  priority: number
+  status: 'configured' | 'waiting-access' | 'not-configured'
+  required_env: string[]
+  note: string
 }
 
 function futureDate(days = 21) {
@@ -29,6 +39,22 @@ export default function TravelQaPage() {
   const [results, setResults] = useState<Record<string, Result>>({})
   const [runningGroup, setRunningGroup] = useState<string | null>(null)
   const [date, setDate] = useState(futureDate())
+  const [providers, setProviders] = useState<Provider[]>([])
+  const [providerError, setProviderError] = useState('')
+
+  useEffect(() => {
+    let cancelled = false
+    void authedFetch('/api/travel/providers')
+      .then(async response => {
+        const data = await response.json().catch(() => ({}))
+        if (!response.ok) throw new Error(data?.error || 'provider diagnostics failed')
+        if (!cancelled) setProviders(Array.isArray(data.providers) ? data.providers : [])
+      })
+      .catch(error => {
+        if (!cancelled) setProviderError(error instanceof Error ? error.message : 'provider diagnostics failed')
+      })
+    return () => { cancelled = true }
+  }, [])
 
   const summary = useMemo(() => {
     const values = Object.values(results)
@@ -121,14 +147,26 @@ export default function TravelQaPage() {
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'end', gap: 20, marginBottom: 18 }}>
         <div>
           <div className="ciq-editorial-kicker">Internal travel QA</div>
-          <h1 style={{ margin: '6px 0 4px', fontSize: 34, letterSpacing: '-.04em' }}>Flight coverage matrix</h1>
-          <p style={{ margin: 0, color: 'var(--ink-2)', fontSize: 13 }}>Live cash + live award + wallet fusion, with published programme guides tracked separately.</p>
+          <h1 style={{ margin: '6px 0 4px', fontSize: 34, letterSpacing: '-.04em' }}>Global Travel provider + route QA</h1>
+          <p style={{ margin: 0, color: 'var(--ink-2)', fontSize: 13 }}>Provider readiness, live cash + live award + wallet fusion, with published programme guides tracked separately.</p>
         </div>
         <label style={{ display: 'grid', gap: 4, color: 'var(--ink-3)', fontSize: 10 }}>
           Test date
           <input type="date" value={date} onChange={event => setDate(event.target.value)} style={{ minHeight: 38, border: '1px solid var(--line)', borderRadius: 9, padding: '0 10px', background: 'var(--surface)' }} />
         </label>
       </div>
+
+      <section style={{ marginBottom: 22 }}>
+        <div style={{ display: 'flex', alignItems: 'end', justifyContent: 'space-between', gap: 12, marginBottom: 8 }}>
+          <div><div className="ciq-editorial-kicker">Integration readiness</div><h2 style={{ margin: '3px 0 0', fontSize: 17 }}>Global provider stack</h2></div>
+          <small style={{ color: 'var(--ink-3)' }}>Credentials are never shown here.</small>
+        </div>
+        {providerError ? <div style={{ padding: 12, border: '1px solid var(--line)', borderRadius: 10 }}>{providerError}</div> : (
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,minmax(0,1fr))', gap: 8 }}>
+            {providers.map(provider => <ProviderCard key={provider.id} provider={provider} />)}
+          </div>
+        )}
+      </section>
 
       <section style={{ display: 'grid', gridTemplateColumns: 'repeat(5,1fr)', gap: 8, marginBottom: 14 }}>
         <Metric label="Run" value={summary.run} />
@@ -170,6 +208,21 @@ export default function TravelQaPage() {
 
       <p style={{ marginTop: 14, color: 'var(--ink-3)', fontSize: 10, lineHeight: 1.55 }}><b>PASS</b> requires both cash and LIVE award inventory. <b>GUIDE</b> means an issuer has published a points benchmark but CreditIQ has not confirmed a seat; it never counts as availability. PARTIAL means only one live side returned. Wallet routes are counted only from actual fusion results.</p>
     </main>
+  )
+}
+
+function ProviderCard({ provider }: { provider: Provider }) {
+  const color = provider.status === 'configured' ? 'var(--green)' : provider.status === 'waiting-access' ? 'var(--copper)' : 'var(--ink-3)'
+  return (
+    <div style={{ padding: 12, border: '1px solid var(--line)', borderRadius: 11, background: 'var(--surface)' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', gap: 8 }}>
+        <b style={{ fontSize: 11 }}>{provider.name}</b>
+        <span style={{ color, fontSize: 8.5, fontWeight: 850, textTransform: 'uppercase' }}>{provider.status.replace('-', ' ')}</span>
+      </div>
+      <div style={{ marginTop: 5, color: 'var(--ink-3)', fontSize: 9 }}>{provider.kinds.join(' · ')}</div>
+      <div style={{ marginTop: 7, color: 'var(--ink-2)', fontSize: 9.5, lineHeight: 1.45 }}>{provider.note}</div>
+      <div style={{ marginTop: 7, color: 'var(--ink-3)', fontSize: 8.5 }}>{provider.required_env.join(' + ')}</div>
+    </div>
   )
 }
 
