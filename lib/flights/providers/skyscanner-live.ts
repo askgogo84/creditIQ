@@ -90,7 +90,7 @@ function normalize(json: any, input: { from: string; to: string; cabin: Cabin })
     if (!priced) return []
 
     const segmentIds = Array.isArray(leg?.segmentIds) ? leg.segmentIds : []
-    const segments = segmentIds.map((segmentId: string) => {
+    const segments: SkyscannerCashFlight['segments'] = segmentIds.map((segmentId: string) => {
       const segment = segmentsMap?.[segmentId] || {}
       const airline = carrierCode(String(segment?.marketingCarrierId || ''))
       return {
@@ -103,10 +103,13 @@ function normalize(json: any, input: { from: string; to: string; cabin: Cabin })
       }
     })
 
-    const marketing = Array.isArray(leg?.marketingCarrierIds)
+    const marketing: string[] = Array.isArray(leg?.marketingCarrierIds)
       ? leg.marketingCarrierIds.map((id: string) => carrierCode(id)).filter(Boolean)
       : []
-    const airlineCodes = [...new Set([...marketing, ...segments.map(segment => segment.airline).filter(Boolean)])]
+    const airlineCodes: string[] = [...new Set([
+      ...marketing,
+      ...segments.map((segment: SkyscannerCashFlight['segments'][number]) => segment.airline).filter(Boolean),
+    ])]
     const minutes = Number(leg?.durationInMinutes) || 0
     const deepLink = priced.option?.items?.find((item: any) => item?.deepLink)?.deepLink || ''
 
