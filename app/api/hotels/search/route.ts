@@ -1,6 +1,6 @@
-// Global hotel search. Skyscanner Hotels Live Prices is pageable and provides
-// destination-wide live inventory. The retired Hotellook API is deliberately no
-// longer used here.
+// Global hotel search provider orchestration.
+// Priority: Booking.com Demand API -> Skyscanner Hotels Live Prices.
+// Captured fixtures are deliberately excluded from this endpoint.
 import { NextRequest, NextResponse } from 'next/server'
 import { requireAuth } from '@/lib/api-auth'
 import {
@@ -8,84 +8,163 @@ import {
   pollHotelSearch,
   skyscannerHotelsConfigured,
 } from '@/lib/hotels/providers/skyscanner-live'
+import {
+  bookingDemandBaseUrl,
+  bookingDemandConfigured,
+  searchBookingDemandHotels,
+} from '@/lib/hotels/providers/booking-demand'
 
 export const runtime = 'nodejs'
 export const maxDuration = 60
 export const dynamic = 'force-dynamic'
 
-function unavailable() {
+type Attempt = {
+  provider: string
+  ok: boolean
+  loaded: number
+  note: string
+}
+
+function unavailable(attempts: Attempt[]) {
   return NextResponse.json({
     hotels: [],
     offers: [],
-    error: 'live hotel provider is not configured',
+    error: 'no live hotel provider is configured or responding',
+    attempts,
     coverage: {
-      provider: 'skyscanner-hotels-live',
+      provider: 'none',
       mode: 'UNAVAILABLE',
       loaded: 0,
       provider_total: null,
       has_more: false,
-      fetched_at: null,
-      note: 'Captured Bangkok fixtures are never substituted for a different destination.',
+      fetched_at: new Date().toISOString(),
+      note: 'CreditIQ does not substitute captured/demo hotel rates for a different destination.',
     },
   }, { status: 503 })
+}
+
+async function bookingPage(body: any, pageToken: string | null) {
+  const destination = typeof body.destination === 'string' ? body.destination.trim() : ''
+  const checkin = typeof body.checkin === 'string' ? body.checkin : ''
+  const checkout = typeof body.checkout === 'string' ? body.checkout : ''
+  if (!destination || !checkin || !checkout) {
+    throw new Error('destination, checkin and checkout are required')
+  }
+  const limit = Number.isFinite(Number(body.limit)) ? Number(body.limit) : 50
+  const result = await searchBookingDemandHotels({
+    destination,
+    checkin,
+    checkout,
+    adults: Number.isFinite(Number(body.adults)) ? Number(body.adults) : 2,
+    rooms: Number.isFinite(Number(body.rooms)) ? Number(body.rooms) : 1,
+    limit,
+    page: pageToken,
+  })
+
+  return {
+    hotels: result.offers,
+    offers: result.offers,
+    sessionToken: result.nextPage ? `booking:${result.nextPage}` : undefined,
+    coverage: {
+      provider: 'booking-demand',
+      mode: result.nextPage ? 'PROVIDER_PAGEABLE' : 'PROVIDER_COMPLETE',
+      destination,
+      entityId: `booking-proxy:${result.destinationProxy.iata}`,
+      loaded: result.offers.length,
+      provider_total: result.total,
+      has_more: Boolean(result.nextPage),
+      next_page: result.nextPage,
+      limit,
+      status: 'LIVE_PROVIDER_RETURNED',
+      fetched_at: new Date().toISOString(),
+      note: `Booking.com Demand v3.2 ${bookingDemandBaseUrl().includes('sandbox') ? 'sandbox' : 'production'} search. Destination is currently resolved through CreditIQ's global airport/city coordinates (${result.destinationProxy.city}/${result.destinationProxy.iata}) with a ${result.destinationProxy.radiusKm} km metro radius.`,
+    },
+    requestId: result.requestId,
+  }
 }
 
 async function execute(req: NextRequest, body: any) {
   const gate = await requireAuth(req)
   if (!gate.ok) return gate.res
-  if (!skyscannerHotelsConfigured()) return unavailable()
 
+  const attempts: Attempt[] = []
+  const sessionToken = typeof body?.sessionToken === 'string' ? body.sessionToken : ''
+
+  // Provider-specific continuation.
+  if (sessionToken.startsWith('booking:')) {
+    if (!bookingDemandConfigured()) return unavailable([{ provider: 'booking-demand', ok: false, loaded: 0, note: 'continuation requested but provider is not configured' }])
+    try {
+      const page = await bookingPage(body, sessionToken.slice('booking:'.length))
+      return NextResponse.json({ ...page, attempts: [{ provider: 'booking-demand', ok: true, loaded: page.offers.length, note: 'next Booking.com provider page returned' }] })
+    } catch (error: any) {
+      console.error('booking-demand continuation failed', error?.message || error)
+      return NextResponse.json({ error: error?.message || 'Booking.com continuation failed' }, { status: 502 })
+    }
+  }
+
+  if (sessionToken) {
+    // Existing Skyscanner Hotels continuation shape.
+    if (!skyscannerHotelsConfigured()) return unavailable([{ provider: 'skyscanner-hotels-live', ok: false, loaded: 0, note: 'continuation requested but provider is not configured' }])
+    const destination = typeof body.destination === 'string' ? body.destination.trim() : ''
+    const entityId = typeof body.entityId === 'string' ? body.entityId.trim() : ''
+    const offset = Number.isFinite(Number(body.offset)) ? Number(body.offset) : 0
+    const limit = Number.isFinite(Number(body.limit)) ? Number(body.limit) : 50
+    if (!destination || !entityId) {
+      return NextResponse.json({ error: 'destination and entityId are required with Skyscanner sessionToken' }, { status: 400 })
+    }
+    try {
+      const page = await pollHotelSearch({ sessionToken, destination, entityId, offset, limit })
+      return NextResponse.json({ hotels: page.offers, ...page, attempts: [{ provider: 'skyscanner-hotels-live', ok: true, loaded: page.offers.length, note: 'next Skyscanner provider page returned' }] })
+    } catch (error: any) {
+      console.error('skyscanner hotel continuation failed', error?.message || error)
+      return NextResponse.json({ error: error?.message || 'hotel continuation failed' }, { status: 502 })
+    }
+  }
+
+  const destination = typeof body?.destination === 'string' ? body.destination.trim() : ''
+  const checkin = typeof body?.checkin === 'string' ? body.checkin : ''
+  const checkout = typeof body?.checkout === 'string' ? body.checkout : ''
+  if (!destination || !checkin || !checkout) {
+    return NextResponse.json({ error: 'destination, checkin and checkout are required' }, { status: 400 })
+  }
   const limit = Number.isFinite(Number(body?.limit)) ? Number(body.limit) : 50
-  try {
-    if (body?.sessionToken) {
-      const destination = typeof body.destination === 'string' ? body.destination.trim() : ''
-      const entityId = typeof body.entityId === 'string' ? body.entityId.trim() : ''
-      const offset = Number.isFinite(Number(body.offset)) ? Number(body.offset) : 0
-      if (!destination || !entityId) {
-        return NextResponse.json({ error: 'destination and entityId are required with sessionToken' }, { status: 400 })
-      }
-      const page = await pollHotelSearch({
-        sessionToken: String(body.sessionToken),
+
+  // 1. Booking.com Demand v3.2 — global search/look/redirect target.
+  if (bookingDemandConfigured()) {
+    try {
+      const page = await bookingPage(body, null)
+      attempts.push({ provider: 'booking-demand', ok: true, loaded: page.offers.length, note: page.offers.length ? 'live accommodation search returned offers' : 'zero offers; trying next provider' })
+      if (page.offers.length > 0) return NextResponse.json({ ...page, attempts })
+    } catch (error: any) {
+      attempts.push({ provider: 'booking-demand', ok: false, loaded: 0, note: 'request failed; trying next provider' })
+      console.error('booking-demand hotel search failed', error?.message || error)
+    }
+  } else {
+    attempts.push({ provider: 'booking-demand', ok: false, loaded: 0, note: 'not configured' })
+  }
+
+  // 2. Skyscanner Hotels Live Prices — existing pageable provider.
+  if (skyscannerHotelsConfigured()) {
+    try {
+      const page = await createHotelSearch({
         destination,
-        entityId,
-        offset,
+        checkin,
+        checkout,
+        adults: Number.isFinite(Number(body.adults)) ? Number(body.adults) : 2,
+        rooms: Number.isFinite(Number(body.rooms)) ? Number(body.rooms) : 1,
         limit,
       })
-      return NextResponse.json({ hotels: page.offers, ...page })
+      attempts.push({ provider: 'skyscanner-hotels-live', ok: true, loaded: page.offers.length, note: page.offers.length ? 'live hotel session returned offers' : 'zero offers' })
+      if (page.offers.length > 0) return NextResponse.json({ hotels: page.offers, ...page, attempts })
+    } catch (error: any) {
+      attempts.push({ provider: 'skyscanner-hotels-live', ok: false, loaded: 0, note: 'request failed' })
+      console.error('global Skyscanner hotel search failed', error?.message || error)
     }
-
-    const destination = typeof body?.destination === 'string' ? body.destination.trim() : ''
-    const checkin = typeof body?.checkin === 'string' ? body.checkin : ''
-    const checkout = typeof body?.checkout === 'string' ? body.checkout : ''
-    if (!destination || !checkin || !checkout) {
-      return NextResponse.json({ error: 'destination, checkin and checkout are required' }, { status: 400 })
-    }
-
-    const page = await createHotelSearch({
-      destination,
-      checkin,
-      checkout,
-      adults: Number.isFinite(Number(body.adults)) ? Number(body.adults) : 2,
-      rooms: Number.isFinite(Number(body.rooms)) ? Number(body.rooms) : 1,
-      limit,
-    })
-    return NextResponse.json({ hotels: page.offers, ...page })
-  } catch (error: any) {
-    console.error('global hotel search failed', error?.message || error)
-    return NextResponse.json({
-      hotels: [],
-      offers: [],
-      error: error?.message || 'hotel search failed',
-      coverage: {
-        provider: 'skyscanner-hotels-live',
-        mode: 'UNAVAILABLE',
-        loaded: 0,
-        provider_total: null,
-        has_more: false,
-        fetched_at: new Date().toISOString(),
-      },
-    }, { status: 502 })
+  } else {
+    attempts.push({ provider: 'skyscanner-hotels-live', ok: false, loaded: 0, note: 'not configured' })
   }
+
+  return unavailable(attempts)
 }
 
 export async function POST(req: NextRequest) {
@@ -98,9 +177,6 @@ export async function POST(req: NextRequest) {
   return execute(req, body)
 }
 
-// Backward-compatible GET shape for any old caller. It still authenticates and
-// starts a live provider session; subsequent pages should use POST with the
-// returned sessionToken/entityId/next_offset.
 export async function GET(req: NextRequest) {
   const p = new URL(req.url).searchParams
   return execute(req, {
