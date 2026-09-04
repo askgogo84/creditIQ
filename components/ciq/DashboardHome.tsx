@@ -1,5 +1,6 @@
 'use client'
 
+import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import {
   ArrowRight,
@@ -28,6 +29,12 @@ type WalletCard = {
 
 const barHeights = [34, 49, 43, 67, 58, 88]
 
+function greetingForHour(hour: number) {
+  if (hour < 12) return 'Good morning'
+  if (hour < 17) return 'Good afternoon'
+  return 'Good evening'
+}
+
 export function DashboardHome({
   displayName,
   cards,
@@ -46,13 +53,21 @@ export function DashboardHome({
   const high = Math.round(totalPoints * 1.8)
   const firstName = (displayName || 'there').trim().split(/\s+/)[0]
   const today = new Intl.DateTimeFormat('en-IN', { weekday: 'long', day: 'numeric', month: 'long' }).format(new Date())
+  const [greeting, setGreeting] = useState('Good morning')
+
+  useEffect(() => {
+    const refreshGreeting = () => setGreeting(greetingForHour(new Date().getHours()))
+    refreshGreeting()
+    const timer = window.setInterval(refreshGreeting, 60_000)
+    return () => window.clearInterval(timer)
+  }, [])
 
   return (
     <main className="ciq-approved-dashboard">
       <section className="dashboard-hero">
         <div className="hero-copy">
           <div className="eyebrow"><time suppressHydrationWarning>{today}</time></div>
-          <h1>Good morning, {firstName}.</h1>
+          <h1>{greeting}, {firstName}.</h1>
           <p>Your cards can unlock more value this month. Here is what deserves attention first.</p>
           <div className="hero-actions">
             <Link className="button primary" href="/spend-optimizer">Optimise a purchase <ArrowRight size={15} /></Link>
