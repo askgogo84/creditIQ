@@ -1,0 +1,361 @@
+/* Spend Smart result state — keeps the approved clean-editorial visual language
+   after the AI response arrives. The input state already lives in product-workspace.css. */
+
+.ciq-approved-spend .smart-result {
+  display: grid;
+  grid-template-columns: minmax(0, 1.45fr) minmax(270px, .55fr);
+  gap: 14px;
+  align-items: stretch;
+}
+
+.ciq-approved-spend .surface {
+  border: 1px solid #e4e1d9;
+  border-radius: 13px;
+  background: #fff;
+  box-shadow: 0 1px 2px rgba(37,31,19,.018);
+}
+
+.ciq-approved-spend .winner-card {
+  position: relative;
+  overflow: hidden;
+  min-height: 322px;
+  padding: 23px;
+}
+
+.ciq-approved-spend .winner-glow {
+  position: absolute;
+  width: 260px;
+  height: 260px;
+  right: -92px;
+  top: -126px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(189,145,61,.16), rgba(189,145,61,0) 70%);
+  pointer-events: none;
+}
+
+.ciq-approved-spend .winner-top {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid #e4e1d9;
+}
+
+.ciq-approved-spend .winner-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: #76551f;
+  font-size: 10px;
+  font-weight: 850;
+  letter-spacing: .09em;
+  text-transform: uppercase;
+}
+
+.ciq-approved-spend .confidence {
+  color: #8b887e;
+  font-size: 9.5px;
+}
+
+.ciq-approved-spend .winner-main {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  grid-template-columns: 168px minmax(0, 1fr) auto;
+  gap: 21px;
+  align-items: center;
+  padding: 24px 0;
+}
+
+.ciq-approved-spend .winner-card-art {
+  min-height: 108px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 14px;
+  border: 1px solid rgba(255,255,255,.11);
+  border-radius: 13px;
+  background: radial-gradient(circle at 75% 5%, rgba(189,145,61,.22), transparent 30%), linear-gradient(145deg,#161815,#292b25);
+  color: #f6f2e9;
+  box-shadow: 0 14px 27px rgba(27,28,24,.15);
+}
+
+.ciq-approved-spend .winner-card-art::before {
+  content: "";
+  width: 29px;
+  height: 21px;
+  display: block;
+  border-radius: 5px;
+  background: linear-gradient(135deg,#d8c089,#a8873e);
+  box-shadow: inset 0 0 0 1px rgba(27,28,24,.16);
+}
+
+.ciq-approved-spend .winner-card-art span,
+.ciq-approved-spend .winner-card-art small {
+  color: #bbb7ac;
+  font-size: 8px;
+  font-weight: 760;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+}
+
+.ciq-approved-spend .winner-card-art b {
+  display: block;
+  margin: 7px 0 3px;
+  color: #fff;
+  font-size: 12px;
+  line-height: 1.25;
+}
+
+.ciq-approved-spend .overline {
+  color: #98702b;
+  font-size: 9.5px;
+  font-weight: 850;
+  letter-spacing: .09em;
+  text-transform: uppercase;
+}
+
+.ciq-approved-spend .winner-main h2 {
+  margin: 6px 0 7px;
+  color: #1b1c18;
+  font: 500 clamp(25px,2.35vw,36px)/1.05 var(--font-serif);
+  letter-spacing: -.035em;
+}
+
+.ciq-approved-spend .winner-main p {
+  max-width: 640px;
+  color: #68675f;
+  font-size: 11.5px;
+  line-height: 1.58;
+}
+
+.ciq-approved-spend .winner-value {
+  min-width: 134px;
+  padding-left: 17px;
+  border-left: 1px solid #e4e1d9;
+  text-align: right;
+}
+
+.ciq-approved-spend .winner-value small,
+.ciq-approved-spend .winner-value span {
+  display: block;
+  color: #8b887e;
+  font-size: 9px;
+}
+
+.ciq-approved-spend .winner-value strong {
+  display: block;
+  margin: 5px 0 2px;
+  color: #1b1c18;
+  font-size: 25px;
+  letter-spacing: -.04em;
+}
+
+.ciq-approved-spend .winner-steps {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  grid-template-columns: auto minmax(18px,1fr) auto minmax(18px,1fr) auto auto;
+  gap: 10px;
+  align-items: center;
+  padding-top: 16px;
+  border-top: 1px solid #e4e1d9;
+}
+
+.ciq-approved-spend .winner-steps > div {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  color: #494a43;
+  font-size: 9.5px;
+  font-weight: 700;
+}
+
+.ciq-approved-spend .winner-steps > div b {
+  width: 23px;
+  height: 23px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: #f3ead4;
+  color: #76551f;
+  font-size: 9px;
+}
+
+.ciq-approved-spend .winner-steps > i {
+  border-top: 1px dashed #d2cec3;
+}
+
+.ciq-approved-spend .winner-steps .button {
+  min-height: 36px;
+  border: 0;
+  border-radius: 9px;
+  padding: 0 12px;
+  background: #1b1c18;
+  color: #fbfaf5;
+  font: inherit;
+  font-size: 10px;
+  font-weight: 780;
+  cursor: pointer;
+}
+
+.ciq-approved-spend .value-meter {
+  display: flex;
+  flex-direction: column;
+  padding: 21px;
+}
+
+.ciq-approved-spend .value-meter .section-kicker {
+  color: #98702b;
+  font-size: 10px;
+  font-weight: 850;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+}
+
+.ciq-approved-spend .meter-ring {
+  display: grid;
+  place-items: center;
+  padding: 22px 0 18px;
+}
+
+.ciq-approved-spend .ring {
+  --value: 70;
+  position: relative;
+  width: 116px;
+  aspect-ratio: 1;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: conic-gradient(#bd913d calc(var(--value) * 1%),#e4e1d9 0);
+}
+
+.ciq-approved-spend .ring::after {
+  content: "";
+  position: absolute;
+  inset: 9px;
+  border-radius: 50%;
+  background: #fff;
+}
+
+.ciq-approved-spend .ring > span {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  place-items: center;
+}
+
+.ciq-approved-spend .ring b {
+  color: #1b1c18;
+  font-size: 25px;
+  line-height: 1;
+}
+
+.ciq-approved-spend .ring small {
+  margin-top: 3px;
+  color: #8b887e;
+  font-size: 8.5px;
+}
+
+.ciq-approved-spend .meter-row {
+  min-height: 43px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  border-top: 1px solid #e4e1d9;
+  color: #68675f;
+  font-size: 10px;
+}
+
+.ciq-approved-spend .meter-row b { color: #1b1c18; font-size: 11px; }
+.ciq-approved-spend .meter-row.best b { color: #346b50; }
+.ciq-approved-spend .meter-save { margin-top: auto; padding-top: 15px; border-top: 1px solid #e4e1d9; }
+.ciq-approved-spend .meter-save small { display: block; color: #8b887e; font-size: 9px; }
+.ciq-approved-spend .meter-save strong { display: block; margin-top: 3px; color: #346b50; font-size: 22px; letter-spacing: -.035em; }
+
+.ciq-approved-spend .section-head {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.ciq-approved-spend .page-section-head { margin: 26px 0 12px; }
+.ciq-approved-spend .section-kicker { color: #98702b; font-size: 10px; font-weight: 850; letter-spacing: .1em; text-transform: uppercase; }
+.ciq-approved-spend .section-head h2 { margin: 4px 0 0; color: #1b1c18; font-size: 19px; letter-spacing: -.02em; }
+.ciq-approved-spend .text-button { border: 0; background: transparent; color: #98702b; font: inherit; font-size: 10.5px; font-weight: 780; cursor: pointer; }
+
+.ciq-approved-spend .comparison-table { overflow: hidden; }
+.ciq-approved-spend .compare-head,
+.ciq-approved-spend .compare-row {
+  display: grid;
+  grid-template-columns: minmax(240px,1.45fr) minmax(95px,.55fr) minmax(95px,.55fr) minmax(112px,.65fr) minmax(105px,.5fr);
+  gap: 12px;
+  align-items: center;
+}
+
+.ciq-approved-spend .compare-head {
+  min-height: 42px;
+  padding: 0 16px;
+  border-bottom: 1px solid #e4e1d9;
+  background: #f3f2ed;
+  color: #8b887e;
+  font-size: 8.5px;
+  font-weight: 800;
+  letter-spacing: .07em;
+  text-transform: uppercase;
+}
+
+.ciq-approved-spend .compare-row {
+  min-height: 66px;
+  padding: 10px 16px;
+  border-bottom: 1px solid #e4e1d9;
+  color: #494a43;
+  font-size: 10.5px;
+}
+
+.ciq-approved-spend .compare-row:last-child { border-bottom: 0; }
+.ciq-approved-spend .compare-row.highlighted { background: #fbf8ee; }
+.ciq-approved-spend .compare-row > span:first-child { display: flex; align-items: center; gap: 10px; min-width: 0; }
+.ciq-approved-spend .compare-row > span:first-child > span { min-width: 0; }
+.ciq-approved-spend .compare-row > span:first-child b,
+.ciq-approved-spend .compare-row > span:first-child small { display: block; }
+.ciq-approved-spend .compare-row > span:first-child b { overflow: hidden; color: #1b1c18; font-size: 11.5px; text-overflow: ellipsis; white-space: nowrap; }
+.ciq-approved-spend .compare-row > span:first-child small { margin-top: 2px; color: #8b887e; font-size: 9px; }
+.ciq-approved-spend .compare-row > b { color: #494a43; font-size: 10.5px; }
+.ciq-approved-spend .compare-row > strong { color: #346b50; font-size: 11.5px; }
+.ciq-approved-spend .card-swatch { width: 42px; height: 27px; flex: 0 0 auto; border-radius: 5px; background: linear-gradient(145deg,#191b18,#34372f); box-shadow: inset 0 0 0 1px rgba(255,255,255,.08); }
+.ciq-approved-spend .card-swatch.magnus { background: linear-gradient(145deg,#23323d,#546d78); }
+.ciq-approved-spend .status { width: max-content; display: inline-flex; align-items: center; border-radius: 999px; padding: 5px 8px; font-size: 8.5px; font-weight: 800; white-space: nowrap; }
+.ciq-approved-spend .status.good { background: #e9f0e9; color: #346b50; }
+.ciq-approved-spend .status.neutral { background: #f3f2ed; color: #68675f; }
+
+@media (max-width: 1050px) {
+  .ciq-approved-spend .smart-result { grid-template-columns: 1fr; }
+  .ciq-approved-spend .value-meter { display: grid; grid-template-columns: 1fr 1fr; column-gap: 18px; }
+  .ciq-approved-spend .value-meter .section-kicker, .ciq-approved-spend .meter-ring { grid-column: 1/-1; }
+  .ciq-approved-spend .meter-save { margin-top: 0; }
+}
+
+@media (max-width: 860px) {
+  .ciq-approved-spend .winner-main { grid-template-columns: 130px minmax(0,1fr); }
+  .ciq-approved-spend .winner-value { grid-column: 1/-1; padding: 13px 0 0; border-left: 0; border-top: 1px solid #e4e1d9; text-align: left; }
+  .ciq-approved-spend .comparison-table { overflow-x: auto; }
+  .ciq-approved-spend .compare-head, .ciq-approved-spend .compare-row { min-width: 780px; }
+}
+
+@media (max-width: 620px) {
+  .ciq-approved-spend .winner-card { padding: 18px; }
+  .ciq-approved-spend .winner-top { align-items: flex-start; flex-direction: column; }
+  .ciq-approved-spend .winner-main { grid-template-columns: 1fr; }
+  .ciq-approved-spend .winner-card-art { max-width: 210px; }
+  .ciq-approved-spend .winner-steps { grid-template-columns: 1fr; align-items: stretch; }
+  .ciq-approved-spend .winner-steps > i { display: none; }
+  .ciq-approved-spend .winner-steps .button { margin-top: 4px; }
+  .ciq-approved-spend .value-meter { grid-template-columns: 1fr; }
+  .ciq-approved-spend .value-meter .section-kicker, .ciq-approved-spend .meter-ring { grid-column: auto; }
+}
