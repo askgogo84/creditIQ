@@ -115,8 +115,9 @@ export function GlobalFlightWorkspace() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
 
-  async function search() {
-    if (!from || !to || from === to) return
+  async function search(destination = to) {
+    if (!from || !destination || from === destination) return
+    if (destination !== to) setTo(destination)
     setLoading(true)
     setError('')
     setRows(null)
@@ -126,7 +127,7 @@ export function GlobalFlightWorkspace() {
       const res = await authedFetch('/api/flights/fusion', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ from, to, date_from: date, date_to: date, cabin }),
+        body: JSON.stringify({ from, to: destination, date_from: date, date_to: date, cabin }),
       })
       const data = await res.json()
       if (!res.ok || data.error) throw new Error(data.error || 'search failed')
@@ -161,8 +162,8 @@ export function GlobalFlightWorkspace() {
       <div className="ifw-title-row">
         <div>
           <div className="ifw-eyebrow">Flight award desk</div>
-          <h1 className="ifw-title">Where can your points <em>take you?</em></h1>
-          <p className="ifw-sub">Search provider-returned flights, compare cash and award paths, and see what your wallet can actually fund—all in one calm decision view.</p>
+          <h1 className="ifw-title">Find the smartest way <em>to book.</em></h1>
+          <p className="ifw-sub">Flights, hotels and transfer paths compared against your wallet—with live availability clearly separated from estimates.</p>
         </div>
         <div className="ifw-honesty">Broad discovery first · live verify selected award</div>
       </div>
@@ -173,7 +174,7 @@ export function GlobalFlightWorkspace() {
         <AirportSelect label="To" value={to} exclude={from} onChange={setTo} />
         <div className="fp-fld"><label className="fp-fld-label" htmlFor="global-date">Date</label><input id="global-date" type="date" className="fp-fld-val fp-mono" value={date} onChange={(e) => setDate(e.target.value)} /></div>
         <div className="fp-fld"><label className="fp-fld-label" htmlFor="global-cabin">Cabin</label><select id="global-cabin" className="fp-fld-val" value={cabin} onChange={(e) => setCabin(e.target.value as Cabin)}><option value="business">Business</option><option value="economy">Economy</option></select></div>
-        <button className="fp-btn" onClick={search} disabled={loading || !from || !to || from === to}>{loading ? 'Searching…' : 'Search'}</button>
+        <button className="fp-btn" onClick={() => void search()} disabled={loading || !from || !to || from === to}>{loading ? 'Searching…' : 'Search'}</button>
       </div>
 
       {loading && (
@@ -186,6 +187,26 @@ export function GlobalFlightWorkspace() {
         </div>
       )}
       {error && !loading && <div className="fp-error ifw-error">{error}</div>}
+
+      {!rows && !loading && !error && (
+        <section className="ifw-start" aria-label="Start a flight search">
+          <div>
+            <div className="ifw-eyebrow">Start with a destination</div>
+            <h2>{to ? `Ready to search ${from} → ${to}` : 'One search. Every connected award path.'}</h2>
+            <p>CreditIQ keeps cash-only, award-only and matched inventory visible, then checks which transfer paths your wallet can actually fund.</p>
+            <div className="ifw-quick-routes">
+              {['DEL', 'BOM', 'SIN', 'DXB', 'LHR'].filter(code => code !== from).map(code => (
+                <button key={code} type="button" onClick={() => void search(code)}><span>{from}</span><PlaneTakeoff size={14} /><b>{code}</b></button>
+              ))}
+            </div>
+          </div>
+          <ol>
+            <li><span>01</span><div><b>Discover</b><small>Load connected cash and award inventory.</small></div></li>
+            <li><span>02</span><div><b>Verify</b><small>Confirm the selected programme before transfer.</small></div></li>
+            <li><span>03</span><div><b>Compare</b><small>Rank only routes your wallet can execute.</small></div></li>
+          </ol>
+        </section>
+      )}
 
       {rows && !loading && (
         <>

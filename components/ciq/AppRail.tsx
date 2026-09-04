@@ -8,11 +8,11 @@ import { APP_NAV, appActive } from '@/components/ciq/appNav'
 import { useTheme } from '@/lib/store'
 
 // AppRail — the fixed left sidebar shown to SIGNED-IN users at >=900px. Below
-// that, NavShell hides it and shows the existing ciq TabBar instead. Plain white
-// ground; app design tokens only, no new colour. Gated on auth state (NavShell),
+// that, NavShell hides it and shows the existing ciq TabBar instead. This mirrors
+// the approved v3 prototype's dark editorial rail. Gated on auth state (NavShell),
 // never on route, so the public crawlable (shell) pages keep the untouched
 // Header for visitors.
-const RAIL_W = 248
+const RAIL_W = 238
 
 const eyebrow: React.CSSProperties = {
   fontSize: 10, fontWeight: 700, letterSpacing: '1.6px', textTransform: 'uppercase',
@@ -24,9 +24,9 @@ const navRow = (active: boolean): React.CSSProperties => ({
   display: 'flex', alignItems: 'center', gap: 12, width: '100%',
   padding: '10px 12px', borderRadius: 12, textDecoration: 'none',
   fontSize: 14.5, fontWeight: 600, fontFamily: 'inherit', position: 'relative',
-  color: active ? 'var(--copper)' : 'var(--ink-2)',
-  background: active ? 'var(--bg-2)' : 'transparent',
-  border: '1px solid ' + (active ? 'var(--line)' : 'transparent'),
+  color: active ? '#ffffff' : '#91a7ba',
+  background: active ? 'linear-gradient(90deg, rgba(189,145,61,.21), rgba(189,145,61,.035))' : 'transparent',
+  border: '1px solid transparent',
   transition: 'background 0.12s, color 0.12s',
 })
 
@@ -64,38 +64,60 @@ export function AppRail() {
       className="ciq-shell-rail"
       style={{
         position: 'fixed', top: 0, left: 0, bottom: 0, width: RAIL_W, zIndex: 200,
-        background: 'var(--surface)', borderRight: '1px solid var(--line)',
+        background: 'radial-gradient(circle at 14% 12%, rgba(189,145,61,.10), transparent 14rem), linear-gradient(180deg, #151613, #10110f 64%, #0c0d0b)', borderRight: '1px solid #2d3029',
         display: 'flex', flexDirection: 'column',
       }}
     >
       {/* Wordmark + eyebrow */}
       <Link href="/dashboard" style={{ display: 'flex', alignItems: 'center', gap: 10, textDecoration: 'none', padding: '18px 18px 16px', flexShrink: 0 }}>
-        <div style={{ width: 36, height: 36, background: 'var(--navy)', borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+        <div style={{ width: 36, height: 36, background: 'linear-gradient(145deg, #d7b76f, #bd913d)', borderRadius: 10, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, boxShadow: '0 10px 24px rgba(189,145,61,.16)' }}>
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-            <rect x="1" y="4" width="22" height="16" rx="3" fill="white" fillOpacity="0.9" />
-            <line x1="1" y1="10" x2="23" y2="10" stroke="#142950" strokeWidth="2" />
-            <circle cx="5" cy="14.5" r="1.5" fill="#C9972E" />
+            <rect x="1" y="4" width="22" height="16" rx="3" fill="#1b1c18" fillOpacity="0.96" />
+            <line x1="1" y1="10" x2="23" y2="10" stroke="#d7b76f" strokeWidth="2" />
+            <circle cx="5" cy="14.5" r="1.5" fill="white" />
           </svg>
         </div>
         <div>
-          <div style={{ fontSize: 18, fontWeight: 800, color: 'var(--ink)', letterSpacing: '-0.5px', lineHeight: 1 }}>CreditIQ</div>
+          <div style={{ fontFamily: 'var(--font-serif)', fontSize: 18, fontWeight: 600, color: '#fff', letterSpacing: '-0.5px', lineHeight: 1 }}>CreditIQ</div>
           <div style={{ ...eyebrow, fontSize: 9, letterSpacing: '2px', marginTop: 3 }}>Intelligence</div>
         </div>
       </Link>
 
       {/* Scroll region: primary nav + grouped tools */}
       <nav style={{ flex: 1, overflowY: 'auto', padding: '4px 12px 12px', display: 'flex', flexDirection: 'column', gap: 2 }}>
-        {APP_NAV.map(item => {
+        <div style={{ ...eyebrow, color: 'var(--ink-3)', padding: '8px 12px 10px' }}>Your intelligence</div>
+        {APP_NAV.filter(item => item.key !== 'you').map(item => {
           const active = appActive(item.href, path)
           const Icon = item.Icon
           return (
             <Link key={item.href} href={item.href} style={navRow(active)}>
               {active && <span style={{ position: 'absolute', left: -12, top: '50%', transform: 'translateY(-50%)', width: 3, height: 20, borderRadius: 3, background: 'var(--copper)' }} />}
-              <Icon size={20} strokeWidth={1.8} color={active ? 'var(--copper)' : 'currentColor'} style={{ flexShrink: 0 }} aria-hidden />
-              {item.label}
+              <Icon size={20} strokeWidth={1.8} color={active ? '#bd913d' : 'currentColor'} style={{ flexShrink: 0 }} aria-hidden />
+              <span style={{ flex: 1 }}>{item.label}</span>
+              {item.badge && (
+                <span style={{
+                  padding: '3px 7px', borderRadius: 999, border: '1px solid color-mix(in srgb, var(--copper) 34%, var(--line))',
+                  background: 'color-mix(in srgb, var(--copper) 9%, var(--surface))', color: 'var(--copper)',
+                  fontFamily: 'var(--font-mono), monospace', fontSize: 9, fontWeight: 800, letterSpacing: '.08em',
+                }}>{item.badge}</span>
+              )}
             </Link>
           )
         })}
+
+        <div style={{ marginTop: 'auto', paddingTop: 18 }}>
+          {APP_NAV.filter(item => item.key === 'you').map(item => {
+            const active = appActive(item.href, path)
+            const Icon = item.Icon
+            return (
+              <Link key={item.href} href={item.href} style={navRow(active)}>
+                {active && <span style={{ position: 'absolute', left: -12, top: '50%', transform: 'translateY(-50%)', width: 3, height: 20, borderRadius: 3, background: 'var(--copper)' }} />}
+                <Icon size={20} strokeWidth={1.8} color={active ? '#bd913d' : 'currentColor'} style={{ flexShrink: 0 }} aria-hidden />
+                <span style={{ flex: 1 }}>{item.label}</span>
+              </Link>
+            )
+          })}
+        </div>
       </nav>
 
       {/* Pinned footer: identity, theme toggle, sign out */}
@@ -105,8 +127,8 @@ export function AppRail() {
             {(name || 'U').slice(0, 1)}
           </div>
           <div style={{ minWidth: 0, flex: 1 }}>
-            <div style={{ fontSize: 13.5, fontWeight: 700, color: 'var(--ink)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{name}</div>
-            {email && <div style={{ fontSize: 11, color: 'var(--ink-3)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{email}</div>}
+            <div style={{ fontSize: 13.5, fontWeight: 700, color: '#fff', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{name}</div>
+            {email && <div style={{ fontSize: 11, color: '#7890a4', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{email}</div>}
           </div>
         </div>
 
@@ -114,7 +136,7 @@ export function AppRail() {
         <button type="button" onClick={toggleTheme} aria-label="Toggle light or dark theme" style={{
           display: 'flex', alignItems: 'center', gap: 10, width: '100%', padding: '9px 12px', marginBottom: 4,
           borderRadius: 10, border: '1px solid transparent', background: 'transparent', cursor: 'pointer',
-          fontFamily: 'inherit', fontSize: 13, fontWeight: 600, color: 'var(--ink-2)', textAlign: 'left',
+          fontFamily: 'inherit', fontSize: 13, fontWeight: 600, color: '#91a7ba', textAlign: 'left',
         }}>
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
             {theme === 'dark'
@@ -128,7 +150,7 @@ export function AppRail() {
         <button type="button" onClick={signOut} style={{
           display: 'flex', alignItems: 'center', gap: 10, width: '100%', padding: '9px 12px',
           borderRadius: 10, border: '1px solid transparent', background: 'transparent', cursor: 'pointer',
-          fontFamily: 'inherit', fontSize: 13, fontWeight: 600, color: 'var(--ink-2)', textAlign: 'left',
+          fontFamily: 'inherit', fontSize: 13, fontWeight: 600, color: '#91a7ba', textAlign: 'left',
         }}>
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
             <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9" />

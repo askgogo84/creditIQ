@@ -1,178 +1,150 @@
-// components/ciq/WalletView.tsx
-'use client';
-import { useState } from 'react';
-import Link from 'next/link';
-import { SEED_CARDS } from '@/lib/data/seed-cards';
-import { HeroGauge } from './HeroGauge';
-import { CardRow } from './CardRow';
-import { BestMove } from './BestMove';
-import { EditorialCards } from './EditorialCards';
-import { Tour, type TourStep } from './Tour';
-import './wallet-full-width.css';
+'use client'
 
-// Wallet walkthrough — the reusable <Tour> anchored to this surface's elements.
-// Two steps: what verification buys you, then adding a card. (The editorial strip
-// is not toured; it moves to Home in Implementation-Plan Step 6.)
+import { useState } from 'react'
+import { usePathname } from 'next/navigation'
+import Link from 'next/link'
+import { ArrowRight, Check, Upload } from 'lucide-react'
+import { SEED_CARDS } from '@/lib/data/seed-cards'
+import { CardRow } from './CardRow'
+import { Tour, type TourStep } from './Tour'
+import { DashboardHome } from './DashboardHome'
+import './wallet-full-width.css'
+
 const WALLET_TOUR: TourStep[] = [
-  {
-    title: 'Your points, verified vs self-entered',
-    body: 'The green slice is read straight from your statements. Grey is what you entered yourself. We never dress one up as the other.',
-    anchor: '#wallet-gauge',
-  },
-  {
-    title: 'Add a card',
-    body: 'Enter a card by hand to keep a self-entered balance in view, or upload a statement to add a verified one.',
-    anchor: '#wallet-add',
-  },
-];
-const TOUR_SEEN_KEY = 'ciq_wallet_tour_v1';
+  { title: 'Your points, verified vs self-entered', body: 'The verified share comes from statements. Self-entered balances always stay clearly labelled.', anchor: '#wallet-gauge' },
+  { title: 'Add a card', body: 'Enter a card manually or upload a statement to add a verified balance.', anchor: '#wallet-add' },
+]
+const TOUR_SEEN_KEY = 'ciq_wallet_tour_v1'
 
 type Card = {
-  id: string; bank: string; card_name?: string; cardName?: string;
-  card_last4?: string; points_balance: number; points_currency?: string;
-  source: 'statement' | 'manual'; self_entered?: boolean;
-};
+  id: string
+  bank: string
+  card_name?: string
+  cardName?: string
+  card_last4?: string
+  points_balance: number
+  points_currency?: string
+  source: 'statement' | 'manual'
+  self_entered?: boolean
+}
 
 const normaliseCardName = (value: string) => value.toLowerCase()
   .replace(/\b(bank|credit|card|metal|edition|signature|world)\b/g, ' ')
-  .replace(/[^a-z0-9]+/g, ' ').trim();
+  .replace(/[^a-z0-9]+/g, ' ').trim()
 
 function catalogueCard(card: Card) {
-  const held = normaliseCardName(`${card.bank} ${card.card_name || card.cardName || ''}`);
-  const heldName = normaliseCardName(card.card_name || card.cardName || '');
-  return SEED_CARDS.find((candidate) => {
-    const seed = normaliseCardName(`${candidate.bank} ${candidate.name}`);
-    const seedName = normaliseCardName(candidate.name);
+  const held = normaliseCardName(`${card.bank} ${card.card_name || card.cardName || ''}`)
+  const heldName = normaliseCardName(card.card_name || card.cardName || '')
+  return SEED_CARDS.find(candidate => {
+    const seed = normaliseCardName(`${candidate.bank} ${candidate.name}`)
+    const seedName = normaliseCardName(candidate.name)
     return seed === held || seed.includes(held) || held.includes(seed) ||
-      (heldName.length >= 5 && (seedName.includes(heldName) || heldName.includes(seedName)));
-  });
+      (heldName.length >= 5 && (seedName.includes(heldName) || heldName.includes(seedName)))
+  })
 }
 
 export function WalletView({
-  displayName, email, cards, totalPoints, primaryBank,
-  onAddCard, onRefresh, refreshing, onEditPoints, onDeleteCard,
+  displayName,
+  cards,
+  totalPoints,
+  primaryBank,
+  onAddCard,
+  onRefresh,
+  refreshing,
+  onEditPoints,
+  onDeleteCard,
 }: {
-  displayName: string; email?: string; cards: Card[];
-  totalPoints: number; primaryBank: string;
-  onAddCard: () => void; onRefresh: () => void; refreshing?: boolean;
-  onEditPoints?: (card: Card, points: number) => Promise<boolean>;
-  onDeleteCard?: (card: Card) => void;
+  displayName: string
+  email?: string
+  cards: Card[]
+  totalPoints: number
+  primaryBank: string
+  onAddCard: () => void
+  onRefresh: () => void
+  refreshing?: boolean
+  onEditPoints?: (card: Card, points: number) => Promise<boolean>
+  onDeleteCard?: (card: Card) => void
 }) {
-  // Verified vs estimated split on REAL POINT COUNTS (statement vs manual).
-  // Rupee figures are only ever an ESTIMATE RANGE, never a stated value:
-  //  - low  = cashback floor (~0.25/pt)
-  //  - high = travel ceiling (~1.8/pt)
-  // See docs/dashboard-data-audit.md §1 — the point count is real; the ₹ is not.
-  const LOW_RATE = 0.25;
-  const HIGH_RATE = 1.8;
-  // Verified = read from a statement AND not since hand-edited. A hand-edited
-  // statement card (self_entered) moves to the estimated/self-entered side.
-  const isVerified = (c: Card) => c.source === 'statement' && !c.self_entered;
-  const vPoints = cards.filter(isVerified).reduce((s, c) => s + (c.points_balance || 0), 0);
-  const ePoints = cards.filter(c => !isVerified(c)).reduce((s, c) => s + (c.points_balance || 0), 0);
-  const estLow = Math.round(totalPoints * LOW_RATE);
-  const estHigh = Math.round(totalPoints * HIGH_RATE);
-  const hasVerified = vPoints > 0;
+  const pathname = usePathname()
+  const isVerified = (card: Card) => card.source === 'statement' && !card.self_entered
+  const verifiedPoints = cards.filter(isVerified).reduce((sum, card) => sum + (card.points_balance || 0), 0)
+  const estimatedFloor = Math.round(totalPoints * .25)
+  const estimatedCeiling = Math.round(totalPoints * 1.8)
+  const selfEnteredPoints = Math.max(0, totalPoints - verifiedPoints)
+  const verification = totalPoints > 0 ? Math.round(verifiedPoints / totalPoints * 100) : 0
+  const [tourOpen, setTourOpen] = useState(false)
+  const [balancesHidden, setBalancesHidden] = useState(false)
+  const bankTotals = Object.entries(cards.reduce<Record<string, number>>((totals, item) => {
+    totals[item.bank] = (totals[item.bank] || 0) + (item.points_balance || 0)
+    return totals
+  }, {})).sort((a, b) => b[1] - a[1]).slice(0, 3)
 
-  // Walkthrough is OPT-IN: it no longer auto-opens. A new user already meets the
-  // first-run pricing modal and the onboarding wizard; a third forced full-screen
-  // stop was too many. The Tour now opens only via the "Take a tour" affordance
-  // below; closeTour still records that it was seen (TOUR_SEEN_KEY).
-  const [tourOpen, setTourOpen] = useState(false);
-  // Final step's button is "Add a card" and OPENS the modal (IA §6): on 'done'
-  // set the seen-flag AND fire onAddCard; on 'skip' just remember it was seen.
   const closeTour = (reason: 'skip' | 'done') => {
-    setTourOpen(false);
-    try { localStorage.setItem(TOUR_SEEN_KEY, '1'); } catch {}
-    if (reason === 'done') onAddCard();
-  };
+    setTourOpen(false)
+    try { localStorage.setItem(TOUR_SEEN_KEY, '1') } catch {}
+    if (reason === 'done') onAddCard()
+  }
 
-  const [balancesHidden, setBalancesHidden] = useState(false);
-  const verifiedCards = cards.filter(isVerified).length;
-  const selfEnteredCards = cards.length - verifiedCards;
+  if (pathname === '/dashboard') {
+    return <DashboardHome displayName={displayName} cards={cards.map(card => ({ ...card, catalogue: catalogueCard(card) }))} totalPoints={totalPoints} primaryBank={primaryBank} />
+  }
 
   return (
-    <div className="wallet-dashboard">
-      <header className="wallet-page-head">
-        <div>
-          <div className="wallet-eyebrow"><i /> Live · verified wallet</div>
-          <h1>Good to see you, <em>{displayName || 'there'}.</em></h1>
-          <p>Your cards, verified balances and next best move — in one honest view.</p>
-          <button className="wallet-tour-link" onClick={() => setTourOpen(true)}>Take a tour</button>
-        </div>
-        <div className="wallet-page-actions">
-          <button type="button" className="wallet-secondary" aria-pressed={balancesHidden}
-            onClick={() => setBalancesHidden((hidden) => !hidden)}>
-            {balancesHidden ? 'Show balances' : 'Hide balances'}
-          </button>
-          <Link className="wallet-primary" href="/upload-statement">Verify more</Link>
+    <main className="ciq-approved-wallet" id="wallet-gauge">
+      <header className="approved-page-header">
+        <div><span className="approved-eyebrow">Your rewards portfolio</span><h1>Wallet</h1><p>Balances, card benefits and transfer readiness in one place.</p></div>
+        <div className="approved-header-actions">
+          <button type="button" className="approved-secondary" aria-pressed={balancesHidden} onClick={() => setBalancesHidden(hidden => !hidden)}>{balancesHidden ? 'Show balances' : 'Hide balances'}</button>
+          <Link className="approved-primary" href="/upload-statement"><Upload size={15} /> Add statement</Link>
         </div>
       </header>
 
-      <div className="wallet-top-grid">
-        <section className="wallet-surface wallet-portfolio" id="wallet-gauge">
-          <div className="wallet-surface-label">Your rewards portfolio</div>
-          <HeroGauge points={totalPoints} verifiedPoints={vPoints} estimatedPoints={ePoints}
-            estLow={estLow} estHigh={estHigh} cardCount={cards.length} flat balancesHidden={balancesHidden} />
-        </section>
+      <section className="approved-wallet-summary">
+        <div>
+          <small>Estimated wallet value</small>
+          <strong>{balancesHidden ? '••••' : `≈ ₹${estimatedFloor.toLocaleString('en-IN')}–₹${estimatedCeiling.toLocaleString('en-IN')}`}</strong>
+          {!balancesHidden && <em className="approved-estimate-badge">estimate</em>}
+          <span>Across <b>{balancesHidden ? '••••' : totalPoints.toLocaleString('en-IN')}</b> reward points</span>
+          <span className="approved-wallet-point-split">Verified <b>{balancesHidden ? '••••' : verifiedPoints.toLocaleString('en-IN')}</b> · Self-entered <b>{balancesHidden ? '••••' : selfEnteredPoints.toLocaleString('en-IN')}</b></span>
+          {cards.length > 0 && verifiedPoints === 0 && <span className="approved-wallet-verify-note"><b>All self-entered.</b> Upload a statement to verify this wallet.</span>}
+        </div>
+        <div className="approved-value-ring"><div style={{ '--value': Math.max(2, verification) } as React.CSSProperties}><span><b>{verification}%</b><small>verified</small></span></div></div>
+        <div className="approved-wallet-breakdown">
+          {bankTotals.map(([bank, points]) => <div key={bank}><span>{bank}</span><b>{balancesHidden ? '••••' : `${points.toLocaleString('en-IN')} pts`}</b><i><em style={{ width: `${totalPoints ? Math.max(8, Math.round(points / totalPoints * 100)) : 0}%` }} /></i></div>)}
+          {bankTotals.length === 0 && <p>Add a card to see your wallet composition.</p>}
+        </div>
+      </section>
 
-        {totalPoints > 0 && (
-          <section aria-labelledby="best-move-heading">
-            <h2 id="best-move-heading" className="wallet-section-title">Your best move</h2>
-            <BestMove flag="Best value"
-              title={balancesHidden ? 'Put your points to work on travel' : `Redeem your ${totalPoints.toLocaleString('en-IN')} points for travel`}
-              detail="Travel can unlock more value than statement credit. Search award options before you transfer."
-              points={totalPoints} estLow={estLow} estHigh={estHigh}
-              href={`/trip-planner?points=${totalPoints}&bank=${primaryBank}`}
-              variant="light" balancesHidden={balancesHidden} />
-          </section>
-        )}
-
-        <section className="wallet-surface wallet-insights" aria-label="Wallet insights">
-          <div className="wallet-insight"><span className="green">✓</span><div><small>Verified points</small><b>{balancesHidden ? '••••' : vPoints.toLocaleString('en-IN')}</b></div></div>
-          <div className="wallet-insight"><span>▰</span><div><small>Cards tracked</small><b>{cards.length}</b></div></div>
-          <div className="wallet-insight"><span className="gold">↗</span><div><small>Verified cards</small><b>{verifiedCards} of {cards.length}</b></div></div>
-          <div className="wallet-insight"><span>◎</span><div><small>Self-entered</small><b>{selfEnteredCards}</b></div></div>
-        </section>
+      <div className="approved-section-head approved-wallet-cards-head">
+        <div><span className="approved-section-kicker">My cards</span><h2>{cards.length} active {cards.length === 1 ? 'card' : 'cards'}</h2></div>
+        <div className="approved-view-toggle"><button className="active">Cards</button><button onClick={onRefresh}>{refreshing ? 'Refreshing…' : 'Refresh'}</button></div>
       </div>
 
-      <div className="wallet-lower-grid">
-        <section>
-          <div className="wallet-section-head">
-            <div><h2 className="wallet-section-title">Your cards</h2><p>Real balances, with their source shown clearly.</p></div>
-            <button onClick={onRefresh} className="wallet-text-button">{refreshing ? 'Refreshing…' : 'Refresh'}</button>
-          </div>
-          <div className="wallet-surface wallet-card-list">
-            {cards.map((c, i) => (
-              <div key={c.id} className={i ? 'wallet-card-divider' : undefined}>
-                <CardRow bank={c.bank} cardName={c.card_name || c.cardName || c.bank}
-                  last4={c.card_last4} points={c.points_balance} currency={c.points_currency}
-                  source={c.source} selfEntered={c.self_entered} variant="light" flat
-                  card={catalogueCard(c)} balancesHidden={balancesHidden}
-                  onSavePoints={onEditPoints ? (pts) => onEditPoints(c, pts) : undefined}
-                  onDelete={onDeleteCard ? () => onDeleteCard(c) : undefined} />
-              </div>
-            ))}
-            {cards.length === 0 && <p className="wallet-empty">No cards yet. Add one manually or verify a statement.</p>}
-            <button id="wallet-add" onClick={onAddCard} className="wallet-add-card">＋ Add a card</button>
-          </div>
-        </section>
+      <section className="approved-wallet-card-grid">
+        {cards.map((card, index) => (
+          <article className={`approved-wallet-card${index === 0 ? ' selected' : ''}`} key={card.id}>
+            <CardRow bank={card.bank} cardName={card.card_name || card.cardName || card.bank} last4={card.card_last4}
+              points={card.points_balance} currency={card.points_currency} source={card.source} selfEntered={card.self_entered}
+              variant="light" flat card={catalogueCard(card)} balancesHidden={balancesHidden}
+              onSavePoints={onEditPoints ? points => onEditPoints(card, points) : undefined}
+              onDelete={onDeleteCard ? () => onDeleteCard(card) : undefined} />
+            <footer><span className={isVerified(card) ? 'good' : 'neutral'}>{isVerified(card) && <Check size={11} />}{isVerified(card) ? 'Statement verified' : 'Self-entered'}</span></footer>
+          </article>
+        ))}
+        {cards.length === 0 && <button id="wallet-add" onClick={onAddCard} className="approved-wallet-empty">＋ Add a card</button>}
+      </section>
+      {cards.length > 0 && <button id="wallet-add" onClick={onAddCard} className="approved-add-card">＋ Add another card</button>}
 
-        <aside>
-          <div className="wallet-section-head"><div><h2 className="wallet-section-title">Worth your attention</h2><p>Useful next steps based on this wallet.</p></div></div>
-          <div className="wallet-surface wallet-attention">
-            <Link href={`/trip-planner?points=${totalPoints}&bank=${primaryBank}`}><span className="gold">✈</span><div><b>Plan a trip with your points</b><small>Compare executable award paths before transferring.</small></div><strong>→</strong></Link>
-            <Link href="/spend"><span>₹</span><div><b>Optimize your next purchase</b><small>See which tracked card should pay.</small></div><strong>→</strong></Link>
-            <Link href="/upload-statement"><span className={hasVerified ? 'green' : 'gold'}>✓</span><div><b>{hasVerified ? 'Verify more balances' : 'Get your verified points'}</b><small>{hasVerified ? `${verifiedCards} card ${verifiedCards === 1 ? 'balance is' : 'balances are'} statement-verified.` : 'Upload a statement so estimates are never presented as facts.'}</small></div><strong>→</strong></Link>
-          </div>
-          <div className="wallet-credo"><b>We don&apos;t guess your money.</b><span>Verified values come from statements. Self-entered values stay labelled.</span></div>
-        </aside>
-      </div>
+      <section className="approved-wallet-lower-grid">
+        <article className="approved-surface approved-transfer-readiness">
+          <div className="approved-section-head"><div><span className="approved-section-kicker">Transfer readiness</span><h2>Where your points can go</h2></div><Link href={`/trip-planner?points=${totalPoints}&bank=${primaryBank}`}>Explore travel</Link></div>
+          <div className="approved-partner-flow"><div className="approved-flow-bank">{primaryBank}<br /><b>{balancesHidden ? '••••' : `${Math.round(totalPoints / 100) / 10}K`}</b></div><div className="approved-flow-lines"><i /><i /><i /></div><div className="approved-flow-partners"><span>SQ<br /><b>KrisFlyer</b></span><span>AI<br /><b>Maharaja</b></span><span>ALL<br /><b>Accor</b></span></div></div>
+        </article>
+        <Link className="approved-surface approved-statement-drop" href="/upload-statement"><span><Upload size={20} /></span><h3>{verifiedPoints === 0 && cards.length > 0 ? 'Get your verified points' : 'Refresh your wallet'}</h3><p>Upload a statement to update balances and unlock personalised recommendations.</p><b>Choose statement</b><small>Your values remain clearly sourced.</small></Link>
+      </section>
 
-      <div id="wallet-editorial"><EditorialCards variant="light" /></div>
-
-      <Tour steps={WALLET_TOUR} open={tourOpen} onClose={closeTour} labelPrefix="WALLET"
-        variant="light" finalLabel="Add a card" />
-    </div>
-  );
+      <button className="approved-tour-link" onClick={() => setTourOpen(true)}>Take a tour <ArrowRight size={13} /></button>
+      <Tour steps={WALLET_TOUR} open={tourOpen} onClose={closeTour} labelPrefix="WALLET" variant="light" finalLabel="Add a card" />
+    </main>
+  )
 }

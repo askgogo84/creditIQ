@@ -1,5 +1,3 @@
-import { SectionShell } from '@/components/ciq/SectionShell'
-
 // (spend) route group — parentheses folder, so /spend-optimizer and /points-optimizer
 // keep their URLs. This layout persists across the two tabs: it owns the "Spend"
 // section name + the SectionTabs strip, so the strip's Y never moves between siblings
@@ -7,9 +5,5 @@ import { SectionShell } from '@/components/ciq/SectionShell'
 // fade (PanelFade). paddingBottom carries the bottom-tab clearance the pages used to
 // set on their own outer wrapper.
 export default function SpendLayout({ children }: { children: React.ReactNode }) {
-  return (
-    <SectionShell sectionName="Spend" paddingBottom={112} fluid>
-      {children}
-    </SectionShell>
-  )
+  return <div className="ciq-approved-stage">{children}</div>
 }

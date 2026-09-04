@@ -4,6 +4,7 @@ import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { createBrowserClient } from '@supabase/ssr'
 import { Header } from '@/components/Header'
 import { AppRail } from '@/components/ciq/AppRail'
+import { AppTopbar } from '@/components/ciq/AppTopbar'
 import { TabBar } from '@/components/ciq/TabBar'
 import { reassertTheme } from '@/lib/store'
 
@@ -18,9 +19,58 @@ import { reassertTheme } from '@/lib/store'
 // Pages inside (shell) render NO chrome of their own; this is the single source.
 const SHELL_CSS = `
   .ciq-shell-tabbar { display: none; }
-  .ciq-shell-main { min-height: 100vh; }
+  .ciq-approved-shell,
+  .ciq-app-topbar,
+  .ciq-shell-rail {
+    --bg: #f7f6f1;
+    --bg-2: #f3f2ed;
+    --surface: #ffffff;
+    --surface-2: #f3f2ed;
+    --paper: #ffffff;
+    --paper-raised: #ffffff;
+    --paper-soft: #f3f2ed;
+    --ink: #1b1c18;
+    --ink-1: #1b1c18;
+    --ink-2: #494a43;
+    --ink-3: #68675f;
+    --ink-4: #8b887e;
+    --ink-5: #b7b3a9;
+    --muted: #68675f;
+    --subtle: #8b887e;
+    --line: #e4e1d9;
+    --line-strong: #d2cec3;
+    --line-soft: #efede7;
+    --copper: #98702b;
+    --copper-700: #76551f;
+    --copper-600: #98702b;
+    --copper-500: #bd913d;
+    --copper-3: #d7b76f;
+    --copper-200: #e3d1a8;
+    --copper-100: #f3ead4;
+    --amber-soft: #f4edd9;
+    --green: #346b50;
+    --green-soft: #e9f0e9;
+    --blue-soft: #e9eeef;
+    --navy: #1b1c18;
+    --navy-900: #1b1c18;
+    --navy-950: #151613;
+    --font-display: "Iowan Old Style", Baskerville, "Times New Roman", Times, serif;
+    --font-editorial: "Iowan Old Style", Baskerville, "Times New Roman", Times, serif;
+    --font-serif: "Iowan Old Style", Baskerville, "Times New Roman", Times, serif;
+    --font-interface: "Avenir Next", Avenir, "Helvetica Neue", var(--font-geist-sans), sans-serif;
+    --font-body: "Avenir Next", Avenir, "Helvetica Neue", var(--font-geist-sans), sans-serif;
+    --shadow-sm: 0 8px 22px rgba(37, 31, 19, .04);
+    --shadow-md: 0 18px 46px rgba(37, 31, 19, .065);
+  }
+  .ciq-shell-main {
+    min-width: 0;
+    min-height: 100vh;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: var(--font-body);
+  }
   @media (min-width: 900px) {
-    .ciq-shell-main { margin-left: 248px; }
+    .ciq-shell-main { margin-left: 238px; padding-top: 68px; }
   }
   @media (max-width: 899px) {
     .ciq-shell-rail { display: none !important; }
@@ -51,7 +101,7 @@ const SHELL_CSS = `
        "112" is SectionShell's paddingBottom on the (wallet) layout — a real BOTTOM reserve
        specific to those pages — NOT this global floor, and unrelated to the .pt-28 (7rem)
        TOP padding that public marketing pages use. */
-    .ciq-shell-main { padding-bottom: calc(76px + env(safe-area-inset-bottom)) !important; }
+    .ciq-shell-main { padding-top: 58px; padding-bottom: calc(76px + env(safe-area-inset-bottom)) !important; }
   }
 `
 
@@ -121,7 +171,7 @@ export function NavShell({ children }: { children: React.ReactNode }) {
     return (
       <>
         <Header />
-        {children}
+        <div className="ciq-shell-public">{children}</div>
       </>
     )
   }
@@ -131,10 +181,11 @@ export function NavShell({ children }: { children: React.ReactNode }) {
     <>
       <style>{SHELL_CSS}</style>
       <AppRail />
+      <AppTopbar />
       <div className="ciq-shell-tabbar">
         <TabBar />
       </div>
-      <div className="ciq-shell-main">{children}</div>
+      <div className="ciq-approved-shell ciq-v3-shell ciq-shell-main">{children}</div>
     </>
   )
 }
