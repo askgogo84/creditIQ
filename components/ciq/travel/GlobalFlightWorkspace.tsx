@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from 'react'
 import { useSearchParams } from 'next/navigation'
+import { PlaneTakeoff } from 'lucide-react'
 import { authedFetch } from '@/lib/authed-fetch'
 import { AirportSelect } from '@/components/ciq/fly-points/AirportSelect'
 import { labelFor, resolveCity } from '@/lib/data/airports'
@@ -159,8 +160,9 @@ export function GlobalFlightWorkspace() {
     <div className="ifw-root">
       <div className="ifw-title-row">
         <div>
-          <h1 className="ifw-title">Any city. All provider-returned options.</h1>
-          <p className="ifw-sub">Cash-only itineraries, broad cached awards and live-selected award verification stay in one workflow. Your wallet is evaluated after inventory is loaded.</p>
+          <div className="ifw-eyebrow">Flight award desk</div>
+          <h1 className="ifw-title">Where can your points <em>take you?</em></h1>
+          <p className="ifw-sub">Search provider-returned flights, compare cash and award paths, and see what your wallet can actually fund—all in one calm decision view.</p>
         </div>
         <div className="ifw-honesty">Broad discovery first · live verify selected award</div>
       </div>
@@ -174,7 +176,15 @@ export function GlobalFlightWorkspace() {
         <button className="fp-btn" onClick={search} disabled={loading || !from || !to || from === to}>{loading ? 'Searching…' : 'Search'}</button>
       </div>
 
-      {loading && <div className="fp-loading" role="status">Loading cash and broad award inventory for {from} → {to}…</div>}
+      {loading && (
+        <div className="ifw-flight-loader" role="status" aria-live="polite">
+          <div className="ifw-flight-route" aria-hidden="true">
+            <span>{from}</span><i /><span className="ifw-loader-plane"><PlaneTakeoff size={24} strokeWidth={1.7} /></span><i /><span>{to}</span>
+          </div>
+          <b>Searching every connected route</b>
+          <span>Loading cash inventory, award seats and wallet transfer paths…</span>
+        </div>
+      )}
       {error && !loading && <div className="fp-error ifw-error">{error}</div>}
 
       {rows && !loading && (

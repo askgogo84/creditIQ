@@ -29,14 +29,15 @@ export default async function SweetSpotsPage() {
   const transferHacks = spots?.filter(s => s.insight_type === 'transfer_hack') || []
 
   return (
-    <>
+    <div className="ciq-product-page">
       {/* Section name + SectionTabs live in the (travelgrp) layout above this panel;
           this panel owns the display headline + subtitle (eyebrow dropped as redundant
           with the section name) and the content, in the shared 1100 container. */}
       <div style={{ marginBottom: 36 }}>
         <PageHeader
-          title="Sweet Spots"
-          subtitle="The best redemptions found by top Indian CC creators — updated nightly from Instagram, YouTube and Reddit."
+          eyebrow="Community intelligence"
+          title={<>Find the redemptions others <span style={{ color: 'var(--copper)' }}>miss.</span></>}
+          subtitle="Creator-reported sweet spots and transfer ideas, clearly separated from programme-verified facts."
           maxWidth={1100}
           showTabs={false}
         />
@@ -112,6 +113,6 @@ export default async function SweetSpotsPage() {
           </div>
 
       <DesignFooter />
-    </>
+    </div>
   )
 }

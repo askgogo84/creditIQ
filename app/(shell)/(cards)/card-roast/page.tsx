@@ -118,7 +118,7 @@ export default function CardRoastPage() {
 
   return (
     <>
-      <div>
+      <div className="ciq-product-page">
         <section style={{ position: 'relative' }}>
           <div style={{ paddingBottom: 60 }}>
             {/* Panel-only: left-aligned PageHeader replaces the centred hero (aurora dropped,

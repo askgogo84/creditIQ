@@ -23,12 +23,13 @@ export default function LoungeTrackerPage() {
   const filtered = airport ? LOUNGES.filter(l => l.airport.toLowerCase().includes(airport.toLowerCase())) : LOUNGES
 
   return (
-    <>
+    <div className="ciq-product-page">
       {/* Section name + SectionTabs live in the (travelgrp) layout above this panel;
           this panel owns the display headline + subtitle (eyebrow dropped as redundant
           with the section name) and the content, in the shared 1100 container. */}
       <PageHeader
-        title="Never get turned away at the gate"
+        eyebrow="Airport access"
+        title={<>Know where you can pause <span style={{ color: 'var(--copper)' }}>before you fly.</span></>}
         subtitle="Track free lounge visits across every card you carry. Know before you go."
         maxWidth={1100}
         showTabs={false}
@@ -106,6 +107,6 @@ export default function LoungeTrackerPage() {
               </div>
             </div>
       <DesignFooter />
-    </>
+    </div>
   )
 }

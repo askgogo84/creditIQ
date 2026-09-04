@@ -173,7 +173,7 @@ export default function ProfilePage() {
 
   if (loading) {
     return (
-      <main style={{ padding: '18px 20px 104px' }}>
+      <main style={{ padding: '18px clamp(20px, 2.6vw, 48px) 104px' }}>
         <div style={{ maxWidth: 900, margin: '0 auto', minHeight: '50vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
           <span style={{ ...kicker }}>LOADING</span>
         </div>
@@ -182,8 +182,13 @@ export default function ProfilePage() {
   }
 
   return (
-    <main style={{ padding: '18px 20px 104px' }}>
-      <PageHeader title="You" tone="light" />
+    <main className="ciq-product-page" style={{ padding: '18px clamp(20px, 2.6vw, 48px) 104px' }}>
+      <PageHeader
+        eyebrow="Your CreditIQ"
+        title={<>Built around <span style={{ color: 'var(--copper)' }}>you.</span></>}
+        subtitle="Keep your identity, home airport, membership and connected services in one private account workspace."
+        tone="light"
+      />
 
       <div className="pf-wrap">
         <div className="pf-grid">
@@ -393,11 +398,12 @@ export default function ProfilePage() {
       ) : null}
 
       <style>{`
-        .pf-wrap { max-width: 900px; margin: 0 auto; width: 100%; }
-        .pf-grid { display: grid; grid-template-columns: 1fr; gap: 14px; margin-top: 20px; align-items: start; }
+        .pf-wrap { width: 100%; }
+        .pf-grid { display: grid; grid-template-columns: 1fr; gap: 18px; margin-top: 30px; align-items: start; }
         .pf-col { display: flex; flex-direction: column; gap: 14px; min-width: 0; }
-        .pf-appended { display: flex; flex-direction: column; gap: 14px; margin-top: 14px; }
-        @media (min-width: 768px) { .pf-grid { grid-template-columns: 5fr 6fr; } }
+        .pf-appended { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; margin-top: 18px; align-items: start; }
+        @media (min-width: 768px) { .pf-grid { grid-template-columns: minmax(320px, .68fr) minmax(0, 1.32fr); } }
+        @media (max-width: 900px) { .pf-appended { grid-template-columns: 1fr; } }
       `}</style>
     </main>
   );

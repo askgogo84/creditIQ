@@ -54,12 +54,12 @@ export default function ComparePage() {
 
   return (
     <>
-      <div>
+      <div className="ciq-product-page">
         {/* Panel-only: (cards) layout owns the Cards name + strip. Left-aligned PageHeader
             replaces the centred hero; "compare" is roman copper emphasis (never italic). */}
         <PageHeader
-          eyebrow="Compare"
-          title={<>Pick cards to <span style={{ color: 'var(--copper-3)' }}>compare</span>.</>}
+          eyebrow="Side-by-side intelligence"
+          title={<>Compare cards without the <span style={{ color: 'var(--copper)' }}>fine-print fog.</span></>}
           subtitle="Add up to 4 cards. See fees, rewards, and lounge access side by side."
           maxWidth={1100}
           showTabs={false}

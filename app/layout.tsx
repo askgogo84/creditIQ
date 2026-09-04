@@ -3,6 +3,7 @@ import { GeistSans } from "geist/font/sans";
 import { GeistMono } from "geist/font/mono";
 import { clashDisplay, satoshi, jetbrainsMono } from "./fonts";
 import "./globals.css";
+import "@/components/ciq/product-workspace.css";
 import { CreditIQAssistant } from "@/components/CreditIQAssistant";
 import { AppDownloadBanner } from '@/components/AppDownloadBanner';
 import { logMissingEnv } from "@/lib/env-check";

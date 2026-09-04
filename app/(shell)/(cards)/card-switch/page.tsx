@@ -143,15 +143,15 @@ export default function CardSwitchPage() {
       {/* Panel-only in the (cards) layout: dropped the redundant minHeight:100vh + near-black
           --bg-fallback wrapper. Tokens migrated to the white/copper light system (was slate
           --text/--border + a gold gradient). The 720 form measure is kept (matches /statement-truth). */}
-      <main style={{ maxWidth: 720, margin: '0 auto', padding: '32px 20px 100px' }}>
+      <main style={{ maxWidth: 1120, margin: 0, padding: '28px 0 100px' }}>
 
         {/* Hero */}
         <div style={{ marginBottom: 28 }}>
           <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--copper)', textTransform: 'uppercase', letterSpacing: 1.5, marginBottom: 8 }}>
             Card Switch Wizard
           </div>
-          <h1 style={{ fontSize: 'clamp(26px, 4vw, 44px)', fontWeight: 900, color: 'var(--ink)', margin: '0 0 10px', letterSpacing: -0.5 }}>
-            Time to switch your card?
+          <h1 style={{ fontFamily: 'var(--font-serif)', fontSize: 'clamp(38px, 4vw, 62px)', fontWeight: 400, color: 'var(--ink)', margin: '0 0 12px', letterSpacing: '-.04em', lineHeight: .98 }}>
+            Is your current card still earning its place?
           </h1>
           <p style={{ fontSize: 15, color: 'var(--ink-3)', margin: 0, lineHeight: 1.6 }}>
             Tell us what&apos;s wrong with your current card. We&apos;ll find better options and calculate your balance transfer savings.

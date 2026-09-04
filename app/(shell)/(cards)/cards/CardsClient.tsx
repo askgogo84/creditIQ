@@ -107,34 +107,32 @@ export function CardsClient({ initialCards }: Props) {
   const banks = Object.keys(byBank).sort();
 
   return (
-    <div className="shell" style={{ paddingTop: 48, paddingBottom: 80 }}>
-      {/* Count bar */}
-      <div style={{ marginBottom: 16, fontSize: 13, color: 'var(--ink-2)', fontWeight: 600 }}>
-        Showing {filtered.length} of {initialCards.length} cards
-      </div>
-      {/* Search */}
-      <input
-        type="text"
-        placeholder="Search cards or banks..."
-        value={search}
-        onChange={e => setSearch(e.target.value)}
-        style={{
-          width: '100%', maxWidth: 400, padding: '10px 16px', marginBottom: 24,
-          border: '1px solid var(--ink-3)', borderRadius: 8, fontSize: 15,
-          background: 'var(--surface)', color: 'var(--ink-1)',
-        }}
-      />
-
-      {/* Category filters */}
-      <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 40 }}>
+    <div style={{ paddingTop: 34, paddingBottom: 80 }}>
+      <div className="ciq-workspace-surface" style={{ padding: 18, marginBottom: 34 }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', gap: 18, alignItems: 'center', flexWrap: 'wrap', marginBottom: 14 }}>
+          <div><div className="ciq-editorial-kicker">Curated catalogue</div><div style={{ marginTop: 5, fontSize: 13, color: 'var(--ink-3)' }}>Showing {filtered.length} of {initialCards.length} cards</div></div>
+          <input
+            type="search"
+            aria-label="Search cards or banks"
+            placeholder="Search card or bank"
+            value={search}
+            onChange={e => setSearch(e.target.value)}
+            style={{
+              width: '100%', maxWidth: 390, minHeight: 44, padding: '10px 16px',
+              border: '1px solid var(--line-strong)', borderRadius: 11, fontSize: 14,
+              background: 'var(--surface)', color: 'var(--ink)', outline: 'none',
+            }}
+          />
+        </div>
+      <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
         {CATEGORIES.map(cat => (
           <button
             key={cat.key}
             onClick={() => setActiveCategory(cat.key)}
             style={{
-              padding: '6px 16px', borderRadius: 20, fontSize: 14, cursor: 'pointer',
-              border: activeCategory === cat.key ? '1.5px solid var(--copper)' : '1px solid var(--ink-3)',
-              background: activeCategory === cat.key ? 'var(--copper)' : 'transparent',
+              padding: '7px 14px', borderRadius: 20, fontSize: 12, cursor: 'pointer',
+              border: activeCategory === cat.key ? '1px solid var(--ink)' : '1px solid var(--line-strong)',
+              background: activeCategory === cat.key ? 'var(--ink)' : 'var(--surface)',
               color: activeCategory === cat.key ? '#fff' : 'var(--ink-1)',
               fontWeight: activeCategory === cat.key ? 600 : 400,
             }}
@@ -142,6 +140,7 @@ export function CardsClient({ initialCards }: Props) {
             {cat.label}
           </button>
         ))}
+      </div>
       </div>
 
       {/* Cards by bank */}

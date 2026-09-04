@@ -67,20 +67,17 @@ export default function StatementTruthPage() {
   const verdictColor = report?.verdictColor === 'red' ? '#B84230' : report?.verdictColor === 'amber' ? 'var(--copper,#8C5F12)' : '#2d7a56';
 
   return (
-    <>
+    <div className="ciq-product-page">
       {/* Panel content for the (wallet) group: SectionShell owns the "Wallet" name, the
           SectionTabs strip and the 1100 container + side padding. This page is header
           (tabs OFF — the strip lives in the layout) + tool. No .page-fade — PanelFade in
           SectionShell handles the tab-swap; bottom clearance is SectionShell.paddingBottom. */}
       <PageHeader
-        eyebrow="AI Tool · Statement Truth"
+        eyebrow="Statement intelligence"
         eyebrowPill
         pillDotColor="var(--copper)"
         title={
-          <>Is your bank{' '}
-            {/* Emphasis by colour + weight, ROMAN — never italic (DESIGN.md §Emphasis). */}
-            <span style={{ color: '#B84230', fontWeight: 700 }}>lying</span>{' '}
-            about your rewards?</>
+          <>See what your rewards are <span style={{ color: 'var(--copper)' }}>really worth.</span></>
         }
         subtitle="Upload your credit card statement — we show what you actually earned versus what the bank advertised, category by category."
         maxWidth={1100}
@@ -88,7 +85,7 @@ export default function StatementTruthPage() {
       />
 
           {/* The tool itself, on a comfortable reading measure beneath the header. */}
-          <div style={{ maxWidth: 720, margin: '28px auto 0' }}>
+          <div style={{ maxWidth: 1050, margin: '30px auto 0' }}>
 
             {step === 'upload' && (
               <Reveal>
@@ -108,7 +105,7 @@ export default function StatementTruthPage() {
                     </>
                   ) : (
                     <>
-                      <div style={{ fontSize: 48, marginBottom: 12 }}>📄</div>
+                      <div style={{ width: 58, height: 58, margin: '0 auto 14px', border: '1px solid var(--line-strong)', borderRadius: 16, display: 'grid', placeItems: 'center', color: 'var(--copper)', fontFamily: 'var(--font-mono)', fontSize: 12, fontWeight: 800 }}>PDF</div>
                       <div style={{ fontSize: 16, fontWeight: 700, color: 'var(--ink,#142950)', marginBottom: 6 }}>Drop your statement PDF here</div>
                       <div style={{ fontFamily: 'var(--font-mono,monospace)', fontSize: 11, color: 'var(--ink-3,#5A6A8A)', marginBottom: 8 }}>or click to browse &bull; PDF only &bull; Not stored anywhere</div>
                     </>
@@ -127,7 +124,7 @@ export default function StatementTruthPage() {
 
                 {/* Privacy note */}
                 <div style={{ background: 'rgba(45,122,86,0.08)', border: '1px solid rgba(45,122,86,0.20)', borderRadius: 12, padding: '14px 18px', marginBottom: 20, display: 'flex', gap: 12, alignItems: 'flex-start' }}>
-                  <span style={{ fontSize: 18, flexShrink: 0 }}>🔒</span>
+                  <span aria-hidden="true" style={{ width: 24, height: 24, flexShrink: 0, borderRadius: '50%', background: '#166534', color: '#fff', display: 'grid', placeItems: 'center', fontSize: 12 }}>✓</span>
                   <p style={{ margin: 0, fontSize: 13, color: '#166534', lineHeight: 1.6 }}>
                     <strong>Your statement is never stored.</strong> Processed in memory, analysed by AI, and immediately discarded. We store only the aggregated report, not your transaction details.
                   </p>
@@ -250,6 +247,6 @@ export default function StatementTruthPage() {
           </div>
 
       <DesignFooter />
-    </>
+    </div>
   );
 }
