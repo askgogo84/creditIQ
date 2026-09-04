@@ -1,11 +1,13 @@
 ﻿import { NextRequest, NextResponse } from 'next/server'
 import { normalizeTravelpayoutsPricesForDates } from '@/lib/flights/travelpayouts-prices-for-dates'
+import { searchSkyscannerFlights, skyscannerFlightsConfigured } from '@/lib/flights/providers/skyscanner-live'
+import { searchAmadeusFlights, amadeusFlightsConfigured } from '@/lib/flights/providers/amadeus'
 
 const KIWI_MAX_RESULTS = 200
 const TP_MAX_RESULTS = 100
 
 type Coverage = {
-  provider: 'kiwi' | 'travelpayouts-v3' | 'travelpayouts' | 'none'
+  provider: 'skyscanner-live' | 'amadeus' | 'kiwi' | 'travelpayouts-v3' | 'none'
   mode: 'PROVIDER_COMPLETE' | 'PROVIDER_WINDOW' | 'PARTIAL_FALLBACK' | 'UNAVAILABLE'
   loaded: number
   provider_total: number | null
@@ -23,8 +25,16 @@ type Attempt = {
   note: string
 }
 
+type Cabin = 'economy' | 'premium_economy' | 'business' | 'first'
+
 function response(flights: any[], coverage: Coverage, extra: Record<string, unknown> = {}) {
   return NextResponse.json({ flights, source: coverage.provider, coverage, ...extra })
+}
+
+function normalizeCabin(raw: string): Cabin {
+  const value = raw.toLowerCase().replace(/[ -]+/g, '_')
+  if (value === 'premium_economy' || value === 'business' || value === 'first') return value
+  return 'economy'
 }
 
 export async function GET(req: NextRequest) {
@@ -33,16 +43,78 @@ export async function GET(req: NextRequest) {
   const to = (searchParams.get('to') || 'BOM').toUpperCase().trim()
   const dateFrom = searchParams.get('date_from') || ''
   const dateTo = searchParams.get('date_to') || dateFrom
-  const cabin = (searchParams.get('cabin') || 'economy').toLowerCase()
+  const cabin = normalizeCabin(searchParams.get('cabin') || 'economy')
   const kiwiKey = process.env.KIWI_TEQUILA_API_KEY || ''
   const tpToken = process.env.TRAVELPAYOUTS_TOKEN || ''
   const tpMarker = process.env.TRAVELPAYOUTS_MARKER || ''
   const fetchedAt = new Date().toISOString()
   const attempts: Attempt[] = []
 
-  // Kiwi remains the preferred itinerary source where the existing invited
-  // Tequila partnership key is active. IMPORTANT: an HTTP-200 EMPTY result is not
-  // terminal; production previously returned [] here and never tried the fallback.
+  // 1. Skyscanner Flights Live Prices — primary target. Create + poll retrieves
+  // supply-partner inventory and is cabin-specific. It activates automatically
+  // when the commercial API key is added to Vercel.
+  if (skyscannerFlightsConfigured() && dateFrom) {
+    try {
+      const result = await searchSkyscannerFlights({ from, to, date: dateFrom, cabin, adults: 1 })
+      attempts.push({
+        provider: 'skyscanner-live', ok: true, loaded: result.flights.length,
+        note: result.flights.length ? `${result.status}; ${result.polls} poll(s)` : `${result.status}; zero itineraries; trying next provider`,
+      })
+      if (result.flights.length > 0) {
+        return response(result.flights, {
+          provider: 'skyscanner-live',
+          mode: result.status === 'RESULT_STATUS_COMPLETE' ? 'PROVIDER_COMPLETE' : 'PROVIDER_WINDOW',
+          loaded: result.flights.length,
+          provider_total: null,
+          has_more: result.status !== 'RESULT_STATUS_COMPLETE',
+          provider_limit: null,
+          fetched_at: fetchedAt,
+          note: result.status === 'RESULT_STATUS_COMPLETE'
+            ? 'Skyscanner Live Prices search completed. Returned itineraries are cabin-specific and bookable through returned supply-partner links.'
+            : 'Skyscanner returned usable live itineraries before the provider search reached COMPLETE. Results are shown, but coverage is labelled as a provider window.',
+        }, { attempts, requestedCabin: cabin, cashCabinVerified: true })
+      }
+    } catch (error) {
+      attempts.push({ provider: 'skyscanner-live', ok: false, loaded: 0, note: 'request failed; trying next provider' })
+      console.error('flight search: skyscanner live failed', error)
+    }
+  } else {
+    attempts.push({ provider: 'skyscanner-live', ok: false, loaded: 0, note: skyscannerFlightsConfigured() ? 'date missing' : 'not configured' })
+  }
+
+  // 2. Amadeus Flight Offers Search — cabin-specific shopping fallback. The
+  // adapter defaults to Amadeus TEST until AMADEUS_ENV=production (or an explicit
+  // AMADEUS_BASE_URL) is configured, so adding sandbox credentials cannot
+  // accidentally make a production-money claim.
+  if (amadeusFlightsConfigured() && dateFrom) {
+    try {
+      const result = await searchAmadeusFlights({ from, to, date: dateFrom, cabin, adults: 1, max: 100 })
+      attempts.push({
+        provider: 'amadeus', ok: true, status: result.status, loaded: result.flights.length,
+        note: result.flights.length ? `flight offers returned from ${result.base}` : 'zero flight offers; trying next provider',
+      })
+      if (result.flights.length > 0) {
+        return response(result.flights, {
+          provider: 'amadeus',
+          mode: 'PROVIDER_WINDOW',
+          loaded: result.flights.length,
+          provider_total: null,
+          has_more: result.flights.length >= 100,
+          provider_limit: 100,
+          fetched_at: fetchedAt,
+          note: 'Amadeus Flight Offers Search returned cabin-specific shopping results. CreditIQ labels this as a provider window rather than claiming every itinerary in the market.',
+        }, { attempts, requestedCabin: cabin, cashCabinVerified: true })
+      }
+    } catch (error) {
+      attempts.push({ provider: 'amadeus', ok: false, loaded: 0, note: 'request failed; trying next provider' })
+      console.error('flight search: amadeus failed', error)
+    }
+  } else {
+    attempts.push({ provider: 'amadeus', ok: false, loaded: 0, note: amadeusFlightsConfigured() ? 'date missing' : 'not configured' })
+  }
+
+  // 3. Kiwi — legacy invited-partner itinerary source where a Tequila key is
+  // active. An HTTP-200 EMPTY result is deliberately non-terminal.
   if (kiwiKey) {
     try {
       const url = new URL('https://api.tequila.kiwi.com/v2/search')
@@ -55,9 +127,6 @@ export async function GET(req: NextRequest) {
       url.searchParams.set('limit', String(KIWI_MAX_RESULTS))
       url.searchParams.set('sort', 'price')
       url.searchParams.set('max_stopovers', '2')
-
-      // Tequila's search endpoint supports cabin selection for active partners.
-      // Keep this provider-scoped: Travelpayouts fallback does not expose cabin.
       if (cabin === 'business') url.searchParams.set('selected_cabins', 'C')
       else if (cabin === 'first') url.searchParams.set('selected_cabins', 'F')
       else url.searchParams.set('selected_cabins', 'M')
@@ -103,7 +172,7 @@ export async function GET(req: NextRequest) {
           const reportedTotal = Number.isFinite(Number(data._results)) ? Number(data._results) : null
           const hitProviderLimit = raw.length >= KIWI_MAX_RESULTS
           const providerHasMore = reportedTotal !== null ? reportedTotal > raw.length : hitProviderLimit
-          const coverage: Coverage = {
+          return response(flights, {
             provider: 'kiwi',
             mode: providerHasMore ? 'PROVIDER_WINDOW' : 'PROVIDER_COMPLETE',
             loaded: flights.length,
@@ -114,8 +183,7 @@ export async function GET(req: NextRequest) {
             note: providerHasMore
               ? 'Kiwi returned its maximum search window. CreditIQ is showing every returned itinerary, but does not claim this is every itinerary in the market.'
               : 'All itineraries returned by the Kiwi search call are included.',
-          }
-          return response(flights, coverage, { attempts, requestedCabin: cabin })
+          }, { attempts, requestedCabin: cabin, cashCabinVerified: true })
         }
       } else {
         attempts.push({ provider: 'kiwi', ok: false, status: res.status, loaded: 0, note: `provider HTTP ${res.status}; trying fallback` })
@@ -129,10 +197,8 @@ export async function GET(req: NextRequest) {
     attempts.push({ provider: 'kiwi', ok: false, loaded: 0, note: 'not configured' })
   }
 
-  // CURRENT Travelpayouts/Aviasales fallback. Their own docs recommend
-  // /aviasales/v3/prices_for_dates instead of the old /v1/prices/cheap route.
-  // This is cached fare discovery (prices found by Aviasales users in the last
-  // 48h), not complete live GDS inventory, so coverage is always PARTIAL_FALLBACK.
+  // 4. Travelpayouts / Aviasales dated-fare discovery. This is intentionally the
+  // last fallback: prices are cached from recent searches and cabin is not exposed.
   if (tpToken) {
     try {
       const url = new URL('https://api.travelpayouts.com/aviasales/v3/prices_for_dates')
@@ -163,8 +229,8 @@ export async function GET(req: NextRequest) {
             has_more: false,
             provider_limit: TP_MAX_RESULTS,
             fetched_at: fetchedAt,
-            note: cabin === 'business' || cabin === 'first'
-              ? 'Travelpayouts returned dated cached fare discovery but does not expose cabin. These cash fares are reference fares only and are NOT labelled as verified Business/First cash prices.'
+            note: cabin !== 'economy'
+              ? 'Travelpayouts returned dated cached fare discovery but does not expose cabin. These fares are reference-only and are NOT treated as a verified premium-cabin cash comparison.'
               : 'Travelpayouts dated fares are cached discovery from recent Aviasales searches, not complete live itinerary inventory.',
           }, { attempts, requestedCabin: cabin, cashCabinVerified: cabin === 'economy' })
         }
