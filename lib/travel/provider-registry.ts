@@ -55,24 +55,34 @@ export const TRAVEL_PROVIDERS: TravelProviderDefinition[] = [
     note: 'Working last-resort dated cached-fare discovery. Not complete live itinerary inventory and not cabin-verifiable.',
   },
   {
-    id: 'awardtool',
-    name: 'AwardTool',
-    kinds: ['award-flight', 'award-hotel'],
+    id: 'awardwallet-flights',
+    name: 'AwardWallet Flight Search',
+    kinds: ['award-flight'],
+    priority: 20,
+    env: ['AWARDWALLET_API_AUTH'],
+    access: 'commercial',
+    wired: true,
+    note: 'Existing live guest-capable award-flight adapter. Programmes that require loyalty login fail closed to direct verification.',
+  },
+  {
+    id: 'awardtool-flights',
+    name: 'AwardTool Flights',
+    kinds: ['award-flight'],
     priority: 10,
     env: ['AWARDTOOL_API_KEY'],
     access: 'applied',
     wired: false,
-    note: 'Commercial access requested. Adapter will be finalized against the credentials/schema supplied with partner access; CreditIQ will not guess a private API contract.',
+    note: 'Commercial access requested. Flight adapter will be finalized against the partner flight schema supplied with access; CreditIQ will not guess a private production contract.',
   },
   {
-    id: 'pointsyeah',
-    name: 'PointsYeah',
-    kinds: ['award-flight', 'award-hotel'],
-    priority: 20,
+    id: 'pointsyeah-flights',
+    name: 'PointsYeah Flights',
+    kinds: ['award-flight'],
+    priority: 15,
     env: ['POINTSYEAH_API_KEY'],
     access: 'applied',
     wired: false,
-    note: 'Commercial access requested. Flight/hotel award adapter remains intentionally unwired until partner API access confirms the production schema.',
+    note: 'Commercial access requested. Flight award adapter remains intentionally unwired until partner credentials confirm the production schema.',
   },
   {
     id: 'seats-aero',
@@ -134,6 +144,36 @@ export const TRAVEL_PROVIDERS: TravelProviderDefinition[] = [
     wired: false,
     note: 'Secondary bedbank target for broader hotel supply and future assisted-booking coverage.',
   },
+  {
+    id: 'awardwallet-hotels',
+    name: 'AwardWallet Hotel Search',
+    kinds: ['award-hotel'],
+    priority: 10,
+    env: ['AWARDWALLET_API_AUTH'],
+    access: 'commercial',
+    wired: true,
+    note: 'Existing date-specific live hotel-award adapter. Providers requiring loyalty login are not given user credentials by CreditIQ and fall back to direct verification.',
+  },
+  {
+    id: 'awardtool-hotels',
+    name: 'AwardTool Hotels',
+    kinds: ['award-hotel'],
+    priority: 20,
+    env: ['AWARDTOOL_API_KEY'],
+    access: 'applied',
+    wired: true,
+    note: 'Existing cached hotel award-discovery adapter is wired. Its property/range data is discovery evidence only and never treated as date-specific availability.',
+  },
+  {
+    id: 'pointsyeah-hotels',
+    name: 'PointsYeah Hotels',
+    kinds: ['award-hotel'],
+    priority: 30,
+    env: ['POINTSYEAH_API_KEY'],
+    access: 'applied',
+    wired: false,
+    note: 'Commercial access requested. Date-specific hotel award adapter will be wired after the production schema is confirmed.',
+  },
 ]
 
 export function travelProviderStatus(provider: TravelProviderDefinition): ProviderStatus {
@@ -147,7 +187,7 @@ export function travelProviderStatus(provider: TravelProviderDefinition): Provid
 export function providerDiagnostics() {
   return TRAVEL_PROVIDERS
     .slice()
-    .sort((a, b) => a.priority - b.priority || a.name.localeCompare(b.name))
+    .sort((a, b) => a.kinds[0].localeCompare(b.kinds[0]) || a.priority - b.priority || a.name.localeCompare(b.name))
     .map(provider => ({
       id: provider.id,
       name: provider.name,
