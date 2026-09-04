@@ -114,7 +114,7 @@ export async function searchAmadeusFlights(input: {
 
     const first = rawSegments[0]
     const last = rawSegments[rawSegments.length - 1]
-    const segments = rawSegments.map((segment: any) => ({
+    const segments: AmadeusCashFlight['segments'] = rawSegments.map((segment: any) => ({
       from: String(segment?.departure?.iataCode || ''),
       to: String(segment?.arrival?.iataCode || ''),
       airline: String(segment?.carrierCode || ''),
@@ -122,7 +122,7 @@ export async function searchAmadeusFlights(input: {
       departure: String(segment?.departure?.at || ''),
       arrival: String(segment?.arrival?.at || ''),
     }))
-    const carriers = [...new Set(segments.map(segment => segment.airline).filter(Boolean))]
+    const carriers: string[] = [...new Set(segments.map((segment: AmadeusCashFlight['segments'][number]) => segment.airline).filter(Boolean))]
     const seconds = durationSeconds(String(itinerary?.duration || ''))
     const total = Number(offer?.price?.grandTotal ?? offer?.price?.total)
     if (!Number.isFinite(total) || total <= 0) return []
