@@ -21,7 +21,7 @@ const ICON_STROKE = 1.8;
 // navigation at two breakpoints, never two colour systems. No [data-ciq] tokens:
 // these read on :root and follow the site theme, so the bar no longer needs a
 // [data-ciq] wrapper (removed from NavShell/Header in the same commit).
-const TABS = ['wallet', 'spend', 'travel', 'cards'].map(k => APP_NAV.find(i => i.key === k)!);
+const TABS = ['dashboard', 'wallet', 'spend', 'travel', 'cards'].map(k => APP_NAV.find(i => i.key === k)!);
 
 // "More" sheet = the "You" surface — account destinations (all confirmed routes).
 // Settings is a section inside the sheet (theme toggle), not a separate page.
@@ -87,7 +87,7 @@ export function TabBar() {
   return (
     <>
       <nav style={{
-        position: 'fixed', left: 0, right: 0, bottom: 0, maxWidth: 420, margin: '0 auto',
+        position: 'fixed', left: 0, right: 0, bottom: 0, maxWidth: 520, margin: '0 auto',
         background: 'color-mix(in srgb, var(--surface) 84%, transparent)', backdropFilter: 'blur(18px)',
         borderTop: '1px solid var(--line)', display: 'flex', justifyContent: 'space-around',
         padding: '9px 4px calc(9px + env(safe-area-inset-bottom))', zIndex: 40,

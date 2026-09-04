@@ -8,7 +8,7 @@ import { SectionShell } from '@/components/ciq/SectionShell'
 // set on their own outer wrapper.
 export default function SpendLayout({ children }: { children: React.ReactNode }) {
   return (
-    <SectionShell sectionName="Spend" paddingBottom={112} fluid>
+    <SectionShell sectionName="Spend Smart" paddingBottom={112} fluid>
       {children}
     </SectionShell>
   )

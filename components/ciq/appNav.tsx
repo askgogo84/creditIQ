@@ -22,7 +22,7 @@
 // then its bound routes (/feed, /intelligence) fold under Wallet — the /dashboard
 // surface they live on today.
 import {
-  Wallet, Receipt, Plane, CreditCard, User,
+  Wallet, Receipt, Plane, CreditCard, User, Home,
   FileCheck, Zap, Star, Map, Sparkles, Target, ArrowLeftRight, Sofa,
   LayoutGrid, Scale, Wand2, Flame, Shield, MessageCircle,
   type LucideIcon,
@@ -34,16 +34,22 @@ export type AppNavItem = {
   href: string
   Icon: LucideIcon
   match: (p: string) => boolean
+  badge?: string
 }
 
 export const APP_NAV: AppNavItem[] = [
   {
-    key: 'wallet', label: 'Wallet', href: '/dashboard',
-    Icon: Wallet,
-    match: p => p.startsWith('/dashboard') || p.startsWith('/statement-truth') || p.startsWith('/feed') || p.startsWith('/intelligence'),
+    key: 'dashboard', label: 'Dashboard', href: '/dashboard',
+    Icon: Home,
+    match: p => p === '/dashboard' || p.startsWith('/feed') || p.startsWith('/intelligence'),
   },
   {
-    key: 'spend', label: 'Spend', href: '/spend-optimizer',
+    key: 'wallet', label: 'Wallet', href: '/wallet',
+    Icon: Wallet,
+    match: p => p.startsWith('/wallet') || p.startsWith('/statement-truth'),
+  },
+  {
+    key: 'spend', label: 'Spend Smart', href: '/spend-optimizer',
     Icon: Receipt,
     match: p => p.startsWith('/spend-optimizer') || p.startsWith('/points-optimizer') || p.startsWith('/optimize') || p.startsWith('/smart-match'),
   },
@@ -61,7 +67,13 @@ export const APP_NAV: AppNavItem[] = [
     match: p => p.startsWith('/cards') || p.startsWith('/card/') || p.startsWith('/compare') || p.startsWith('/best-cards') || p.startsWith('/uae') || p.startsWith('/card-switch') || p.startsWith('/card-roast'),
   },
   {
-    key: 'you', label: 'You', href: '/profile',
+    key: 'concierge', label: 'Concierge AI', href: '/cira',
+    Icon: Sparkles,
+    badge: 'AI',
+    match: p => p.startsWith('/cira') || p.startsWith('/concierge'),
+  },
+  {
+    key: 'you', label: 'Profile', href: '/profile',
     Icon: User,
     match: p => p.startsWith('/profile') || p.startsWith('/pro'),
   },
@@ -71,7 +83,7 @@ export type SectionTab = { label: string; href: string; Icon: LucideIcon }
 
 export const SECTION_TABS: Record<string, SectionTab[]> = {
   wallet: [
-    { label: 'Your cards', href: '/dashboard', Icon: CreditCard },
+    { label: 'Your cards', href: '/wallet', Icon: CreditCard },
     { label: 'Statement Truth', href: '/statement-truth', Icon: FileCheck },
   ],
   spend: [
@@ -81,7 +93,7 @@ export const SECTION_TABS: Record<string, SectionTab[]> = {
   travel: [
     { label: 'Flights', href: '/trip-planner', Icon: Plane },
     { label: 'Hotels', href: '/hotels', Icon: Map },
-    { label: 'Ask AI', href: '/travel', Icon: Sparkles },
+    { label: 'Ask CIRA', href: '/cira', Icon: Sparkles },
     { label: 'Sweet Spots', href: '/sweet-spots', Icon: Target },
     { label: 'Transfer Partners', href: '/transfer-partners', Icon: ArrowLeftRight },
     { label: 'Lounges', href: '/lounge-tracker', Icon: Sofa },

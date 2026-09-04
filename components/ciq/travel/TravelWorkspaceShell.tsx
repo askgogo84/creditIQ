@@ -14,7 +14,7 @@ const primary: TravelTab[] = [
 ]
 
 const secondary: TravelTab[] = [
-  { label: 'Ask AI', href: '/travel', Icon: Sparkles },
+  { label: 'Ask CIRA', href: '/cira', Icon: Sparkles },
   { label: 'Sweet Spots', href: '/sweet-spots', Icon: Target },
   { label: 'Transfer Partners', href: '/transfer-partners', Icon: ArrowLeftRight },
   { label: 'Lounges', href: '/lounge-tracker', Icon: Sofa },
@@ -31,7 +31,7 @@ export function TravelWorkspaceShell({ children }: { children: ReactNode }) {
 
   return (
     <div style={{ minHeight: '100dvh', paddingTop: 16, paddingBottom: 80 }}>
-      <div style={{ width: '100%', padding: '0 clamp(20px, 2.6vw, 48px)' }}>
+      <div style={{ width: 'calc(100% - 40px)', maxWidth: 1504, margin: '0 auto' }}>
         <div
           style={{
             display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between',

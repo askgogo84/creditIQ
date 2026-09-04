@@ -51,8 +51,8 @@ export default async function CardsIndexPage() {
           CTAs stay, left-aligned — they're the page's job. Metadata/OG untouched. */}
       <PageHeader
         eyebrow={`Card intelligence · ${totalCards} cards · ${banks.length} banks`}
-        title={<>Find the card that fits <span style={{ color: 'var(--copper)' }}>your life.</span></>}
-        subtitle="Explore real Indian cards with original artwork, transparent fees and practical reward context. No bank pays to move up the list."
+        title={<>Card <span style={{ color: 'var(--copper)' }}>Explorer.</span></>}
+        subtitle="Compare real Indian credit cards with original artwork, transparent fees and reward value for how you actually spend."
         maxWidth={1100}
         showTabs={false}
       />
