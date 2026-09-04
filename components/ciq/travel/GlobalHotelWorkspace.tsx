@@ -28,7 +28,7 @@ type HotelOffer = {
   taxesAndFees: number | null
   agentName: string | null
   deeplink: string | null
-  source: 'skyscanner-hotels-live'
+  source: 'skyscanner-hotels-live' | 'booking-demand'
 }
 
 type Coverage = {
@@ -42,6 +42,7 @@ type Coverage = {
   limit?: number
   has_more: boolean
   next_offset?: number | null
+  next_page?: string | null
   status?: string
   fetched_at: string | null
   note?: string
@@ -82,7 +83,7 @@ function hotelConciergeRequest(offer: HotelOffer, destination: string, checkin: 
   return {
     context: 'HNI',
     sourceType: 'HOTEL',
-    sourceRef: `skyscanner:${offer.id}`,
+    sourceRef: `${offer.source}:${offer.id}`,
     title: `${offer.hotelName} · ${destination}`,
     selection: {
       hotel_name: offer.hotelName,
@@ -166,7 +167,8 @@ export function GlobalHotelWorkspace() {
   }
 
   async function loadMore() {
-    if (!sessionToken || !coverage?.has_more || coverage.next_offset == null || !coverage.entityId) return
+    if (!sessionToken || !coverage?.has_more) return
+    if (coverage.provider === 'skyscanner-hotels-live' && (coverage.next_offset == null || !coverage.entityId)) return
     setLoadingMore(true)
     setError('')
     try {
@@ -174,17 +176,23 @@ export function GlobalHotelWorkspace() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
+          provider: coverage.provider,
           sessionToken,
           destination: coverage.destination || destination,
           entityId: coverage.entityId,
-          offset: coverage.next_offset,
+          offset: coverage.next_offset ?? 0,
           limit: coverage.limit ?? 50,
+          checkin,
+          checkout,
+          adults,
+          rooms: 1,
         }),
       })
       const data = await res.json() as SearchPage
       if (!res.ok) throw new Error(data.error || 'could not load next hotel page')
       setOffers((current) => dedupeOffers(current, data.offers ?? data.hotels ?? []))
       setCoverage(data.coverage ?? coverage)
+      setSessionToken(data.sessionToken ?? null)
     } catch (e: any) {
       setError(e?.message || 'Couldn’t load more hotels.')
     } finally {
@@ -222,8 +230,8 @@ export function GlobalHotelWorkspace() {
 
       {coverage && <div className="ghw-coverage"><div><b>{totalLabel}</b><span>{coverage.provider} · {coverage.mode}{coverage.status ? ` · ${coverage.status}` : ''}</span></div>{coverage.fetched_at && <small>Fetched {new Date(coverage.fetched_at).toLocaleTimeString()}</small>}</div>}
 
-      {error && <div className="ghw-error"><b>Live hotel inventory is unavailable for this preview.</b><span>{error}</span><small>CreditIQ will not replace this search with captured rates from another destination.</small></div>}
-      {loading && <div className="ghw-loading">Starting the live cash-provider session for {destination}…</div>}
+      {error && <div className="ghw-error"><b>Live hotel inventory is unavailable for this search.</b><span>{error}</span><small>CreditIQ will not replace this search with captured rates from another destination.</small></div>}
+      {loading && <div className="ghw-loading">Starting the global cash-hotel provider chain for {destination}…</div>}
 
       {!loading && offers.length > 0 && (
         <div className="ghw-workspace">
@@ -235,7 +243,7 @@ export function GlobalHotelWorkspace() {
                   <button key={offer.id} className={`ghw-row${selected?.id === offer.id ? ' active' : ''}`} onClick={() => setSelectedId(offer.id)} role="option" aria-selected={selected?.id === offer.id}>
                     <div className="ghw-thumb">{offer.imageUrl ? <img src={offer.imageUrl} alt="" /> : <span>{offer.hotelName.slice(0, 1)}</span>}</div>
                     <div className="ghw-main"><b>{offer.hotelName}</b><span>{[offer.chainName, offer.stars ? `${offer.stars} star` : null, offer.roomName || offer.roomType].filter(Boolean).join(' · ')}</span><small>{[offer.cancellationPolicy, offer.mealPlan, offer.agentName].filter(Boolean).join(' · ') || 'Rate-plan details returned by provider'}</small></div>
-                    <div className="ghw-price"><b>{money(offer.totalPrice, offer.currency)}</b><span>provider total</span>{offer.taxesAndFees != null && <small>tax/fee lines {money(offer.taxesAndFees, offer.currency)}</small>}</div>
+                    <div className="ghw-price"><b>{money(offer.totalPrice, offer.currency)}</b><span>provider total</span>{offer.taxesAndFees != null && <small>tax/fee separation {money(offer.taxesAndFees, offer.currency)}</small>}</div>
                     <div className="ghw-path"><b>{offer.chainName || 'Unmapped hotel'}</b><span>{programmeId ? 'award join available to attempt' : 'cash + generic rails'}</span></div>
                   </button>
                 )

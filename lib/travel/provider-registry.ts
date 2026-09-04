@@ -1,6 +1,6 @@
 export type TravelProviderKind = 'cash-flight' | 'award-flight' | 'cash-hotel' | 'award-hotel'
 
-export type ProviderStatus = 'configured' | 'waiting-access' | 'not-configured'
+export type ProviderStatus = 'configured' | 'waiting-access' | 'waiting-integration' | 'not-configured'
 
 export type TravelProviderDefinition = {
   id: string
@@ -9,6 +9,7 @@ export type TravelProviderDefinition = {
   priority: number
   env: string[]
   access: 'active' | 'applied' | 'commercial'
+  wired: boolean
   note: string
 }
 
@@ -20,16 +21,18 @@ export const TRAVEL_PROVIDERS: TravelProviderDefinition[] = [
     priority: 10,
     env: ['SKYSCANNER_API_KEY'],
     access: 'applied',
-    note: 'Primary live cash-flight source. Create + poll flow returns real-time bookable inventory and cabin-specific searches.',
+    wired: true,
+    note: 'Primary live cash-flight source. Create + poll adapter is wired for cabin-specific inventory and activates when access is approved.',
   },
   {
-    id: 'amadeus',
-    name: 'Amadeus Travel APIs',
-    kinds: ['cash-flight', 'cash-hotel'],
+    id: 'amadeus-flights',
+    name: 'Amadeus Flight Offers',
+    kinds: ['cash-flight'],
     priority: 20,
     env: ['AMADEUS_CLIENT_ID', 'AMADEUS_CLIENT_SECRET'],
     access: 'applied',
-    note: 'Flight shopping/pricing and hotel availability fallback. Uses OAuth client credentials.',
+    wired: true,
+    note: 'Cabin-specific Flight Offers adapter is wired with OAuth token caching. It defaults to TEST unless production is explicitly enabled.',
   },
   {
     id: 'kiwi',
@@ -38,6 +41,7 @@ export const TRAVEL_PROVIDERS: TravelProviderDefinition[] = [
     priority: 30,
     env: ['KIWI_TEQUILA_API_KEY'],
     access: 'commercial',
+    wired: true,
     note: 'Legacy invited-partner flight inventory source. Only used when a valid partnership key is configured.',
   },
   {
@@ -47,25 +51,38 @@ export const TRAVEL_PROVIDERS: TravelProviderDefinition[] = [
     priority: 90,
     env: ['TRAVELPAYOUTS_TOKEN'],
     access: 'active',
-    note: 'Last-resort dated cached-fare discovery. Not complete live itinerary inventory and not cabin-verifiable.',
+    wired: true,
+    note: 'Working last-resort dated cached-fare discovery. Not complete live itinerary inventory and not cabin-verifiable.',
   },
   {
-    id: 'awardtool',
-    name: 'AwardTool',
-    kinds: ['award-flight', 'award-hotel'],
+    id: 'awardwallet-flights',
+    name: 'AwardWallet Flight Search',
+    kinds: ['award-flight'],
+    priority: 20,
+    env: ['AWARDWALLET_API_AUTH'],
+    access: 'commercial',
+    wired: true,
+    note: 'Existing live guest-capable award-flight adapter. Programmes that require loyalty login fail closed to direct verification.',
+  },
+  {
+    id: 'awardtool-flights',
+    name: 'AwardTool Flights',
+    kinds: ['award-flight'],
     priority: 10,
     env: ['AWARDTOOL_API_KEY'],
     access: 'applied',
-    note: 'Commercial award search target for real-time flights, broad discovery and hotel points inventory.',
+    wired: false,
+    note: 'Commercial access requested. Flight adapter will be finalized against the partner flight schema supplied with access; CreditIQ will not guess a private production contract.',
   },
   {
-    id: 'pointsyeah',
-    name: 'PointsYeah',
-    kinds: ['award-flight', 'award-hotel'],
-    priority: 20,
+    id: 'pointsyeah-flights',
+    name: 'PointsYeah Flights',
+    kinds: ['award-flight'],
+    priority: 15,
     env: ['POINTSYEAH_API_KEY'],
     access: 'applied',
-    note: 'Commercial award search target covering flight and hotel loyalty programmes.',
+    wired: false,
+    note: 'Commercial access requested. Flight award adapter remains intentionally unwired until partner credentials confirm the production schema.',
   },
   {
     id: 'seats-aero',
@@ -74,16 +91,18 @@ export const TRAVEL_PROVIDERS: TravelProviderDefinition[] = [
     priority: 30,
     env: ['SEATS_AERO_API_KEY'],
     access: 'active',
-    note: 'Current award-flight discovery provider. Kept as an independent source in the fusion layer.',
+    wired: true,
+    note: 'Current working award-flight discovery provider. Kept as an independent source in the fusion layer.',
   },
   {
     id: 'booking-demand',
-    name: 'Booking.com Demand API',
+    name: 'Booking.com Demand API v3.2',
     kinds: ['cash-hotel'],
     priority: 10,
     env: ['BOOKING_DEMAND_API_TOKEN', 'BOOKING_AFFILIATE_ID'],
     access: 'applied',
-    note: 'Primary global cash-hotel target for search, availability, property content and redirect/booking flows.',
+    wired: true,
+    note: 'Global cash-hotel search/look/redirect adapter is wired. It defaults to Booking.com sandbox until production is explicitly enabled.',
   },
   {
     id: 'skyscanner-hotels',
@@ -92,13 +111,75 @@ export const TRAVEL_PROVIDERS: TravelProviderDefinition[] = [
     priority: 20,
     env: ['SKYSCANNER_API_KEY'],
     access: 'applied',
-    note: 'Already implemented in CreditIQ; activates automatically when SKYSCANNER_API_KEY is configured.',
+    wired: true,
+    note: 'Existing pageable global hotel adapter. Activates automatically when SKYSCANNER_API_KEY is configured.',
+  },
+  {
+    id: 'amadeus-hotels',
+    name: 'Amadeus Hotels',
+    kinds: ['cash-hotel'],
+    priority: 30,
+    env: ['AMADEUS_CLIENT_ID', 'AMADEUS_CLIENT_SECRET'],
+    access: 'applied',
+    wired: false,
+    note: 'Requested in the Amadeus Travel Sellers/Web Services application. Hotel adapter will be matched to the enterprise product/API contract they provision.',
+  },
+  {
+    id: 'expedia-rapid',
+    name: 'Expedia Rapid',
+    kinds: ['cash-hotel'],
+    priority: 40,
+    env: ['EXPEDIA_RAPID_API_KEY', 'EXPEDIA_RAPID_SHARED_SECRET'],
+    access: 'commercial',
+    wired: false,
+    note: 'Secondary global lodging supply target after primary hotel integrations are activated.',
+  },
+  {
+    id: 'hbx-hotels',
+    name: 'HBX / Hotelbeds',
+    kinds: ['cash-hotel'],
+    priority: 50,
+    env: ['HBX_API_KEY', 'HBX_SECRET'],
+    access: 'commercial',
+    wired: false,
+    note: 'Secondary bedbank target for broader hotel supply and future assisted-booking coverage.',
+  },
+  {
+    id: 'awardwallet-hotels',
+    name: 'AwardWallet Hotel Search',
+    kinds: ['award-hotel'],
+    priority: 10,
+    env: ['AWARDWALLET_API_AUTH'],
+    access: 'commercial',
+    wired: true,
+    note: 'Existing date-specific live hotel-award adapter. Providers requiring loyalty login are not given user credentials by CreditIQ and fall back to direct verification.',
+  },
+  {
+    id: 'awardtool-hotels',
+    name: 'AwardTool Hotels',
+    kinds: ['award-hotel'],
+    priority: 20,
+    env: ['AWARDTOOL_API_KEY'],
+    access: 'applied',
+    wired: true,
+    note: 'Existing cached hotel award-discovery adapter is wired. Its property/range data is discovery evidence only and never treated as date-specific availability.',
+  },
+  {
+    id: 'pointsyeah-hotels',
+    name: 'PointsYeah Hotels',
+    kinds: ['award-hotel'],
+    priority: 30,
+    env: ['POINTSYEAH_API_KEY'],
+    access: 'applied',
+    wired: false,
+    note: 'Commercial access requested. Date-specific hotel award adapter will be wired after the production schema is confirmed.',
   },
 ]
 
 export function travelProviderStatus(provider: TravelProviderDefinition): ProviderStatus {
-  const configured = provider.env.every(name => Boolean(process.env[name]))
-  if (configured) return 'configured'
+  const credentialsPresent = provider.env.every(name => Boolean(process.env[name]))
+  if (provider.wired && credentialsPresent) return 'configured'
+  if (!provider.wired && credentialsPresent) return 'waiting-integration'
   if (provider.access === 'applied') return 'waiting-access'
   return 'not-configured'
 }
@@ -106,13 +187,15 @@ export function travelProviderStatus(provider: TravelProviderDefinition): Provid
 export function providerDiagnostics() {
   return TRAVEL_PROVIDERS
     .slice()
-    .sort((a, b) => a.priority - b.priority || a.name.localeCompare(b.name))
+    .sort((a, b) => a.kinds[0].localeCompare(b.kinds[0]) || a.priority - b.priority || a.name.localeCompare(b.name))
     .map(provider => ({
       id: provider.id,
       name: provider.name,
       kinds: provider.kinds,
       priority: provider.priority,
       status: travelProviderStatus(provider),
+      wired: provider.wired,
+      access: provider.access,
       required_env: provider.env,
       note: provider.note,
     }))
