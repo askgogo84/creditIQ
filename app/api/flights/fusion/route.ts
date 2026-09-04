@@ -1,22 +1,5 @@
 // app/api/flights/fusion/route.ts
 // POST /api/flights/fusion — "cash + award + your points" fusion for a route.
-//
-// Fuses three sources in parallel:
-//   1. GET /api/flights/search  — live cash fares
-//   2. seats.aero (all sources) — live award availability (via lib/seats-aero.ts)
-//   3. the caller's own cards    — statement_imports + manual_cards
-//
-// For each cash flight we try to match an award (route is implicit — seats.aero
-// is already scoped to origin->destination — so we match on date + airline), then
-// for each of the user's cards we resolve its reward currency and compute how many
-// card points a transfer would cost.
-//
-// HONESTY CONTRACT (CreditIQ moat): every redemption option ships verified:false.
-//   - Unknown card  -> status:'currency-unknown', NO fabricated program/ratio.
-//   - Currency that doesn't transfer to that award source -> transferable:false.
-//   - Nothing here may be rendered as verified-green downstream.
-// Hotels / Marriott are excluded by construction (not seats.aero flight sources,
-// and the transfer map has no hotel rows).
 
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
@@ -48,7 +31,13 @@ type Cabin = 'economy' | 'business' | 'first';
 const URL_ENV = () => process.env.NEXT_PUBLIC_SUPABASE_URL!;
 const SVC = () => process.env.SUPABASE_SERVICE_ROLE_KEY!;
 
-// ── source fetchers ────────────────────────────────────────────────────────
+type CashFetch = {
+  flights: CashFlight[];
+  coverage: any | null;
+  attempts: any[];
+  source: string | null;
+  cashCabinVerified: boolean;
+};
 
 async function fetchCashFlights(
   base: string,
@@ -56,20 +45,30 @@ async function fetchCashFlights(
   to: string,
   dateFrom: string,
   dateTo: string,
-): Promise<CashFlight[]> {
+  cabin: Cabin,
+): Promise<CashFetch> {
   try {
     const url = new URL('/api/flights/search', base);
     url.searchParams.set('from', from);
     url.searchParams.set('to', to);
+    url.searchParams.set('cabin', cabin);
     if (dateFrom) url.searchParams.set('date_from', dateFrom);
     if (dateTo) url.searchParams.set('date_to', dateTo);
     const res = await fetch(url.toString(), { cache: 'no-store' });
-    if (!res.ok) return [];
+    if (!res.ok) {
+      return { flights: [], coverage: null, attempts: [], source: null, cashCabinVerified: false };
+    }
     const data = await res.json();
-    return (data.flights || []) as CashFlight[];
+    return {
+      flights: (data.flights || []) as CashFlight[],
+      coverage: data.coverage ?? null,
+      attempts: Array.isArray(data.attempts) ? data.attempts : [],
+      source: data.source ?? null,
+      cashCabinVerified: data.cashCabinVerified !== false && data.source === 'kiwi',
+    };
   } catch (e) {
     console.error('fusion: cash flight fetch failed', e);
-    return [];
+    return { flights: [], coverage: null, attempts: [], source: null, cashCabinVerified: false };
   }
 }
 
@@ -84,12 +83,9 @@ async function fetchUserCards(userId: string): Promise<UserCard[]> {
         .select('bank, card_name, card_last4, points_balance, points_currency')
         .eq('user_id', userId),
     ]);
-    // Provenance: statement cards are verified ("In wallet" green) UNLESS the balance
-    // was hand-edited (self_entered); every manual card is self-entered by definition.
     const stmtRows = (stmt.data || []).map((r: any) => ({ ...r, selfEntered: r.self_entered === true }));
     const manualRows = (manual.data || []).map((r: any) => ({ ...r, selfEntered: true }));
     const rows = [...stmtRows, ...manualRows] as UserCard[];
-    // dedupe by bank + last4 + name
     const seen = new Set<string>();
     const cards: UserCard[] = [];
     for (const r of rows) {
@@ -106,22 +102,17 @@ async function fetchUserCards(userId: string): Promise<UserCard[]> {
   }
 }
 
-// ── award view (rich detail attached to a flight card) ───────────────────────
-
-// How many awards we enrich with a per-flight trips call. Each is a separate
-// credit-costing seats.aero request, so we cap and log the remainder.
 const ENRICH_CAP = 6;
 
-// Stable identity for an award across cash-match dedupe + trip-detail lookup.
 function awardKey(a: SeatsAeroResult): string {
   return a.id || `${a.source}|${a.date}|${a.mileageCost}`;
 }
 
 interface AwardView {
   program: string;
-  mileageCost: number;       // searched-cabin cost (drives "you pay")
-  economyMiles: number;      // economy award miles for this record (0 = not priced)
-  businessMiles: number;     // business award miles for this record (0 = not priced)
+  mileageCost: number;
+  economyMiles: number;
+  businessMiles: number;
   seats: number;
   source: string;
   airlineCode: string;
@@ -169,8 +160,6 @@ function buildAwardView(a: SeatsAeroResult, trip: SeatsAeroTrip | null, cabin: C
   };
 }
 
-// ── handler ──────────────────────────────────────────────────────────────────
-
 export async function POST(req: NextRequest) {
   const gate = await requireAuth(req);
   if (!gate.ok) return gate.res;
@@ -191,16 +180,13 @@ export async function POST(req: NextRequest) {
 
     const base = new URL(req.url).origin;
 
-    // Parallel: cash fares + award availability (all sources) + user cards.
-    const [cashFlights, awards, cards] = await Promise.all([
-      fetchCashFlights(base, from, to, dateFrom, dateTo),
+    const [cashFetch, awards, cards] = await Promise.all([
+      fetchCashFlights(base, from, to, dateFrom, dateTo, cabin),
       searchAwardAvailability(from, to, dateFrom, dateTo, undefined, cabin),
       fetchUserCards(gate.userId),
     ]);
+    const cashFlights = cashFetch.flights;
 
-    // Enrich the lowest-mileage awards with per-flight trip details (flight #,
-    // times, duration, exact stops). Each is a separate credit-costing seats.aero
-    // call, so we cap at ENRICH_CAP and log anything left summary-only.
     const sortedAwards = [...awards].sort((a, b) => a.mileageCost - b.mileageCost);
     const toEnrich = sortedAwards.slice(0, ENRICH_CAP);
     const tripPairs = await Promise.all(
@@ -216,16 +202,15 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Cash-matched flights: each cash fare with its matched award (if any).
     const matchedKeys = new Set<string>();
-    const cashResults = cashFlights.map((flight) => {
+    const cashResults = cashFlights.map((flight: any) => {
       const awardMatch = matchAward(flight, awards);
 
       if (!awardMatch) {
-        // No award for this flight -> cash-only, still shown.
         return {
           ...flight,
           cashUnavailable: false,
+          cashFareVerifiedForCabin: cashFetch.cashCabinVerified,
           award: null as AwardView | null,
           redemption: [] as RedemptionOption[],
           bestOption: null as RedemptionOption | null,
@@ -235,23 +220,36 @@ export async function POST(req: NextRequest) {
       const key = awardKey(awardMatch);
       matchedKeys.add(key);
       const award = buildAwardView(awardMatch, tripByKey.get(key) ?? null, cabin);
-      const redemption = buildRedemption(cards, awardMatch, flight.price);
-      const bestOption = pickBest(redemption);
+      // Never value a Business/First award against a Travelpayouts fare whose
+      // cabin is not supplied. Keep the fare visible as a reference, but make
+      // points valuation cabin-honest by passing 0 until the cash cabin is known.
+      const comparableCashPrice = cashFetch.cashCabinVerified || cabin === 'economy'
+        ? flight.price
+        : 0;
+      const redemption = buildRedemption(cards, awardMatch, comparableCashPrice);
+      const bestOption = comparableCashPrice > 0
+        ? pickBest(redemption)
+        : pickBestAwardOnly(redemption);
       const cabins = buildCabinBests(cards, awardMatch);
 
-      return { ...flight, cashUnavailable: false, award, redemption, bestOption, cabins };
+      return {
+        ...flight,
+        cashUnavailable: false,
+        cashFareVerifiedForCabin: cashFetch.cashCabinVerified || cabin === 'economy',
+        award,
+        redemption,
+        bestOption,
+        cabins,
+      };
     });
 
-    // AWARD-FIRST: awards with no cash match become points-only cards. When the
-    // cash search returned nothing, EVERY award surfaces here instead of being
-    // hidden behind "No flights found" — the awards are our core value.
     const awardOnly = awards
       .filter((a) => !matchedKeys.has(awardKey(a)))
       .map((a) => {
         const key = awardKey(a);
         const trip = tripByKey.get(key) ?? null;
         const award = buildAwardView(a, trip, cabin);
-        const redemption = buildRedemption(cards, a, 0); // no cash price -> value/point stays null
+        const redemption = buildRedemption(cards, a, 0);
         const bestOption = pickBestAwardOnly(redemption);
         const cabins = buildCabinBests(cards, a);
 
@@ -264,9 +262,10 @@ export async function POST(req: NextRequest) {
           departure: trip?.departsAt || a.date,
           arrival: trip?.arrivesAt || '',
           duration: trip ? Math.round(trip.durationMinutes / 60) : 0,
-          stops: trip ? trip.stops : a.isDirect ? 0 : -1, // -1 = stop count unknown
+          stops: trip ? trip.stops : a.isDirect ? 0 : -1,
           bookingLink: '',
           cashUnavailable: true,
+          cashFareVerifiedForCabin: false,
           award,
           redemption,
           bestOption,
@@ -285,7 +284,11 @@ export async function POST(req: NextRequest) {
         awardOnlyCards: awardOnly.length,
         cards: cards.length,
       },
-      verifiedPolicy: 'all-estimates', // every redemption is verified:false
+      cashCoverage: cashFetch.coverage,
+      cashAttempts: cashFetch.attempts,
+      cashSource: cashFetch.source,
+      cashCabinVerified: cashFetch.cashCabinVerified || cabin === 'economy',
+      verifiedPolicy: 'all-estimates',
       flights: results,
     });
   } catch (err: any) {
