@@ -28,10 +28,12 @@ export function ConciergeRequestButton({
   request,
   disabled = false,
   disabledReason,
+  label = 'Have CreditIQ Concierge book this',
 }: {
   request: ConciergeRequest
   disabled?: boolean
   disabledReason?: string
+  label?: string
 }) {
   const [open, setOpen] = useState(false)
   const [busy, setBusy] = useState(false)
@@ -90,7 +92,7 @@ export function ConciergeRequestButton({
         title={disabled ? disabledReason : undefined}
         onClick={() => { setError(null); setOpen(true) }}
       >
-        Have CreditIQ Concierge book this
+        {label}
       </button>
 
       {open && (
