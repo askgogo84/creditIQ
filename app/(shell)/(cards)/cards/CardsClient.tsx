@@ -97,15 +97,6 @@ export function CardsClient({ initialCards }: Props) {
     return matchesCat && matchesSearch;
   });
 
-  // Group by bank
-  const byBank: Record<string, any[]> = {};
-  filtered.forEach(c => {
-    const b = c.bank || 'Other';
-    if (!byBank[b]) byBank[b] = [];
-    byBank[b].push(c);
-  });
-  const banks = Object.keys(byBank).sort();
-
   return (
     <div style={{ paddingTop: 34, paddingBottom: 80 }}>
       <div className="ciq-workspace-surface" style={{ padding: 18, marginBottom: 34 }}>
@@ -143,26 +134,20 @@ export function CardsClient({ initialCards }: Props) {
       </div>
       </div>
 
-      {/* Cards by bank */}
-      {banks.length === 0 ? (
+      {filtered.length === 0 ? (
         <p style={{ color: 'var(--ink-2)', textAlign: 'center', padding: 40 }}>No cards found.</p>
       ) : (
-        banks.map(bank => (
-          <div key={bank} style={{ marginBottom: 56 }}>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20 }}>
-              <h2 style={{ fontSize: 'clamp(20px, 2vw, 26px)', fontWeight: 700, color: 'var(--ink-1)' }}>
-                <span style={{ color: 'var(--copper)' }}>{bank}</span> Credit Cards
-              </h2>
-              <span style={{ fontSize: 13, color: 'var(--ink-2)' }}>{byBank[bank].length} CARDS</span>
-            </div>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 24 }}>
-              {byBank[bank].map((card, idx) => (
-                <CardTile key={card.slug} card={toTileCard(card, idx)} href={`/card/${card.slug}`} />
-              ))}
-            </div>
-          </div>
-        ))
+        <div className="ciq-card-explorer-grid">
+          {filtered.map((card, idx) => (
+            <CardTile key={card.slug || card.id} card={toTileCard(card, idx)} href={`/card/${card.slug || card.id}`} />
+          ))}
+        </div>
       )}
+
+      <div className="ciq-card-compare-tray">
+        <div><strong>Need a faster answer?</strong><span>Let CreditIQ shortlist cards for your real spending.</span></div>
+        <a href="/smart-match">Find my card →</a><a href="/compare">Compare cards</a>
+      </div>
     </div>
   );
 }

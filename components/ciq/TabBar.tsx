@@ -21,7 +21,7 @@ const ICON_STROKE = 1.8;
 // navigation at two breakpoints, never two colour systems. No [data-ciq] tokens:
 // these read on :root and follow the site theme, so the bar no longer needs a
 // [data-ciq] wrapper (removed from NavShell/Header in the same commit).
-const TABS = ['wallet', 'spend', 'travel', 'cards', 'concierge'].map(k => APP_NAV.find(i => i.key === k)!);
+const TABS = ['dashboard', 'wallet', 'spend', 'travel', 'cards'].map(k => APP_NAV.find(i => i.key === k)!);
 
 // "More" sheet = the "You" surface — account destinations (all confirmed routes).
 // Settings is a section inside the sheet (theme toggle), not a separate page.

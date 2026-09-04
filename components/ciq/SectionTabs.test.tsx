@@ -211,7 +211,7 @@ describe('SectionTabs — scroll reset on section change', () => {
 
 describe('SectionTabs — constant header structure across groups', () => {
   const cases: Array<[string, number]> = [
-    ['/dashboard', 2],
+    ['/wallet', 2],
     ['/spend-optimizer', 2],
     ['/trip-planner', 6],
     ['/cards', 4],
@@ -226,5 +226,11 @@ describe('SectionTabs — constant header structure across groups', () => {
     expect(within(m).getByRole('button', { name: 'Previous section' })).toBeInTheDocument()
     expect(within(m).getByRole('button', { name: 'Next section' })).toBeInTheDocument()
     expect(m.querySelectorAll('.ciq-st-dot')).toHaveLength(count)
+  })
+
+  it('keeps Dashboard free of section-level tabs', () => {
+    nav.path = '/dashboard'
+    const { container } = render(<SectionTabs />)
+    expect(container).toBeEmptyDOMElement()
   })
 })

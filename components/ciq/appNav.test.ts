@@ -4,7 +4,8 @@ import { APP_NAV, appActive, sectionTabsFor } from './appNav'
 describe('signed-in application navigation', () => {
   it('keeps every primary workspace in the unified rail', () => {
     expect(APP_NAV.map(item => [item.label, item.href])).toEqual([
-      ['Wallet', '/dashboard'],
+      ['Dashboard', '/dashboard'],
+      ['Wallet', '/wallet'],
       ['Spend Smart', '/spend-optimizer'],
       ['Travel', '/trip-planner'],
       ['Cards', '/cards'],
@@ -14,7 +15,7 @@ describe('signed-in application navigation', () => {
   })
 
   it.each([
-    ['/statement-truth', '/dashboard'],
+    ['/statement-truth', '/wallet'],
     ['/points-optimizer', '/spend-optimizer'],
     ['/hotels', '/trip-planner'],
     ['/transfer-partners', '/trip-planner'],

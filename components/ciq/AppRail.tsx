@@ -12,7 +12,7 @@ import { useTheme } from '@/lib/store'
 // ground; app design tokens only, no new colour. Gated on auth state (NavShell),
 // never on route, so the public crawlable (shell) pages keep the untouched
 // Header for visitors.
-const RAIL_W = 248
+const RAIL_W = 238
 
 const eyebrow: React.CSSProperties = {
   fontSize: 10, fontWeight: 700, letterSpacing: '1.6px', textTransform: 'uppercase',
@@ -24,9 +24,9 @@ const navRow = (active: boolean): React.CSSProperties => ({
   display: 'flex', alignItems: 'center', gap: 12, width: '100%',
   padding: '10px 12px', borderRadius: 12, textDecoration: 'none',
   fontSize: 14.5, fontWeight: 600, fontFamily: 'inherit', position: 'relative',
-  color: active ? 'var(--copper)' : 'var(--ink-2)',
-  background: active ? 'var(--bg-2)' : 'transparent',
-  border: '1px solid ' + (active ? 'var(--line)' : 'transparent'),
+  color: active ? '#ffffff' : '#91a7ba',
+  background: active ? 'linear-gradient(90deg, rgba(211,152,61,.24), rgba(211,152,61,.07))' : 'transparent',
+  border: '1px solid transparent',
   transition: 'background 0.12s, color 0.12s',
 })
 
@@ -64,21 +64,21 @@ export function AppRail() {
       className="ciq-shell-rail"
       style={{
         position: 'fixed', top: 0, left: 0, bottom: 0, width: RAIL_W, zIndex: 200,
-        background: 'var(--surface)', borderRight: '1px solid var(--line)',
+        background: 'radial-gradient(circle at 105% 12%, rgba(107,199,214,.10), transparent 24%), linear-gradient(180deg, #081827, #0a1b2c 62%, #071522)', borderRight: '1px solid rgba(255,255,255,.06)',
         display: 'flex', flexDirection: 'column',
       }}
     >
       {/* Wordmark + eyebrow */}
       <Link href="/dashboard" style={{ display: 'flex', alignItems: 'center', gap: 10, textDecoration: 'none', padding: '18px 18px 16px', flexShrink: 0 }}>
-        <div style={{ width: 36, height: 36, background: 'var(--navy)', borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+        <div style={{ width: 36, height: 36, background: 'linear-gradient(145deg, #d3983d, #b57425)', borderRadius: 10, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, boxShadow: '0 10px 24px rgba(211,152,61,.16)' }}>
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-            <rect x="1" y="4" width="22" height="16" rx="3" fill="white" fillOpacity="0.9" />
-            <line x1="1" y1="10" x2="23" y2="10" stroke="#142950" strokeWidth="2" />
-            <circle cx="5" cy="14.5" r="1.5" fill="#C9972E" />
+            <rect x="1" y="4" width="22" height="16" rx="3" fill="#081827" fillOpacity="0.96" />
+            <line x1="1" y1="10" x2="23" y2="10" stroke="#d3983d" strokeWidth="2" />
+            <circle cx="5" cy="14.5" r="1.5" fill="white" />
           </svg>
         </div>
         <div>
-          <div style={{ fontSize: 18, fontWeight: 800, color: 'var(--ink)', letterSpacing: '-0.5px', lineHeight: 1 }}>CreditIQ</div>
+          <div style={{ fontSize: 18, fontWeight: 800, color: '#fff', letterSpacing: '-0.5px', lineHeight: 1 }}>CreditIQ</div>
           <div style={{ ...eyebrow, fontSize: 9, letterSpacing: '2px', marginTop: 3 }}>Intelligence</div>
         </div>
       </Link>
@@ -127,8 +127,8 @@ export function AppRail() {
             {(name || 'U').slice(0, 1)}
           </div>
           <div style={{ minWidth: 0, flex: 1 }}>
-            <div style={{ fontSize: 13.5, fontWeight: 700, color: 'var(--ink)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{name}</div>
-            {email && <div style={{ fontSize: 11, color: 'var(--ink-3)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{email}</div>}
+            <div style={{ fontSize: 13.5, fontWeight: 700, color: '#fff', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{name}</div>
+            {email && <div style={{ fontSize: 11, color: '#7890a4', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{email}</div>}
           </div>
         </div>
 
@@ -136,7 +136,7 @@ export function AppRail() {
         <button type="button" onClick={toggleTheme} aria-label="Toggle light or dark theme" style={{
           display: 'flex', alignItems: 'center', gap: 10, width: '100%', padding: '9px 12px', marginBottom: 4,
           borderRadius: 10, border: '1px solid transparent', background: 'transparent', cursor: 'pointer',
-          fontFamily: 'inherit', fontSize: 13, fontWeight: 600, color: 'var(--ink-2)', textAlign: 'left',
+          fontFamily: 'inherit', fontSize: 13, fontWeight: 600, color: '#91a7ba', textAlign: 'left',
         }}>
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
             {theme === 'dark'
@@ -150,7 +150,7 @@ export function AppRail() {
         <button type="button" onClick={signOut} style={{
           display: 'flex', alignItems: 'center', gap: 10, width: '100%', padding: '9px 12px',
           borderRadius: 10, border: '1px solid transparent', background: 'transparent', cursor: 'pointer',
-          fontFamily: 'inherit', fontSize: 13, fontWeight: 600, color: 'var(--ink-2)', textAlign: 'left',
+          fontFamily: 'inherit', fontSize: 13, fontWeight: 600, color: '#91a7ba', textAlign: 'left',
         }}>
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
             <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9" />

@@ -21,7 +21,7 @@ const SHELL_CSS = `
   .ciq-shell-tabbar { display: none; }
   .ciq-shell-main { min-width: 0; min-height: 100vh; background: var(--bg); }
   @media (min-width: 900px) {
-    .ciq-shell-main { margin-left: 248px; padding-top: 68px; }
+    .ciq-shell-main { margin-left: 238px; padding-top: 68px; }
   }
   @media (max-width: 899px) {
     .ciq-shell-rail { display: none !important; }

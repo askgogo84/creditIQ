@@ -1,6 +1,7 @@
 // components/ciq/WalletView.tsx
 'use client';
 import { useState } from 'react';
+import { usePathname } from 'next/navigation';
 import Link from 'next/link';
 import { SEED_CARDS } from '@/lib/data/seed-cards';
 import { HeroGauge } from './HeroGauge';
@@ -8,6 +9,7 @@ import { CardRow } from './CardRow';
 import { BestMove } from './BestMove';
 import { EditorialCards } from './EditorialCards';
 import { Tour, type TourStep } from './Tour';
+import { DashboardHome } from './DashboardHome';
 import './wallet-full-width.css';
 
 // Wallet walkthrough — the reusable <Tour> anchored to this surface's elements.
@@ -58,6 +60,7 @@ export function WalletView({
   onEditPoints?: (card: Card, points: number) => Promise<boolean>;
   onDeleteCard?: (card: Card) => void;
 }) {
+  const pathname = usePathname();
   // Verified vs estimated split on REAL POINT COUNTS (statement vs manual).
   // Rupee figures are only ever an ESTIMATE RANGE, never a stated value:
   //  - low  = cashback floor (~0.25/pt)
@@ -91,13 +94,22 @@ export function WalletView({
   const verifiedCards = cards.filter(isVerified).length;
   const selfEnteredCards = cards.length - verifiedCards;
 
+  if (pathname === '/dashboard') {
+    return <DashboardHome
+      displayName={displayName}
+      cards={cards.map(card => ({ ...card, catalogue: catalogueCard(card) }))}
+      totalPoints={totalPoints}
+      primaryBank={primaryBank}
+    />;
+  }
+
   return (
-    <div className="wallet-dashboard">
+    <div className="wallet-dashboard wallet-page">
       <header className="wallet-page-head">
         <div>
           <div className="wallet-eyebrow"><i /> Live · verified wallet</div>
-          <h1>Good to see you, <em>{displayName || 'there'}.</em></h1>
-          <p>Your cards, verified balances and next best move — in one honest view.</p>
+          <h1>Your rewards,<br /><em>finally in one place.</em></h1>
+          <p>Real balances, clear provenance and transfer-ready intelligence.</p>
           <button className="wallet-tour-link" onClick={() => setTourOpen(true)}>Take a tour</button>
         </div>
         <div className="wallet-page-actions">
@@ -162,7 +174,7 @@ export function WalletView({
           <div className="wallet-section-head"><div><h2 className="wallet-section-title">Worth your attention</h2><p>Useful next steps based on this wallet.</p></div></div>
           <div className="wallet-surface wallet-attention">
             <Link href={`/trip-planner?points=${totalPoints}&bank=${primaryBank}`}><span className="gold">✈</span><div><b>Plan a trip with your points</b><small>Compare executable award paths before transferring.</small></div><strong>→</strong></Link>
-            <Link href="/spend"><span>₹</span><div><b>Optimize your next purchase</b><small>See which tracked card should pay.</small></div><strong>→</strong></Link>
+            <Link href="/spend-optimizer"><span>₹</span><div><b>Optimize your next purchase</b><small>See which tracked card should pay.</small></div><strong>→</strong></Link>
             <Link href="/upload-statement"><span className={hasVerified ? 'green' : 'gold'}>✓</span><div><b>{hasVerified ? 'Verify more balances' : 'Get your verified points'}</b><small>{hasVerified ? `${verifiedCards} card ${verifiedCards === 1 ? 'balance is' : 'balances are'} statement-verified.` : 'Upload a statement so estimates are never presented as facts.'}</small></div><strong>→</strong></Link>
           </div>
           <div className="wallet-credo"><b>We don&apos;t guess your money.</b><span>Verified values come from statements. Self-entered values stay labelled.</span></div>

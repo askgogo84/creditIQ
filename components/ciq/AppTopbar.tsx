@@ -8,7 +8,8 @@ import { APP_NAV } from '@/components/ciq/appNav'
 import { useTheme } from '@/lib/store'
 
 const COMMANDS = [
-  { words: ['wallet', 'balance', 'statement'], href: '/dashboard' },
+  { words: ['dashboard', 'home', 'overview'], href: '/dashboard' },
+  { words: ['wallet', 'balance', 'statement'], href: '/wallet' },
   { words: ['spend', 'merchant', 'optimizer', 'optimise'], href: '/spend-optimizer' },
   { words: ['travel', 'flight', 'hotel', 'award', 'lounge'], href: '/trip-planner' },
   { words: ['card', 'cards', 'compare'], href: '/cards' },

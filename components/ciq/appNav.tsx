@@ -22,7 +22,7 @@
 // then its bound routes (/feed, /intelligence) fold under Wallet — the /dashboard
 // surface they live on today.
 import {
-  Wallet, Receipt, Plane, CreditCard, User,
+  Wallet, Receipt, Plane, CreditCard, User, Home,
   FileCheck, Zap, Star, Map, Sparkles, Target, ArrowLeftRight, Sofa,
   LayoutGrid, Scale, Wand2, Flame, Shield, MessageCircle,
   type LucideIcon,
@@ -39,9 +39,14 @@ export type AppNavItem = {
 
 export const APP_NAV: AppNavItem[] = [
   {
-    key: 'wallet', label: 'Wallet', href: '/dashboard',
+    key: 'dashboard', label: 'Dashboard', href: '/dashboard',
+    Icon: Home,
+    match: p => p === '/dashboard' || p.startsWith('/feed') || p.startsWith('/intelligence'),
+  },
+  {
+    key: 'wallet', label: 'Wallet', href: '/wallet',
     Icon: Wallet,
-    match: p => p.startsWith('/dashboard') || p.startsWith('/statement-truth') || p.startsWith('/feed') || p.startsWith('/intelligence'),
+    match: p => p.startsWith('/wallet') || p.startsWith('/statement-truth'),
   },
   {
     key: 'spend', label: 'Spend Smart', href: '/spend-optimizer',
@@ -78,7 +83,7 @@ export type SectionTab = { label: string; href: string; Icon: LucideIcon }
 
 export const SECTION_TABS: Record<string, SectionTab[]> = {
   wallet: [
-    { label: 'Your cards', href: '/dashboard', Icon: CreditCard },
+    { label: 'Your cards', href: '/wallet', Icon: CreditCard },
     { label: 'Statement Truth', href: '/statement-truth', Icon: FileCheck },
   ],
   spend: [

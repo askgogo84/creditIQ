@@ -143,7 +143,8 @@ Respond ONLY with valid JSON (no markdown, no backticks, no explanation outside 
       <div style={{ width: '100%', marginTop: 28 }} className="spend-tool">
 
           {step === 'input' && (
-            <>
+            <div className="spend-input-layout">
+              <div className="spend-input-main">
               {/* Input card */}
               <div style={{
                 background: 'var(--surface)', borderRadius: 20, border: '1px solid var(--line)',
@@ -235,7 +236,21 @@ Respond ONLY with valid JSON (no markdown, no backticks, no explanation outside 
               </button>
 
               <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
-            </>
+              </div>
+              <aside className="spend-live-summary">
+                <div className="ciq-editorial-kicker">Live spend profile</div>
+                <h2>{totalSpend > 0 ? fmt(totalSpend) : 'Add your monthly spend'}</h2>
+                <p>{totalSpend > 0 ? 'CreditIQ will compare this mix across the full tracked catalogue.' : 'Fill only the categories that matter. Zero-value rows can stay blank.'}</p>
+                <div className="spend-mix-bars" aria-label="Spend category mix">
+                  {CATEGORIES.map(cat => {
+                    const amount = parseInt(spends[cat.id] || '0') || 0;
+                    const width = totalSpend > 0 ? Math.max(2, Math.round((amount / totalSpend) * 100)) : 0;
+                    return <div key={cat.id}><span>{cat.label}</span><i><b style={{ width: `${width}%` }} /></i><strong>{amount > 0 ? fmt(amount) : '—'}</strong></div>;
+                  })}
+                </div>
+                <div className="spend-honesty"><b>No sponsored ranking.</b><span>Recommendations are generated from your inputs and the cards CreditIQ tracks.</span></div>
+              </aside>
+            </div>
           )}
 
           {step === 'result' && result && (
