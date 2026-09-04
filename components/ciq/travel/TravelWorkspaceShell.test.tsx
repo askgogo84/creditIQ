@@ -20,17 +20,18 @@ vi.mock('next/link', () => ({
 import { TravelWorkspaceShell } from './TravelWorkspaceShell'
 
 describe('TravelWorkspaceShell', () => {
-  it('makes Flights and global Hotels the two primary Travel modes', () => {
+  it('matches the approved Flights, Hotels, and Explore Travel modes', () => {
     nav.path = '/trip-planner'
     const { container } = render(<TravelWorkspaceShell><div>flight content</div></TravelWorkspaceShell>)
     const modes = within(container).getByRole('navigation', { name: 'Travel modes' })
     const links = within(modes).getAllByRole('link')
 
-    expect(links.map(link => link.textContent?.trim())).toEqual(['Flights', 'Hotels'])
+    expect(links.map(link => link.textContent?.trim())).toEqual(['Flights', 'Hotels', 'Explore'])
     expect(within(modes).getByRole('link', { name: /Flights/ })).toHaveAttribute('href', '/trip-planner')
     expect(within(modes).getByRole('link', { name: /Flights/ })).toHaveAttribute('aria-current', 'page')
     expect(within(modes).getByRole('link', { name: /Hotels/ })).toHaveAttribute('href', '/hotels')
     expect(within(modes).getByRole('link', { name: /Hotels/ })).not.toHaveAttribute('aria-current')
+    expect(within(modes).getByRole('link', { name: /Explore/ })).toHaveAttribute('href', '/sweet-spots')
   })
 
   it('marks Hotels active on both global inventory and captured redemption-lab routes', () => {
@@ -50,7 +51,7 @@ describe('TravelWorkspaceShell', () => {
     const { container } = render(<TravelWorkspaceShell><div>content</div></TravelWorkspaceShell>)
     const tools = within(container).getByRole('navigation', { name: 'Travel tools' })
 
-    expect(within(tools).getByRole('link', { name: 'Ask AI' })).toHaveAttribute('href', '/travel')
+    expect(within(tools).getByRole('link', { name: 'Ask CIRA' })).toHaveAttribute('href', '/cira')
     expect(within(tools).getByRole('link', { name: 'Sweet Spots' })).toHaveAttribute('href', '/sweet-spots')
     expect(within(tools).getByRole('link', { name: 'Transfer Partners' })).toHaveAttribute('href', '/transfer-partners')
     expect(within(tools).getByRole('link', { name: 'Lounges' })).toHaveAttribute('href', '/lounge-tracker')

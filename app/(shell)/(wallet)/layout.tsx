@@ -1,4 +1,4 @@
-import { SectionShell } from '@/components/ciq/SectionShell'
+import { WalletRouteLayout } from '@/components/ciq/WalletRouteLayout'
 
 // (wallet) route group — parentheses folder, so /dashboard and /statement-truth keep
 // their URLs. This layout persists across the two Wallet tabs: it owns the "Wallet"
@@ -9,9 +9,5 @@ import { SectionShell } from '@/components/ciq/SectionShell'
 // content below the strip with no double header. paddingBottom carries the bottom-tab
 // clearance the pages used to set on their own wrappers.
 export default function WalletLayout({ children }: { children: React.ReactNode }) {
-  return (
-    <SectionShell sectionName="Wallet" paddingBottom={112} fluid>
-      {children}
-    </SectionShell>
-  )
+  return <WalletRouteLayout>{children}</WalletRouteLayout>
 }

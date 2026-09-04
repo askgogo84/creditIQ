@@ -52,7 +52,7 @@ describe('WalletView — holdings ledger', () => {
     const gauge = within(document.getElementById('wallet-gauge')!);
     expect(gauge.getByText('1,240')).toBeInTheDocument();       // total (scoped to the gauge)
     expect(gauge.getByText('1,200')).toBeInTheDocument();       // verified (statement)
-    expect(gauge.getByText('40')).toBeInTheDocument();          // estimated (manual)
+    expect(gauge.getAllByText('40').length).toBeGreaterThan(0); // estimated (manual; summary and held-card row)
   });
 
   it('lists every held card', () => {

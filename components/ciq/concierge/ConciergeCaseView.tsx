@@ -155,7 +155,7 @@ export default function ConciergeCaseView() {
   )
 
   return (
-    <div style={{ maxWidth: 1180, margin: '0 auto', padding: '8px 0 40px' }}>
+    <div style={{ width: '100%', margin: 0, padding: '8px 0 40px' }}>
       <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', gap: 18, marginBottom: 18 }}>
         <div>
           <div style={{ fontSize: 10, color: 'var(--copper)', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '.1em' }}>CreditIQ Concierge</div>

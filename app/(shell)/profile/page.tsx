@@ -4,7 +4,6 @@ import { useEffect, useState, type CSSProperties } from 'react';
 import { createBrowserClient } from '@supabase/ssr';
 import { useRouter } from 'next/navigation';
 import { authedFetch } from '@/lib/authed-fetch';
-import { PageHeader } from '@/components/ciq/PageHeader';
 import { MembershipModal } from '@/components/ciq/MembershipModal';
 import { LinkWhatsAppButton } from './LinkWhatsAppButton';
 import { PLANS, type ProPlanKey } from '@/lib/plans';
@@ -73,6 +72,7 @@ export default function ProfilePage() {
   const [showPaywall, setShowPaywall] = useState(false);
   const [activating, setActivating] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [profileTab, setProfileTab] = useState<'personal' | 'preferences' | 'notifications' | 'privacy'>('personal');
 
   const sb = createBrowserClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL || '',
@@ -182,229 +182,34 @@ export default function ProfilePage() {
   }
 
   return (
-    <main className="ciq-product-page" style={{ padding: '18px clamp(20px, 2.6vw, 48px) 104px' }}>
-      <PageHeader
-        eyebrow="Your CreditIQ"
-        title={<>Built around <span style={{ color: 'var(--copper)' }}>you.</span></>}
-        subtitle="Keep your identity, home airport, membership and connected services in one private account workspace."
-        tone="light"
-      />
-
-      <div className="pf-wrap">
-        <div className="pf-grid">
-          {/* LEFT: identity + membership */}
-          <div className="pf-col">
-            {/* Avatar card */}
-            <section style={card}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
-                {avatarUrl ? (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img src={avatarUrl} alt={fullName} width={52} height={52}
-                    style={{ borderRadius: '50%', border: '1px solid var(--line-strong)', objectFit: 'cover' }} />
-                ) : (
-                  <div style={{
-                    width: 52, height: 52, borderRadius: '50%', background: 'var(--surface-2)',
-                    border: '1px solid var(--copper)', display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    fontFamily: 'var(--font-mono)', fontSize: 15, color: 'var(--copper)',
-                  }}>{initials}</div>
-                )}
-                <div style={{ minWidth: 0 }}>
-                  <div className="w-display" style={{ fontWeight: 600, fontSize: 18, letterSpacing: '-.01em', color: 'var(--ink)' }}>{fullName}</div>
-                  {email ? (
-                    <div style={{ fontSize: 13, color: 'var(--ink-3)', marginTop: 2, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{email}</div>
-                  ) : null}
-                </div>
-              </div>
-              <div style={{ height: 1, background: 'var(--line)', margin: '16px 0' }} />
-              <div style={{ display: 'flex', gap: 24 }}>
-                <div>
-                  <div style={kicker}>Member Since</div>
-                  <div style={{ fontSize: 15, color: 'var(--ink)', marginTop: 4, fontWeight: 500 }}>{monthYear(user?.created_at) || '—'}</div>
-                </div>
-                <div>
-                  <div style={kicker}>Account Status</div>
-                  <div style={{ fontSize: 15, marginTop: 4, fontWeight: 600, color: pro?.isPro ? 'var(--copper)' : 'var(--ink-3)' }}>
-                    {pro ? (pro.isPro ? 'Pro' : 'Free') : '—'}
-                  </div>
-                </div>
-              </div>
-            </section>
-
-            {/* Membership card */}
-            <section style={card}>
-              <div style={kicker}>Membership</div>
-              {pro?.isPro ? (
-                <>
-                  <div className="w-display" style={{ fontWeight: 600, fontSize: 20, color: 'var(--ink)', marginTop: 8 }}>CreditIQ Pro</div>
-                  <div style={{ fontSize: 13.5, color: 'var(--ink-2)', marginTop: 4 }}>
-                    {planLabel(pro.plan)} · active until {fullDate(pro.current_period_end)}
-                  </div>
-                  <button type="button" onClick={() => setShowPaywall(true)} style={{
-                    marginTop: 16, minHeight: 44, padding: '0 18px', width: '100%',
-                    background: 'transparent', border: '1px solid var(--copper)', borderRadius: 11,
-                    color: 'var(--copper)', fontSize: 14, fontWeight: 600, cursor: 'pointer',
-                  }}>Extend membership</button>
-                </>
-              ) : (
-                <>
-                  <div className="w-display" style={{ fontWeight: 600, fontSize: 20, color: 'var(--ink)', marginTop: 8 }}>No active membership</div>
-                  <div style={{ fontSize: 13.5, color: 'var(--ink-2)', marginTop: 4 }}>
-                    Unlock Statement Truth, Optimize and the Points Optimizer.
-                  </div>
-                  <button type="button" onClick={() => setShowPaywall(true)} style={{
-                    marginTop: 16, minHeight: 44, padding: '0 18px', width: '100%',
-                    background: 'var(--copper)', border: 'none', borderRadius: 11,
-                    color: 'var(--surface)', fontSize: 14, fontWeight: 600, cursor: 'pointer',
-                  }}>Get a membership</button>
-                </>
-              )}
-              {activating && !pro?.isPro ? (
-                <div style={{ marginTop: 12, padding: '10px 12px', borderRadius: 10, background: 'var(--surface-2)', border: '1px solid var(--line)', fontSize: 12.5, color: 'var(--ink-2)' }}>
-                  Payment received — activating your membership. It’ll appear here in a few seconds.
-                </div>
-              ) : null}
-            </section>
-          </div>
-
-          {/* RIGHT: personal details + transactions */}
-          <div className="pf-col">
-            {/* Personal Details */}
-            <section style={card}>
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                <div style={kicker}>Personal Details</div>
-                {!editing ? (
-                  <button type="button" onClick={startEdit} style={{
-                    background: 'transparent', border: 'none', color: 'var(--copper)',
-                    fontSize: 13, fontWeight: 600, cursor: 'pointer', padding: 0,
-                  }}>Edit</button>
-                ) : null}
-              </div>
-
-              {!editing ? (
-                <div style={{ marginTop: 14, display: 'flex', flexDirection: 'column', gap: 12 }}>
-                  {[
-                    ['Name', fullName],
-                    ['Email', email || '—'],
-                    ['Home city', fields?.home_city || '—'],
-                    ['Home airport', fields?.home_airport || '—'],
-                  ].map(([k, v]) => (
-                    <div key={k as string} style={{ display: 'flex', justifyContent: 'space-between', gap: 16 }}>
-                      <span style={{ fontSize: 13, color: 'var(--ink-3)' }}>{k}</span>
-                      <span style={{ fontSize: 13.5, color: 'var(--ink)', fontWeight: 500, textAlign: 'right', minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{v}</span>
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <div style={{ marginTop: 14, display: 'flex', flexDirection: 'column', gap: 12 }}>
-                  <label style={{ display: 'block' }}>
-                    <span style={{ ...kicker, display: 'block', marginBottom: 6 }}>Name</span>
-                    <input style={inputStyle} value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))} maxLength={80} />
-                  </label>
-                  <label style={{ display: 'block' }}>
-                    <span style={{ ...kicker, display: 'block', marginBottom: 6 }}>Email</span>
-                    <input style={{ ...inputStyle, background: 'var(--surface-2)', color: 'var(--ink-3)' }} value={email} readOnly disabled />
-                  </label>
-                  <label style={{ display: 'block' }}>
-                    <span style={{ ...kicker, display: 'block', marginBottom: 6 }}>Home city</span>
-                    <input style={inputStyle} value={form.homeCity} onChange={e => setForm(f => ({ ...f, homeCity: e.target.value }))} placeholder="e.g. Bengaluru" />
-                  </label>
-                  <label style={{ display: 'block' }}>
-                    <span style={{ ...kicker, display: 'block', marginBottom: 6 }}>Home airport</span>
-                    <input style={inputStyle} value={form.homeAirport} onChange={e => setForm(f => ({ ...f, homeAirport: e.target.value }))} placeholder="e.g. BLR" maxLength={4} />
-                  </label>
-                  <div style={{ display: 'flex', gap: 10, marginTop: 4 }}>
-                    <button type="button" onClick={save} disabled={saving} style={{
-                      flex: 1, minHeight: 44, background: 'var(--copper)', border: 'none', borderRadius: 11,
-                      color: 'var(--surface)', fontSize: 14, fontWeight: 600, cursor: saving ? 'default' : 'pointer', opacity: saving ? 0.6 : 1,
-                    }}>{saving ? 'Saving…' : 'Save'}</button>
-                    <button type="button" onClick={() => { setEditing(false); setSaveMsg(null); }} disabled={saving} style={{
-                      flex: 1, minHeight: 44, background: 'transparent', border: '1px solid var(--line-strong)', borderRadius: 11,
-                      color: 'var(--ink-2)', fontSize: 14, fontWeight: 600, cursor: 'pointer',
-                    }}>Cancel</button>
-                  </div>
-                  {saveMsg ? <div style={{ fontSize: 13, color: 'var(--red, #A13020)' }} role="alert">{saveMsg}</div> : null}
-                </div>
-              )}
-            </section>
-
-            {/* Transactions */}
-            <section style={card}>
-              <div style={kicker}>Transactions</div>
-              {orders === null ? (
-                <div style={{ marginTop: 14, fontSize: 13, color: 'var(--ink-3)' }}>Loading…</div>
-              ) : orders.length === 0 ? (
-                <div style={{ marginTop: 14, fontSize: 13.5, lineHeight: 1.5, color: 'var(--ink-3)' }}>
-                  No transactions yet. When you buy or renew a plan, your receipts will show up here.
-                </div>
-              ) : (
-                <ul style={{ listStyle: 'none', margin: '14px 0 0', padding: 0, display: 'flex', flexDirection: 'column' }}>
-                  {orders.map((o, i) => (
-                    <li key={o.id} style={{
-                      display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12,
-                      padding: '12px 0', borderTop: i === 0 ? 'none' : '1px solid var(--line)',
-                    }}>
-                      <div style={{ minWidth: 0 }}>
-                        <div style={{ fontSize: 13.5, color: 'var(--ink)', fontWeight: 500 }}>CreditIQ Pro · {planLabel(o.plan)}</div>
-                        <div style={{ fontSize: 12, color: 'var(--ink-3)', marginTop: 2 }}>{fullDate(o.created_at)}</div>
-                      </div>
-                      <div className="mono" style={{ fontSize: 13.5, color: 'var(--ink)', fontWeight: 600, whiteSpace: 'nowrap' }}>{rupees(o.amount_paise)}</div>
-                    </li>
-                  ))}
-                </ul>
-              )}
-            </section>
-          </div>
-        </div>
-
-        {/* Appended: bridge + AskGogo + sign out (kept — no other home in the app) */}
-        <div className="pf-appended">
-          {/* Referral / Join-code */}
-          <section style={card}>
-            <div style={{ fontSize: 15, color: 'var(--ink)', fontWeight: 500 }}>Invite to CreditIQ</div>
-            <div style={{ fontSize: 12, color: 'var(--ink-3)', marginTop: 2, marginBottom: 14 }}>
-              Share your join code. Colleagues connect their workplace in one tap.
-            </div>
-            <div style={{ display: 'flex', gap: 10 }}>
-              <div style={{
-                flex: 1, display: 'flex', alignItems: 'center', padding: '0 14px', minHeight: 44,
-                background: 'var(--surface-2)', border: '1px solid var(--line-strong)', borderRadius: 10,
-                fontFamily: 'var(--font-mono)', fontSize: 15, letterSpacing: '0.10em', color: 'var(--copper)',
-              }}>{JOIN_CODE}</div>
-              <button onClick={handleCopy} style={{
-                padding: '0 18px', minHeight: 44, background: 'transparent',
-                border: '1px solid var(--line-strong)', borderRadius: 10,
-                color: copied ? 'var(--prov-verified)' : 'var(--ink-2)',
-                fontSize: 14, fontWeight: 500, cursor: 'pointer', whiteSpace: 'nowrap', transition: 'color 0.15s ease',
-              }}>{copied ? 'Copied' : 'Copy'}</button>
-            </div>
-          </section>
-
-          {/* Link WhatsApp — #whatsapp anchor target for the You section's WhatsApp tab. */}
-          <div id="whatsapp" style={{ scrollMarginTop: 72 }}>
-            <LinkWhatsAppButton sb={sb} />
-          </div>
-
-          {/* Sign out */}
-          <button onClick={handleSignOut} style={{
-            width: '100%', minHeight: 48, background: 'transparent',
-            border: '1px solid var(--line-strong)', borderRadius: 14,
-            color: 'var(--ink-2)', fontSize: 15, fontWeight: 500, cursor: 'pointer',
-          }}>Sign out</button>
+    <main className="ciq-approved-stage ciq-approved-profile">
+      <header className="approved-page-header"><div><span className="approved-eyebrow">Your CreditIQ</span><h1>Profile &amp; preferences</h1><p>Control how CreditIQ personalises recommendations and protects your data.</p></div>{editing && <button type="button" className="approved-primary" onClick={save} disabled={saving}>{saving ? 'Saving…' : 'Save changes'}</button>}</header>
+      <div className="approved-profile-layout">
+        <aside className="approved-profile-nav" aria-label="Profile sections">
+          {([['personal','Personal details'],['preferences','Rewards preferences'],['notifications','Notifications'],['privacy','Privacy & security']] as const).map(([key,label]) => <button type="button" key={key} className={profileTab === key ? 'active' : undefined} onClick={() => setProfileTab(key)}>{label}</button>)}
+        </aside>
+        <div className="approved-profile-panels">
+          {profileTab === 'personal' && <section className="approved-profile-panel">
+            <div className="approved-profile-panel-head"><div><h2>Personal details</h2><p>Used to personalise your CreditIQ experience.</p></div>{avatarUrl ? <img src={avatarUrl} alt={fullName} width={54} height={54} /> : <span>{initials}</span>}</div>
+            {!editing ? <div className="approved-profile-details">{[['Full name',fullName],['Email address',email || '—'],['Home city',fields?.home_city || '—'],['Home airport',fields?.home_airport || '—']].map(([label,value]) => <div key={label}><small>{label}</small><b>{value}</b></div>)}<button type="button" className="approved-secondary" onClick={startEdit}>Edit details</button></div> : <div className="approved-profile-form"><label><span>Full name</span><input value={form.name} onChange={event => setForm(value => ({ ...value, name:event.target.value }))} /></label><label><span>Email address</span><input value={email} disabled /></label><label><span>Home city</span><input value={form.homeCity} onChange={event => setForm(value => ({ ...value, homeCity:event.target.value }))} /></label><label><span>Home airport</span><input value={form.homeAirport} onChange={event => setForm(value => ({ ...value, homeAirport:event.target.value }))} maxLength={4} /></label><button type="button" className="approved-secondary" onClick={() => setEditing(false)}>Cancel</button>{saveMsg && <p role="alert">{saveMsg}</p>}</div>}
+          </section>}
+          {profileTab === 'preferences' && <section className="approved-profile-panel">
+            <div className="approved-profile-panel-head"><div><h2>Rewards preferences</h2><p>Membership and travel defaults for your recommendations.</p></div></div>
+            <div className="approved-preference-list"><div><span><b>Membership</b><small>{pro?.isPro ? `${planLabel(pro.plan)} · active until ${fullDate(pro.current_period_end)}` : 'Free account'}</small></span><button type="button" className="approved-secondary" onClick={() => setShowPaywall(true)}>{pro?.isPro ? 'Extend' : 'View plans'}</button></div><div><span><b>Home airport</b><small>{fields?.home_airport || 'Not set'}</small></span><button type="button" className="approved-secondary" onClick={() => { startEdit(); setProfileTab('personal'); }}>Change</button></div><div><span><b>Primary goal</b><small>Maximum travel value</small></span><span className="approved-profile-status">Default</span></div>{activating && <p>Payment received — activating your membership.</p>}</div>
+          </section>}
+          {profileTab === 'notifications' && <section className="approved-profile-panel">
+            <div className="approved-profile-panel-head"><div><h2>Notifications</h2><p>Choose where CreditIQ can keep you informed.</p></div></div>
+            <div id="whatsapp" className="approved-profile-connection"><LinkWhatsAppButton sb={sb} /></div>
+            <div className="approved-toggle-list"><div><span><b>Points expiry alerts</b><small>Important reminders before rewards expire.</small></span><i className="on" /></div><div><span><b>High-value redemption alerts</b><small>Sweet spots matched to your wallet.</small></span><i className="on" /></div><div><span><b>Statement refresh reminders</b><small>Know when a balance may be stale.</small></span><i /></div></div>
+          </section>}
+          {profileTab === 'privacy' && <section className="approved-profile-panel">
+            <div className="approved-profile-panel-head"><div><h2>Privacy &amp; security</h2><p>Your financial documents remain under your control.</p></div></div>
+            <div className="approved-security-list"><div><span><b>Account security</b><small>Signed in as {email}</small></span><button type="button" className="approved-secondary" onClick={handleSignOut}>Sign out</button></div><div><span><b>Transactions</b><small>{orders === null ? 'Loading…' : `${orders.length} membership transaction${orders.length === 1 ? '' : 's'}`}</small></span><span className="approved-profile-status">Private</span></div><div><span><b>Invite to CreditIQ</b><small>Join code {JOIN_CODE}</small></span><button type="button" className="approved-secondary" onClick={handleCopy}>{copied ? 'Copied' : 'Copy code'}</button></div></div>
+            {orders && orders.length > 0 && <ul className="approved-orders">{orders.map(order => <li key={order.id}><span>CreditIQ Pro · {planLabel(order.plan)}<small>{fullDate(order.created_at)}</small></span><b>{rupees(order.amount_paise)}</b></li>)}</ul>}
+          </section>}
         </div>
       </div>
-
-      {showPaywall ? (
-        <MembershipModal user={user} onClose={() => setShowPaywall(false)} onPurchased={onPurchased} />
-      ) : null}
-
-      <style>{`
-        .pf-wrap { width: 100%; }
-        .pf-grid { display: grid; grid-template-columns: 1fr; gap: 18px; margin-top: 30px; align-items: start; }
-        .pf-col { display: flex; flex-direction: column; gap: 14px; min-width: 0; }
-        .pf-appended { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; margin-top: 18px; align-items: start; }
-        @media (min-width: 768px) { .pf-grid { grid-template-columns: minmax(320px, .68fr) minmax(0, 1.32fr); } }
-        @media (max-width: 900px) { .pf-appended { grid-template-columns: 1fr; } }
-      `}</style>
+      {showPaywall && <MembershipModal user={user} onClose={() => setShowPaywall(false)} onPurchased={onPurchased} />}
     </main>
   );
 }

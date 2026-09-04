@@ -85,7 +85,7 @@ export default function StatementTruthPage() {
       />
 
           {/* The tool itself, on a comfortable reading measure beneath the header. */}
-          <div style={{ maxWidth: 1050, margin: '30px auto 0' }}>
+          <div style={{ width: '100%', margin: '30px 0 0' }}>
 
             {step === 'upload' && (
               <Reveal>

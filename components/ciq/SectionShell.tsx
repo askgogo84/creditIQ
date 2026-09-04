@@ -52,10 +52,10 @@ export function SectionShell({
     >
       <div
         style={{
-          maxWidth: fluid ? 'none' : 1100,
+          maxWidth: fluid ? 1504 : 1100,
           width: '100%',
           margin: '0 auto',
-          padding: fluid ? '0 clamp(20px, 2.6vw, 48px)' : '0 20px',
+          padding: '0 20px',
           ...(fill ? { flex: 1, display: 'flex', flexDirection: 'column', minHeight: 0 } : {}),
         }}
       >

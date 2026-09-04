@@ -1,7 +1,6 @@
 import { Metadata } from 'next';
-import { PageHeader } from '@/components/ciq/PageHeader';
-import { CopperCTA, GhostCTA } from '@/components/design/CTAs';
-import { DesignFooter } from '@/components/design/Footer';
+import Link from 'next/link';
+import { SlidersHorizontal, Sparkles } from 'lucide-react';
 import { CardsClient } from './CardsClient';
 import { createClient } from '@supabase/supabase-js';
 
@@ -43,28 +42,18 @@ export default async function CardsIndexPage() {
   const banks = [...new Set(cards.map((c: any) => c.bank))].sort();
 
   return (
-    <div className="ciq-product-page">
-      {/* Panel-only: the (cards) layout owns the "Cards" name + SectionTabs strip. A
-          left-aligned PageHeader replaces the centred marketing hero (aurora dropped) so the
-          catalogue is reachable in ~one screen at 375px. H1 wording unchanged; "ranked
-          honestly." is roman copper emphasis (DESIGN.md — never italic). The two acquisition
-          CTAs stay, left-aligned — they're the page's job. Metadata/OG untouched. */}
-      <PageHeader
-        eyebrow={`Card intelligence · ${totalCards} cards · ${banks.length} banks`}
-        title={<>Find the card that fits <span style={{ color: 'var(--copper)' }}>your life.</span></>}
-        subtitle="Explore real Indian cards with original artwork, transparent fees and practical reward context. No bank pays to move up the list."
-        maxWidth={1100}
-        showTabs={false}
-      />
-      <div style={{ marginTop: 20, display: 'flex', gap: 14, flexWrap: 'wrap' }} className="stack-mobile">
-        <CopperCTA href="/smart-match">Find my perfect card</CopperCTA>
-        <GhostCTA href="/compare">Compare side by side</GhostCTA>
-      </div>
-
-      {/* CARDS GRID */}
+    <main className="ciq-approved-cards">
+      <header className="approved-page-header">
+        <div><span className="approved-eyebrow">Find your next card</span><h1>Card Explorer</h1><p>Compare real rewards, fees and benefits for how you actually spend.</p></div>
+        <Link className="approved-secondary" href="/profile"><SlidersHorizontal size={15} /> My preferences</Link>
+      </header>
+      <section className="approved-card-finder">
+        <div><span className="approved-section-kicker">AI card finder</span><h2>What matters most to you?</h2></div>
+        <div className="approved-finder-chips"><span className="active">Travel rewards</span><span>Cashback</span><span>Lounge access</span><span>Low fees</span><span>Business spend</span></div>
+        <Link className="approved-primary" href="/smart-match"><Sparkles size={15} /> Find my matches</Link>
+      </section>
+      <div className="approved-card-count"><b>{totalCards} cards tracked</b><span>{banks.length} banks · original artwork · transparent fees</span></div>
       <CardsClient initialCards={cards} />
-
-      <DesignFooter />
-    </div>
+    </main>
   );
 }
