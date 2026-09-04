@@ -133,8 +133,8 @@ Respond ONLY with valid JSON (no markdown, no backticks, no explanation outside 
           the headline in the shared 1100 container. */}
       <PageHeader
         eyebrow="Spend intelligence"
-        title={<>Make every rupee <span style={{ color: 'var(--copper)' }}>work harder.</span></>}
-        subtitle={`Tell us how you spend. CreditIQ compares ${CARD_COUNT} tracked cards and shows the highest-value way to pay.`}
+        title={<>Spend <span style={{ color: 'var(--copper)' }}>Smart.</span></>}
+        subtitle={`See exactly which card to use for every purchase. CreditIQ compares ${CARD_COUNT} tracked cards against your real spending.`}
         maxWidth={1100}
         showTabs={false}
       />

@@ -182,7 +182,7 @@ export default function ProfilePage() {
   }
 
   return (
-    <main className="ciq-product-page" style={{ padding: '18px clamp(20px, 2.6vw, 48px) 104px' }}>
+    <main className="ciq-product-page" style={{ width: 'min(100%, 1504px)', margin: '0 auto', padding: '18px clamp(20px, 2.6vw, 48px) 104px' }}>
       <PageHeader
         eyebrow="Your CreditIQ"
         title={<>Built around <span style={{ color: 'var(--copper)' }}>you.</span></>}

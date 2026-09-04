@@ -162,8 +162,8 @@ export function GlobalFlightWorkspace() {
       <div className="ifw-title-row">
         <div>
           <div className="ifw-eyebrow">Flight award desk</div>
-          <h1 className="ifw-title">Where can your points <em>take you?</em></h1>
-          <p className="ifw-sub">Search provider-returned flights, compare cash and award paths, and see what your wallet can actually fund—all in one calm decision view.</p>
+          <h1 className="ifw-title">Find the smartest way <em>to book.</em></h1>
+          <p className="ifw-sub">Flights, hotels and transfer paths compared against your wallet—with live availability clearly separated from estimates.</p>
         </div>
         <div className="ifw-honesty">Broad discovery first · live verify selected award</div>
       </div>
