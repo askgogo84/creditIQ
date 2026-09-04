@@ -14,7 +14,7 @@ const primary: TravelTab[] = [
 ]
 
 const secondary: TravelTab[] = [
-  { label: 'Ask AI', href: '/travel', Icon: Sparkles },
+  { label: 'Ask CIRA', href: '/cira', Icon: Sparkles },
   { label: 'Sweet Spots', href: '/sweet-spots', Icon: Target },
   { label: 'Transfer Partners', href: '/transfer-partners', Icon: ArrowLeftRight },
   { label: 'Lounges', href: '/lounge-tracker', Icon: Sofa },

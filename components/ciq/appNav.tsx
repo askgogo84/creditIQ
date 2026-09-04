@@ -34,6 +34,7 @@ export type AppNavItem = {
   href: string
   Icon: LucideIcon
   match: (p: string) => boolean
+  badge?: string
 }
 
 export const APP_NAV: AppNavItem[] = [
@@ -43,7 +44,7 @@ export const APP_NAV: AppNavItem[] = [
     match: p => p.startsWith('/dashboard') || p.startsWith('/statement-truth') || p.startsWith('/feed') || p.startsWith('/intelligence'),
   },
   {
-    key: 'spend', label: 'Spend', href: '/spend-optimizer',
+    key: 'spend', label: 'Spend Smart', href: '/spend-optimizer',
     Icon: Receipt,
     match: p => p.startsWith('/spend-optimizer') || p.startsWith('/points-optimizer') || p.startsWith('/optimize') || p.startsWith('/smart-match'),
   },
@@ -61,7 +62,13 @@ export const APP_NAV: AppNavItem[] = [
     match: p => p.startsWith('/cards') || p.startsWith('/card/') || p.startsWith('/compare') || p.startsWith('/best-cards') || p.startsWith('/uae') || p.startsWith('/card-switch') || p.startsWith('/card-roast'),
   },
   {
-    key: 'you', label: 'You', href: '/profile',
+    key: 'concierge', label: 'Concierge AI', href: '/cira',
+    Icon: Sparkles,
+    badge: 'AI',
+    match: p => p.startsWith('/cira') || p.startsWith('/concierge'),
+  },
+  {
+    key: 'you', label: 'Profile', href: '/profile',
     Icon: User,
     match: p => p.startsWith('/profile') || p.startsWith('/pro'),
   },
@@ -81,7 +88,7 @@ export const SECTION_TABS: Record<string, SectionTab[]> = {
   travel: [
     { label: 'Flights', href: '/trip-planner', Icon: Plane },
     { label: 'Hotels', href: '/hotels', Icon: Map },
-    { label: 'Ask AI', href: '/travel', Icon: Sparkles },
+    { label: 'Ask CIRA', href: '/cira', Icon: Sparkles },
     { label: 'Sweet Spots', href: '/sweet-spots', Icon: Target },
     { label: 'Transfer Partners', href: '/transfer-partners', Icon: ArrowLeftRight },
     { label: 'Lounges', href: '/lounge-tracker', Icon: Sofa },

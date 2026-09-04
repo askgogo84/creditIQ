@@ -4,6 +4,7 @@ import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { createBrowserClient } from '@supabase/ssr'
 import { Header } from '@/components/Header'
 import { AppRail } from '@/components/ciq/AppRail'
+import { AppTopbar } from '@/components/ciq/AppTopbar'
 import { TabBar } from '@/components/ciq/TabBar'
 import { reassertTheme } from '@/lib/store'
 
@@ -18,9 +19,9 @@ import { reassertTheme } from '@/lib/store'
 // Pages inside (shell) render NO chrome of their own; this is the single source.
 const SHELL_CSS = `
   .ciq-shell-tabbar { display: none; }
-  .ciq-shell-main { min-height: 100vh; }
+  .ciq-shell-main { min-width: 0; min-height: 100vh; background: var(--bg); }
   @media (min-width: 900px) {
-    .ciq-shell-main { margin-left: 248px; }
+    .ciq-shell-main { margin-left: 248px; padding-top: 68px; }
   }
   @media (max-width: 899px) {
     .ciq-shell-rail { display: none !important; }
@@ -51,7 +52,7 @@ const SHELL_CSS = `
        "112" is SectionShell's paddingBottom on the (wallet) layout — a real BOTTOM reserve
        specific to those pages — NOT this global floor, and unrelated to the .pt-28 (7rem)
        TOP padding that public marketing pages use. */
-    .ciq-shell-main { padding-bottom: calc(76px + env(safe-area-inset-bottom)) !important; }
+    .ciq-shell-main { padding-top: 58px; padding-bottom: calc(76px + env(safe-area-inset-bottom)) !important; }
   }
 `
 
@@ -121,7 +122,7 @@ export function NavShell({ children }: { children: React.ReactNode }) {
     return (
       <>
         <Header />
-        {children}
+        <div className="ciq-shell-public">{children}</div>
       </>
     )
   }
@@ -131,6 +132,7 @@ export function NavShell({ children }: { children: React.ReactNode }) {
     <>
       <style>{SHELL_CSS}</style>
       <AppRail />
+      <AppTopbar />
       <div className="ciq-shell-tabbar">
         <TabBar />
       </div>

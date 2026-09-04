@@ -180,7 +180,7 @@ Respond ONLY with valid JSON (no markdown, no code fences):
       />
 
       {/* Two-column tool beneath the headline. */}
-      <div style={{ maxWidth: 1180, marginTop: 28, display: 'grid', gridTemplateColumns: 'minmax(300px,.72fr) minmax(0,1.45fr)', gap: 20 }}
+      <div style={{ width: '100%', marginTop: 28, display: 'grid', gridTemplateColumns: 'minmax(300px,.72fr) minmax(0,1.45fr)', gap: 20 }}
         className="points-grid">
           <style>{`
             @media (max-width: 640px) { .points-grid { grid-template-columns: 1fr !important; } }

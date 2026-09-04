@@ -85,17 +85,39 @@ export function AppRail() {
 
       {/* Scroll region: primary nav + grouped tools */}
       <nav style={{ flex: 1, overflowY: 'auto', padding: '4px 12px 12px', display: 'flex', flexDirection: 'column', gap: 2 }}>
-        {APP_NAV.map(item => {
+        <div style={{ ...eyebrow, color: 'var(--ink-3)', padding: '8px 12px 10px' }}>Your intelligence</div>
+        {APP_NAV.filter(item => item.key !== 'you').map(item => {
           const active = appActive(item.href, path)
           const Icon = item.Icon
           return (
             <Link key={item.href} href={item.href} style={navRow(active)}>
               {active && <span style={{ position: 'absolute', left: -12, top: '50%', transform: 'translateY(-50%)', width: 3, height: 20, borderRadius: 3, background: 'var(--copper)' }} />}
               <Icon size={20} strokeWidth={1.8} color={active ? 'var(--copper)' : 'currentColor'} style={{ flexShrink: 0 }} aria-hidden />
-              {item.label}
+              <span style={{ flex: 1 }}>{item.label}</span>
+              {item.badge && (
+                <span style={{
+                  padding: '3px 7px', borderRadius: 999, border: '1px solid color-mix(in srgb, var(--copper) 34%, var(--line))',
+                  background: 'color-mix(in srgb, var(--copper) 9%, var(--surface))', color: 'var(--copper)',
+                  fontFamily: 'var(--font-mono), monospace', fontSize: 9, fontWeight: 800, letterSpacing: '.08em',
+                }}>{item.badge}</span>
+              )}
             </Link>
           )
         })}
+
+        <div style={{ marginTop: 'auto', paddingTop: 18 }}>
+          {APP_NAV.filter(item => item.key === 'you').map(item => {
+            const active = appActive(item.href, path)
+            const Icon = item.Icon
+            return (
+              <Link key={item.href} href={item.href} style={navRow(active)}>
+                {active && <span style={{ position: 'absolute', left: -12, top: '50%', transform: 'translateY(-50%)', width: 3, height: 20, borderRadius: 3, background: 'var(--copper)' }} />}
+                <Icon size={20} strokeWidth={1.8} color={active ? 'var(--copper)' : 'currentColor'} style={{ flexShrink: 0 }} aria-hidden />
+                <span style={{ flex: 1 }}>{item.label}</span>
+              </Link>
+            )
+          })}
+        </div>
       </nav>
 
       {/* Pinned footer: identity, theme toggle, sign out */}

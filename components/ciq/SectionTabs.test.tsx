@@ -87,7 +87,7 @@ describe('SectionTabs — mobile carousel', () => {
     nav.path = '/sweet-spots'
     const { container } = render(<SectionTabs />)
     fireEvent.click(mobile(container).getByRole('button', { name: 'Previous section' }))
-    expect(nav.push).toHaveBeenCalledWith('/travel')
+    expect(nav.push).toHaveBeenCalledWith('/cira')
   })
 
   it('renders one dot per section with an accessible current state', () => {
@@ -112,7 +112,7 @@ describe('SectionTabs — mobile carousel', () => {
 
     fireEvent.touchStart(carousel, { touches: [{ clientX: 100, clientY: 100 }] })
     fireEvent.touchEnd(carousel, { changedTouches: [{ clientX: 220, clientY: 108 }] })
-    expect(nav.push).toHaveBeenLastCalledWith('/travel')
+    expect(nav.push).toHaveBeenLastCalledWith('/cira')
   })
 
   it('ignores a mostly-vertical drag (page scroll, not a section swipe)', () => {
@@ -142,7 +142,7 @@ describe('SectionTabs — all-sections sheet', () => {
     expect(dialog).toHaveAttribute('aria-modal', 'true')
     const rows = within(dialog).getAllByRole('link')
     expect(rows.map(r => r.textContent)).toEqual([
-      'Flights', 'Hotels', 'Ask AI', 'Sweet Spots', 'Transfer Partners', 'Lounges',
+      'Flights', 'Hotels', 'Ask CIRA', 'Sweet Spots', 'Transfer Partners', 'Lounges',
     ])
   })
 

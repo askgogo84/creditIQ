@@ -140,7 +140,7 @@ Respond ONLY with valid JSON (no markdown, no backticks, no explanation outside 
       />
 
       {/* The tool, on its own reading measure beneath the headline. */}
-      <div style={{ maxWidth: 1180, marginTop: 28 }} className="spend-tool">
+      <div style={{ width: '100%', marginTop: 28 }} className="spend-tool">
 
           {step === 'input' && (
             <>

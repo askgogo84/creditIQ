@@ -143,7 +143,7 @@ export default function CardSwitchPage() {
       {/* Panel-only in the (cards) layout: dropped the redundant minHeight:100vh + near-black
           --bg-fallback wrapper. Tokens migrated to the white/copper light system (was slate
           --text/--border + a gold gradient). The 720 form measure is kept (matches /statement-truth). */}
-      <main style={{ maxWidth: 1120, margin: 0, padding: '28px 0 100px' }}>
+      <main style={{ width: '100%', margin: 0, padding: '28px 0 100px' }}>
 
         {/* Hero */}
         <div style={{ marginBottom: 28 }}>

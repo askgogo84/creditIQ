@@ -50,7 +50,7 @@ describe('TravelWorkspaceShell', () => {
     const { container } = render(<TravelWorkspaceShell><div>content</div></TravelWorkspaceShell>)
     const tools = within(container).getByRole('navigation', { name: 'Travel tools' })
 
-    expect(within(tools).getByRole('link', { name: 'Ask AI' })).toHaveAttribute('href', '/travel')
+    expect(within(tools).getByRole('link', { name: 'Ask CIRA' })).toHaveAttribute('href', '/cira')
     expect(within(tools).getByRole('link', { name: 'Sweet Spots' })).toHaveAttribute('href', '/sweet-spots')
     expect(within(tools).getByRole('link', { name: 'Transfer Partners' })).toHaveAttribute('href', '/transfer-partners')
     expect(within(tools).getByRole('link', { name: 'Lounges' })).toHaveAttribute('href', '/lounge-tracker')
