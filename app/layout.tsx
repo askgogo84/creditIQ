@@ -4,6 +4,7 @@ import { GeistMono } from "geist/font/mono";
 import { clashDisplay, satoshi, jetbrainsMono } from "./fonts";
 import "./globals.css";
 import "@/components/ciq/product-workspace.css";
+import "@/components/ciq/spend-results.css";
 import "@/components/ciq/approved-live-fixes.css";
 import { CreditIQAssistant } from "@/components/CreditIQAssistant";
 import { AppDownloadBanner } from '@/components/AppDownloadBanner';
