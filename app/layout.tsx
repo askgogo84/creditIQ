@@ -4,21 +4,19 @@ import { GeistMono } from "geist/font/mono";
 import { clashDisplay, satoshi, jetbrainsMono } from "./fonts";
 import "./globals.css";
 import "@/components/ciq/product-workspace.css";
-import "@/components/ciq/v3-exact-contract.css";
+import "@/components/ciq/spend-results.css";
+import "@/components/ciq/approved-live-fixes.css";
 import { CreditIQAssistant } from "@/components/CreditIQAssistant";
 import { AppDownloadBanner } from '@/components/AppDownloadBanner';
 import { logMissingEnv } from "@/lib/env-check";
 
-// Runs once per server cold start (module-level guard inside). Log-only.
 logMissingEnv();
 
 export const metadata: Metadata = {
   title: "CreditIQ - India's Honest Credit Card Intelligence",
   description: "Honest credit card comparison for India — every number computed, every estimate labelled.",
   icons: {
-    icon: [
-      { url: '/favicon.svg', type: 'image/svg+xml' },
-    ],
+    icon: [{ url: '/favicon.svg', type: 'image/svg+xml' }],
     shortcut: '/favicon.svg',
     apple: '/favicon.svg',
   },
@@ -41,12 +39,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en" suppressHydrationWarning className={`${GeistSans.variable} ${GeistMono.variable} ${clashDisplay.variable} ${satoshi.variable} ${jetbrainsMono.variable}`}>
       <head>
-        {/* Resolve the theme BEFORE first paint: stored choice → light. LIGHT IS THE
-            DECIDED DEFAULT — the OS prefers-color-scheme is deliberately NOT consulted,
-            so a user with nothing saved gets light regardless of their device setting.
-            Keep in lockstep with reassertTheme() in lib/store.ts. Setting data-theme
-            here (not in a client effect) removes the Header's hydration mismatch and
-            the theme flash. */}
         <script
           dangerouslySetInnerHTML={{
             __html: `(function(){try{var s=localStorage.getItem('creditiq-theme');var t=(s==='dark'||s==='light')?s:'light';var el=document.documentElement;el.setAttribute('data-theme',t);el.classList.toggle('dark',t==='dark');el.classList.toggle('light',t==='light');}catch(e){var d=document.documentElement;d.setAttribute('data-theme','light');d.classList.add('light');}})();`
@@ -60,7 +52,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         {children}
         <CreditIQAssistant />
         <AppDownloadBanner />
-</body>
+      </body>
     </html>
   );
 }

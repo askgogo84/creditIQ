@@ -2,21 +2,15 @@
 
 import { useEffect, useMemo, useState } from 'react'
 import { useSearchParams } from 'next/navigation'
-import { PlaneTakeoff } from 'lucide-react'
+import { ChevronDown, PlaneTakeoff } from 'lucide-react'
 import { authedFetch } from '@/lib/authed-fetch'
 import { AirportSelect } from '@/components/ciq/fly-points/AirportSelect'
 import { labelFor, resolveCity } from '@/lib/data/airports'
 import type { RedemptionOption } from '@/lib/fusion-core'
-import { ConciergeRequestButton } from '@/components/ciq/concierge/ConciergeRequestButton'
-import { buildFlightConciergeRequest } from '@/components/ciq/concierge/travel-requests'
-import { programmeIdForFlightSource } from '@/lib/redemption-rails/programme-resolver'
-import { WalletRailMatrix } from './WalletRailMatrix'
-import { FlightAwardVerificationPanel } from './FlightAwardVerificationPanel'
-import { rankWalletOptions } from './flight-wallet-comparison'
 import '@/components/ciq/fly-points/fly-points.css'
-import './investor-flight-workspace.css'
 
 type Cabin = 'economy' | 'business'
+type DetailTab = 'compare' | 'book' | 'sources'
 
 type AwardView = {
   program: string
@@ -69,9 +63,20 @@ function isoPlusDays(days: number) {
   return d.toISOString().slice(0, 10)
 }
 
+function asDate(iso: string) {
+  const value = (iso || '').length > 10 ? iso : `${iso}T00:00:00`
+  const d = new Date(value)
+  return Number.isNaN(d.getTime()) ? null : d
+}
+
 function fmtDate(iso: string) {
-  const d = new Date((iso || '').length > 10 ? iso : `${iso}T00:00:00`)
-  return Number.isNaN(d.getTime()) ? iso : d.toLocaleDateString('en-GB', { day: '2-digit', month: 'short' })
+  const d = asDate(iso)
+  return d ? d.toLocaleDateString('en-GB', { day: '2-digit', month: 'short' }) : iso
+}
+
+function fmtWeekday(iso: string) {
+  const d = asDate(iso)
+  return d ? d.toLocaleDateString('en-GB', { weekday: 'short' }) : ''
 }
 
 function fmtTime(iso: string) {
@@ -97,7 +102,14 @@ function nativeTaxes(trip: AwardView['trip']) {
 }
 
 function rowReachable(row: FusionRow) {
-  return row.redemption.some((option) => option.status === 'ok')
+  return row.redemption.some(option => option.status === 'ok')
+}
+
+function programmeMark(name: string) {
+  const parts = name.replace(/[^A-Za-z0-9 ]/g, ' ').trim().split(/\s+/).filter(Boolean)
+  if (!parts.length) return 'CI'
+  if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase()
+  return `${parts[0][0]}${parts[1][0]}`.toUpperCase()
 }
 
 export function GlobalFlightWorkspace() {
@@ -112,6 +124,7 @@ export function GlobalFlightWorkspace() {
   const [rows, setRows] = useState<FusionRow[] | null>(null)
   const [counts, setCounts] = useState<FusionCounts | null>(null)
   const [selectedId, setSelectedId] = useState<string | null>(null)
+  const [detailTab, setDetailTab] = useState<DetailTab>('compare')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
 
@@ -123,6 +136,8 @@ export function GlobalFlightWorkspace() {
     setRows(null)
     setCounts(null)
     setSelectedId(null)
+    setDetailTab('compare')
+
     try {
       const res = await authedFetch('/api/flights/fusion', {
         method: 'POST',
@@ -142,7 +157,7 @@ export function GlobalFlightWorkspace() {
 
   const filtered = useMemo(() => {
     if (!rows) return []
-    return rows.filter((row) => {
+    return rows.filter(row => {
       const stops = row.award?.trip?.stops ?? (row.award?.isDirect ? 0 : row.stops)
       if (nonStop && stops !== 0) return false
       if (scope === 'mine' && !rowReachable(row)) return false
@@ -151,156 +166,147 @@ export function GlobalFlightWorkspace() {
   }, [rows, scope, nonStop])
 
   useEffect(() => {
-    if (!filtered.length) return setSelectedId(null)
-    if (!selectedId || !filtered.some((row) => row.id === selectedId)) setSelectedId(filtered[0].id)
+    if (!filtered.length) {
+      setSelectedId(null)
+      return
+    }
+    if (selectedId && !filtered.some(row => row.id === selectedId)) setSelectedId(null)
   }, [filtered, selectedId])
 
-  const selected = filtered.find((row) => row.id === selectedId) ?? null
-
   return (
-    <div className="ifw-root">
-      <div className="ifw-title-row">
-        <div>
-          <div className="ifw-eyebrow">Flight award desk</div>
-          <h1 className="ifw-title">Find the smartest way <em>to book.</em></h1>
-          <p className="ifw-sub">Flights, hotels and transfer paths compared against your wallet—with live availability clearly separated from estimates.</p>
-        </div>
-        <div className="ifw-honesty">Broad discovery first · live verify selected award</div>
-      </div>
-
-      <div className="fp-search ifw-search">
+    <div className="approved-flight-workspace">
+      <section className="approved-flight-search" aria-label="Search flight awards">
         <AirportSelect label="From" value={from} exclude={to} onChange={setFrom} />
-        <button className="fp-swap" title="Swap" aria-label="Swap airports" onClick={() => { setFrom(to); setTo(from) }}>⇄</button>
+        <button className="fp-swap" type="button" title="Swap" aria-label="Swap airports" onClick={() => { setFrom(to); setTo(from) }}>⇄</button>
         <AirportSelect label="To" value={to} exclude={from} onChange={setTo} />
-        <div className="fp-fld"><label className="fp-fld-label" htmlFor="global-date">Date</label><input id="global-date" type="date" className="fp-fld-val fp-mono" value={date} onChange={(e) => setDate(e.target.value)} /></div>
-        <div className="fp-fld"><label className="fp-fld-label" htmlFor="global-cabin">Cabin</label><select id="global-cabin" className="fp-fld-val" value={cabin} onChange={(e) => setCabin(e.target.value as Cabin)}><option value="business">Business</option><option value="economy">Economy</option></select></div>
-        <button className="fp-btn" onClick={() => void search()} disabled={loading || !from || !to || from === to}>{loading ? 'Searching…' : 'Search'}</button>
-      </div>
+        <div className="fp-fld"><label className="fp-fld-label" htmlFor="approved-global-date">Date</label><input id="approved-global-date" type="date" className="fp-fld-val fp-mono" value={date} onChange={event => setDate(event.target.value)} /></div>
+        <div className="fp-fld"><label className="fp-fld-label" htmlFor="approved-global-cabin">Cabin</label><select id="approved-global-cabin" className="fp-fld-val" value={cabin} onChange={event => setCabin(event.target.value as Cabin)}><option value="business">Business</option><option value="economy">Economy</option></select></div>
+        <button className="fp-btn" type="button" onClick={() => void search()} disabled={loading || !from || !to || from === to}>{loading ? 'Searching…' : 'Search awards'}</button>
+      </section>
 
       {loading && (
-        <div className="ifw-flight-loader" role="status" aria-live="polite">
-          <div className="ifw-flight-route" aria-hidden="true">
-            <span>{from}</span><i /><span className="ifw-loader-plane"><PlaneTakeoff size={24} strokeWidth={1.7} /></span><i /><span>{to}</span>
-          </div>
-          <b>Searching every connected route</b>
-          <span>Loading cash inventory, award seats and wallet transfer paths…</span>
+        <div className="approved-flight-loader" role="status" aria-live="polite">
+          <div className="approved-flight-loader-route"><b>{from}</b><i /><PlaneTakeoff size={22} /><i /><b>{to}</b></div>
+          <strong>Searching award programmes</strong>
+          <p>Checking connected routes, cash inventory and wallet transfer paths…</p>
         </div>
       )}
-      {error && !loading && <div className="fp-error ifw-error">{error}</div>}
+
+      {error && !loading && <div className="approved-flight-empty" role="alert">{error}</div>}
 
       {!rows && !loading && !error && (
-        <section className="ifw-start" aria-label="Start a flight search">
-          <div>
-            <div className="ifw-eyebrow">Start with a destination</div>
-            <h2>{to ? `Ready to search ${from} → ${to}` : 'One search. Every connected award path.'}</h2>
-            <p>CreditIQ keeps cash-only, award-only and matched inventory visible, then checks which transfer paths your wallet can actually fund.</p>
-            <div className="ifw-quick-routes">
-              {['DEL', 'BOM', 'SIN', 'DXB', 'LHR'].filter(code => code !== from).map(code => (
-                <button key={code} type="button" onClick={() => void search(code)}><span>{from}</span><PlaneTakeoff size={14} /><b>{code}</b></button>
-              ))}
-            </div>
-          </div>
-          <ol>
-            <li><span>01</span><div><b>Discover</b><small>Load connected cash and award inventory.</small></div></li>
-            <li><span>02</span><div><b>Verify</b><small>Confirm the selected programme before transfer.</small></div></li>
-            <li><span>03</span><div><b>Compare</b><small>Rank only routes your wallet can execute.</small></div></li>
-          </ol>
-        </section>
+        <div className="approved-flight-empty">
+          <b>{to ? `Ready to search ${from} → ${to}` : 'Choose a destination to start.'}</b><br />
+          Search once, then open any result to compare points, cash and the safe booking path.
+        </div>
       )}
 
       {rows && !loading && (
         <>
-          <div className="ifw-toolbar">
+          <div className="approved-flight-toolbar">
             <div>
-              <strong>{filtered.length} visible · {rows.length} loaded</strong>
+              <b>{filtered.length} award options</b>
               <span>{labelFor(from)} → {labelFor(to)} · {fmtDate(date)} · {cabin}{counts ? ` · ${counts.cashFlights} cash rows · ${counts.awards} award records` : ''}</span>
             </div>
-            <div className="ifw-filters" role="group" aria-label="Flight result filters">
-              <button aria-pressed={scope === 'all'} onClick={() => setScope('all')}>All options</button>
-              <button aria-pressed={scope === 'mine'} onClick={() => setScope('mine')}>Legacy mapped transfer estimate</button>
-              <button aria-pressed={nonStop} onClick={() => setNonStop((v) => !v)}>Non-stop</button>
+            <div className="approved-flight-filters" role="group" aria-label="Flight result filters">
+              <button type="button" aria-pressed={scope === 'all'} onClick={() => setScope('all')}>All options</button>
+              <button type="button" aria-pressed={scope === 'mine'} onClick={() => setScope('mine')}>My wallet</button>
+              <button type="button" aria-pressed={nonStop} onClick={() => setNonStop(value => !value)}>Non-stop</button>
             </div>
           </div>
-          <div className="ifw-source-note">Broad award inventory remains cached discovery. When you select an award, CreditIQ separately asks for live selected-programme verification before promoting those miles/taxes into wallet ranking.</div>
+          <div className="approved-flight-note">Award rows may begin as cached discovery. Open a result before transferring points; CreditIQ keeps live verification and irreversible-transfer warnings in the decision flow.</div>
 
-          <div className="ifw-workspace">
-            <div className="ifw-left">
-              {filtered.length === 0 ? (
-                <div className="ifw-empty">{rows.length === 0 ? 'No connected provider returned inventory for this search.' : <>No loaded option matches this filter. <button onClick={() => setScope('all')}>Show all loaded options</button>.</>}</div>
-              ) : (
-                <div className="ifw-list" role="listbox" aria-label="Flight options">
-                  {filtered.map((row) => <GlobalFlightRow key={row.id} row={row} active={row.id === selectedId} onSelect={() => setSelectedId(row.id)} />)}
-                </div>
-              )}
-            </div>
-            <GlobalDecisionPanel row={selected} />
-          </div>
+          <section className="approved-award-list" aria-label="Flight award results">
+            <div className="approved-award-head"><span>Date</span><span>Programme & route</span><span>Economy</span><span>Business</span><span>Best wallet path</span><span /></div>
+            {filtered.length === 0 ? (
+              <div className="approved-flight-empty">No loaded option matches this filter.</div>
+            ) : filtered.map(row => {
+              const award = row.award
+              const trip = award?.trip ?? null
+              const stops = trip?.stops ?? (award?.isDirect ? 0 : row.stops)
+              const active = selectedId === row.id
+              const reachable = rowReachable(row)
+              const taxes = nativeTaxes(trip)
+              const programme = award?.program || row.airline || 'Cash itinerary'
+              const depart = fmtTime(trip?.departsAt || row.departure)
+              const arrive = fmtTime(trip?.arrivesAt || row.arrival)
+              const duration = fmtDuration(trip?.durationMinutes || row.duration * 60)
+              const economyMiles = award && cabin === 'economy' ? award.mileageCost.toLocaleString('en-IN') : '—'
+              const businessMiles = award && cabin === 'business' ? award.mileageCost.toLocaleString('en-IN') : '—'
+
+              return (
+                <article className={`approved-award-item${active ? ' open' : ''}`} key={row.id}>
+                  <button
+                    type="button"
+                    className="approved-award-row"
+                    aria-expanded={active}
+                    onClick={() => {
+                      setSelectedId(current => current === row.id ? null : row.id)
+                      setDetailTab('compare')
+                    }}
+                  >
+                    <span><b>{fmtDate(award?.date || row.departure)}</b><small>{fmtWeekday(award?.date || row.departure)} {depart}</small></span>
+                    <span className="approved-award-programme"><i className="approved-airline-logo">{programmeMark(programme)}</i><span><b>{programme}</b><small>{row.from} {depart || ''} → {row.to} {arrive || ''} · {duration} · {fmtStops(stops)}</small></span></span>
+                    <span><b>{economyMiles}</b><small>{economyMiles === '—' ? 'not searched' : 'miles'}</small></span>
+                    <span><b>{businessMiles}</b><small>{businessMiles === '—' ? 'not searched' : 'miles'}</small></span>
+                    <span className="approved-wallet-path"><b>{award ? (reachable ? 'Wallet route' : 'Verify route') : 'Cash'}</b><small>{award ? (reachable ? 'reachable estimate' : 'needs verification') : (row.price > 0 ? `₹${row.price.toLocaleString('en-IN')}` : 'fare unavailable')}</small></span>
+                    <ChevronDown className="approved-row-chevron" size={16} />
+                  </button>
+
+                  {active && (
+                    <div className="approved-award-detail">
+                      <div className="approved-decision-hero">
+                        <div><span className="approved-section-kicker">CreditIQ recommendation</span><h3>{award ? `Verify ${programme}, then compare the wallet route` : 'Pay cash and keep your points'}</h3><p>{award ? 'Confirm current award availability before moving any points.' : 'No award match was returned for this itinerary.'}</p></div>
+                        <div><small>You need</small><b>{award ? `${award.mileageCost.toLocaleString('en-IN')} miles` : '0 points'}</b></div>
+                        <div><small>Cash fare</small><b>{row.price > 0 ? `₹${row.price.toLocaleString('en-IN')}` : 'Unavailable'}</b></div>
+                        <div><small>Status</small><b>{award ? (reachable ? 'Wallet path found' : 'Verify first') : 'Cash only'}</b></div>
+                      </div>
+
+                      <div className="approved-decision-tabs" role="tablist">
+                        <button type="button" className={detailTab === 'compare' ? 'active' : undefined} onClick={() => setDetailTab('compare')}>Points vs cash</button>
+                        <button type="button" className={detailTab === 'book' ? 'active' : undefined} onClick={() => setDetailTab('book')}>How to book</button>
+                        <button type="button" className={detailTab === 'sources' ? 'active' : undefined} onClick={() => setDetailTab('sources')}>Source & safety</button>
+                      </div>
+
+                      <div className="approved-decision-panel">
+                        {detailTab === 'compare' && (
+                          <div className="approved-path-grid">
+                            <article className={`approved-path-choice${award && reachable ? ' winner' : ''}`}><span>{award && reachable ? 'Recommended · verify then transfer' : 'Award route'}</span><b>{award ? programme : 'No award match'}</b><strong>{award ? `${award.mileageCost.toLocaleString('en-IN')} miles` : 'Unavailable'}</strong><small>{taxes ? `Cached taxes ${taxes}` : 'Taxes confirmed at checkout'}</small></article>
+                            <article className={`approved-path-choice${!award && row.price > 0 ? ' winner' : ''}`}><span>Cash alternative</span><b>Pay airline directly</b><strong>{row.price > 0 ? `₹${row.price.toLocaleString('en-IN')}` : 'Fare unavailable'}</strong><small>{row.price > 0 ? 'Keep all reward points' : 'No live cash number returned'}</small></article>
+                            <article className="approved-path-choice"><span>Keep your points</span><b>Wait for a better option</b><strong>0 points</strong><small>Useful when award availability is uncertain.</small></article>
+                          </div>
+                        )}
+
+                        {detailTab === 'book' && (
+                          <div className="approved-book-layout">
+                            <ol>
+                              <li><b>Check the award with the programme</b><span>Confirm the seat and mileage price before moving points.</span></li>
+                              <li><b>Verify transfer ratio and timing</b><span>Only transfer once the current programme route is confirmed.</span></li>
+                              <li><b>Book directly and pay taxes</b><span>Complete the redemption with the airline programme.</span></li>
+                            </ol>
+                            <aside>
+                              {row.bookingLink && <a className="approved-primary" href={row.bookingLink} target="_blank" rel="noopener noreferrer">Check direct fare ↗</a>}
+                              <a className="approved-secondary" href={`/cira?q=${encodeURIComponent(`Help me verify and book ${row.from} to ${row.to} on ${date}`)}`}>Ask Concierge</a>
+                              {award && <div className="approved-transfer-warning"><b>Important:</b> points transfers can be irreversible. Verify award space first.</div>}
+                            </aside>
+                          </div>
+                        )}
+
+                        {detailTab === 'sources' && (
+                          <div className="approved-source-grid">
+                            <article><b>Award price</b><p>{award ? `Discovery source: ${award.source}. Treat as guidance until the selected programme is verified.` : 'No award source matched this cash itinerary.'}</p></article>
+                            <article><b>Wallet path</b><p>{award ? (reachable ? 'A mapped wallet route exists, but ratio/timing must still be verified before transfer.' : 'No currently safe executable wallet route is promoted.') : 'Keeping points is the default when only cash inventory is available.'}</p></article>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  )}
+                </article>
+              )
+            })}
+          </section>
         </>
       )}
     </div>
-  )
-}
-
-function GlobalFlightRow({ row, active, onSelect }: { row: FusionRow; active: boolean; onSelect: () => void }) {
-  const award = row.award
-  const trip = award?.trip ?? null
-  const stops = trip?.stops ?? (award?.isDirect ? 0 : row.stops)
-  const taxes = nativeTaxes(trip)
-  return (
-    <button className={`ifw-row${active ? ' active' : ''}`} onClick={onSelect} role="option" aria-selected={active}>
-      <div className="ifw-date"><b>{fmtDate(award?.date || row.departure)}</b><span>{fmtTime(trip?.departsAt || row.departure) || 'time n/a'}</span></div>
-      <div className="ifw-programme"><b>{award?.program || row.airline || 'Cash itinerary'}</b><span>{row.from} → {row.to} · {fmtDuration(trip?.durationMinutes || row.duration * 60)} · {fmtStops(stops)}</span><small>{award ? (row.price > 0 ? 'Cash + cached award discovery' : 'Cached award-only discovery') : 'Cash-only · still part of the search'}</small></div>
-      <div className="ifw-metric"><b>{award ? award.mileageCost.toLocaleString('en-IN') : '—'}</b><span>{award ? `${award.program} miles · discovery` : 'no award match'}</span>{taxes && <small>+ {taxes} cached taxes</small>}</div>
-      <div className="ifw-metric"><b>{row.price > 0 ? `₹${row.price.toLocaleString('en-IN')}` : '—'}</b><span>{row.price > 0 ? 'cash fare' : 'cash not matched'}</span></div>
-      <div className="ifw-best"><b>{award ? 'Verify + compare' : 'Cash'}</b><span>{award ? 'selected programme' : 'retain points'}</span></div>
-    </button>
-  )
-}
-
-function GlobalDecisionPanel({ row }: { row: FusionRow | null }) {
-  if (!row) return <aside className="ifw-panel empty"><div><b>Select an option</b><p>Inventory stays visible whether or not CreditIQ can price a redemption path.</p></div></aside>
-
-  const award = row.award
-  const options = award ? rankWalletOptions(row.redemption) : []
-  const best = row.bestOption
-  const taxes = nativeTaxes(award?.trip ?? null)
-  const request = buildFlightConciergeRequest(row, options, best)
-
-  if (!award) {
-    return (
-      <aside className="ifw-panel">
-        <div className="ifw-panel-head"><span>Cash-only itinerary</span><h2>{row.airline || 'Cash flight'} · ₹{row.price.toLocaleString('en-IN')}</h2><p>No award match was returned for this itinerary. CreditIQ keeps it visible instead of deleting it from the search.</p></div>
-        <div className="ifw-cash-compare"><div className="ifw-section-label">Decision</div><div className="ifw-cash-row"><span>Pay cash and retain all wallet points</span><b>₹{row.price.toLocaleString('en-IN')}</b></div></div>
-        <WalletRailMatrix travelKind="flight" programmeId={null} cashPriceMinor={row.price > 0 ? Math.round(row.price * 100) : null} cashCurrency={row.price > 0 ? 'INR' : null} />
-        <div className="ifw-actions">{row.bookingLink ? <a href={row.bookingLink} target="_blank" rel="noopener noreferrer">Check fare directly →</a> : <span /> }<ConciergeRequestButton request={request} /></div>
-        <div className="ifw-source-note">No loyalty transfer recommendation is manufactured when no award programme is matched. Generic portal/voucher/native rails can still be shown.</div>
-      </aside>
-    )
-  }
-
-  const programmeId = programmeIdForFlightSource(award.source)
-  const cachedTaxesMinor = award.trip?.totalTaxes != null ? Math.round(award.trip.totalTaxes) : null
-  const cachedTaxesCurrency = award.trip?.taxesCurrency ?? null
-
-  return (
-    <aside className="ifw-panel">
-      <div className="ifw-panel-head"><span>Award opportunity</span><h2>{award.program}</h2><p>The broad award row is discovery evidence. CreditIQ now attempts a stronger live verification for this exact programme, route, date and cabin before ranking wallet paths.</p><div className="ifw-award-cost"><b>{award.mileageCost.toLocaleString('en-IN')} {award.program} miles</b><span>{taxes ? `+ ${taxes} cached taxes` : 'cached taxes not supplied'}</span></div></div>
-      <FlightAwardVerificationPanel
-        programmeId={programmeId}
-        programmeName={award.program}
-        origin={row.from}
-        destination={row.to}
-        date={award.date || row.departure.slice(0, 10)}
-        cabin={award.cabin === 'economy' ? 'economy' : 'business'}
-        cachedMiles={award.mileageCost}
-        cachedTaxesMinor={cachedTaxesMinor}
-        cachedTaxesCurrency={cachedTaxesCurrency}
-        cashPriceMinor={row.price > 0 ? Math.round(row.price * 100) : null}
-        cashCurrency={row.price > 0 ? 'INR' : null}
-      />
-      <div className="ifw-cash-compare"><div className="ifw-section-label">Cash comparison</div>{row.price > 0 ? <div className="ifw-cash-row"><span>Matched cash fare</span><b>₹{row.price.toLocaleString('en-IN')}</b></div> : <p className="ifw-muted">No matched cash fare was returned. CreditIQ does not invent one.</p>}</div>
-      <div className="ifw-guardrail"><b>Guardrail:</b> provider failure is never treated as no award space. Cached discovery stays visible, live verification can strengthen it, and direct airline/programme checkout is final before transfer.</div>
-      <div className="ifw-actions"><a href={`https://www.google.com/search?q=${encodeURIComponent(award.program + ' award booking')}`} target="_blank" rel="noopener noreferrer">Check award directly →</a><ConciergeRequestButton request={request} /></div>
-    </aside>
   )
 }

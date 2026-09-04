@@ -67,7 +67,7 @@ export const APP_NAV: AppNavItem[] = [
     match: p => p.startsWith('/cards') || p.startsWith('/card/') || p.startsWith('/compare') || p.startsWith('/best-cards') || p.startsWith('/uae') || p.startsWith('/card-switch') || p.startsWith('/card-roast'),
   },
   {
-    key: 'concierge', label: 'Concierge', href: '/cira',
+    key: 'concierge', label: 'Concierge AI', href: '/cira',
     Icon: Sparkles,
     badge: 'AI',
     match: p => p.startsWith('/cira') || p.startsWith('/concierge'),
