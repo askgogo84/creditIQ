@@ -13,6 +13,7 @@ export function buildFlightConciergeRequest(
 ): ConciergeRequest {
   const award = row.award
   const trip = award?.trip ?? null
+  const bestRoute = best?.routes?.[0] ?? null
   const expectedCashMinor =
     trip && trip.taxesCurrency === 'INR' && Number.isSafeInteger(trip.totalTaxes) && trip.totalTaxes >= 0
       ? trip.totalTaxes
@@ -54,6 +55,29 @@ export function buildFlightConciergeRequest(
         self_entered: best.selfEntered ?? false,
         verified: best.verified,
       } : null,
+      recommended_route: bestRoute ? {
+        points_required: bestRoute.pointsRequired,
+        nominal_ratio: bestRoute.nominalRatio,
+        duration_days_min: bestRoute.durationDaysMin,
+        duration_days_max: bestRoute.durationDaysMax,
+        duration_unknown: bestRoute.durationUnknown,
+        transfer_state: bestRoute.state,
+        as_of: bestRoute.asOf,
+        rounding_inflated: bestRoute.roundingInflated,
+        min_transfer_increment: bestRoute.minTransferIncrement,
+        hops: bestRoute.hops.map(hop => ({
+          from: hop.from,
+          to: hop.to,
+          ratio: hop.ratio,
+          min_transfer: hop.minTransfer,
+          duration_days_min: hop.durationDaysMin,
+          duration_days_max: hop.durationDaysMax,
+          state: hop.state,
+          as_of: hop.asOf,
+          source: hop.source,
+        })),
+      } : null,
+      self_serve_eligible: Boolean(best && best.status === 'ok' && best.canAfford && best.cardPointsNeeded != null),
       compared_cards: rankedOptions.map((option) => ({
         bank: option.bank,
         card_name: option.cardName,
@@ -76,12 +100,13 @@ export function buildFlightConciergeRequest(
       },
       transfer_candidates: {
         state: award ? 'UNVERIFIED' : 'NOT_APPLICABLE',
-        reason: award ? 'Current flight fusion returns verified:false for transfer options.' : 'Cash-only itinerary has no award transfer instruction.',
+        reason: award ? 'Travel fusion carries mapped routes, but operator must re-verify current ratio, timing and award space before approval.' : 'Cash-only itinerary has no award transfer instruction.',
       },
     },
     expectedCashMinor,
     currency: 'INR',
     contactChannel: 'BOTH',
+    notes: 'Corporate/HNI assisted travel handoff. Re-verify live award inventory, transfer ratio/timing, taxes and cash fare before requesting any irreversible approval.',
   }
 }
 
