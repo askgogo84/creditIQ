@@ -3,9 +3,9 @@
 // redemption ladder. Every edge must carry explicit provenance and pass
 // scripts/validate-transfer-graph.ts.
 //
-// IMPORTANT: Axis Atlas is card-specific. Axis cards that earn EDGE Miles do
-// NOT share one universal conversion ratio, so Atlas uses the dedicated source
-// currency `axis_atlas_miles` instead of the old ambiguous `axis_miles` node.
+// IMPORTANT: Axis cards that earn EDGE Miles do NOT share one universal
+// conversion ratio. Atlas edges therefore stay card-name allowlisted even though
+// the underlying wallet currency is the common `axis_miles` node.
 
 import type { TransferEdge } from '../transfer-ladder';
 
@@ -23,7 +23,7 @@ function atlasEdge(
   tat: string,
 ): TransferEdge {
   return {
-    from_currency: 'axis_atlas_miles',
+    from_currency: 'axis_miles',
     to_programme: programme,
     ratio_from: ratio[0],
     ratio_to: ratio[1],
