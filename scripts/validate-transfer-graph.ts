@@ -23,7 +23,6 @@ function label(e: TransferEdge, i: number): string {
   return `edge[${i}] ${e.from_currency || '?'} → ${e.to_programme || '?'}`;
 }
 
-// 1: duplicate (from_currency, to_programme).
 const pairCounts = new Map<string, number>();
 TRANSFER_EDGES.forEach((e) => {
   const key = `${e.from_currency}::${e.to_programme}`;
@@ -33,7 +32,6 @@ for (const [key, n] of pairCounts) {
   if (n > 1) failures.push(`duplicate edge (from_currency, to_programme) '${key.replace('::', ' → ')}' ×${n}`);
 }
 
-// 2 + 3 + 5: per-edge provenance + ratio integrity.
 TRANSFER_EDGES.forEach((e, i) => {
   if (!e.state || !STATES.has(e.state)) failures.push(`${label(e, i)}: state missing/invalid ('${e.state}')`);
   if (!e.source || !e.source.trim()) failures.push(`${label(e, i)}: source missing`);
@@ -50,7 +48,6 @@ TRANSFER_EDGES.forEach((e, i) => {
   }
 });
 
-// 4: any `const X: TransferEdge[]` declared but never spread into the export.
 const src = readFileSync(GRAPH_FILE, 'utf8');
 for (const m of src.matchAll(/const\s+([A-Za-z0-9_]+)\s*:\s*TransferEdge\[\]\s*=/g)) {
   const name = m[1];
@@ -65,9 +62,8 @@ for (const m of src.matchAll(/const\s+([A-Za-z0-9_]+)\s*:\s*TransferEdge\[\]\s*=
   }
 }
 
-// 6: Axis Atlas current issuer-published grid, effective 2 Apr 2026.
-// These are card-name-allowlisted `axis_miles` edges, so Horizon/Olympus cannot
-// silently inherit Atlas's ratio.
+// Axis Atlas current issuer-published grid, effective 2 Apr 2026. Atlas has its
+// own graph node because other Axis EDGE-Miles cards have different ratios.
 const atlasExpected: Record<string, [number, number]> = {
   aeroplan: [1, 2],
   ba: [2, 1],
@@ -85,12 +81,12 @@ const atlasExpected: Record<string, [number, number]> = {
 
 for (const [programme, ratio] of Object.entries(atlasExpected)) {
   const edge = TRANSFER_EDGES.find((e) =>
-    e.from_currency === 'axis_miles' &&
+    e.from_currency === 'axis_atlas_miles' &&
     e.to_programme === programme &&
     e.card_name_allowlist?.some((name) => name.toLowerCase() === 'axis atlas'),
   );
   if (!edge) {
-    failures.push(`Axis Atlas verified edge missing: axis_miles → ${programme}`);
+    failures.push(`Axis Atlas verified edge missing: axis_atlas_miles → ${programme}`);
     continue;
   }
   if (edge.ratio_from !== ratio[0] || edge.ratio_to !== ratio[1]) {
