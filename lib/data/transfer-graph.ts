@@ -4,8 +4,8 @@
 // scripts/validate-transfer-graph.ts.
 //
 // IMPORTANT: Axis cards that earn EDGE Miles do NOT share one universal
-// conversion ratio. Atlas edges therefore stay card-name allowlisted even though
-// the underlying wallet currency is the common `axis_miles` node.
+// conversion ratio. Atlas therefore uses a dedicated graph currency node so
+// another Axis EDGE-Miles card can never inherit Atlas ratios accidentally.
 
 import type { TransferEdge } from '../transfer-ladder';
 
@@ -23,7 +23,7 @@ function atlasEdge(
   tat: string,
 ): TransferEdge {
   return {
-    from_currency: 'axis_miles',
+    from_currency: 'axis_atlas_miles',
     to_programme: programme,
     ratio_from: ratio[0],
     ratio_to: ratio[1],
