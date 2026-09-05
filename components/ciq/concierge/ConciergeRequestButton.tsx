@@ -3,6 +3,7 @@
 import Link from 'next/link'
 import { useState } from 'react'
 import { authedFetch } from '@/lib/authed-fetch'
+import { CorporateTravelHandoffButton } from './CorporateTravelHandoffButton'
 
 export type ConciergeRequest = {
   context?: 'PERSONAL' | 'HNI'
@@ -86,14 +87,17 @@ export function ConciergeRequestButton({
 
   return (
     <>
-      <button
-        type="button"
-        disabled={disabled}
-        title={disabled ? disabledReason : undefined}
-        onClick={() => { setError(null); setOpen(true) }}
-      >
-        {label}
-      </button>
+      <div style={{ display: 'grid', gap: 8 }}>
+        <button
+          type="button"
+          disabled={disabled}
+          title={disabled ? disabledReason : undefined}
+          onClick={() => { setError(null); setOpen(true) }}
+        >
+          {label}
+        </button>
+        <CorporateTravelHandoffButton request={request} label="Corporate account · Send to Business Travel Desk" />
+      </div>
 
       {open && (
         <div
@@ -117,7 +121,7 @@ export function ConciergeRequestButton({
             <div style={{ padding: 20, borderBottom: '1px solid var(--line)', display: 'flex', gap: 16, justifyContent: 'space-between' }}>
               <div>
                 <div style={{ fontSize: 10, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '.08em', color: 'var(--copper)' }}>
-                  Concierge handoff
+                  Personal / HNI Concierge handoff
                 </div>
                 <h3 id="ciq-concierge-title" style={{ margin: '5px 0 5px', fontSize: 20, color: 'var(--ink)' }}>
                   Have CreditIQ prepare this booking
@@ -168,7 +172,7 @@ export function ConciergeRequestButton({
                 disabled={busy}
                 onClick={createCase}
                 style={{ minHeight: 42, padding: '0 16px', border: 0, borderRadius: 10, background: 'var(--ink)', color: 'var(--paper, #fff)', fontWeight: 750 }}
-              >{busy ? 'Creating…' : 'Create case → REVIEWING'}</button>
+              >{busy ? 'Creating…' : 'Create Personal/HNI case → REVIEWING'}</button>
             </div>
           </div>
         </div>
