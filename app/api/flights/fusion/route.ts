@@ -64,7 +64,7 @@ async function fetchCashFlights(
       coverage: data.coverage ?? null,
       attempts: Array.isArray(data.attempts) ? data.attempts : [],
       source: data.source ?? null,
-      cashCabinVerified: data.cashCabinVerified !== false && data.source === 'kiwi',
+      cashCabinVerified: data.cashCabinVerified !== false && ['skyscanner-live', 'amadeus', 'kiwi'].includes(data.source),
     };
   } catch (e) {
     console.error('fusion: cash flight fetch failed', e);
@@ -170,6 +170,10 @@ export async function POST(req: NextRequest) {
     const to = (body.to || '').toUpperCase().trim();
     const dateFrom = body.date_from || '';
     const dateTo = body.date_to || dateFrom;
+    // Flexible award discovery may span a date window. Cash shopping remains tied
+    // to the user's selected reference date so a fare from the first flexible day
+    // is never silently presented as the target-date cash benchmark.
+    const cashReferenceDate = body.cash_date || dateFrom;
     const cabin: Cabin = ['economy', 'business', 'first'].includes(body.cabin)
       ? body.cabin
       : 'economy';
@@ -181,7 +185,7 @@ export async function POST(req: NextRequest) {
     const base = new URL(req.url).origin;
 
     const [cashFetch, awards, cards] = await Promise.all([
-      fetchCashFlights(base, from, to, dateFrom, dateTo, cabin),
+      fetchCashFlights(base, from, to, cashReferenceDate, cashReferenceDate, cabin),
       searchAwardAvailability(from, to, dateFrom, dateTo, undefined, cabin),
       fetchUserCards(gate.userId),
     ]);
@@ -220,9 +224,6 @@ export async function POST(req: NextRequest) {
       const key = awardKey(awardMatch);
       matchedKeys.add(key);
       const award = buildAwardView(awardMatch, tripByKey.get(key) ?? null, cabin);
-      // Never value a Business/First award against a Travelpayouts fare whose
-      // cabin is not supplied. Keep the fare visible as a reference, but make
-      // points valuation cabin-honest by passing 0 until the cash cabin is known.
       const comparableCashPrice = cashFetch.cashCabinVerified || cabin === 'economy'
         ? flight.price
         : 0;
@@ -276,7 +277,7 @@ export async function POST(req: NextRequest) {
     const results = [...cashResults, ...awardOnly];
 
     return NextResponse.json({
-      route: { from, to, date_from: dateFrom, date_to: dateTo, cabin },
+      route: { from, to, date_from: dateFrom, date_to: dateTo, cash_reference_date: cashReferenceDate, cabin },
       counts: {
         cashFlights: cashFlights.length,
         awards: awards.length,

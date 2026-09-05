@@ -1,26 +1,6 @@
 ﻿// components/ciq/appNav.tsx
 // Single source of truth for the signed-in app navigation. Three surfaces render
-// this same data so their labels, routes and active-state logic can never drift:
-//   - components/ciq/AppRail.tsx  — desktop left rail (>=900px)
-//   - components/ciq/TabBar.tsx   — mobile bottom bar (<900px)
-//   - components/Header.tsx       — signed-in top nav on pages not yet migrated
-//                                    into the (shell) route group
-//
-// IA: docs/00-SIGNED-IN-IA.md §2/§3 cuts the signed-in nav from ~26 destinations
-// to a handful of primary ones. Every former destination that lost its nav entry
-// folds into one of the matchers below, so it still lights a tab and stays
-// reachable — no orphaned pages, no 404s. The grouped secondary directory
-// (moreNav.ts / MORE_GROUPS) is no longer rendered on any signed-in surface;
-// Blog + Glossary move to the public footer.
-//
-// HOME IS DEFERRED. The IA's sixth destination, "Home" ("what should I do next?"),
-// has no surface yet — it will grow out of the current /dashboard wallet and split
-// off it. We deliberately do NOT add a Home entry pointing at /dashboard now:
-// Wallet already owns /dashboard, and a second entry on the same href would
-// collide on the React list key (all consumers key on item.href) AND double-light,
-// since appActive() is href-based. Add Home here when the Home build ships. Until
-// then its bound routes (/feed, /intelligence) fold under Wallet — the /dashboard
-// surface they live on today.
+// this same data so their labels, routes and active-state logic can never drift.
 import {
   Wallet, Receipt, Plane, CreditCard, User, Home,
   FileCheck, Zap, Star, Map, Sparkles, Target, ArrowLeftRight, Sofa,
@@ -56,10 +36,7 @@ export const APP_NAV: AppNavItem[] = [
   {
     key: 'travel', label: 'Travel', href: '/trip-planner',
     Icon: Plane,
-    // /hotels is now the primary global hotel inventory surface. The older
-    // /stay-on-points route remains an explicit captured/redemption lab and still
-    // belongs to Travel rather than becoming an orphan.
-    match: p => p.startsWith('/trip-planner') || p.startsWith('/travel') || p.startsWith('/flights') || p.startsWith('/hotels') || p.startsWith('/lounge-tracker') || p.startsWith('/sweet-spots') || p.startsWith('/transfer-partners') || p.startsWith('/stay-on-points'),
+    match: p => p.startsWith('/trip-planner') || p.startsWith('/travel') || p.startsWith('/flights') || p.startsWith('/hotels') || p.startsWith('/dream-trip') || p.startsWith('/lounge-tracker') || p.startsWith('/sweet-spots') || p.startsWith('/transfer-partners') || p.startsWith('/stay-on-points'),
   },
   {
     key: 'cards', label: 'Cards', href: '/cards',
@@ -93,6 +70,7 @@ export const SECTION_TABS: Record<string, SectionTab[]> = {
   travel: [
     { label: 'Flights', href: '/trip-planner', Icon: Plane },
     { label: 'Hotels', href: '/hotels', Icon: Map },
+    { label: 'Dream Trip', href: '/dream-trip', Icon: Target },
     { label: 'Ask CIRA', href: '/cira', Icon: Sparkles },
     { label: 'Sweet Spots', href: '/sweet-spots', Icon: Target },
     { label: 'Transfer Partners', href: '/transfer-partners', Icon: ArrowLeftRight },

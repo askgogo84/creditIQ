@@ -3,12 +3,13 @@
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import type { ReactNode } from 'react'
-import { Building2, Compass, Plane, Sparkles } from 'lucide-react'
+import { Building2, Compass, Plane, Sparkles, Target } from 'lucide-react'
 import { PanelFade } from '@/components/ciq/PanelFade'
 
 const tabs = [
   { label: 'Flights', href: '/trip-planner', Icon: Plane },
   { label: 'Hotels', href: '/hotels', Icon: Building2 },
+  { label: 'Dream Trip', href: '/dream-trip', Icon: Target },
   { label: 'Explore', href: '/sweet-spots', Icon: Compass },
 ]
 
@@ -22,6 +23,7 @@ const tools = [
 function activeFor(pathname: string, href: string) {
   if (href === '/trip-planner') return pathname.startsWith('/trip-planner') || pathname.startsWith('/flights')
   if (href === '/hotels') return pathname.startsWith('/hotels') || pathname.startsWith('/stay-on-points')
+  if (href === '/dream-trip') return pathname.startsWith('/dream-trip')
   return pathname.startsWith('/sweet-spots') || pathname.startsWith('/transfer-partners') || pathname.startsWith('/lounge-tracker')
 }
 

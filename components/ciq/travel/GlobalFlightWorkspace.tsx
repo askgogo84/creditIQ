@@ -74,6 +74,12 @@ function isoPlusDays(days: number) {
   return d.toISOString().slice(0, 10)
 }
 
+function shiftDate(iso: string, days: number) {
+  const d = new Date(`${iso}T00:00:00Z`)
+  d.setUTCDate(d.getUTCDate() + days)
+  return d.toISOString().slice(0, 10)
+}
+
 function asDate(iso: string) {
   const value = (iso || '').length > 10 ? iso : `${iso}T00:00:00`
   const d = new Date(value)
@@ -129,6 +135,7 @@ export function GlobalFlightWorkspace() {
   const [from, setFrom] = useState('BLR')
   const [to, setTo] = useState(qTo)
   const [date, setDate] = useState(isoPlusDays(21))
+  const [flexDays, setFlexDays] = useState<0 | 3 | 7>(0)
   const [cabin, setCabin] = useState<Cabin>('business')
   const [scope, setScope] = useState<'all' | 'mine'>('all')
   const [nonStop, setNonStop] = useState(false)
@@ -166,7 +173,14 @@ export function GlobalFlightWorkspace() {
       const res = await authedFetch('/api/flights/fusion', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ from, to: destination, date_from: date, date_to: date, cabin }),
+        body: JSON.stringify({
+          from,
+          to: destination,
+          date_from: shiftDate(date, -flexDays),
+          date_to: shiftDate(date, flexDays),
+          cash_date: date,
+          cabin,
+        }),
       })
       const data = await res.json()
       if (!res.ok || data.error) throw new Error(data.error || 'search failed')
@@ -206,6 +220,7 @@ export function GlobalFlightWorkspace() {
         <button className="fp-swap" type="button" title="Swap" aria-label="Swap airports" onClick={() => { setFrom(to); setTo(from) }}>⇄</button>
         <AirportSelect label="To" value={to} exclude={from} onChange={setTo} />
         <div className="fp-fld"><label className="fp-fld-label" htmlFor="approved-global-date">Date</label><input id="approved-global-date" type="date" className="fp-fld-val fp-mono" value={date} onChange={event => setDate(event.target.value)} /></div>
+        <div className="fp-fld"><label className="fp-fld-label" htmlFor="approved-global-flex">Dates</label><select id="approved-global-flex" className="fp-fld-val" value={flexDays} onChange={event => setFlexDays(Number(event.target.value) as 0 | 3 | 7)}><option value={0}>Exact</option><option value={3}>±3 days</option><option value={7}>±7 days</option></select></div>
         <div className="fp-fld"><label className="fp-fld-label" htmlFor="approved-global-cabin">Cabin</label><select id="approved-global-cabin" className="fp-fld-val" value={cabin} onChange={event => setCabin(event.target.value as Cabin)}><option value="business">Business</option><option value="economy">Economy</option></select></div>
         <button className="fp-btn" type="button" onClick={() => void search()} disabled={loading || !from || !to || from === to}>{loading ? 'Searching…' : 'Search awards'}</button>
       </section>
@@ -240,7 +255,7 @@ export function GlobalFlightWorkspace() {
           <div className="approved-flight-toolbar">
             <div>
               <b>{filtered.length} award options</b>
-              <span>{labelFor(from)} → {labelFor(to)} · {fmtDate(date)} · {cabin}{counts ? ` · ${counts.cashFlights} cash rows · ${counts.awards} award records` : ''}</span>
+              <span>{labelFor(from)} → {labelFor(to)} · {fmtDate(date)}{flexDays ? ` ±${flexDays} days` : ''} · {cabin}{counts ? ` · ${counts.cashFlights} target-date cash rows · ${counts.awards} award records` : ''}</span>
             </div>
             <div className="approved-flight-filters" role="group" aria-label="Flight result filters">
               <button type="button" aria-pressed={scope === 'all'} onClick={() => setScope('all')}>All options</button>
@@ -248,7 +263,7 @@ export function GlobalFlightWorkspace() {
               <button type="button" aria-pressed={nonStop} onClick={() => setNonStop(value => !value)}>Non-stop</button>
             </div>
           </div>
-          <div className="approved-flight-note">Award rows may begin as cached discovery. Open a result before transferring points; CreditIQ keeps live verification and irreversible-transfer warnings in the decision flow.</div>
+          <div className="approved-flight-note">Award discovery covers the selected flexible window. Cash remains a benchmark for the exact target date. Open a result before transferring points; CreditIQ keeps live verification and irreversible-transfer warnings in the decision flow.</div>
 
           <section className="approved-award-list" aria-label="Flight award results">
             <div className="approved-award-head"><span>Date</span><span>Programme & route</span><span>Economy</span><span>Business</span><span>Best wallet path</span><span /></div>
