@@ -10,7 +10,7 @@ interface Watch {
   label: string
   origin: string
   destination: string
-  cabin: 'economy' | 'premium_economy' | 'business' | 'first'
+  cabin: 'economy' | 'business' | 'first'
   travellers: number
   target_date: string
   flex_days: 0 | 3 | 7
@@ -146,12 +146,13 @@ export default function DreamTripPage() {
           <AirportSelect label="From" value={from} exclude={to} onChange={setFrom} />
           <AirportSelect label="To" value={to} exclude={from} onChange={setTo} />
           <label style={fieldStyle}><span>Target date</span><input type="date" value={targetDate} onChange={e => setTargetDate(e.target.value)} style={inputStyle} /></label>
-          <label style={fieldStyle}><span>Cabin</span><select value={cabin} onChange={e => setCabin(e.target.value as Watch['cabin'])} style={inputStyle}><option value="economy">Economy</option><option value="premium_economy">Premium economy</option><option value="business">Business</option><option value="first">First</option></select></label>
+          <label style={fieldStyle}><span>Cabin</span><select value={cabin} onChange={e => setCabin(e.target.value as Watch['cabin'])} style={inputStyle}><option value="economy">Economy</option><option value="business">Business</option><option value="first">First</option></select></label>
           <label style={fieldStyle}><span>Flex</span><select value={flexDays} onChange={e => setFlexDays(Number(e.target.value) as 0 | 3 | 7)} style={inputStyle}><option value={0}>Exact</option><option value={3}>±3 days</option><option value={7}>±7 days</option></select></label>
           <label style={fieldStyle}><span>Travellers</span><input type="number" min={1} max={9} value={travellers} onChange={e => setTravellers(Math.max(1, Math.min(9, Number(e.target.value) || 1)))} style={inputStyle} /></label>
           <button className="approved-primary" onClick={createWatch} disabled={saving || !to || to === from}>{saving ? 'Saving…' : 'Watch trip'}</button>
         </div>
         <label style={{ display: 'inline-flex', gap: 7, alignItems: 'center', marginTop: 10, color: 'var(--muted)', fontSize: 11 }}><input type="checkbox" checked={nonstop} onChange={e => setNonstop(e.target.checked)} /> Non-stop only</label>
+        <div style={{ marginTop: 8, color: 'var(--subtle)', fontSize: 9.5 }}>Premium Economy will be enabled only when a connected award provider returns it as a distinct verified cabin.</div>
       </section>
 
       {error && <div style={{ padding: 12, border: '1px solid var(--line)', borderRadius: 10, color: 'var(--red)' }}>{error}</div>}
