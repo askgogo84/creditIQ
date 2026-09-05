@@ -19,6 +19,46 @@ function plusDays(iso: string, days: number) {
   return d.toISOString().slice(0, 10)
 }
 
+function notificationFor(watch: any, state: string, bestAward: any, cashPrice: number | null) {
+  if (bestAward) {
+    return {
+      type: 'TRAVEL_WATCH',
+      title: `Award space found · ${watch.origin} → ${watch.destination}`,
+      body: `${Number(bestAward.mileageCost).toLocaleString('en-IN')} miles via ${bestAward.source || 'award programme'} on ${bestAward.date}. Verify the live seat before transferring points.`,
+      href: '/dream-trip',
+      severity: 'OPPORTUNITY',
+      source_type: 'TRAVEL_WATCH',
+      source_ref: watch.id,
+      fingerprint: `travel:${watch.id}:${state}:${bestAward.source || 'x'}:${bestAward.date}:${bestAward.mileageCost}`,
+      metadata: { origin: watch.origin, destination: watch.destination, state, miles: bestAward.mileageCost, programme: bestAward.source || null, date: bestAward.date },
+    }
+  }
+  if (cashPrice) {
+    return {
+      type: 'TRAVEL_WATCH',
+      title: `Cash benchmark changed · ${watch.origin} → ${watch.destination}`,
+      body: `Target-date cash reference is ₹${Math.round(cashPrice).toLocaleString('en-IN')}. No usable award is currently promoted; keep points unless direct verification changes that.`,
+      href: '/dream-trip',
+      severity: 'INFO',
+      source_type: 'TRAVEL_WATCH',
+      source_ref: watch.id,
+      fingerprint: `travel:${watch.id}:${state}:cash:${Math.round(cashPrice)}`,
+      metadata: { origin: watch.origin, destination: watch.destination, state, cash_price_inr: cashPrice },
+    }
+  }
+  return {
+    type: 'TRAVEL_WATCH',
+    title: `No current result · ${watch.origin} → ${watch.destination}`,
+    body: 'The watched window currently has no usable award or cash benchmark from configured providers. CreditIQ will keep checking.',
+    href: '/dream-trip',
+    severity: 'INFO',
+    source_type: 'TRAVEL_WATCH',
+    source_ref: watch.id,
+    fingerprint: `travel:${watch.id}:${state}:none`,
+    metadata: { origin: watch.origin, destination: watch.destination, state },
+  }
+}
+
 export async function GET(req: NextRequest) {
   const denied = await requireAdminOrCron(req)
   if (denied) return denied
@@ -34,7 +74,7 @@ export async function GET(req: NextRequest) {
 
   if (error) return NextResponse.json({ ok: false, error: 'watch list failed' }, { status: 500 })
 
-  const summary = { watches: watches?.length || 0, checked: 0, changed: 0, errors: 0 }
+  const summary = { watches: watches?.length || 0, checked: 0, changed: 0, notifications: 0, errors: 0 }
   const base = new URL(req.url).origin
 
   for (const watch of watches || []) {
@@ -97,10 +137,18 @@ export async function GET(req: NextRequest) {
       }
 
       const { error: updateError } = await db.from('travel_watches').update(patch).eq('id', watch.id).eq('user_id', watch.user_id)
-      if (updateError) summary.errors++
-      else {
-        summary.checked++
-        if (changed) summary.changed++
+      if (updateError) {
+        summary.errors++
+        continue
+      }
+
+      summary.checked++
+      if (changed) {
+        summary.changed++
+        const notice = notificationFor(watch, state, bestAward, cashPrice)
+        const { error: notificationError } = await db.from('user_notifications').insert({ user_id: watch.user_id, ...notice })
+        if (!notificationError) summary.notifications++
+        else if ((notificationError as any)?.code !== '23505') summary.errors++
       }
     } catch {
       summary.errors++
