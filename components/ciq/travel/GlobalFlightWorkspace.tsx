@@ -49,6 +49,7 @@ type FusionRow = {
   duration: number
   stops: number
   award: AwardView | null
+  awardEvidenceProvider?: string | null
   redemption: RedemptionOption[]
   bestOption: RedemptionOption | null
 }
@@ -59,6 +60,19 @@ type FusionCounts = {
   awardsEnriched: number
   awardOnlyCards: number
   cards: number
+}
+
+type AwardAttempt = {
+  source?: string
+  state?: string
+  freshness?: string | null
+}
+
+type AwardMeta = {
+  authority: string
+  searchMode: string
+  reason: string
+  attempts: AwardAttempt[]
 }
 
 const SEARCH_STAGES = [
@@ -129,6 +143,20 @@ function programmeMark(name: string) {
   return `${parts[0][0]}${parts[1][0]}`.toUpperCase()
 }
 
+function evidenceProviderLabel(provider: string | null | undefined) {
+  if (provider === 'awardtool-realtime') return 'AwardTool Real-Time'
+  if (provider?.startsWith('awardwallet')) return 'AwardWallet live search'
+  if (provider === 'seats-aero-cached') return 'Seats.aero cached discovery'
+  return provider || 'Award provider not labelled'
+}
+
+function authorityLabel(authority: string | null | undefined) {
+  if (authority === 'DATE_SPECIFIC_LIVE') return 'Date-specific live award evidence'
+  if (authority === 'CACHED_DISCOVERY') return 'Cached discovery only · seat not verified'
+  if (authority === 'DIRECT_ONLY') return 'Direct programme verification required'
+  return 'No award pricing authority established'
+}
+
 export function GlobalFlightWorkspace() {
   const params = useSearchParams()
   const qTo = resolveCity(params.get('q') || '') || ''
@@ -141,6 +169,7 @@ export function GlobalFlightWorkspace() {
   const [nonStop, setNonStop] = useState(false)
   const [rows, setRows] = useState<FusionRow[] | null>(null)
   const [counts, setCounts] = useState<FusionCounts | null>(null)
+  const [awardMeta, setAwardMeta] = useState<AwardMeta | null>(null)
   const [selectedId, setSelectedId] = useState<string | null>(null)
   const [detailTab, setDetailTab] = useState<DetailTab>('compare')
   const [loading, setLoading] = useState(false)
@@ -166,6 +195,7 @@ export function GlobalFlightWorkspace() {
     setError('')
     setRows(null)
     setCounts(null)
+    setAwardMeta(null)
     setSelectedId(null)
     setDetailTab('compare')
 
@@ -186,6 +216,12 @@ export function GlobalFlightWorkspace() {
       if (!res.ok || data.error) throw new Error(data.error || 'search failed')
       setRows((data.flights || []) as FusionRow[])
       setCounts(data.counts ?? null)
+      setAwardMeta({
+        authority: String(data.awardPricingAuthority || 'NONE'),
+        searchMode: String(data.awardSearchMode || 'UNKNOWN'),
+        reason: String(data.awardReason || ''),
+        attempts: Array.isArray(data.awardAttempts) ? data.awardAttempts : [],
+      })
     } catch {
       setError('Couldn’t complete the provider search just now — try again in a moment.')
     } finally {
@@ -212,6 +248,11 @@ export function GlobalFlightWorkspace() {
   }, [filtered, selectedId])
 
   const loadingCopy = SEARCH_STAGES[loadingStage]
+  const evidenceNote = awardMeta?.authority === 'DATE_SPECIFIC_LIVE'
+    ? 'Award search returned date-specific live evidence. Direct programme checkout still remains the final verification before an irreversible transfer.'
+    : awardMeta?.authority === 'CACHED_DISCOVERY'
+      ? 'Award results are cached discovery only. They are useful for finding opportunities, but CreditIQ will not treat them as a confirmed seat or recommend an irreversible transfer without live verification.'
+      : awardMeta?.reason || 'Open a result before transferring points; CreditIQ keeps provider authority and irreversible-transfer warnings in the decision flow.'
 
   return (
     <div className="approved-flight-workspace">
@@ -255,7 +296,7 @@ export function GlobalFlightWorkspace() {
           <div className="approved-flight-toolbar">
             <div>
               <b>{filtered.length} award options</b>
-              <span>{labelFor(from)} → {labelFor(to)} · {fmtDate(date)}{flexDays ? ` ±${flexDays} days` : ''} · {cabin}{counts ? ` · ${counts.cashFlights} target-date cash rows · ${counts.awards} award records` : ''}</span>
+              <span>{labelFor(from)} → {labelFor(to)} · {fmtDate(date)}{flexDays ? ` ±${flexDays} days` : ''} · {cabin}{counts ? ` · ${counts.cashFlights} target-date cash rows · ${counts.awards} award records` : ''}{awardMeta ? ` · ${authorityLabel(awardMeta.authority)}` : ''}</span>
             </div>
             <div className="approved-flight-filters" role="group" aria-label="Flight result filters">
               <button type="button" aria-pressed={scope === 'all'} onClick={() => setScope('all')}>All options</button>
@@ -263,7 +304,7 @@ export function GlobalFlightWorkspace() {
               <button type="button" aria-pressed={nonStop} onClick={() => setNonStop(value => !value)}>Non-stop</button>
             </div>
           </div>
-          <div className="approved-flight-note">Award discovery covers the selected flexible window. Cash remains a benchmark for the exact target date. Open a result before transferring points; CreditIQ keeps live verification and irreversible-transfer warnings in the decision flow.</div>
+          <div className="approved-flight-note">{evidenceNote}</div>
 
           <section className="approved-award-list" aria-label="Flight award results">
             <div className="approved-award-head"><span>Date</span><span>Programme & route</span><span>Economy</span><span>Business</span><span>Best wallet path</span><span /></div>
@@ -290,6 +331,8 @@ export function GlobalFlightWorkspace() {
                 taxesLabel: taxes,
               })
               const conciergeRequest = buildFlightConciergeRequest(row, rankedOptions, selectedWalletOption)
+              const evidenceProvider = evidenceProviderLabel(row.awardEvidenceProvider)
+              const evidenceAuthority = authorityLabel(awardMeta?.authority)
 
               return (
                 <article className={`approved-award-item${active ? ' open' : ''}`} key={row.id}>
@@ -328,7 +371,7 @@ export function GlobalFlightWorkspace() {
                       <div className="approved-decision-panel">
                         {detailTab === 'compare' && (
                           <div className="approved-path-grid">
-                            <article className={`approved-path-choice${award && selfServe.executable ? ' winner' : ''}`}><span>{award && selfServe.executable ? 'Mapped self-serve route' : 'Award route'}</span><b>{award ? programme : 'No award match'}</b><strong>{selfServe.pointsNeeded ? `${selfServe.pointsNeeded.toLocaleString('en-IN')} card pts` : award ? `${award.mileageCost.toLocaleString('en-IN')} miles` : 'Unavailable'}</strong><small>{selfServe.ratioLabel ? `Ratio ${selfServe.ratioLabel} · ${selfServe.durationLabel}` : taxes ? `Cached taxes ${taxes}` : 'Verify programme terms'}</small></article>
+                            <article className={`approved-path-choice${award && selfServe.executable ? ' winner' : ''}`}><span>{award && selfServe.executable ? 'Mapped self-serve route' : 'Award route'}</span><b>{award ? programme : 'No award match'}</b><strong>{selfServe.pointsNeeded ? `${selfServe.pointsNeeded.toLocaleString('en-IN')} card pts` : award ? `${award.mileageCost.toLocaleString('en-IN')} miles` : 'Unavailable'}</strong><small>{selfServe.ratioLabel ? `Ratio ${selfServe.ratioLabel} · ${selfServe.durationLabel}` : taxes ? `Returned taxes ${taxes}` : 'Verify programme terms'}</small></article>
                             <article className={`approved-path-choice${!award && row.price > 0 ? ' winner' : ''}`}><span>Cash alternative</span><b>Pay airline directly</b><strong>{row.price > 0 ? `₹${row.price.toLocaleString('en-IN')}` : 'Fare unavailable'}</strong><small>{row.price > 0 ? 'Keep all reward points' : 'No live cash number returned'}</small></article>
                             <article className="approved-path-choice"><span>Keep your points</span><b>Wait for a better option</b><strong>0 points</strong><small>Useful when award availability or transfer timing is uncertain.</small></article>
                           </div>
@@ -384,8 +427,9 @@ export function GlobalFlightWorkspace() {
 
                         {detailTab === 'sources' && (
                           <div className="approved-source-grid">
-                            <article><b>Award price</b><p>{award ? `Discovery source: ${award.source}. Treat as guidance until the selected programme is verified.` : 'No award source matched this cash itinerary.'}</p></article>
+                            <article><b>Award evidence</b><p>{award ? `${evidenceProvider}. ${evidenceAuthority}. ${awardMeta?.reason || 'Direct programme checkout remains the final execution check.'}` : 'No award source matched this cash itinerary.'}</p></article>
                             <article><b>Wallet path</b><p>{award ? (selfServe.pointsNeeded ? `Mapped card requirement: ${selfServe.pointsNeeded.toLocaleString('en-IN')} points${selfServe.ratioLabel ? ` at ${selfServe.ratioLabel}` : ''}. Transfer state: ${selfServe.transferState || 'unverified'}${selfServe.transferAsOf ? ` as of ${selfServe.transferAsOf}` : ''}.` : 'No safe mapped wallet route is promoted.') : 'Keeping points is the default when only cash inventory is available.'}</p></article>
+                            <article><b>Execution boundary</b><p>{awardMeta?.authority === 'DATE_SPECIFIC_LIVE' ? 'Date-specific live evidence improves confidence, but the selected programme checkout is still re-verified immediately before any irreversible points transfer.' : 'Cached or incomplete evidence is discovery only. CreditIQ will not tell you to move points until the seat, taxes and transfer facts are re-verified.'}</p></article>
                           </div>
                         )}
                       </div>
