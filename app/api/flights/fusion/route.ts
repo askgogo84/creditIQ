@@ -5,11 +5,11 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 import { requireAuth } from '@/lib/api-auth';
 import {
-  searchAwardAvailability,
   getAvailabilityTrips,
   type SeatsAeroResult,
   type SeatsAeroTrip,
 } from '@/lib/seats-aero';
+import { searchFusionAwards } from '@/lib/award-inventory/fusion-adapter';
 import {
   type CashFlight,
   type UserCard,
@@ -184,27 +184,45 @@ export async function POST(req: NextRequest) {
 
     const base = new URL(req.url).origin;
 
-    const [cashFetch, awards, cards] = await Promise.all([
+    const [cashFetch, awardFetch, cards] = await Promise.all([
       fetchCashFlights(base, from, to, cashReferenceDate, cashReferenceDate, cabin),
-      searchAwardAvailability(from, to, dateFrom, dateTo, undefined, cabin),
+      searchFusionAwards({ origin: from, destination: to, startDate: dateFrom, endDate: dateTo, cabin }),
       fetchUserCards(gate.userId),
     ]);
     const cashFlights = cashFetch.flights;
+    const awards = awardFetch.awards;
+
+    // AwardTool/AwardWallet can return itinerary detail directly. Preserve it and
+    // only call Seats.aero's trip-details endpoint for rows that actually came
+    // from Seats.aero cached discovery.
+    const tripByKey = new Map<string, SeatsAeroTrip | null>();
+    for (const [key, trip] of awardFetch.tripsByAwardId.entries()) tripByKey.set(key, trip);
 
     const sortedAwards = [...awards].sort((a, b) => a.mileageCost - b.mileageCost);
-    const toEnrich = sortedAwards.slice(0, ENRICH_CAP);
+    const toEnrich = sortedAwards
+      .filter((award) => {
+        const key = awardKey(award);
+        return !tripByKey.has(key) && awardFetch.providerByAwardId.get(key) === 'seats-aero-cached';
+      })
+      .slice(0, ENRICH_CAP);
     const tripPairs = await Promise.all(
       toEnrich.map(
         async (a) => [awardKey(a), await getAvailabilityTrips(a.id, cabin)] as const,
       ),
     );
-    const tripByKey = new Map<string, SeatsAeroTrip | null>(tripPairs);
-    if (awards.length > ENRICH_CAP) {
-      console.warn(
-        `fusion: enriched ${ENRICH_CAP}/${awards.length} awards with trip details; ` +
-          `${awards.length - ENRICH_CAP} shown summary-only`,
-      );
-    }
+    for (const [key, trip] of tripPairs) tripByKey.set(key, trip);
+
+    console.info('fusion: award-source', {
+      route: `${from}-${to}`,
+      dateFrom,
+      dateTo,
+      cabin,
+      mode: awardFetch.mode,
+      status: awardFetch.status,
+      pricingAuthority: awardFetch.pricingAuthority,
+      awards: awards.length,
+      attempts: awardFetch.attempts.map((attempt) => ({ source: attempt.source, state: attempt.state, freshness: attempt.freshness })),
+    });
 
     const matchedKeys = new Set<string>();
     const cashResults = cashFlights.map((flight: any) => {
@@ -238,6 +256,7 @@ export async function POST(req: NextRequest) {
         cashUnavailable: false,
         cashFareVerifiedForCabin: cashFetch.cashCabinVerified || cabin === 'economy',
         award,
+        awardEvidenceProvider: awardFetch.providerByAwardId.get(key) ?? null,
         redemption,
         bestOption,
         cabins,
@@ -268,6 +287,7 @@ export async function POST(req: NextRequest) {
           cashUnavailable: true,
           cashFareVerifiedForCabin: false,
           award,
+          awardEvidenceProvider: awardFetch.providerByAwardId.get(key) ?? null,
           redemption,
           bestOption,
           cabins,
@@ -281,7 +301,7 @@ export async function POST(req: NextRequest) {
       counts: {
         cashFlights: cashFlights.length,
         awards: awards.length,
-        awardsEnriched: Math.min(ENRICH_CAP, awards.length),
+        awardsEnriched: [...tripByKey.values()].filter(Boolean).length,
         awardOnlyCards: awardOnly.length,
         cards: cards.length,
       },
@@ -289,6 +309,11 @@ export async function POST(req: NextRequest) {
       cashAttempts: cashFetch.attempts,
       cashSource: cashFetch.source,
       cashCabinVerified: cashFetch.cashCabinVerified || cabin === 'economy',
+      awardSearchMode: awardFetch.mode,
+      awardStatus: awardFetch.status,
+      awardPricingAuthority: awardFetch.pricingAuthority,
+      awardAttempts: awardFetch.attempts,
+      awardReason: awardFetch.reason,
       verifiedPolicy: 'all-estimates',
       flights: results,
     });
