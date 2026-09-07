@@ -2,31 +2,23 @@ import type { FlightAwardOption, FlightAwardProvider, FlightAwardSearchQuery } f
 
 const BASE_URL = 'https://apisv2.awardtoolapi.com'
 
+// Only map AwardTool programmes that already have a canonical CreditIQ programme
+// id today. This keeps live results connected to the wallet/transfer graph instead
+// of creating orphan loyalty ids. More AwardTool codes can be added as the
+// CreditIQ programme registry grows.
 const PROGRAMME_TO_AWARDTOOL: Record<string, string> = {
   'american-aadvantage': 'AA',
   aeroplan: 'AC',
-  'aeromexico-club-premier': 'AM',
-  'alaska-atmos': 'AS',
-  'avianca-lifemiles': 'AV',
-  'jetblue-trueblue': 'B6',
   'british-airways-club': 'BA',
   cathay: 'CX',
-  'miles-and-more': 'LH',
-  'qatar-privilege-club': 'QR',
-  'finnair-plus': 'AY',
-  'gol-smiles': 'G3',
   'delta-skymiles': 'DL',
   'emirates-skywards': 'EK',
   'etihad-guest': 'EY',
   'flying-blue': 'KL',
-  'qantas-frequent-flyer': 'QF',
+  'qatar-privilege-club': 'QR',
   krisflyer: 'SQ',
-  'sas-eurobonus': 'SK',
-  'tap-miles-go': 'TP',
   'turkish-miles-smiles': 'TK',
   'united-mileageplus': 'UA',
-  'virgin-australia-velocity': 'VA',
-  'virgin-atlantic-flying-club': 'VS',
 }
 
 const AWARDTOOL_TO_PROGRAMME: Record<string, string> = Object.fromEntries(
@@ -73,14 +65,6 @@ function firstString(row: Record<string, unknown>, keys: string[]): string | nul
   for (const key of keys) {
     const value = text(row[key])
     if (value) return value
-  }
-  return null
-}
-
-function firstNumber(row: Record<string, unknown>, keys: string[]): number | null {
-  for (const key of keys) {
-    const value = numberOrNull(row[key])
-    if (value != null) return value
   }
   return null
 }
