@@ -6,6 +6,7 @@ import { authedFetch } from '@/lib/authed-fetch'
 import { ConciergeRequestButton, type ConciergeRequest } from '@/components/ciq/concierge/ConciergeRequestButton'
 import { programmeIdForHotelChain } from '@/lib/redemption-rails/programme-resolver'
 import { HotelAwardJoinPanel } from './HotelAwardJoinPanel'
+import { HotelAwardDiscoveryPanel } from './HotelAwardDiscoveryPanel'
 import './global-hotel-workspace.css'
 
 type HotelOffer = {
@@ -54,6 +55,12 @@ type SearchPage = {
   hotels?: HotelOffer[]
   coverage?: Coverage
   error?: string
+}
+
+type SubmittedHotelSearch = {
+  destination: string
+  checkInDate: string
+  checkOutDate: string
 }
 
 function plusDays(days: number) {
@@ -126,6 +133,7 @@ export function GlobalHotelWorkspace() {
   const [coverage, setCoverage] = useState<Coverage | null>(null)
   const [sessionToken, setSessionToken] = useState<string | null>(null)
   const [selectedId, setSelectedId] = useState<string | null>(null)
+  const [submittedSearch, setSubmittedSearch] = useState<SubmittedHotelSearch | null>(null)
   const [loading, setLoading] = useState(false)
   const [loadingMore, setLoadingMore] = useState(false)
   const [error, setError] = useState('')
@@ -139,6 +147,8 @@ export function GlobalHotelWorkspace() {
 
   async function runSearch() {
     if (!destination.trim() || !checkin || !checkout || checkout <= checkin) return
+    const boundedDestination = destination.trim()
+    setSubmittedSearch({ destination: boundedDestination, checkInDate: checkin, checkOutDate: checkout })
     setLoading(true)
     setError('')
     setOffers([])
@@ -149,7 +159,7 @@ export function GlobalHotelWorkspace() {
       const res = await authedFetch('/api/hotels/search', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ destination: destination.trim(), checkin, checkout, adults, rooms: 1, limit: 50 }),
+        body: JSON.stringify({ destination: boundedDestination, checkin, checkout, adults, rooms: 1, limit: 50 }),
       })
       const data = await res.json() as SearchPage
       if (!res.ok) {
@@ -230,7 +240,7 @@ export function GlobalHotelWorkspace() {
 
       {coverage && <div className="ghw-coverage"><div><b>{totalLabel}</b><span>{coverage.provider} · {coverage.mode}{coverage.status ? ` · ${coverage.status}` : ''}</span></div>{coverage.fetched_at && <small>Fetched {new Date(coverage.fetched_at).toLocaleTimeString()}</small>}</div>}
 
-      {error && <div className="ghw-error"><b>Live hotel inventory is unavailable for this search.</b><span>{error}</span><small>CreditIQ will not replace this search with captured rates from another destination.</small></div>}
+      {error && <div className="ghw-error"><b>Live cash-hotel inventory is unavailable for this search.</b><span>{error}</span><small>Points-property discovery can still load below. CreditIQ will not replace missing live cash rates with captured or historical prices.</small></div>}
       {loading && <div className="ghw-loading">Starting the global cash-hotel provider chain for {destination}…</div>}
 
       {!loading && offers.length > 0 && (
@@ -255,7 +265,9 @@ export function GlobalHotelWorkspace() {
         </div>
       )}
 
-      {!loading && !error && coverage && offers.length === 0 && <div className="ghw-empty">The connected provider returned no hotel offers for this destination and date range.</div>}
+      {!loading && !error && coverage && offers.length === 0 && <div className="ghw-empty">The connected cash provider returned no hotel offers for this destination and date range.</div>}
+
+      <HotelAwardDiscoveryPanel search={submittedSearch} />
     </div>
   )
 }
