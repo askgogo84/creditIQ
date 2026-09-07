@@ -6,6 +6,7 @@ import type { FlightAwardOption, FlightAwardSearchQuery } from './types'
 export type FusionAwardFetch = {
   awards: SeatsAeroResult[]
   tripsByAwardId: Map<string, SeatsAeroTrip>
+  providerByAwardId: Map<string, string>
   attempts: FlightAwardSourceAttempt[]
   status: string
   pricingAuthority: 'DATE_SPECIFIC_LIVE' | 'CACHED_DISCOVERY' | 'DIRECT_ONLY' | 'NONE'
@@ -35,13 +36,13 @@ function minutesBetween(start: string | null | undefined, end: string | null | u
   return Math.round((b - a) / 60_000)
 }
 
-function legacyDataSource(option: FlightAwardOption): SeatsAeroResult['dataSource'] {
+function legacyDataSource(_option: FlightAwardOption): SeatsAeroResult['dataSource'] {
   // The legacy fusion DTO predates multi-provider award search and has only two
   // source labels. The authoritative provider/freshness is returned separately
-  // in awardAttempts/awardPricingAuthority and in option.evidence. Keep this
+  // in awardAttempts/awardPricingAuthority and in providerByAwardId. Keep this
   // compatibility value non-authoritative instead of pretending AwardTool is
   // Seats.aero.
-  return option.evidence.freshness === 'LIVE' ? 'estimated' : 'estimated'
+  return 'estimated'
 }
 
 function toLegacyAward(option: FlightAwardOption, query: FlightAwardSearchQuery): SeatsAeroResult | null {
@@ -121,6 +122,7 @@ export async function searchFusionAwards(input: {
     return {
       awards,
       tripsByAwardId: new Map(),
+      providerByAwardId: new Map(awards.map(award => [award.id, 'seats-aero-cached'])),
       attempts: [{
         source: 'seats-aero',
         configured: Boolean(process.env.SEATS_AERO_API_KEY),
@@ -147,10 +149,12 @@ export async function searchFusionAwards(input: {
   const result = await searchFlightAwards(query)
   const awards: SeatsAeroResult[] = []
   const tripsByAwardId = new Map<string, SeatsAeroTrip>()
+  const providerByAwardId = new Map<string, string>()
   for (const option of result.options) {
     const award = toLegacyAward(option, query)
     if (!award) continue
     awards.push(award)
+    providerByAwardId.set(award.id, option.evidence.provider)
     const trip = toTrip(option, query)
     if (trip) tripsByAwardId.set(award.id, trip)
   }
@@ -158,6 +162,7 @@ export async function searchFusionAwards(input: {
   return {
     awards,
     tripsByAwardId,
+    providerByAwardId,
     attempts: result.attempts,
     status: result.status,
     pricingAuthority: result.pricingAuthority,
