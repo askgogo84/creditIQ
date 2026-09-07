@@ -1,3 +1,4 @@
+// Re-run marker: Preview environment access enabled for the AwardTool evaluation.
 const BASE = 'https://apisv2.awardtoolapi.com'
 
 function key() {
