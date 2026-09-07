@@ -4,13 +4,20 @@ import { useEffect, useMemo, useState } from 'react'
 import { authedFetch } from '@/lib/authed-fetch'
 import { TRAVEL_COVERAGE_MATRIX, type TravelCoverageCase } from '@/lib/travel/coverage-matrix'
 
+type ResultStatus = 'idle' | 'running' | 'pass' | 'partial' | 'cached' | 'guide' | 'fail'
+type PricingAuthority = 'DATE_SPECIFIC_LIVE' | 'CACHED_DISCOVERY' | 'DIRECT_ONLY' | 'NONE' | string
+
 type Result = {
-  status: 'idle' | 'running' | 'pass' | 'partial' | 'guide' | 'fail'
+  status: ResultStatus
   cashRows: number
-  awardRows: number
+  liveAwardRows: number
+  cachedAwardRows: number
   guideRows: number
   walletRoutes: number
   programmes: string[]
+  authority: PricingAuthority
+  sourceSummary: string
+  searchMode: string
   message: string
   elapsedMs?: number
 }
@@ -20,7 +27,7 @@ type Provider = {
   name: string
   kinds: string[]
   priority: number
-  status: 'configured' | 'waiting-access' | 'not-configured'
+  status: 'configured' | 'waiting-access' | 'waiting-integration' | 'not-configured'
   required_env: string[]
   note: string
 }
@@ -32,7 +39,27 @@ function futureDate(days = 21) {
 }
 
 function emptyResult(): Result {
-  return { status: 'idle', cashRows: 0, awardRows: 0, guideRows: 0, walletRoutes: 0, programmes: [], message: 'Not run' }
+  return {
+    status: 'idle',
+    cashRows: 0,
+    liveAwardRows: 0,
+    cachedAwardRows: 0,
+    guideRows: 0,
+    walletRoutes: 0,
+    programmes: [],
+    authority: 'NONE',
+    sourceSummary: '—',
+    searchMode: '—',
+    message: 'Not run',
+  }
+}
+
+function attemptSummary(attempts: any[]): string {
+  if (!Array.isArray(attempts) || !attempts.length) return '—'
+  return attempts
+    .filter(attempt => attempt && attempt.source)
+    .map(attempt => `${attempt.source}:${String(attempt.state || '').toLowerCase()}`)
+    .join(' · ')
 }
 
 export default function TravelQaPage() {
@@ -62,6 +89,7 @@ export default function TravelQaPage() {
       run: values.filter(result => result.status !== 'idle').length,
       pass: values.filter(result => result.status === 'pass').length,
       partial: values.filter(result => result.status === 'partial').length,
+      cached: values.filter(result => result.status === 'cached').length,
       guide: values.filter(result => result.status === 'guide').length,
       fail: values.filter(result => result.status === 'fail').length,
     }
@@ -75,7 +103,7 @@ export default function TravelQaPage() {
         authedFetch('/api/flights/fusion', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ from: test.from, to: test.to, date_from: date, date_to: date, cabin: test.cabin }),
+          body: JSON.stringify({ from: test.from, to: test.to, date_from: date, date_to: date, cash_date: date, cabin: test.cabin }),
         }),
         authedFetch(`/api/flights/award-guide?from=${encodeURIComponent(test.from)}&to=${encodeURIComponent(test.to)}`),
       ])
@@ -87,22 +115,37 @@ export default function TravelQaPage() {
       const rows = Array.isArray(data.flights) ? data.flights : []
       const guides = guideResponse.ok && Array.isArray(guideData.guides) ? guideData.guides : []
       const cashRows = rows.filter((row: any) => Number(row.price) > 0).length
-      const awardRows = rows.filter((row: any) => row.award).length
+      const allAwardRows = rows.filter((row: any) => row.award).length
+      const authority: PricingAuthority = data.awardPricingAuthority || 'NONE'
+      const isLive = authority === 'DATE_SPECIFIC_LIVE'
+      const isCached = authority === 'CACHED_DISCOVERY'
+      const liveAwardRows = isLive ? allAwardRows : 0
+      const cachedAwardRows = isCached ? allAwardRows : 0
       const guideRows = guides.length
       const walletRoutes = rows.filter((row: any) => Array.isArray(row.redemption) && row.redemption.some((option: any) => option.status === 'ok' && option.canAfford)).length
       const programmes = [...new Set([
         ...rows.map((row: any) => row.award?.program).filter(Boolean),
         ...guides.map((guide: any) => `${guide.programme} · GUIDE`),
       ])] as string[]
+      const sourceSummary = attemptSummary(data.awardAttempts)
+      const searchMode = String(data.awardSearchMode || '—')
 
-      let status: Result['status'] = 'fail'
-      let message = 'No cash, live award or published guide returned'
-      if (cashRows > 0 && awardRows > 0) {
+      let status: ResultStatus = 'fail'
+      let message = 'No cash, live award, cached discovery or published guide returned'
+      if (cashRows > 0 && liveAwardRows > 0) {
         status = 'pass'
-        message = 'Cash + LIVE award inventory returned'
-      } else if (awardRows > 0 || cashRows > 0) {
+        message = 'Cash + date-specific LIVE award inventory returned'
+      } else if (liveAwardRows > 0) {
         status = 'partial'
-        message = awardRows > 0 ? 'LIVE award only — cash coverage missing' : 'Cash only — LIVE award coverage missing'
+        message = 'LIVE award inventory returned; target-date cash coverage is missing'
+      } else if (cachedAwardRows > 0) {
+        status = 'cached'
+        message = cashRows > 0
+          ? 'Cash + cached award discovery returned; award is NOT live-verified'
+          : 'Cached award discovery only; no live award or cash benchmark returned'
+      } else if (cashRows > 0) {
+        status = 'partial'
+        message = 'Cash inventory returned; LIVE award coverage is missing'
       } else if (guideRows > 0) {
         status = 'guide'
         message = 'Issuer-published guide exists, but no live inventory returned'
@@ -113,10 +156,14 @@ export default function TravelQaPage() {
         [test.id]: {
           status,
           cashRows,
-          awardRows,
+          liveAwardRows,
+          cachedAwardRows,
           guideRows,
           walletRoutes,
           programmes,
+          authority,
+          sourceSummary,
+          searchMode,
           message,
           elapsedMs: Math.round(performance.now() - started),
         },
@@ -134,21 +181,31 @@ export default function TravelQaPage() {
     }
   }
 
-  async function runGroup(region: 'domestic' | 'international') {
+  async function runTests(tests: TravelCoverageCase[], label: string) {
     if (runningGroup) return
-    setRunningGroup(region)
-    const tests = TRAVEL_COVERAGE_MATRIX.filter(item => item.region === region)
-    for (const test of tests) await runCase(test)
-    setRunningGroup(null)
+    setRunningGroup(label)
+    try {
+      for (const test of tests) await runCase(test)
+    } finally {
+      setRunningGroup(null)
+    }
+  }
+
+  async function runGroup(region: 'domestic' | 'international') {
+    await runTests(TRAVEL_COVERAGE_MATRIX.filter(item => item.region === region), region)
+  }
+
+  async function runAll() {
+    await runTests([...TRAVEL_COVERAGE_MATRIX], 'all')
   }
 
   return (
-    <main style={{ width: 'min(calc(100% - 48px), 1240px)', margin: '0 auto', padding: '32px 0 80px', color: 'var(--ink)' }}>
+    <main style={{ width: 'min(calc(100% - 48px), 1320px)', margin: '0 auto', padding: '32px 0 80px', color: 'var(--ink)' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'end', gap: 20, marginBottom: 18 }}>
         <div>
           <div className="ciq-editorial-kicker">Internal travel QA</div>
           <h1 style={{ margin: '6px 0 4px', fontSize: 34, letterSpacing: '-.04em' }}>Global Travel provider + route QA</h1>
-          <p style={{ margin: 0, color: 'var(--ink-2)', fontSize: 13 }}>Provider readiness, live cash + live award + wallet fusion, with published programme guides tracked separately.</p>
+          <p style={{ margin: 0, color: 'var(--ink-2)', fontSize: 13 }}>Live and cached award evidence are separated. A cached result can never pass as a live seat.</p>
         </div>
         <label style={{ display: 'grid', gap: 4, color: 'var(--ink-3)', fontSize: 10 }}>
           Test date
@@ -168,24 +225,26 @@ export default function TravelQaPage() {
         )}
       </section>
 
-      <section style={{ display: 'grid', gridTemplateColumns: 'repeat(5,1fr)', gap: 8, marginBottom: 14 }}>
+      <section style={{ display: 'grid', gridTemplateColumns: 'repeat(6,1fr)', gap: 8, marginBottom: 14 }}>
         <Metric label="Run" value={summary.run} />
         <Metric label="Pass · live" value={summary.pass} />
         <Metric label="Partial" value={summary.partial} />
+        <Metric label="Cached only" value={summary.cached} />
         <Metric label="Guide only" value={summary.guide} />
         <Metric label="Fail" value={summary.fail} />
       </section>
 
-      <div style={{ display: 'flex', gap: 8, marginBottom: 16 }}>
-        <button disabled={!!runningGroup} onClick={() => void runGroup('domestic')} style={buttonStyle}>{runningGroup === 'domestic' ? 'Running domestic…' : 'Run all domestic'}</button>
-        <button disabled={!!runningGroup} onClick={() => void runGroup('international')} style={buttonStyle}>{runningGroup === 'international' ? 'Running international…' : 'Run all international'}</button>
+      <div style={{ display: 'flex', gap: 8, marginBottom: 16, flexWrap: 'wrap' }}>
+        <button disabled={!!runningGroup} onClick={() => void runAll()} style={buttonStyle}>{runningGroup === 'all' ? 'Running all 36…' : 'Run all 36 routes'}</button>
+        <button disabled={!!runningGroup} onClick={() => void runGroup('domestic')} style={secondaryButtonStyle}>{runningGroup === 'domestic' ? 'Running domestic…' : 'Run all domestic'}</button>
+        <button disabled={!!runningGroup} onClick={() => void runGroup('international')} style={secondaryButtonStyle}>{runningGroup === 'international' ? 'Running international…' : 'Run all international'}</button>
       </div>
 
       {(['domestic', 'international'] as const).map(region => (
         <section key={region} style={{ marginTop: 24 }}>
           <h2 style={{ margin: '0 0 8px', fontSize: 17, textTransform: 'capitalize' }}>{region}</h2>
-          <div style={{ overflow: 'hidden', border: '1px solid var(--line)', borderRadius: 12, background: 'var(--surface)' }}>
-            <div style={headerGridStyle}><span>Route</span><span>Cabin</span><span>Cash</span><span>Live awards</span><span>Guide</span><span>Wallet</span><span>Programmes</span><span>Status</span><span /></div>
+          <div style={{ overflowX: 'auto', border: '1px solid var(--line)', borderRadius: 12, background: 'var(--surface)' }}>
+            <div style={headerGridStyle}><span>Route</span><span>Cabin</span><span>Cash</span><span>Live</span><span>Cached</span><span>Guide</span><span>Wallet</span><span>Authority / sources</span><span>Status</span><span /></div>
             {TRAVEL_COVERAGE_MATRIX.filter(item => item.region === region).map(test => {
               const result = results[test.id] ?? emptyResult()
               return (
@@ -193,10 +252,11 @@ export default function TravelQaPage() {
                   <span><b style={{ display: 'block', fontSize: 11 }}>{test.from} → {test.to}</b><small style={{ color: 'var(--ink-3)' }}>{test.label}</small></span>
                   <span>{test.cabin}</span>
                   <span>{result.cashRows}</span>
-                  <span>{result.awardRows}</span>
+                  <span>{result.liveAwardRows}</span>
+                  <span>{result.cachedAwardRows}</span>
                   <span>{result.guideRows}</span>
                   <span>{result.walletRoutes}</span>
-                  <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{result.programmes.join(', ') || '—'}</span>
+                  <span title={`${result.authority} · ${result.sourceSummary} · ${result.programmes.join(', ')}`} style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}><b style={{ display: 'block', fontSize: 9.5 }}>{result.authority}</b><small style={{ color: 'var(--ink-3)' }}>{result.sourceSummary}</small></span>
                   <span><Status result={result} /></span>
                   <span><button disabled={!!runningGroup || result.status === 'running'} onClick={() => void runCase(test)} style={smallButtonStyle}>{result.status === 'running' ? 'Running…' : 'Run'}</button></span>
                 </div>
@@ -206,18 +266,24 @@ export default function TravelQaPage() {
         </section>
       ))}
 
-      <p style={{ marginTop: 14, color: 'var(--ink-3)', fontSize: 10, lineHeight: 1.55 }}><b>PASS</b> requires both cash and LIVE award inventory. <b>GUIDE</b> means an issuer has published a points benchmark but CreditIQ has not confirmed a seat; it never counts as availability. PARTIAL means only one live side returned. Wallet routes are counted only from actual fusion results.</p>
+      <p style={{ marginTop: 14, color: 'var(--ink-3)', fontSize: 10, lineHeight: 1.55 }}><b>PASS</b> requires target-date cash plus <b>DATE_SPECIFIC_LIVE</b> award authority. <b>CACHED</b> means discovery evidence only and never counts as a verified seat. <b>GUIDE</b> is an issuer-published benchmark, not availability. Wallet routes are counted from the returned award evidence but still require the final programme checkout before an irreversible transfer.</p>
     </main>
   )
 }
 
 function ProviderCard({ provider }: { provider: Provider }) {
-  const color = provider.status === 'configured' ? 'var(--green)' : provider.status === 'waiting-access' ? 'var(--copper)' : 'var(--ink-3)'
+  const color = provider.status === 'configured'
+    ? 'var(--green)'
+    : provider.status === 'waiting-access'
+      ? 'var(--copper)'
+      : provider.status === 'waiting-integration'
+        ? 'var(--amber)'
+        : 'var(--ink-3)'
   return (
     <div style={{ padding: 12, border: '1px solid var(--line)', borderRadius: 11, background: 'var(--surface)' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', gap: 8 }}>
         <b style={{ fontSize: 11 }}>{provider.name}</b>
-        <span style={{ color, fontSize: 8.5, fontWeight: 850, textTransform: 'uppercase' }}>{provider.status.replace('-', ' ')}</span>
+        <span style={{ color, fontSize: 8.5, fontWeight: 850, textTransform: 'uppercase' }}>{provider.status.replaceAll('-', ' ')}</span>
       </div>
       <div style={{ marginTop: 5, color: 'var(--ink-3)', fontSize: 9 }}>{provider.kinds.join(' · ')}</div>
       <div style={{ marginTop: 7, color: 'var(--ink-2)', fontSize: 9.5, lineHeight: 1.45 }}>{provider.note}</div>
@@ -231,11 +297,22 @@ function Metric({ label, value }: { label: string; value: number }) {
 }
 
 function Status({ result }: { result: Result }) {
-  const color = result.status === 'pass' ? 'var(--green)' : result.status === 'fail' ? 'var(--red)' : result.status === 'partial' ? 'var(--amber)' : result.status === 'guide' ? 'var(--copper)' : 'var(--ink-3)'
-  return <span title={result.message} style={{ color, fontSize: 9.5, fontWeight: 800, textTransform: 'uppercase' }}>{result.status}{result.elapsedMs ? ` · ${(result.elapsedMs / 1000).toFixed(1)}s` : ''}</span>
+  const color = result.status === 'pass'
+    ? 'var(--green)'
+    : result.status === 'fail'
+      ? 'var(--red)'
+      : result.status === 'partial'
+        ? 'var(--amber)'
+        : result.status === 'cached'
+          ? 'var(--ink-2)'
+          : result.status === 'guide'
+            ? 'var(--copper)'
+            : 'var(--ink-3)'
+  return <span title={`${result.message} · mode ${result.searchMode}`} style={{ color, fontSize: 9.5, fontWeight: 800, textTransform: 'uppercase' }}>{result.status}{result.elapsedMs ? ` · ${(result.elapsedMs / 1000).toFixed(1)}s` : ''}</span>
 }
 
 const buttonStyle = { minHeight: 40, border: 0, borderRadius: 10, padding: '0 15px', background: 'var(--ink)', color: 'var(--paper)', fontWeight: 750, cursor: 'pointer' } as const
+const secondaryButtonStyle = { minHeight: 40, border: '1px solid var(--line)', borderRadius: 10, padding: '0 15px', background: 'var(--surface)', color: 'var(--ink)', fontWeight: 750, cursor: 'pointer' } as const
 const smallButtonStyle = { minHeight: 30, border: '1px solid var(--line)', borderRadius: 8, padding: '0 10px', background: 'var(--surface)', color: 'var(--ink)', fontSize: 10, fontWeight: 700, cursor: 'pointer' } as const
-const headerGridStyle = { display: 'grid', gridTemplateColumns: '1.2fr .55fr .4fr .55fr .4fr .45fr 1.25fr .75fr .4fr', gap: 9, alignItems: 'center', minHeight: 38, padding: '0 12px', background: 'var(--surface-2)', color: 'var(--ink-3)', fontSize: 8.5, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '.05em' } as const
-const rowGridStyle = { display: 'grid', gridTemplateColumns: '1.2fr .55fr .4fr .55fr .4fr .45fr 1.25fr .75fr .4fr', gap: 9, alignItems: 'center', minHeight: 54, padding: '7px 12px', borderTop: '1px solid var(--line)', fontSize: 10 } as const
+const headerGridStyle = { display: 'grid', gridTemplateColumns: '1.1fr .5fr .38fr .38fr .45fr .4fr .45fr 1.8fr .72fr .38fr', gap: 9, alignItems: 'center', minWidth: 1160, minHeight: 38, padding: '0 12px', background: 'var(--surface-2)', color: 'var(--ink-3)', fontSize: 8.5, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '.05em' } as const
+const rowGridStyle = { display: 'grid', gridTemplateColumns: '1.1fr .5fr .38fr .38fr .45fr .4fr .45fr 1.8fr .72fr .38fr', gap: 9, alignItems: 'center', minWidth: 1160, minHeight: 58, padding: '7px 12px', borderTop: '1px solid var(--line)', fontSize: 10 } as const
