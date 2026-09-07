@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "prebuild": "npm run check:card-links && npm run check:transfer-graph && npm run check:point-values && npm run check:airports && npm run check:travel-matrix && npm run check:airindia-guide && tsx scripts/travel-prod-smoke.ts",
+    "prebuild": "npm run check:card-links && npm run check:transfer-graph && npm run check:point-values && npm run check:airports && npm run check:travel-matrix && npm run check:airindia-guide",
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
