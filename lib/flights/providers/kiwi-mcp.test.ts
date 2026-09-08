@@ -16,9 +16,9 @@ function rpcResponse(payload: unknown) {
   }), { status: 200, headers: { 'content-type': 'application/json' } })
 }
 
-function businessPayload(cabinClass: string = 'Business') {
+function businessPayload(cabinClass: string = 'Business', currency: string = 'INR') {
   return {
-    currency: 'INR',
+    currency,
     resultsCount: 1,
     searchTimeMs: 42,
     itineraries: [{
@@ -47,7 +47,7 @@ function businessPayload(cabinClass: string = 'Business') {
 }
 
 describe('Kiwi MCP cash-flight adapter', () => {
-  it('requests and returns an exact-cabin structured live result', async () => {
+  it('requests and returns an exact-cabin structured live INR result', async () => {
     const mock = vi.fn(async () => rpcResponse(businessPayload()))
     global.fetch = mock as typeof fetch
 
@@ -56,6 +56,7 @@ describe('Kiwi MCP cash-flight adapter', () => {
     })
 
     expect(result.protocol).toBe('modern')
+    expect(result.currency).toBe('INR')
     expect(result.flights).toHaveLength(1)
     expect(result.flights[0]).toMatchObject({
       price: 12345,
@@ -83,6 +84,24 @@ describe('Kiwi MCP cash-flight adapter', () => {
     })
 
     expect(result.flights).toEqual([])
+  })
+
+  it('rejects a structured non-INR result rather than relabelling or converting it', async () => {
+    global.fetch = vi.fn(async () => rpcResponse(businessPayload('Business', 'EUR'))) as typeof fetch
+
+    await expect(searchKiwiMcpFlights({
+      from: 'BLR', to: 'SIN', date: '2026-10-08', cabin: 'business', adults: 1,
+    })).rejects.toThrow('EUR currency; INR required')
+  })
+
+  it('rejects a structured result with no declared currency', async () => {
+    const payload = businessPayload()
+    delete (payload as any).currency
+    global.fetch = vi.fn(async () => rpcResponse(payload)) as typeof fetch
+
+    await expect(searchKiwiMcpFlights({
+      from: 'BLR', to: 'SIN', date: '2026-10-08', cabin: 'business', adults: 1,
+    })).rejects.toThrow('unknown currency; INR required')
   })
 
   it('does not promote human-readable MCP text into a structured price', async () => {
