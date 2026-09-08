@@ -20,17 +20,18 @@ vi.mock('next/link', () => ({
 import { TravelWorkspaceShell } from './TravelWorkspaceShell'
 
 describe('TravelWorkspaceShell', () => {
-  it('matches the approved Flights, Hotels, and Explore Travel modes', () => {
+  it('matches the approved Flights, Hotels, Dream Trip, and Explore Travel modes', () => {
     nav.path = '/trip-planner'
     const { container } = render(<TravelWorkspaceShell><div>flight content</div></TravelWorkspaceShell>)
     const modes = within(container).getByRole('navigation', { name: 'Travel modes' })
     const links = within(modes).getAllByRole('link')
 
-    expect(links.map(link => link.textContent?.trim())).toEqual(['Flights', 'Hotels', 'Explore'])
+    expect(links.map(link => link.textContent?.trim())).toEqual(['Flights', 'Hotels', 'Dream Trip', 'Explore'])
     expect(within(modes).getByRole('link', { name: /Flights/ })).toHaveAttribute('href', '/trip-planner')
     expect(within(modes).getByRole('link', { name: /Flights/ })).toHaveAttribute('aria-current', 'page')
     expect(within(modes).getByRole('link', { name: /Hotels/ })).toHaveAttribute('href', '/hotels')
     expect(within(modes).getByRole('link', { name: /Hotels/ })).not.toHaveAttribute('aria-current')
+    expect(within(modes).getByRole('link', { name: /Dream Trip/ })).toHaveAttribute('href', '/dream-trip')
     expect(within(modes).getByRole('link', { name: /Explore/ })).toHaveAttribute('href', '/sweet-spots')
   })
 

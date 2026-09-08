@@ -61,7 +61,7 @@ describe('flight award orchestrator', () => {
       awardWallet: { isConfigured: () => false } as any,
     })
     expect(result.status).toBe('PROVIDER_UNAVAILABLE')
-    expect(result.reason).toMatch(/No configured award source/)
+    expect(result.reason).toMatch(/No live award source completed successfully enough to establish that award seats were absent/i)
   })
 
   it('returns a published Maharaja guide without treating it as inventory', async () => {

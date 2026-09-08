@@ -93,12 +93,12 @@ describe('SectionTabs — mobile carousel', () => {
   it('renders one dot per section with an accessible current state', () => {
     const { container } = render(<SectionTabs />)
     const dots = container.querySelectorAll('.ciq-st-mobile .ciq-st-dot')
-    expect(dots).toHaveLength(6)
+    expect(dots).toHaveLength(7)
     const current = container.querySelectorAll('.ciq-st-mobile .ciq-st-dot[aria-current="true"]')
     expect(current).toHaveLength(1)
     const group = container.querySelector('.ciq-st-dots')
     expect(group).toHaveAttribute('role', 'group')
-    expect(group?.getAttribute('aria-label')).toMatch(/Section 1 of 6/)
+    expect(group?.getAttribute('aria-label')).toMatch(/Section 1 of 7/)
   })
 
   it('swipe left navigates forward, swipe right navigates back', () => {
@@ -142,7 +142,7 @@ describe('SectionTabs — all-sections sheet', () => {
     expect(dialog).toHaveAttribute('aria-modal', 'true')
     const rows = within(dialog).getAllByRole('link')
     expect(rows.map(r => r.textContent)).toEqual([
-      'Flights', 'Hotels', 'Ask CIRA', 'Sweet Spots', 'Transfer Partners', 'Lounges',
+      'Flights', 'Hotels', 'Dream Trip', 'Ask CIRA', 'Sweet Spots', 'Transfer Partners', 'Lounges',
     ])
   })
 
@@ -213,7 +213,7 @@ describe('SectionTabs — constant header structure across groups', () => {
   const cases: Array<[string, number]> = [
     ['/wallet', 2],
     ['/spend-optimizer', 2],
-    ['/trip-planner', 6],
+    ['/trip-planner', 7],
     ['/cards', 4],
     ['/profile', 3],
   ]

@@ -5,6 +5,19 @@ function normalize(value: string): string {
   return (value || '').toLowerCase().replace(/[^a-z0-9]+/g, '')
 }
 
+const BANK_ALIASES: Record<string, string> = {
+  americanexpress: 'amex',
+  amex: 'amex',
+  bankofbaroda: 'bob',
+  bob: 'bob',
+}
+
+function canonicalBank(value: string): string {
+  const raw = normalize(value)
+  if (BANK_ALIASES[raw]) return BANK_ALIASES[raw]
+  return raw.replace(/(bank|cards|card|limited|ltd)+$/g, '')
+}
+
 export interface RailWalletCardIdentity {
   bank: string
   cardName: string
@@ -22,10 +35,15 @@ export function resolveRailCardId(card: RailWalletCardIdentity): string | null {
   const resolved = resolveCardCurrency(card.bank, card.cardName)
   if (!resolved) return null
 
+  // `resolveCardCurrency` may return a synthetic routing-bank label for cards
+  // whose transfer graph node is intentionally product-specific (Axis Atlas is
+  // the current example). That routing label must never be mistaken for the
+  // catalogue issuer. The matched card name is already conservatively resolved,
+  // so bind it back to the catalogue using the caller's original issuer.
   const targetName = normalize(resolved.matchedCardName)
-  const targetBank = normalize(resolved.bank)
+  const targetBank = canonicalBank(card.bank)
   const seed = SEED_CARDS.find((candidate) =>
-    normalize(candidate.name) === targetName && normalize(candidate.bank) === targetBank,
+    normalize(candidate.name) === targetName && canonicalBank(candidate.bank) === targetBank,
   )
 
   return seed?.id ?? null
