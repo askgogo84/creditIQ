@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "prebuild": "npm run check:card-links && npm run check:transfer-graph && npm run check:point-values && npm run check:airports && npm run check:travel-matrix && npm run check:airindia-guide",
+    "prebuild": "npm run check:card-links && npm run check:transfer-graph && npm run check:point-values && npm run check:airports && npm run check:travel-matrix && npm run check:airindia-guide && npm run check:awardtool-truth",
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
@@ -16,6 +16,7 @@
     "check:airports": "tsx scripts/validate-airports.ts",
     "check:travel-matrix": "tsx scripts/validate-travel-matrix.ts",
     "check:airindia-guide": "tsx scripts/validate-air-india-maharaja-guide.ts",
+    "check:awardtool-truth": "tsx scripts/validate-awardtool-truth.ts",
     "gen:airports": "tsx scripts/gen-airports.ts",
     "audit:affiliate-db": "tsx scripts/audit-affiliate-coverage-db.ts",
     "gen:card-art": "tsx scripts/gen-card-art-manifest.ts",

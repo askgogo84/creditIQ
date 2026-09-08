@@ -1,0 +1,39 @@
+/* Last-resort mobile declarations for route-level stylesheets that may be emitted
+   after root CSS chunks by Next.js. Keep this tiny and only use !important where
+   a route stylesheet otherwise reasserts the desktop/tablet grid. */
+
+@media (max-width: 720px) {
+  .approved-flight-search .fp-swap {
+    display: grid !important;
+    width: 36px !important;
+    height: 36px !important;
+  }
+
+  .ghw-search {
+    grid-template-columns: minmax(0,1fr) minmax(0,1fr) !important;
+  }
+  .ghw-workspace {
+    grid-template-columns: minmax(0,1fr) !important;
+  }
+  .ghw-row {
+    grid-template-columns: 48px minmax(0,1fr) !important;
+  }
+  .ghw-price {
+    grid-column: 2 !important;
+    text-align: left !important;
+  }
+  .ghw-path {
+    display: none !important;
+  }
+}
+
+@media (max-width: 430px) {
+  .ghw-search {
+    grid-template-columns: minmax(0,1fr) !important;
+  }
+  .ghw-search label,
+  .ghw-search label:first-child,
+  .ghw-search > button {
+    grid-column: 1 !important;
+  }
+}

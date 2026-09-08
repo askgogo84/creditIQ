@@ -52,6 +52,12 @@ function dedupe(options: FlightAwardOption[]): FlightAwardOption[] {
   return [...best.values()].sort((a, b) => a.miles - b.miles)
 }
 
+function liveCompletedEmpty(attempts: FlightAwardSourceAttempt[]): boolean {
+  return attempts.some((item) =>
+    (item.source === 'awardtool' || item.source === 'awardwallet') && item.state === 'EMPTY',
+  )
+}
+
 /**
  * Flight award source policy during the AwardTool evaluation:
  * 1. AwardTool Real-Time is the primary date-specific source when the requested
@@ -160,17 +166,17 @@ export async function searchFlightAwards(
     attempts.push(attempt('direct', true, 'DIRECT_REQUIRED', 'DIRECT', 'Direct airline/programme checkout is required.'))
     const pending = attempts.some((item) => item.source === 'awardwallet' && item.state === 'PENDING')
     const direct = attempts.some((item) => item.source === 'awardwallet' && item.state === 'DIRECT_REQUIRED')
-    const anyLiveAttempted = attempts.some((item) => (item.source === 'awardtool' || item.source === 'awardwallet') && item.configured)
+    const completedEmpty = liveCompletedEmpty(attempts)
     return {
-      status: pending ? 'PENDING_LIVE' : direct ? 'DIRECT_REQUIRED' : anyLiveAttempted ? 'NO_AWARD_OPTIONS' : 'PROVIDER_UNAVAILABLE',
+      status: pending ? 'PENDING_LIVE' : direct ? 'DIRECT_REQUIRED' : completedEmpty ? 'NO_AWARD_OPTIONS' : 'PROVIDER_UNAVAILABLE',
       query, options: [], liveProvider: null, attempts, pricingAuthority: direct ? 'DIRECT_ONLY' : 'NONE', publishedGuide, fetchedAt,
       reason: pending
         ? 'Live award verification is still processing.'
         : direct
           ? 'Selected programme requires direct verification.'
-          : anyLiveAttempted
-            ? 'Configured live sources returned no usable award option for this route/date/cabin.'
-            : 'No configured award source returned usable selected-programme pricing.',
+          : completedEmpty
+            ? 'A live award source completed successfully and returned no usable option for this route/date/cabin.'
+            : 'No live award source completed successfully enough to establish that award seats were absent.',
     }
   }
 
@@ -184,8 +190,11 @@ export async function searchFlightAwards(
         status: 'SUCCESS_CACHED_DISCOVERY', query, options: cached, liveProvider: null, attempts,
         pricingAuthority: 'CACHED_DISCOVERY', publishedGuide: null, fetchedAt, reason: 'Broad cached award inventory returned after live source did not return an option.',
       } : {
-        status: 'NO_AWARD_OPTIONS', query, options: [], liveProvider: null, attempts,
-        pricingAuthority: 'NONE', publishedGuide: null, fetchedAt, reason: 'Configured sources returned no award options for this route/date/cabin.',
+        status: liveCompletedEmpty(attempts) ? 'NO_AWARD_OPTIONS' : 'PROVIDER_UNAVAILABLE', query, options: [], liveProvider: null, attempts,
+        pricingAuthority: 'NONE', publishedGuide: null, fetchedAt,
+        reason: liveCompletedEmpty(attempts)
+          ? 'A live award search completed empty and cached discovery also returned no awards.'
+          : 'Cached discovery returned no awards, but no live source completed successfully enough to establish that seats were absent.',
       }
     } catch (error) {
       attempts.push(attempt('seats-aero', true, 'ERROR', 'CACHED', error instanceof Error ? error.message : 'Cached provider failed.'))
@@ -194,11 +203,12 @@ export async function searchFlightAwards(
     attempts.push(attempt('seats-aero', false, 'UNAVAILABLE', null, 'Seats.aero API is not configured.'))
   }
   attempts.push(attempt('direct', true, 'DIRECT_REQUIRED', 'DIRECT', 'Direct airline/programme verification remains available.'))
+  const completedEmpty = liveCompletedEmpty(attempts)
   return {
-    status: awardTool.isConfigured() ? 'NO_AWARD_OPTIONS' : 'PROVIDER_UNAVAILABLE', query, options: [], liveProvider: null, attempts,
+    status: completedEmpty ? 'NO_AWARD_OPTIONS' : 'PROVIDER_UNAVAILABLE', query, options: [], liveProvider: null, attempts,
     pricingAuthority: 'NONE', publishedGuide: null, fetchedAt,
-    reason: awardTool.isConfigured()
+    reason: completedEmpty
       ? 'AwardTool real-time completed without a usable option and no cached fallback was available.'
-      : 'Broad award discovery providers are unavailable.',
+      : 'No live award source completed successfully and no cached fallback was available.',
   }
 }

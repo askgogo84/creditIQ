@@ -1,0 +1,320 @@
+/* CreditIQ mobile production hardening.
+   Loaded last so it can resolve legacy desktop-first composition without redesigning
+   the approved clean-editorial visual system. This file is intentionally layout-only. */
+
+.ciq-approved-shell,
+.ciq-approved-shell > *,
+.ciq-product-page,
+.approved-flight-workspace,
+.ghw-root {
+  min-width: 0;
+  max-width: 100%;
+}
+
+@media (max-width: 899px) {
+  .ciq-approved-shell { overflow-x: clip; }
+
+  .ciq-app-topbar {
+    padding-top: env(safe-area-inset-top);
+    height: calc(58px + env(safe-area-inset-top));
+  }
+
+  .ciq-shell-main {
+    padding-top: calc(58px + env(safe-area-inset-top)) !important;
+  }
+
+  .ciq-app-search { min-width: 0; max-width: 100%; }
+  .ciq-app-search input { width: 0; min-width: 0; }
+  .ciq-app-actions { flex: 0 0 auto; }
+
+  .ciq-workspace-grid,
+  .spend-input-layout { grid-template-columns: minmax(0, 1fr) !important; }
+
+  .ciq-card-compare-tray {
+    bottom: calc(82px + env(safe-area-inset-bottom));
+    max-width: calc(100vw - 24px);
+  }
+}
+
+.ciq-mobile-tabbar { width: min(100%, 520px); max-width: 100vw; }
+.ciq-mobile-tabbar a,
+.ciq-mobile-tabbar button { min-width: 0; overflow: hidden; }
+.ciq-mobile-tab-label {
+  display: block;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+@media (max-width: 350px) {
+  .ciq-mobile-tabbar a,
+  .ciq-mobile-tabbar button { font-size: 8.5px !important; gap: 2px !important; }
+}
+
+@media (max-width: 767px) {
+  .ciq-sectiontabs-wrap,
+  .ciq-st-mobile,
+  .ciq-st-deck,
+  .ciq-st-carousel { min-width: 0; max-width: 100%; }
+
+  .ciq-st-deck { padding: 6px 6px 8px; border-radius: 14px; }
+  .ciq-st-chev { width: 40px; height: 40px; }
+  .ciq-st-title { min-height: 40px; padding-inline: 4px; font-size: clamp(15px, 4.6vw, 18px); }
+  .ciq-st-title-text { max-width: 100%; }
+  .ciq-st-dots {
+    max-width: 100%;
+    overflow-x: auto;
+    justify-content: safe center;
+    scrollbar-width: none;
+  }
+  .ciq-st-dots::-webkit-scrollbar { display: none; }
+}
+
+/* Seven controls exist: From, swap, To, Date, Dates, Cabin, Search. */
+.approved-flight-search {
+  grid-template-columns: minmax(180px,1fr) 38px minmax(180px,1fr) minmax(135px,.72fr) minmax(115px,.58fr) minmax(120px,.64fr) auto;
+}
+
+@media (max-width: 1180px) and (min-width: 721px) {
+  .approved-flight-search {
+    grid-template-columns: minmax(180px,1fr) 38px minmax(180px,1fr) repeat(3,minmax(110px,.58fr));
+  }
+  .approved-flight-search .fp-btn {
+    grid-column: 1 / -1;
+    width: 100%;
+    min-height: 44px;
+  }
+}
+
+@media (max-width: 720px) {
+  .approved-flight-workspace { width: 100%; }
+
+  .approved-flight-search {
+    position: relative;
+    grid-template-columns: minmax(0,1fr);
+    gap: 8px;
+    padding: 10px;
+  }
+  .approved-flight-search > * {
+    grid-column: 1 !important;
+    min-width: 0;
+    width: 100%;
+  }
+  .approved-flight-search .fp-swap {
+    width: 36px;
+    height: 36px;
+    justify-self: center;
+    margin: -2px 0;
+    transform: rotate(90deg);
+  }
+  .approved-flight-search .fp-btn { min-height: 48px; width: 100%; }
+
+  .approved-flight-loader-rich { min-height: 170px; padding: 16px 12px; overflow: hidden; }
+  .approved-flight-animation { width: 100%; min-width: 0; }
+
+  .approved-flight-toolbar {
+    display: grid;
+    grid-template-columns: minmax(0,1fr);
+    gap: 9px;
+  }
+  .approved-flight-filters {
+    width: 100%;
+    flex-wrap: nowrap;
+    justify-content: flex-start;
+    overflow-x: auto;
+    padding: 1px 0 4px;
+    scrollbar-width: none;
+  }
+  .approved-flight-filters::-webkit-scrollbar { display: none; }
+  .approved-flight-filters button { flex: 0 0 auto; min-height: 36px; }
+
+  .approved-award-head { display: none !important; }
+  .approved-award-list { overflow: visible; border: 0; background: transparent; }
+  .approved-award-item {
+    margin-bottom: 9px;
+    overflow: hidden;
+    border: 1px solid #e4e1d9 !important;
+    border-radius: 12px;
+    background: #fff;
+  }
+  .approved-award-row {
+    position: relative;
+    grid-template-columns: minmax(0,1fr) auto;
+    gap: 9px 12px;
+    min-height: 0;
+    padding: 12px 12px 13px;
+  }
+  .approved-award-programme { grid-column: 1; grid-row: 1; }
+  .approved-award-row > span:first-child {
+    grid-column: 2;
+    grid-row: 1;
+    text-align: right;
+    align-self: start;
+  }
+  .approved-award-row > span:nth-child(3),
+  .approved-award-row > span:nth-child(4),
+  .approved-award-row > span:nth-child(5) {
+    grid-column: 1 / -1;
+    text-align: left !important;
+    display: grid;
+    grid-template-columns: 86px minmax(0,1fr);
+    align-items: baseline;
+    gap: 8px;
+    padding-top: 7px;
+    border-top: 1px solid #efede7;
+  }
+  .approved-award-row > span:nth-child(3)::before { content: 'Economy'; }
+  .approved-award-row > span:nth-child(4)::before { content: 'Business'; }
+  .approved-award-row > span:nth-child(5)::before { content: 'Wallet'; }
+  .approved-award-row > span:nth-child(3)::before,
+  .approved-award-row > span:nth-child(4)::before,
+  .approved-award-row > span:nth-child(5)::before {
+    color: #8b887e;
+    font-size: 8px;
+    font-weight: 800;
+    letter-spacing: .06em;
+    text-transform: uppercase;
+  }
+  .approved-award-row > span:nth-child(3) b,
+  .approved-award-row > span:nth-child(4) b,
+  .approved-award-row > span:nth-child(5) b,
+  .approved-award-row > span:nth-child(3) small,
+  .approved-award-row > span:nth-child(4) small,
+  .approved-award-row > span:nth-child(5) small { text-align: right; }
+
+  .approved-row-chevron { position: absolute; right: 10px; bottom: 10px; }
+  .approved-award-detail { padding: 0 10px 10px; }
+
+  .approved-decision-hero {
+    grid-template-columns: repeat(2,minmax(0,1fr));
+    gap: 0;
+    padding: 12px;
+  }
+  .approved-decision-hero > div:first-child { grid-column: 1 / -1; padding-bottom: 11px; }
+  .approved-decision-hero > div:not(:first-child) {
+    min-width: 0;
+    padding: 9px 8px 3px;
+    border-left: 0;
+    border-top: 1px solid #e4e1d9;
+  }
+
+  .approved-decision-tabs {
+    overflow-x: auto;
+    flex-wrap: nowrap;
+    padding: 7px;
+    scrollbar-width: none;
+  }
+  .approved-decision-tabs::-webkit-scrollbar { display: none; }
+  .approved-decision-tabs button { flex: 0 0 auto; min-height: 36px; font-size: 9px; }
+
+  .approved-decision-panel { padding: 10px; }
+  .approved-path-grid,
+  .approved-source-grid,
+  .approved-execution-split,
+  .approved-book-layout { grid-template-columns: minmax(0,1fr) !important; }
+
+  .approved-transfer-facts { grid-template-columns: repeat(2,minmax(0,1fr)) !important; }
+  .approved-execution-actions,
+  .approved-concierge-path { width: 100%; }
+  .approved-execution-actions a,
+  .approved-concierge-path button { width: 100%; justify-content: center; }
+}
+
+@media (max-width: 720px) {
+  .ghw-root { padding-bottom: 24px; }
+  .ghw-title-row { margin-top: 0; }
+  .ghw-title-row h1 { font-size: clamp(30px, 9vw, 42px); }
+  .ghw-honesty { max-width: 100%; white-space: normal; line-height: 1.35; }
+
+  .ghw-search {
+    grid-template-columns: minmax(0,1fr) minmax(0,1fr);
+    gap: 7px;
+    padding: 9px;
+  }
+  .ghw-search label { min-width: 0; }
+  .ghw-search label:first-child,
+  .ghw-search > button { grid-column: 1 / -1; }
+  .ghw-search > button { min-height: 48px; }
+
+  .ghw-demo-link,
+  .ghw-coverage { min-width: 0; }
+  .ghw-coverage {
+    display: grid;
+    grid-template-columns: minmax(0,1fr);
+    gap: 4px;
+  }
+  .ghw-coverage small { text-align: left; }
+
+  .ghw-workspace { grid-template-columns: minmax(0,1fr); }
+  .ghw-list { overflow: visible; border: 0; background: transparent; }
+  .ghw-row {
+    grid-template-columns: 48px minmax(0,1fr);
+    gap: 9px 10px;
+    margin-bottom: 8px;
+    padding: 10px;
+    overflow: hidden;
+    border: 1px solid var(--line) !important;
+    border-radius: 11px;
+  }
+  .ghw-thumb { width: 46px; height: 42px; }
+  .ghw-main { min-width: 0; }
+  .ghw-main b,
+  .ghw-main span,
+  .ghw-main small { overflow-wrap: anywhere; }
+  .ghw-price {
+    grid-column: 2;
+    text-align: left;
+    padding-top: 7px;
+    border-top: 1px solid #ece9e4;
+  }
+  .ghw-path { display: none !important; }
+  .ghw-panel { width: 100%; min-width: 0; }
+  .ghw-breakdown > div { align-items: flex-start; }
+  .ghw-breakdown b { max-width: 62%; overflow-wrap: anywhere; }
+
+  .hotel-award-discovery-head {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+  }
+  .hotel-award-discovery-grid { grid-template-columns: minmax(0,1fr) !important; }
+  .hotel-award-discovery-card { border-right: 0 !important; }
+}
+
+@media (max-width: 430px) {
+  .ghw-search { grid-template-columns: minmax(0,1fr); }
+  .ghw-search label,
+  .ghw-search label:first-child,
+  .ghw-search > button { grid-column: 1; }
+}
+
+@media (max-width: 759px) {
+  .ciq-approved-shell .approved-wallet-card-grid,
+  .ciq-approved-shell .approved-wallet-lower-grid,
+  .ciq-approved-dashboard .metric-row,
+  .ciq-approved-dashboard .mini-card-grid,
+  .ciq-approved-dashboard .dashboard-grid {
+    grid-template-columns: minmax(0,1fr) !important;
+  }
+  .ciq-approved-shell .approved-wallet-card { width: 100%; }
+  .ciq-approved-shell .approved-wallet-card .wallet-card-art { width: min(62vw, 188px) !important; }
+  .ciq-approved-dashboard .dashboard-hero { min-height: 0; padding: 22px 18px; }
+  .ciq-approved-dashboard .hero-copy h1 { font-size: clamp(32px, 10vw, 39px); }
+  .ciq-approved-dashboard .hero-actions {
+    display: grid;
+    grid-template-columns: minmax(0,1fr);
+  }
+  .ciq-approved-dashboard .button { width: 100%; }
+}
+
+@media (max-width: 480px) {
+  .ciq-product-page > header h1 { font-size: clamp(31px, 10vw, 40px) !important; }
+  .ciq-product-page > header p { font-size: 12.5px !important; }
+  .ciq-workspace-surface,
+  .ciq-editorial-note { border-radius: 14px; }
+  .ciq-card-compare-tray {
+    grid-template-columns: minmax(0,1fr) !important;
+    padding: 12px;
+  }
+  .ciq-card-compare-tray > div { grid-column: 1 !important; }
+  .ciq-card-compare-tray a { width: 100%; }
+}
