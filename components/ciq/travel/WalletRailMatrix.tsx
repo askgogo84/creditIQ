@@ -6,14 +6,14 @@ import type { RedemptionRailDefinition, TravelKind } from '@/lib/redemption-rail
 import type { WalletRailMatrix as Matrix } from '@/lib/redemption-rails/matrix'
 import {
   buildFlightRedemptionPaths,
-  rankWalletRails,
   type FlightRedemptionPath,
   type RankedRailCandidate,
   type RailRankingResult,
 } from '@/lib/redemption-ranking'
+import type { TravelDecisionContract } from '@/lib/travel/decision-contract'
 import './wallet-rail-matrix.css'
 
-type Response = { matrix?: Matrix; walletCount?: number; error?: string }
+type Response = { matrix?: Matrix; decision?: TravelDecisionContract | null; walletCount?: number; error?: string }
 
 type WalletRailMatrixProps = {
   travelKind: TravelKind
@@ -198,6 +198,7 @@ export function WalletRailMatrix({
   cashCurrency = null,
 }: WalletRailMatrixProps) {
   const [matrix, setMatrix] = useState<Matrix | null>(null)
+  const [ranking, setRanking] = useState<RailRankingResult | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
 
@@ -205,25 +206,38 @@ export function WalletRailMatrix({
     let cancelled = false
     setLoading(true)
     setError('')
+    setRanking(null)
     authedFetch('/api/travel/redemption-rails', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ travelKind, programmeId }),
+      body: JSON.stringify({
+        travelKind,
+        programmeId,
+        programmePointsRequired,
+        awardTaxesMinor,
+        awardTaxesCurrency,
+        cashPriceMinor,
+        cashCurrency,
+      }),
     })
       .then(async (res) => {
         const data = await res.json() as Response
         if (!res.ok) throw new Error(data.error || 'rail matrix unavailable')
-        if (!cancelled) setMatrix(data.matrix ?? null)
+        if (!cancelled) {
+          setMatrix(data.matrix ?? null)
+          setRanking(data.decision?.wallet.ranking ?? null)
+        }
       })
       .catch(() => {
         if (!cancelled) {
           setMatrix(null)
+          setRanking(null)
           setError('Couldn’t load your wallet redemption rails.')
         }
       })
       .finally(() => { if (!cancelled) setLoading(false) })
     return () => { cancelled = true }
-  }, [travelKind, programmeId])
+  }, [travelKind, programmeId, programmePointsRequired, awardTaxesMinor, awardTaxesCurrency, cashPriceMinor, cashCurrency])
 
   const cards = useMemo(() => (matrix?.cards ?? []).map((card) => {
     const rails = visibleRails(card.rails, programmeId)
@@ -235,23 +249,6 @@ export function WalletRailMatrix({
     discovery: cards.filter((c) => c.displayStatus === 'DISCOVERY_ONLY').length,
     unsupported: cards.filter((c) => c.displayStatus === 'NO_VERIFIED_REDEMPTION_RAIL').length,
   }), [cards])
-
-  const ranking = useMemo(() => {
-    if (!matrix) return null
-    try {
-      return rankWalletRails(matrix, {
-        travelKind,
-        programmeId,
-        programmePointsRequired,
-        awardTaxesMinor,
-        awardTaxesCurrency,
-        cashPriceMinor,
-        cashCurrency,
-      })
-    } catch {
-      return null
-    }
-  }, [matrix, travelKind, programmeId, programmePointsRequired, awardTaxesMinor, awardTaxesCurrency, cashPriceMinor, cashCurrency])
 
   return (
     <section className="wrm-root" aria-label="Wallet redemption paths">
@@ -287,7 +284,7 @@ export function WalletRailMatrix({
       ))}
 
       {!loading && !error && <div className="wrm-cash"><b>Cash + retain points</b><span>Always available · selected booking provider</span><em>Executable</em></div>}
-      <div className="wrm-foot">This panel assembles safe next steps from sourced rails. Exact transfer amounts remain withheld until issuer minimum/increment and final checkout are verified.</div>
+      <div className="wrm-foot">This panel assembles safe next steps from the server decision contract. Exact transfer amounts remain withheld until issuer minimum/increment and final checkout are verified.</div>
     </section>
   )
 }
