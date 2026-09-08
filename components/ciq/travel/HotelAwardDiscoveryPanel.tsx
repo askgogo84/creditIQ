@@ -81,8 +81,8 @@ export function HotelAwardDiscoveryPanel({ search }: { search: Search | null }) 
   if (!search) return null
 
   return (
-    <section style={{ marginTop: 16, border: '1px solid var(--line)', borderRadius: 14, background: 'var(--surface)', overflow: 'hidden' }}>
-      <div style={{ padding: '14px 16px', display: 'flex', justifyContent: 'space-between', alignItems: 'end', gap: 12, borderBottom: '1px solid var(--line)' }}>
+    <section className="hotel-award-discovery" style={{ marginTop: 16, border: '1px solid var(--line)', borderRadius: 14, background: 'var(--surface)', overflow: 'hidden' }}>
+      <div className="hotel-award-discovery-head" style={{ padding: '14px 16px', display: 'flex', justifyContent: 'space-between', alignItems: 'end', gap: 12, borderBottom: '1px solid var(--line)' }}>
         <div>
           <div className="ciq-editorial-kicker">Points-stay discovery</div>
           <h2 style={{ margin: '4px 0 3px', fontSize: 17 }}>Award properties around {search.destination}</h2>
@@ -94,9 +94,9 @@ export function HotelAwardDiscoveryPanel({ search }: { search: Search | null }) 
       {loading ? (
         <div style={{ padding: 18, color: 'var(--ink-3)', fontSize: 11 }}>Loading cached hotel award discovery…</div>
       ) : properties.length ? (
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(235px,1fr))', gap: 0 }}>
+        <div className="hotel-award-discovery-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(235px,1fr))', gap: 0 }}>
           {properties.slice(0, 18).map(property => (
-            <article key={`${property.programmeId}:${property.providerPropertyId}`} style={{ padding: 14, borderRight: '1px solid var(--line)', borderBottom: '1px solid var(--line)', minHeight: 150 }}>
+            <article className="hotel-award-discovery-card" key={`${property.programmeId}:${property.providerPropertyId}`} style={{ padding: 14, borderRight: '1px solid var(--line)', borderBottom: '1px solid var(--line)', minHeight: 150 }}>
               <div style={{ display: 'flex', gap: 10 }}>
                 <div style={{ width: 48, height: 48, flex: '0 0 48px', borderRadius: 9, overflow: 'hidden', background: 'var(--surface-2)', display: 'grid', placeItems: 'center' }}>{property.imageUrl ? <img src={property.imageUrl} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : <b>{property.name.slice(0, 1)}</b>}</div>
                 <div style={{ minWidth: 0 }}><b style={{ display: 'block', fontSize: 11.5 }}>{property.name}</b><span style={{ display: 'block', marginTop: 3, color: 'var(--ink-3)', fontSize: 9 }}>{property.programmeId}{property.subBrand ? ` · ${property.subBrand}` : ''}</span></div>
