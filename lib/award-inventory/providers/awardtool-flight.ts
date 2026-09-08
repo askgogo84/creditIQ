@@ -37,6 +37,8 @@ function text(value: unknown): string {
 }
 
 function numberOrNull(value: unknown): number | null {
+  if (value == null) return null
+  if (typeof value === 'string' && !value.trim()) return null
   const number = Number(value)
   return Number.isFinite(number) ? number : null
 }
