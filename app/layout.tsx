@@ -8,6 +8,7 @@ import "@/components/ciq/spend-results.css";
 import "@/components/ciq/approved-live-fixes.css";
 import "@/components/ciq/travel/travel-redemption-v1.css";
 import "@/components/ciq/mobile-production-fixes.css";
+import "@/components/ciq/mobile-route-overrides.css";
 import { CreditIQAssistant } from "@/components/CreditIQAssistant";
 import { AppDownloadBanner } from '@/components/AppDownloadBanner';
 import { logMissingEnv } from "@/lib/env-check";
