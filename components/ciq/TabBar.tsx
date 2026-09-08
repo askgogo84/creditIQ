@@ -8,23 +8,18 @@ import { MoreHorizontal } from 'lucide-react';
 import { APP_NAV } from '@/components/ciq/appNav';
 import { useTheme } from '@/lib/store';
 
-// Each tab's glyph is the lucide component carried on its APP_NAV item, so the
-// bottom bar, the desktop rail and the Header-injected TabBar all render the
-// exact same icon — no per-surface fork. "More" is not an APP_NAV destination
-// (it opens the account sheet), so it uses MoreHorizontal directly.
-// One size + stroke weight for every bottom-bar glyph so they read as a set.
 const ICON_SIZE = 21;
 const ICON_STROKE = 1.8;
 
-// White/copper light system — the SAME active/inactive treatment as the desktop
-// AppRail (copper active, --ink-2 inactive) so the rail and this bar are one
-// navigation at two breakpoints, never two colour systems. No [data-ciq] tokens:
-// these read on :root and follow the site theme, so the bar no longer needs a
-// [data-ciq] wrapper (removed from NavShell/Header in the same commit).
 const TABS = ['dashboard', 'wallet', 'spend', 'travel', 'cards'].map(k => APP_NAV.find(i => i.key === k)!);
 
-// "More" sheet = the "You" surface — account destinations (all confirmed routes).
-// Settings is a section inside the sheet (theme toggle), not a separate page.
+// Long canonical labels remain unchanged in APP_NAV/Desktop. The bottom mobile rail
+// intentionally uses compact labels so six 44px+ touch targets never collide at 320–390px.
+const MOBILE_LABELS: Record<string, string> = {
+  dashboard: 'Home',
+  spend: 'Spend',
+};
+
 const ACCOUNT_LINKS = [
   {
     label: 'Profile', href: '/profile', desc: 'Your account & details',
@@ -36,7 +31,6 @@ const ACCOUNT_LINKS = [
   },
 ];
 
-// Active = copper, inactive = --ink-2 (mirrors AppRail's navRow).
 const tabItem = (active: boolean): React.CSSProperties => ({
   display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3,
   fontSize: 9.5, fontWeight: 600, flex: 1, padding: '5px 0', textDecoration: 'none',
@@ -44,7 +38,6 @@ const tabItem = (active: boolean): React.CSSProperties => ({
   background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'inherit',
 });
 
-// Account/settings row inside the More sheet — min 48px touch target.
 const sheetRow: React.CSSProperties = {
   display: 'flex', alignItems: 'center', gap: 13, width: '100%', minHeight: 56,
   padding: '12px 14px', borderRadius: 14, textDecoration: 'none', textAlign: 'left',
@@ -61,16 +54,11 @@ export function TabBar() {
   const path = usePathname();
   const router = useRouter();
   const [moreOpen, setMoreOpen] = useState(false);
-  // Theme is owned by the single store writer (lib/store.ts); read it here so the
-  // Settings toggle always reflects the real site theme. See
-  // lib/theme-single-writer.test.ts.
   const theme = useTheme((s) => s.theme);
   const toggleTheme = useTheme((s) => s.toggle);
 
-  // Close the sheet whenever the route changes (a link inside it was tapped).
   useEffect(() => { setMoreOpen(false); }, [path]);
 
-  // Lock body scroll while the full-screen sheet is open.
   useEffect(() => {
     if (!moreOpen) return;
     const prev = document.body.style.overflow;
@@ -86,7 +74,7 @@ export function TabBar() {
 
   return (
     <>
-      <nav style={{
+      <nav className="ciq-mobile-tabbar" style={{
         position: 'fixed', left: 0, right: 0, bottom: 0, maxWidth: 520, margin: '0 auto',
         background: 'color-mix(in srgb, var(--surface) 84%, transparent)', backdropFilter: 'blur(18px)',
         borderTop: '1px solid var(--line)', display: 'flex', justifyContent: 'space-around',
@@ -98,16 +86,14 @@ export function TabBar() {
           return (
             <Link key={t.href} href={t.href} style={tabItem(active)}>
               <Icon size={ICON_SIZE} strokeWidth={ICON_STROKE} color={active ? 'var(--copper)' : 'currentColor'} aria-hidden />
-              {t.label}
-              {/* active marker — copper dot, matching the rail's copper active accent */}
+              <span className="ciq-mobile-tab-label">{MOBILE_LABELS[t.key] ?? t.label}</span>
               {active && <span style={{ width: 4, height: 4, borderRadius: '50%', background: 'var(--copper)' }} />}
             </Link>
           );
         })}
-        {/* "More" — opens the full-screen sheet, never a link itself. */}
         <button type="button" onClick={() => setMoreOpen(true)} aria-label="More" aria-expanded={moreOpen} style={tabItem(moreOpen)}>
           <MoreHorizontal size={ICON_SIZE} strokeWidth={ICON_STROKE} color={moreOpen ? 'var(--copper)' : 'currentColor'} aria-hidden />
-          More
+          <span className="ciq-mobile-tab-label">More</span>
           {moreOpen && <span style={{ width: 4, height: 4, borderRadius: '50%', background: 'var(--copper)' }} />}
         </button>
       </nav>
@@ -124,7 +110,6 @@ export function TabBar() {
         >
           <style>{`@keyframes moreSheetIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }`}</style>
 
-          {/* Sheet header */}
           <div style={{
             display: 'flex', alignItems: 'center', justifyContent: 'space-between',
             padding: 'calc(16px + env(safe-area-inset-top)) 20px 14px', borderBottom: '1px solid var(--line)',
@@ -141,10 +126,7 @@ export function TabBar() {
             </button>
           </div>
 
-          {/* Scrollable account + settings list */}
           <div style={{ flex: 1, overflowY: 'auto', padding: '10px 16px calc(28px + env(safe-area-inset-bottom))' }}>
-
-            {/* Account destinations */}
             <div style={{
               fontSize: 10, fontWeight: 700, color: 'var(--copper)',
               letterSpacing: '1.6px', textTransform: 'uppercase', padding: '8px 4px 0',
@@ -170,7 +152,6 @@ export function TabBar() {
               );
             })}
 
-            {/* Settings — theme toggle lives here (no dedicated /settings page) */}
             <div style={{
               fontSize: 10, fontWeight: 700, color: 'var(--copper)',
               letterSpacing: '1.6px', textTransform: 'uppercase', padding: '22px 4px 0',
@@ -198,7 +179,6 @@ export function TabBar() {
               </button>
             </div>
 
-            {/* Sign out */}
             <button type="button" onClick={signOut} style={{
               ...sheetRow, justifyContent: 'flex-start', marginTop: 22,
               borderColor: 'var(--line-strong)',
@@ -210,7 +190,6 @@ export function TabBar() {
               </span>
               <span style={{ fontSize: 15, fontWeight: 600, color: 'var(--ink)' }}>Sign out</span>
             </button>
-
           </div>
         </div>
       )}
