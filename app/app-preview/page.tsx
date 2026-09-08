@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import { MobileAppPrototype } from '@/components/ciq/mobile-app/MobileAppPrototype'
+import './preview.css'
 
 export const metadata: Metadata = {
   title: 'CreditIQ Mobile App Prototype',
@@ -8,5 +9,9 @@ export const metadata: Metadata = {
 }
 
 export default function AppPreviewPage() {
-  return <MobileAppPrototype />
+  return (
+    <div id="creditiq-app-preview">
+      <MobileAppPrototype />
+    </div>
+  )
 }

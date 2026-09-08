@@ -1,0 +1,16 @@
+/* The app preview is a self-contained product review surface. Keep site-wide
+   floating widgets out of this route without changing their behaviour elsewhere. */
+body:has(#creditiq-app-preview) > div:has(> button[aria-label="Open chat assistant"]),
+body:has(#creditiq-app-preview) > div:has(> button[aria-label="Close chat assistant"]) {
+  display: none !important;
+}
+
+body:has(#creditiq-app-preview) {
+  overflow: hidden;
+  overscroll-behavior: none;
+}
+
+#creditiq-app-preview {
+  width: 100%;
+  height: 100dvh;
+}
