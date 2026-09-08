@@ -20,7 +20,8 @@
     "gen:airports": "tsx scripts/gen-airports.ts",
     "audit:affiliate-db": "tsx scripts/audit-affiliate-coverage-db.ts",
     "gen:card-art": "tsx scripts/gen-card-art-manifest.ts",
-    "test": "vitest run"
+    "test": "vitest run",
+    "qa:e2e": "tsx scripts/qa-e2e.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.30.1",
