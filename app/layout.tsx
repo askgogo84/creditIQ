@@ -1,4 +1,4 @@
-﻿import type { Metadata } from "next";
+﻿import type { Metadata, Viewport } from "next";
 import { GeistSans } from "geist/font/sans";
 import { GeistMono } from "geist/font/mono";
 import { clashDisplay, satoshi, jetbrainsMono } from "./fonts";
@@ -7,6 +7,7 @@ import "@/components/ciq/product-workspace.css";
 import "@/components/ciq/spend-results.css";
 import "@/components/ciq/approved-live-fixes.css";
 import "@/components/ciq/travel/travel-redemption-v1.css";
+import "@/components/ciq/mobile-production-fixes.css";
 import { CreditIQAssistant } from "@/components/CreditIQAssistant";
 import { AppDownloadBanner } from '@/components/AppDownloadBanner';
 import { logMissingEnv } from "@/lib/env-check";
@@ -34,6 +35,12 @@ export const metadata: Metadata = {
     title: "CreditIQ - India's Honest Credit Card Intelligence",
     description: "Find the best Indian credit card. AI-powered, zero affiliate bias.",
   },
+};
+
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  viewportFit: 'cover',
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
