@@ -2,12 +2,13 @@
 import { normalizeTravelpayoutsPricesForDates } from '@/lib/flights/travelpayouts-prices-for-dates'
 import { searchSkyscannerFlights, skyscannerFlightsConfigured } from '@/lib/flights/providers/skyscanner-live'
 import { searchAmadeusFlights, amadeusFlightsConfigured } from '@/lib/flights/providers/amadeus'
+import { searchKiwiMcpFlights } from '@/lib/flights/providers/kiwi-mcp'
 
 const KIWI_MAX_RESULTS = 200
 const TP_MAX_RESULTS = 100
 
 type Coverage = {
-  provider: 'skyscanner-live' | 'amadeus' | 'kiwi' | 'travelpayouts-v3' | 'none'
+  provider: 'skyscanner-live' | 'amadeus' | 'kiwi-mcp' | 'kiwi' | 'travelpayouts-v3' | 'none'
   mode: 'PROVIDER_COMPLETE' | 'PROVIDER_WINDOW' | 'PARTIAL_FALLBACK' | 'UNAVAILABLE'
   loaded: number
   provider_total: number | null
@@ -113,8 +114,47 @@ export async function GET(req: NextRequest) {
     attempts.push({ provider: 'amadeus', ok: false, loaded: 0, note: amadeusFlightsConfigured() ? 'date missing' : 'not configured' })
   }
 
-  // 3. Kiwi — legacy invited-partner itinerary source where a Tequila key is
-  // active. An HTTP-200 EMPTY result is deliberately non-terminal.
+  // 3. Kiwi.com official Flight Search MCP — public Streamable-HTTP endpoint.
+  // This gives CreditIQ a live, exact-cabin fallback without pretending that a
+  // cached discovery fare is live. We accept only structured results that include
+  // an exact cabin and a Kiwi booking URL. The returned list is a provider window,
+  // not a claim of exhaustive market inventory.
+  if (dateFrom) {
+    try {
+      const result = await searchKiwiMcpFlights({ from, to, date: dateFrom, cabin, adults: 1 })
+      attempts.push({
+        provider: 'kiwi-mcp', ok: true, loaded: result.flights.length,
+        note: result.flights.length ? `${result.protocol} MCP; live exact-cabin itineraries returned` : `${result.protocol} MCP; zero exact-cabin itineraries; trying next provider`,
+      })
+      if (result.flights.length > 0) {
+        return response(result.flights, {
+          provider: 'kiwi-mcp',
+          mode: 'PROVIDER_WINDOW',
+          loaded: result.flights.length,
+          provider_total: result.resultsCount,
+          has_more: false,
+          provider_limit: null,
+          fetched_at: fetchedAt,
+          note: 'Kiwi.com official Flight Search MCP returned live exact-cabin prices and Kiwi booking links. CreditIQ treats this as Kiwi’s curated provider window, not as every itinerary in the market.',
+        }, {
+          attempts,
+          requestedCabin: cabin,
+          cashCabinVerified: true,
+          providerProtocol: result.protocol,
+          providerCurrency: result.currency,
+          providerSearchTimeMs: result.searchTimeMs,
+        })
+      }
+    } catch (error) {
+      attempts.push({ provider: 'kiwi-mcp', ok: false, loaded: 0, note: 'live MCP request failed; trying next provider' })
+      console.warn('flight search: kiwi MCP failed', error)
+    }
+  } else {
+    attempts.push({ provider: 'kiwi-mcp', ok: false, loaded: 0, note: 'date missing' })
+  }
+
+  // 4. Kiwi Tequila — legacy invited-partner itinerary source where a valid key
+  // is active. An HTTP-200 EMPTY result is deliberately non-terminal.
   if (kiwiKey) {
     try {
       const url = new URL('https://api.tequila.kiwi.com/v2/search')
@@ -127,7 +167,8 @@ export async function GET(req: NextRequest) {
       url.searchParams.set('limit', String(KIWI_MAX_RESULTS))
       url.searchParams.set('sort', 'price')
       url.searchParams.set('max_stopovers', '2')
-      if (cabin === 'business') url.searchParams.set('selected_cabins', 'C')
+      if (cabin === 'premium_economy') url.searchParams.set('selected_cabins', 'W')
+      else if (cabin === 'business') url.searchParams.set('selected_cabins', 'C')
       else if (cabin === 'first') url.searchParams.set('selected_cabins', 'F')
       else url.searchParams.set('selected_cabins', 'M')
 
@@ -197,7 +238,7 @@ export async function GET(req: NextRequest) {
     attempts.push({ provider: 'kiwi', ok: false, loaded: 0, note: 'not configured' })
   }
 
-  // 4. Travelpayouts / Aviasales dated-fare discovery. This is intentionally the
+  // 5. Travelpayouts / Aviasales dated-fare discovery. This is intentionally the
   // last fallback: prices are cached from recent searches and cabin is not exposed.
   if (tpToken) {
     try {
