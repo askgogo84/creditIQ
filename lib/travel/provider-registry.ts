@@ -35,6 +35,16 @@ export const TRAVEL_PROVIDERS: TravelProviderDefinition[] = [
     note: 'Cabin-specific Flight Offers adapter is wired with OAuth token caching. It defaults to TEST unless production is explicitly enabled.',
   },
   {
+    id: 'kiwi-mcp',
+    name: 'Kiwi.com Flight Search MCP',
+    kinds: ['cash-flight'],
+    priority: 25,
+    env: [],
+    access: 'active',
+    wired: true,
+    note: 'Official public Kiwi.com MCP flight-search endpoint. No API key is required. CreditIQ accepts only structured, exact-cabin results with Kiwi booking links and labels the curated result set as a provider window rather than complete market inventory.',
+  },
+  {
     id: 'kiwi',
     name: 'Kiwi Tequila',
     kinds: ['cash-flight'],
