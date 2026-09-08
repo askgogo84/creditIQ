@@ -29,6 +29,7 @@ const ENDPOINT = 'https://mcp.kiwi.com'
 const MODERN_PROTOCOL = '2026-07-28'
 const LEGACY_PROTOCOLS = ['2025-11-25', '2025-06-18'] as const
 const CLIENT_INFO = { name: 'creditiq-travel', version: '1.0.0' }
+const REQUIRED_CURRENCY = 'INR'
 
 function ddmmyyyy(iso: string) {
   const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(iso)
@@ -112,7 +113,7 @@ function toolArguments(input: { from: string; to: string; date: string; cabin: C
     flyTo: input.to,
     departureDate: ddmmyyyy(input.date),
     cabinClass: cabinCode(input.cabin),
-    curr: 'INR',
+    curr: REQUIRED_CURRENCY,
     sort: 'price',
     passengers: Math.max(1, input.adults ?? 1),
   }
@@ -274,10 +275,20 @@ export async function searchKiwiMcpFlights(input: {
   if (!call.res.ok) throw new Error(`Kiwi MCP search failed (${call.res.status})`)
 
   const payload = extractStructuredResult(call.rpc)
+  const currency = payload?.currency ? String(payload.currency).trim().toUpperCase() : null
+
+  // CreditIQ's cash-flight surface is INR-denominated. Kiwi's legacy MCP
+  // currently may ignore `curr: INR` and return EUR. Never relabel or convert
+  // that amount without a verified FX source: reject it and let the provider
+  // chain continue to the next safe INR source.
+  if (currency !== REQUIRED_CURRENCY) {
+    throw new Error(`Kiwi MCP returned ${currency || 'unknown'} currency; ${REQUIRED_CURRENCY} required`)
+  }
+
   return {
     flights: normalize(payload, input),
     resultsCount: Number.isFinite(Number(payload?.resultsCount)) ? Number(payload.resultsCount) : null,
-    currency: payload?.currency ? String(payload.currency) : null,
+    currency,
     searchTimeMs: Number.isFinite(Number(payload?.searchTimeMs)) ? Number(payload.searchTimeMs) : null,
     protocol,
   }
