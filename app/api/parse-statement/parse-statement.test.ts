@@ -15,10 +15,29 @@ process.env.ANTHROPIC_API_KEY = 'sk-test';
 
 const captured: { upserts: any[] } = { upserts: [] };
 
+function statementTableMock() {
+  const chain: any = {
+    select: () => chain,
+    eq: () => chain,
+    limit: async () => ({ data: [], error: null }),
+    insert: async (row: any) => {
+      captured.upserts.push(row);
+      return { error: null };
+    },
+    update: (row: any) => ({
+      eq: async () => {
+        captured.upserts.push(row);
+        return { error: null };
+      },
+    }),
+  };
+  return chain;
+}
+
 vi.mock('@supabase/supabase-js', () => ({
   createClient: (_url: string, key: string) => {
     if (key === 'service-key') {
-      return { from: () => ({ upsert: async (row: any) => { captured.upserts.push(row); return { error: null }; } }) };
+      return { from: () => statementTableMock() };
     }
     return {
       auth: {

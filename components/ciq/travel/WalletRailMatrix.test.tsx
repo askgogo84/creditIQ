@@ -1,5 +1,6 @@
 import { render, screen } from '@testing-library/react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { rankWalletRails } from '@/lib/redemption-ranking'
 
 const fetchMock = vi.hoisted(() => vi.fn())
 vi.mock('@/lib/authed-fetch', () => ({ authedFetch: fetchMock }))
@@ -42,16 +43,41 @@ describe('WalletRailMatrix', () => {
     expect(screen.getByText('Cash + retain points')).toBeInTheDocument()
   })
 
-  it('queries only the selected travel kind and programme', async () => {
+  it('queries only the selected travel kind and programme, leaving absent pricing fields unknown', async () => {
     render(<WalletRailMatrix travelKind="flight" programmeId="krisflyer" />)
     await screen.findByText('HDFC Infinia Metal Edition')
     expect(fetchMock).toHaveBeenCalledWith('/api/travel/redemption-rails', expect.objectContaining({
       method: 'POST',
-      body: JSON.stringify({ travelKind: 'flight', programmeId: 'krisflyer' }),
+      headers: { 'Content-Type': 'application/json' },
     }))
+    const init = fetchMock.mock.calls[0]?.[1] as RequestInit
+    expect(JSON.parse(String(init.body))).toEqual({
+      travelKind: 'flight',
+      programmeId: 'krisflyer',
+      programmePointsRequired: null,
+      awardTaxesMinor: null,
+      awardTaxesCurrency: null,
+      cashPriceMinor: null,
+      cashCurrency: null,
+    })
   })
 
-  it('labels a cheaper ratio-only transfer as projected while cash remains executable', async () => {
+  it('renders the server decision contract: projected transfer stays separate from executable cash', async () => {
+    const pricing = {
+      travelKind: 'flight' as const,
+      programmeId: 'krisflyer',
+      programmePointsRequired: 43_000,
+      awardTaxesMinor: 418_000,
+      awardTaxesCurrency: 'INR',
+      cashPriceMinor: 5_260_000,
+      cashCurrency: 'INR',
+    }
+    const ranking = rankWalletRails(matrix as any, pricing)
+    fetchMock.mockResolvedValueOnce({
+      ok: true,
+      json: async () => ({ matrix, walletCount: 2, decision: { wallet: { ranking } } }),
+    })
+
     render(
       <WalletRailMatrix
         travelKind="flight"
