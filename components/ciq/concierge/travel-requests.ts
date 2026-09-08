@@ -1,10 +1,51 @@
 import type { RedemptionOption } from '@/lib/fusion-core'
 import type { StayCard } from '@/components/ciq/stay-points/StayOnPointsView'
+import type { TravelDecisionContract } from '@/lib/travel/decision-contract'
 import type { ConciergeRequest } from './ConciergeRequestButton'
 
 // These builders intentionally carry only decision context needed by Concierge.
 // They do NOT include auth/session material, full card numbers, or user ids. The
 // receiving API validates the snapshot again and stores it as CLIENT_REQUEST.
+
+function conciergeDecisionSnapshot(decision: TravelDecisionContract | null | undefined) {
+  if (!decision) return null
+  const ranking = decision.wallet.ranking
+  const recommended = decision.conciergeAction.recommendedCandidateId
+    ? ranking.candidates.find((candidate) => candidate.id === decision.conciergeAction.recommendedCandidateId) ?? null
+    : null
+
+  const candidate = (value: typeof ranking.bestExecutable) => value ? {
+    id: value.id,
+    bank: value.bank,
+    card_name: value.cardName,
+    rail_id: value.railId,
+    rail_type: value.railType,
+    execution_state: value.railExecutionState,
+    comparison_state: value.comparisonState,
+    affordability: value.affordability,
+    bank_points_target_minimum: value.bankPointsTargetMinimum,
+    bank_points_to_transfer_exact: value.bankPointsToTransferExact,
+    cash_payable_minor: value.cashPayableMinor,
+    cash_currency: value.cashCurrency,
+    reasons: value.reasons,
+  } : null
+
+  return {
+    version: decision.version,
+    travel_kind: decision.travelKind,
+    instruction_state: decision.conciergeAction.instructionState,
+    action_state: decision.conciergeAction.state,
+    recommended_candidate: candidate(recommended),
+    projected_winner: candidate(decision.wallet.projectedWinner),
+    executable_winner: candidate(decision.wallet.executableWinner),
+    blocked_reasons: decision.blockedReasons,
+    award_state: decision.awardState,
+    source_authority: decision.sourceAuthority,
+    requires_live_reverification: decision.conciergeAction.requiresLiveReverification,
+    irreversible_transfer_allowed: decision.conciergeAction.irreversibleTransferAllowed,
+    generated_at: decision.generatedAt,
+  }
+}
 
 export function buildFlightConciergeRequest(
   row: any,
@@ -14,12 +55,21 @@ export function buildFlightConciergeRequest(
   const award = row.award
   const trip = award?.trip ?? null
   const bestRoute = best?.routes?.[0] ?? null
-  const expectedCashMinor =
+  const decision = (row.decision ?? null) as TravelDecisionContract | null
+  const decisionCandidate = decision?.conciergeAction.recommendedCandidateId
+    ? decision.wallet.ranking.candidates.find((candidate) => candidate.id === decision.conciergeAction.recommendedCandidateId) ?? null
+    : null
+  const decisionCashMinor =
+    decisionCandidate?.cashCurrency === 'INR' && decisionCandidate.cashPayableMinor != null
+      ? decisionCandidate.cashPayableMinor
+      : null
+  const expectedCashMinor = decisionCashMinor ?? (
     trip && trip.taxesCurrency === 'INR' && Number.isSafeInteger(trip.totalTaxes) && trip.totalTaxes >= 0
       ? trip.totalTaxes
       : !award && Number.isSafeInteger(row.price) && row.price >= 0
         ? row.price * 100
         : null
+  )
 
   return {
     context: 'HNI',
@@ -46,6 +96,7 @@ export function buildFlightConciergeRequest(
       taxes_currency: trip?.taxesCurrency ?? null,
     },
     redemptionSnapshot: {
+      travel_decision: conciergeDecisionSnapshot(decision),
       recommended_card: best ? {
         bank: best.bank,
         card_name: best.cardName,
@@ -88,25 +139,31 @@ export function buildFlightConciergeRequest(
         self_entered: option.selfEntered ?? false,
         verified: option.verified,
       })),
-      instruction_state: award ? 'NEEDS_OPERATOR_VERIFICATION' : 'CASH_ONLY_NO_TRANSFER',
+      instruction_state: decision?.conciergeAction.instructionState ?? (award ? 'NEEDS_OPERATOR_VERIFICATION' : 'CASH_ONLY_NO_TRANSFER'),
     },
     sourceSnapshot: {
+      decision_contract: decision ? {
+        version: decision.version,
+        award_pricing_authority: decision.sourceAuthority.awardPricingAuthority,
+        rail_policy: decision.sourceAuthority.railPolicy,
+      } : null,
       award: {
-        source: award?.source ?? null,
-        state: award ? 'LIVE_OR_PROVIDER_RETURNED' : 'NOT_APPLICABLE',
+        source: decision?.sourceAuthority.award ?? award?.source ?? null,
+        state: decision?.awardState.status ?? (award ? 'LIVE_OR_PROVIDER_RETURNED' : 'NOT_APPLICABLE'),
       },
       cash: {
+        source: decision?.sourceAuthority.cash ?? null,
         state: row.price > 0 ? 'PROVIDER_RETURNED' : 'UNAVAILABLE',
       },
       transfer_candidates: {
         state: award ? 'UNVERIFIED' : 'NOT_APPLICABLE',
-        reason: award ? 'Travel fusion carries mapped routes, but operator must re-verify current ratio, timing and award space before approval.' : 'Cash-only itinerary has no award transfer instruction.',
+        reason: award ? 'Travel decision carries mapped wallet rails, but operator must re-verify current ratio, timing and award space before approval.' : 'Cash-only itinerary has no award transfer instruction.',
       },
     },
     expectedCashMinor,
     currency: 'INR',
     contactChannel: 'BOTH',
-    notes: 'Corporate/HNI assisted travel handoff. Re-verify live award inventory, transfer ratio/timing, taxes and cash fare before requesting any irreversible approval.',
+    notes: 'Corporate/HNI assisted travel handoff. Re-verify live award inventory, transfer ratio/timing, taxes and cash fare before requesting any irreversible approval. If present, travel-decision-v1 is the canonical recommendation state.',
   }
 }
 

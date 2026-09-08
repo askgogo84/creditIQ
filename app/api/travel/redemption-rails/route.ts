@@ -3,6 +3,8 @@ import { requireAuth } from '@/lib/api-auth'
 import { loadDecisionPortfolio } from '@/lib/wallet/decision-portfolio'
 import { buildWalletRailMatrix } from '@/lib/redemption-rails/matrix'
 import type { TravelKind } from '@/lib/redemption-rails/types'
+import { buildTravelDecisionContract } from '@/lib/travel/decision-contract'
+import type { SelectedTravelPricing } from '@/lib/redemption-ranking'
 
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
@@ -12,6 +14,18 @@ function safeProgrammeId(value: unknown): string | null {
   if (typeof value !== 'string') return null
   const v = value.trim().toLowerCase()
   return /^[a-z0-9-]{2,80}$/.test(v) ? v : null
+}
+
+function optionalMinor(value: unknown): number | null | 'INVALID' {
+  if (value == null || value === '') return null
+  return Number.isSafeInteger(value) && Number(value) >= 0 ? Number(value) : 'INVALID'
+}
+
+function optionalCurrency(value: unknown): string | null | 'INVALID' {
+  if (value == null || value === '') return null
+  if (typeof value !== 'string') return 'INVALID'
+  const currency = value.trim().toUpperCase()
+  return /^[A-Z]{3}$/.test(currency) ? currency : 'INVALID'
 }
 
 export async function POST(req: NextRequest) {
@@ -28,6 +42,20 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'invalid programmeId' }, { status: 400 })
   }
 
+  const programmeId = safeProgrammeId(body.programmeId)
+  const programmePointsRequired = optionalMinor(body.programmePointsRequired)
+  const awardTaxesMinor = optionalMinor(body.awardTaxesMinor)
+  const awardTaxesCurrency = optionalCurrency(body.awardTaxesCurrency)
+  const cashPriceMinor = optionalMinor(body.cashPriceMinor)
+  const cashCurrency = optionalCurrency(body.cashCurrency)
+
+  if (
+    programmePointsRequired === 'INVALID' || awardTaxesMinor === 'INVALID' ||
+    awardTaxesCurrency === 'INVALID' || cashPriceMinor === 'INVALID' || cashCurrency === 'INVALID'
+  ) {
+    return NextResponse.json({ error: 'invalid travel pricing fields' }, { status: 400 })
+  }
+
   try {
     // Owner identity comes only from the verified bearer token. Any userId in the
     // request body is ignored by construction.
@@ -42,9 +70,40 @@ export async function POST(req: NextRequest) {
       balanceVerified: card.verified,
     }))
 
-    const matrix = buildWalletRailMatrix(cards, travelKind, safeProgrammeId(body.programmeId))
+    const matrix = buildWalletRailMatrix(cards, travelKind, programmeId)
+    const hasPricing = [
+      body.programmePointsRequired,
+      body.awardTaxesMinor,
+      body.awardTaxesCurrency,
+      body.cashPriceMinor,
+      body.cashCurrency,
+    ].some((value) => value != null && value !== '')
+
+    let decision = null
+    if (hasPricing) {
+      const pricing: SelectedTravelPricing = {
+        travelKind,
+        programmeId,
+        programmePointsRequired,
+        awardTaxesMinor,
+        awardTaxesCurrency,
+        cashPriceMinor,
+        cashCurrency,
+      }
+      decision = buildTravelDecisionContract({
+        matrix,
+        pricing,
+        awardStatus: programmePointsRequired == null ? 'NOT_APPLICABLE' : 'UNAVAILABLE',
+        provenance: {
+          walletCount: portfolio.length,
+          source: 'canonical-decision-portfolio',
+        },
+      })
+    }
+
     return NextResponse.json({
       matrix,
+      decision,
       walletCount: portfolio.length,
       policy: 'inventory-first-card-exact-no-bank-inheritance',
     })

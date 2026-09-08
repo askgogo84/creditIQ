@@ -2,7 +2,6 @@
 // POST /api/flights/fusion — "cash + award + your points" fusion for a route.
 
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@supabase/supabase-js';
 import { requireAuth } from '@/lib/api-auth';
 import {
   getAvailabilityTrips,
@@ -21,15 +20,16 @@ import {
   pickBest,
   pickBestAwardOnly,
 } from '@/lib/fusion-core';
+import { loadDecisionPortfolio, type DecisionWalletCard } from '@/lib/wallet/decision-portfolio';
+import { buildWalletRailMatrix, type WalletRailCardInput } from '@/lib/redemption-rails/matrix';
+import { programmeIdForFlightSource } from '@/lib/redemption-rails/programme-resolver';
+import { buildTravelDecisionContract, type TravelDecisionAwardStatus } from '@/lib/travel/decision-contract';
 
 export const runtime = 'nodejs';
 export const maxDuration = 60;
 export const dynamic = 'force-dynamic';
 
 type Cabin = 'economy' | 'business' | 'first';
-
-const URL_ENV = () => process.env.NEXT_PUBLIC_SUPABASE_URL!;
-const SVC = () => process.env.SUPABASE_SERVICE_ROLE_KEY!;
 
 type CashFetch = {
   flights: CashFlight[];
@@ -72,34 +72,28 @@ async function fetchCashFlights(
   }
 }
 
-async function fetchUserCards(userId: string): Promise<UserCard[]> {
-  try {
-    const sb = createClient(URL_ENV(), SVC(), { auth: { persistSession: false } });
-    const [stmt, manual] = await Promise.all([
-      sb.from('statement_imports')
-        .select('bank, card_name, card_last4, points_balance, points_currency, self_entered')
-        .eq('user_id', userId),
-      sb.from('manual_cards')
-        .select('bank, card_name, card_last4, points_balance, points_currency')
-        .eq('user_id', userId),
-    ]);
-    const stmtRows = (stmt.data || []).map((r: any) => ({ ...r, selfEntered: r.self_entered === true }));
-    const manualRows = (manual.data || []).map((r: any) => ({ ...r, selfEntered: true }));
-    const rows = [...stmtRows, ...manualRows] as UserCard[];
-    const seen = new Set<string>();
-    const cards: UserCard[] = [];
-    for (const r of rows) {
-      if (!r || !r.card_name) continue;
-      const key = `${(r.bank || '').toLowerCase()}-${r.card_last4 || 'x'}-${r.card_name.toLowerCase()}`;
-      if (seen.has(key)) continue;
-      seen.add(key);
-      cards.push(r);
-    }
-    return cards;
-  } catch (e) {
-    console.error('fusion: user card fetch failed', e);
-    return [];
-  }
+function legacyFusionCards(portfolio: DecisionWalletCard[]): UserCard[] {
+  return portfolio
+    .filter((card) => !!card.cardName)
+    .map((card) => ({
+      bank: card.bank,
+      card_name: card.cardName!,
+      card_last4: card.last4,
+      points_balance: card.points,
+      points_currency: card.pointsCurrency,
+      selfEntered: card.selfEntered,
+    }));
+}
+
+function decisionRailCards(portfolio: DecisionWalletCard[]): WalletRailCardInput[] {
+  return portfolio.map((card, index) => ({
+    walletKey: `${card.source}:${card.bank}:${card.last4 ?? card.cardName ?? index}`,
+    bank: card.bank,
+    // Keep unnamed linked cards in the matrix without guessing a product identity.
+    cardName: card.cardName ?? `Unidentified ${card.bank} card${card.last4 ? ` ••••${card.last4}` : ''}`,
+    pointsBalance: card.points,
+    balanceVerified: card.verified,
+  }));
 }
 
 const ENRICH_CAP = 6;
@@ -160,6 +154,19 @@ function buildAwardView(a: SeatsAeroResult, trip: SeatsAeroTrip | null, cabin: C
   };
 }
 
+function awardDecisionStatus(hasAward: boolean, pricingAuthority: string | null | undefined): TravelDecisionAwardStatus {
+  if (!hasAward) return 'NOT_FOUND';
+  if (pricingAuthority === 'DATE_SPECIFIC_LIVE') return 'LIVE_OR_PROVIDER_RETURNED';
+  if (pricingAuthority === 'CACHED_DISCOVERY') return 'DISCOVERY_ONLY';
+  return 'UNAVAILABLE';
+}
+
+function safeCashMinor(price: number): number | null {
+  if (!Number.isFinite(price) || price < 0) return null;
+  const minor = Math.round(price * 100);
+  return Number.isSafeInteger(minor) ? minor : null;
+}
+
 export async function POST(req: NextRequest) {
   const gate = await requireAuth(req);
   if (!gate.ok) return gate.res;
@@ -184,13 +191,15 @@ export async function POST(req: NextRequest) {
 
     const base = new URL(req.url).origin;
 
-    const [cashFetch, awardFetch, cards] = await Promise.all([
+    const [cashFetch, awardFetch, portfolio] = await Promise.all([
       fetchCashFlights(base, from, to, cashReferenceDate, cashReferenceDate, cabin),
       searchFusionAwards({ origin: from, destination: to, startDate: dateFrom, endDate: dateTo, cabin }),
-      fetchUserCards(gate.userId),
+      loadDecisionPortfolio(gate.userId),
     ]);
     const cashFlights = cashFetch.flights;
     const awards = awardFetch.awards;
+    const cards = legacyFusionCards(portfolio);
+    const railCards = decisionRailCards(portfolio);
 
     // AwardTool/AwardWallet can return itinerary detail directly. Preserve it and
     // only call Seats.aero's trip-details endpoint for rows that actually came
@@ -229,6 +238,29 @@ export async function POST(req: NextRequest) {
       const awardMatch = matchAward(flight, awards);
 
       if (!awardMatch) {
+        const cashMinor = safeCashMinor(flight.price);
+        const matrix = buildWalletRailMatrix(railCards, 'flight', null);
+        const decision = buildTravelDecisionContract({
+          matrix,
+          pricing: {
+            travelKind: 'flight',
+            programmeId: null,
+            programmePointsRequired: null,
+            awardTaxesMinor: null,
+            awardTaxesCurrency: null,
+            cashPriceMinor: cashMinor,
+            cashCurrency: cashMinor == null ? null : 'INR',
+          },
+          inventory: {
+            state: 'AVAILABLE',
+            selection: { id: flight.id, from, to, departure: flight.departure, cabin, airline: flight.airline },
+          },
+          awardStatus: 'NOT_FOUND',
+          cashSource: cashFetch.source,
+          awardPricingAuthority: awardFetch.pricingAuthority,
+          provenance: { cashFareVerifiedForCabin: cashFetch.cashCabinVerified || cabin === 'economy', awardSearchMode: awardFetch.mode },
+        });
+
         return {
           ...flight,
           cashUnavailable: false,
@@ -236,6 +268,7 @@ export async function POST(req: NextRequest) {
           award: null as AwardView | null,
           redemption: [] as RedemptionOption[],
           bestOption: null as RedemptionOption | null,
+          decision,
         };
       }
 
@@ -250,16 +283,55 @@ export async function POST(req: NextRequest) {
         ? pickBest(redemption)
         : pickBestAwardOnly(redemption);
       const cabins = buildCabinBests(cards, awardMatch);
+      const programmeId = programmeIdForFlightSource(awardMatch.source);
+      const matrix = buildWalletRailMatrix(railCards, 'flight', programmeId);
+      const cashMinor = comparableCashPrice > 0 ? safeCashMinor(comparableCashPrice) : null;
+      const evidenceProvider = awardFetch.providerByAwardId.get(key) ?? null;
+      const decision = buildTravelDecisionContract({
+        matrix,
+        pricing: {
+          travelKind: 'flight',
+          programmeId,
+          programmePointsRequired: awardMatch.mileageCost,
+          awardTaxesMinor: award.trip ? award.trip.totalTaxes : null,
+          awardTaxesCurrency: award.trip?.taxesCurrency ?? null,
+          cashPriceMinor: cashMinor,
+          cashCurrency: cashMinor == null ? null : 'INR',
+        },
+        inventory: {
+          state: 'AVAILABLE',
+          selection: {
+            id: flight.id,
+            from,
+            to,
+            departure: flight.departure,
+            cabin,
+            airline: flight.airline,
+            awardDate: award.date,
+            awardProgramme: award.program,
+          },
+        },
+        awardStatus: awardDecisionStatus(true, awardFetch.pricingAuthority),
+        cashSource: cashFetch.source,
+        awardSource: evidenceProvider,
+        awardPricingAuthority: awardFetch.pricingAuthority,
+        provenance: {
+          cashFareVerifiedForCabin: cashFetch.cashCabinVerified || cabin === 'economy',
+          awardSearchMode: awardFetch.mode,
+          awardEvidenceProvider: evidenceProvider,
+        },
+      });
 
       return {
         ...flight,
         cashUnavailable: false,
         cashFareVerifiedForCabin: cashFetch.cashCabinVerified || cabin === 'economy',
         award,
-        awardEvidenceProvider: awardFetch.providerByAwardId.get(key) ?? null,
+        awardEvidenceProvider: evidenceProvider,
         redemption,
         bestOption,
         cabins,
+        decision,
       };
     });
 
@@ -272,9 +344,34 @@ export async function POST(req: NextRequest) {
         const redemption = buildRedemption(cards, a, 0);
         const bestOption = pickBestAwardOnly(redemption);
         const cabins = buildCabinBests(cards, a);
+        const programmeId = programmeIdForFlightSource(a.source);
+        const matrix = buildWalletRailMatrix(railCards, 'flight', programmeId);
+        const evidenceProvider = awardFetch.providerByAwardId.get(key) ?? null;
+        const rowId = `award-${key}`;
+        const decision = buildTravelDecisionContract({
+          matrix,
+          pricing: {
+            travelKind: 'flight',
+            programmeId,
+            programmePointsRequired: a.mileageCost,
+            awardTaxesMinor: trip ? trip.totalTaxes : null,
+            awardTaxesCurrency: trip?.taxesCurrency ?? null,
+            cashPriceMinor: null,
+            cashCurrency: null,
+          },
+          inventory: {
+            state: 'AVAILABLE',
+            selection: { id: rowId, from, to, departure: trip?.departsAt || a.date, cabin, airline: a.airlines || trip?.carriers || '', awardDate: a.date, awardProgramme: award.program },
+          },
+          awardStatus: awardDecisionStatus(true, awardFetch.pricingAuthority),
+          cashSource: null,
+          awardSource: evidenceProvider,
+          awardPricingAuthority: awardFetch.pricingAuthority,
+          provenance: { awardSearchMode: awardFetch.mode, awardEvidenceProvider: evidenceProvider, cashBenchmark: 'UNAVAILABLE' },
+        });
 
         return {
-          id: `award-${key}`,
+          id: rowId,
           price: 0,
           airline: a.airlines || trip?.carriers || '',
           from,
@@ -287,10 +384,11 @@ export async function POST(req: NextRequest) {
           cashUnavailable: true,
           cashFareVerifiedForCabin: false,
           award,
-          awardEvidenceProvider: awardFetch.providerByAwardId.get(key) ?? null,
+          awardEvidenceProvider: evidenceProvider,
           redemption,
           bestOption,
           cabins,
+          decision,
         };
       });
 
@@ -303,7 +401,7 @@ export async function POST(req: NextRequest) {
         awards: awards.length,
         awardsEnriched: [...tripByKey.values()].filter(Boolean).length,
         awardOnlyCards: awardOnly.length,
-        cards: cards.length,
+        cards: portfolio.length,
       },
       cashCoverage: cashFetch.coverage,
       cashAttempts: cashFetch.attempts,
@@ -315,6 +413,7 @@ export async function POST(req: NextRequest) {
       awardAttempts: awardFetch.attempts,
       awardReason: awardFetch.reason,
       verifiedPolicy: 'all-estimates',
+      decisionContract: 'travel-decision-v1',
       flights: results,
     });
   } catch (err: any) {
