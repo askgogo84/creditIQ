@@ -7,6 +7,7 @@ import { ConciergeRequestButton, type ConciergeRequest } from '@/components/ciq/
 import { programmeIdForHotelChain } from '@/lib/redemption-rails/programme-resolver'
 import { HotelAwardJoinPanel } from './HotelAwardJoinPanel'
 import { HotelAwardDiscoveryPanel } from './HotelAwardDiscoveryPanel'
+import { WalletRailMatrix } from './WalletRailMatrix'
 import './global-hotel-workspace.css'
 
 type HotelOffer = {
@@ -267,7 +268,7 @@ export function GlobalHotelWorkspace() {
               {attempts.map((attempt) => <small key={attempt.provider}><b>{providerLabel(attempt.provider)}:</b> {attempt.ok ? `${attempt.loaded} live offers` : attempt.note}</small>)}
             </div>
           )}
-          <small>Cash inventory unavailable does not mean there is no redemption path. CreditIQ will not invent a cash rate, but it will still show cached points-stay discovery and direct-programme verification paths below, with their evidence state clearly labelled.</small>
+          <small>Cash inventory unavailable does not mean there is no redemption path. CreditIQ will not invent a cash rate, but it will still show your sourced card redemption rails, cached points-stay discovery and direct-programme verification paths below, with their evidence state clearly labelled.</small>
         </div>
       )}
       {loading && <div className="ghw-loading">Starting the global cash-hotel provider chain for {destination}…</div>}
@@ -296,6 +297,7 @@ export function GlobalHotelWorkspace() {
 
       {!loading && !error && coverage && offers.length === 0 && <div className="ghw-empty">The connected cash provider returned no hotel offers for this destination and date range.</div>}
 
+      {submittedSearch && <WalletRailMatrix travelKind="hotel" programmeId={null} />}
       <HotelAwardDiscoveryPanel search={submittedSearch} />
     </div>
   )
