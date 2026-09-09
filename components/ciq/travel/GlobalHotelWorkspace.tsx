@@ -125,7 +125,7 @@ function hotelConciergeRequest(offer: HotelOffer, destination: string, checkin: 
 }
 
 export function GlobalHotelWorkspace() {
-  const [destination, setDestination] = useState('Bangkok')
+  const [destination, setDestination] = useState('Goa')
   const [checkin, setCheckin] = useState(plusDays(21))
   const [checkout, setCheckout] = useState(plusDays(24))
   const [adults, setAdults] = useState(2)
@@ -226,7 +226,7 @@ export function GlobalHotelWorkspace() {
       </div>
 
       <div className="ghw-search">
-        <label><span>Destination</span><input value={destination} onChange={(e) => setDestination(e.target.value)} placeholder="Delhi, Dubai, Paris, New York…" /></label>
+        <label><span>Destination</span><input value={destination} onChange={(e) => setDestination(e.target.value)} placeholder="Goa, Mumbai, Delhi, Bengaluru, Manali, Coorg…" /></label>
         <label><span>Check-in</span><input type="date" value={checkin} onChange={(e) => setCheckin(e.target.value)} /></label>
         <label><span>Check-out</span><input type="date" value={checkout} onChange={(e) => setCheckout(e.target.value)} /></label>
         <label><span>Guests</span><input type="number" min={1} max={9} value={adults} onChange={(e) => setAdults(Math.max(1, Math.min(9, Number(e.target.value) || 1)))} /></label>
@@ -234,7 +234,7 @@ export function GlobalHotelWorkspace() {
       </div>
 
       <div className="ghw-demo-link">
-        <span>The captured Accor Bangkok case remains a separate v3.1 redemption fixture.</span>
+        <span>Domestic hotel search is live-provider-first. The captured Accor Bangkok case remains a separate redemption fixture.</span>
         <Link href="/stay-on-points?demo=accor">Open captured Accor redemption demo →</Link>
       </div>
 
