@@ -23,29 +23,35 @@ const flightPricing = {
 }
 
 describe('wallet rail ranking', () => {
-  it('keeps cash as the executable winner while surfacing a cheaper ratio-only transfer as projected', () => {
+  it('surfaces the strongest sourced transfer as projected while cash remains executable', () => {
     const result = rankWalletRails(demoMatrix(), flightPricing)
 
     expect(result.bestExecutable?.railType).toBe('CASH_RETAIN')
     expect(result.bestExecutable?.cashPayableMinor).toBe(5_260_000)
 
-    expect(result.bestProjected?.railId).toBe('hdfc-infinia-transfer-krisflyer')
-    expect(result.bestProjected?.bankPointsTargetMinimum).toBe(43_000)
+    // Axis Atlas -> KrisFlyer is a verified 1:2 edge in the 2026 Atlas graph,
+    // so 43,000 KrisFlyer miles require a ratio-derived 21,500 EDGE Miles.
+    expect(result.bestProjected?.railId).toBe('axis-atlas-transfer-krisflyer')
+    expect(result.bestProjected?.bankPointsTargetMinimum).toBe(21_500)
     expect(result.bestProjected?.bankPointsToTransferExact).toBeNull()
     expect(result.bestProjected?.cashPayableMinor).toBe(418_000)
     expect(result.bestProjected?.affordability).toBe('POSSIBLY_AFFORDABLE')
     expect(result.recommendationState).toBe('PROJECTED_WINNER_NEEDS_VERIFICATION')
+
+    const hdfc = result.candidates.find((candidate) => candidate.railId === 'hdfc-infinia-transfer-krisflyer')
+    expect(hdfc?.bankPointsTargetMinimum).toBe(43_000)
+    expect(hdfc?.cashPayableMinor).toBe(418_000)
   })
 
-  it('does not call a ratio-only transfer affordable when the wallet is below the ratio-derived target', () => {
+  it('does not call the HDFC transfer affordable when its wallet is below target and still evaluates other exact-card paths', () => {
     const result = rankWalletRails(demoMatrix(30_000), flightPricing)
     const hdfc = result.candidates.find((candidate) => candidate.railId === 'hdfc-infinia-transfer-krisflyer')
 
     expect(hdfc?.affordability).toBe('DEFINITELY_UNAFFORDABLE')
     expect(hdfc?.comparisonState).toBe('NOT_COMPARABLE')
-    expect(result.bestProjected).toBeNull()
+    expect(result.bestProjected?.railId).toBe('axis-atlas-transfer-krisflyer')
     expect(result.bestExecutable?.railType).toBe('CASH_RETAIN')
-    expect(result.recommendationState).toBe('CASH_ONLY')
+    expect(result.recommendationState).toBe('PROJECTED_WINNER_NEEDS_VERIFICATION')
   })
 
   it('refuses to compare award taxes to an INR cash fare when taxes are in another currency and no FX is supplied', () => {
@@ -58,7 +64,10 @@ describe('wallet rail ranking', () => {
 
     expect(hdfc?.cashPayableMinor).toBeNull()
     expect(hdfc?.reasons.join(' ')).toMatch(/different currencies/i)
-    expect(result.bestProjected).toBeNull()
+    // Portal economics are independent of the award-tax currency and remain
+    // projectable against the INR cash fare. Infinia's sourced 70% SmartBuy cap
+    // leaves less cash than this wallet's current Atlas balance on Travel EDGE.
+    expect(result.bestProjected?.railId).toBe('hdfc-infinia-smartbuy-travel')
     expect(result.bestExecutable?.railType).toBe('CASH_RETAIN')
   })
 
@@ -71,13 +80,37 @@ describe('wallet rail ranking', () => {
     })
   })
 
-  it('keeps checkout-only portal rails visible but out of economic ranking when value/cap are unknown', () => {
+  it('projects Axis Atlas Travel EDGE points instead of hiding a sourced portal redemption', () => {
     const result = rankWalletRails(demoMatrix(), flightPricing)
     const axisPortal = result.candidates.find((candidate) => candidate.railId === 'axis-atlas-travel-edge')
 
     expect(axisPortal?.comparisonState).toBe('PROJECTED_NEEDS_VERIFICATION')
-    expect(axisPortal?.cashPayableMinor).toBeNull()
-    expect(axisPortal?.reasons.join(' ')).toMatch(/value\/cap/i)
+    expect(axisPortal?.bankPointsTargetMinimum).toBe(31_200)
+    expect(axisPortal?.cashPayableMinor).toBe(2_140_000)
+    expect(axisPortal?.cashCurrency).toBe('INR')
+    expect(axisPortal?.reasons.join(' ')).toMatch(/31,200 points/i)
+    expect(axisPortal?.reasons.join(' ')).toMatch(/redemption fee/i)
+  })
+
+  it('projects the HDFC Infinia SmartBuy 70% points share while keeping checkout verification', () => {
+    const matrix = buildWalletRailMatrix([
+      { walletKey: 'hdfc', bank: 'HDFC Bank', cardName: 'HDFC Infinia Metal Edition', pointsBalance: 100_000, balanceVerified: true },
+    ], 'flight', null)
+    const result = rankWalletRails(matrix, {
+      travelKind: 'flight',
+      programmeId: null,
+      programmePointsRequired: null,
+      awardTaxesMinor: null,
+      awardTaxesCurrency: null,
+      cashPriceMinor: 1_075_000,
+      cashCurrency: 'INR',
+    })
+    const portal = result.candidates.find((candidate) => candidate.railId === 'hdfc-infinia-smartbuy-travel')
+
+    expect(portal?.bankPointsTargetMinimum).toBe(7_525)
+    expect(portal?.cashPayableMinor).toBe(322_500)
+    expect(portal?.comparisonState).toBe('PROJECTED_NEEDS_VERIFICATION')
+    expect(portal?.reasons.join(' ')).toMatch(/checkout/i)
   })
 
   it('can produce an executable transfer winner only when exact transfer mechanics are present', () => {
@@ -132,7 +165,7 @@ describe('wallet rail ranking', () => {
     expect(result.recommendationState).toBe('EXECUTABLE_WINNER')
   })
 
-  it('still surfaces a projected transfer when no matched cash benchmark exists, without inventing an executable winner', () => {
+  it('still surfaces no economic winner when no matched cash benchmark exists', () => {
     const result = rankWalletRails(demoMatrix(), {
       ...flightPricing,
       cashPriceMinor: null,

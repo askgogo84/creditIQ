@@ -46,17 +46,26 @@ describe('travel decision contract', () => {
     expect(decision.blockedReasons.join(' ')).toMatch(/verification/i)
   })
 
-  it('falls back to cash-only when the wallet cannot afford the projected transfer', () => {
+  it('keeps the independent SmartBuy portal path when the wallet cannot afford the loyalty transfer', () => {
     const decision = buildTravelDecisionContract({
       matrix: matrix(30_000),
       pricing,
       awardStatus: 'LIVE_OR_PROVIDER_RETURNED',
     })
 
-    expect(decision.wallet.projectedWinner).toBeNull()
+    const transfer = decision.wallet.ranking.candidates.find(candidate => candidate.railId === 'hdfc-infinia-transfer-krisflyer')
+    expect(transfer?.affordability).toBe('DEFINITELY_UNAFFORDABLE')
+
+    // An unaffordable KrisFlyer transfer does not erase the separate SmartBuy
+    // redemption channel. With 30,000 Infinia RP in the wallet, the portal can
+    // project using all 30,000 points against this fare, with checkout remaining
+    // authoritative for the portal fare/current account limits.
+    expect(decision.wallet.projectedWinner?.railId).toBe('hdfc-infinia-smartbuy-travel')
+    expect(decision.wallet.projectedWinner?.bankPointsTargetMinimum).toBe(30_000)
+    expect(decision.wallet.projectedWinner?.cashPayableMinor).toBe(2_260_000)
     expect(decision.wallet.executableWinner?.railType).toBe('CASH_RETAIN')
-    expect(decision.conciergeAction.state).toBe('CASH_ONLY')
-    expect(decision.conciergeAction.instructionState).toBe('CASH_ONLY')
+    expect(decision.conciergeAction.state).toBe('READY_FOR_OPERATOR_VERIFICATION')
+    expect(decision.conciergeAction.instructionState).toBe('PROJECTED_PATH_NEEDS_VERIFICATION')
     expect(decision.conciergeAction.irreversibleTransferAllowed).toBe(false)
   })
 

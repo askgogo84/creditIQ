@@ -7,6 +7,7 @@ import { ConciergeRequestButton, type ConciergeRequest } from '@/components/ciq/
 import { programmeIdForHotelChain } from '@/lib/redemption-rails/programme-resolver'
 import { HotelAwardJoinPanel } from './HotelAwardJoinPanel'
 import { HotelAwardDiscoveryPanel } from './HotelAwardDiscoveryPanel'
+import { WalletRailMatrix } from './WalletRailMatrix'
 import './global-hotel-workspace.css'
 
 type HotelOffer = {
@@ -149,7 +150,6 @@ export function GlobalHotelWorkspace() {
   const [sessionToken, setSessionToken] = useState<string | null>(null)
   const [selectedId, setSelectedId] = useState<string | null>(null)
   const [submittedSearch, setSubmittedSearch] = useState<SubmittedHotelSearch | null>(null)
-  const [showDiscovery, setShowDiscovery] = useState(false)
   const [loading, setLoading] = useState(false)
   const [loadingMore, setLoadingMore] = useState(false)
   const [error, setError] = useState('')
@@ -170,7 +170,6 @@ export function GlobalHotelWorkspace() {
     setOffers([])
     setCoverage(null)
     setAttempts([])
-    setShowDiscovery(false)
     setSessionToken(null)
     setSelectedId(null)
     try {
@@ -234,8 +233,6 @@ export function GlobalHotelWorkspace() {
     ? `${offers.length.toLocaleString('en-IN')} loaded of ${coverage.provider_total.toLocaleString('en-IN')} provider properties`
     : `${offers.length.toLocaleString('en-IN')} provider offers loaded${coverage?.has_more ? ' · more available' : ''}`
 
-  const liveUnavailable = Boolean(error && offers.length === 0)
-
   return (
     <div className="ghw-root">
       <div className="ghw-title-row">
@@ -271,8 +268,7 @@ export function GlobalHotelWorkspace() {
               {attempts.map((attempt) => <small key={attempt.provider}><b>{providerLabel(attempt.provider)}:</b> {attempt.ok ? `${attempt.loaded} live offers` : attempt.note}</small>)}
             </div>
           )}
-          <small>CreditIQ will not replace missing live cash rates with captured or historical prices. The points-stay discovery section is hidden by default while live inventory is unavailable.</small>
-          {submittedSearch && <button type="button" className="ghw-discovery-toggle" onClick={() => setShowDiscovery(value => !value)}>{showDiscovery ? 'Hide discovery-only properties' : 'View discovery-only points properties'}</button>}
+          <small>Cash inventory unavailable does not mean there is no redemption path. CreditIQ will not invent a cash rate, but it will still show your sourced card redemption rails, cached points-stay discovery and direct-programme verification paths below, with their evidence state clearly labelled.</small>
         </div>
       )}
       {loading && <div className="ghw-loading">Starting the global cash-hotel provider chain for {destination}…</div>}
@@ -301,7 +297,8 @@ export function GlobalHotelWorkspace() {
 
       {!loading && !error && coverage && offers.length === 0 && <div className="ghw-empty">The connected cash provider returned no hotel offers for this destination and date range.</div>}
 
-      {(!liveUnavailable || showDiscovery) && <HotelAwardDiscoveryPanel search={submittedSearch} />}
+      {submittedSearch && <WalletRailMatrix travelKind="hotel" programmeId={null} />}
+      <HotelAwardDiscoveryPanel search={submittedSearch} />
     </div>
   )
 }

@@ -11,9 +11,12 @@ describe('GlobalHotelWorkspace provider failure state', () => {
     expect(source).toContain('Live hotel provider status')
   })
 
-  it('does not visually promote discovery-only properties by default after live failure', () => {
-    expect(source).toContain('const [showDiscovery, setShowDiscovery] = useState(false)')
-    expect(source).toContain("View discovery-only points properties")
-    expect(source).toContain('(!liveUnavailable || showDiscovery)')
+  it('keeps wallet and points-stay redemption paths visible after live cash failure without promoting discovery as live', () => {
+    expect(source).not.toContain('const [showDiscovery, setShowDiscovery]')
+    expect(source).toContain('Cash inventory unavailable does not mean there is no redemption path')
+    expect(source).toContain('import { WalletRailMatrix }')
+    expect(source).toContain('<WalletRailMatrix travelKind="hotel" programmeId={null} />')
+    expect(source).toContain('<HotelAwardDiscoveryPanel search={submittedSearch} />')
+    expect(source).not.toContain('(!liveUnavailable || showDiscovery)')
   })
 })
