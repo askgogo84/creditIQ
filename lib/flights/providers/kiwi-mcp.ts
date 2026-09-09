@@ -1,8 +1,16 @@
+import { LiveFxProvider, type FxProvider, type FxSnapshot } from '@/lib/hotels/providers/fx'
+
 type Cabin = 'economy' | 'premium_economy' | 'business' | 'first'
 
 export type KiwiMcpCashFlight = {
   id: string
   price: number
+  priceCurrency: 'INR'
+  originalPrice: number
+  originalCurrency: string
+  fxRate: number | null
+  fxSource: string | null
+  fxFetchedAt: string | null
   airline: string
   airlines: string[]
   from: string
@@ -29,7 +37,7 @@ const ENDPOINT = 'https://mcp.kiwi.com'
 const MODERN_PROTOCOL = '2026-07-28'
 const LEGACY_PROTOCOLS = ['2025-11-25', '2025-06-18'] as const
 const CLIENT_INFO = { name: 'creditiq-travel', version: '1.0.0' }
-const REQUIRED_CURRENCY = 'INR'
+const TARGET_CURRENCY = 'INR'
 
 function ddmmyyyy(iso: string) {
   const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(iso)
@@ -113,7 +121,7 @@ function toolArguments(input: { from: string; to: string; date: string; cabin: C
     flyTo: input.to,
     departureDate: ddmmyyyy(input.date),
     cabinClass: cabinCode(input.cabin),
-    curr: REQUIRED_CURRENCY,
+    curr: TARGET_CURRENCY,
     sort: 'price',
     passengers: Math.max(1, input.adults ?? 1),
   }
@@ -165,7 +173,6 @@ async function legacyToolCall(args: Record<string, unknown>) {
       }
       if (sessionId) sessionHeaders['Mcp-Session-Id'] = sessionId
 
-      // Older Streamable HTTP revisions expect this notification after initialize.
       await postRpc({ jsonrpc: '2.0', method: 'notifications/initialized' }, sessionId ? { 'Mcp-Session-Id': sessionId } : {})
 
       return postRpc({
@@ -203,7 +210,7 @@ function extractStructuredResult(rpc: any) {
         const parsed = JSON.parse(candidate)
         if (parsed && typeof parsed === 'object') return parsed
       } catch {
-        // Keep looking. Human-readable MCP text is not promoted into structured pricing.
+        // Human-readable MCP text is never promoted into structured pricing.
       }
     }
   }
@@ -211,7 +218,17 @@ function extractStructuredResult(rpc: any) {
   throw new Error('Kiwi MCP returned no structured flight payload')
 }
 
-function normalize(payload: any, input: { from: string; to: string; cabin: Cabin }): KiwiMcpCashFlight[] {
+type PricingNormalization = {
+  sourceCurrency: string
+  rateToInr: number
+  fx: FxSnapshot | null
+}
+
+function normalize(
+  payload: any,
+  input: { from: string; to: string; cabin: Cabin },
+  pricing: PricingNormalization,
+): KiwiMcpCashFlight[] {
   const itineraries = Array.isArray(payload?.itineraries) ? payload.itineraries : []
 
   return itineraries.flatMap((itinerary: any, index: number) => {
@@ -219,8 +236,11 @@ function normalize(payload: any, input: { from: string; to: string; cabin: Cabin
     const returnedCabin = normalizeCabin(outbound?.cabinClass)
     if (!outbound || returnedCabin !== input.cabin) return []
 
-    const price = Number(itinerary?.price)
+    const originalPrice = Number(itinerary?.price)
+    if (!Number.isFinite(originalPrice) || originalPrice <= 0) return []
+    const price = Math.round(originalPrice * pricing.rateToInr)
     if (!Number.isFinite(price) || price <= 0) return []
+
     const rawSegments = Array.isArray(outbound?.segments) ? outbound.segments : []
     const segments = rawSegments.map((segment: any) => ({
       from: String(segment?.from || ''),
@@ -240,6 +260,12 @@ function normalize(payload: any, input: { from: string; to: string; cabin: Cabin
     return [{
       id: `kiwi-mcp-${index}-${departure}`,
       price,
+      priceCurrency: 'INR' as const,
+      originalPrice,
+      originalCurrency: pricing.sourceCurrency,
+      fxRate: pricing.fx?.rate ?? null,
+      fxSource: pricing.fx?.source ?? null,
+      fxFetchedAt: pricing.fx?.fetched_at ?? null,
       airline: airlines[0] || String(rawSegments[0]?.carrierName || 'Multiple'),
       airlines,
       from: String(outbound?.route?.[0] || segments[0]?.from || input.from),
@@ -263,7 +289,18 @@ export async function searchKiwiMcpFlights(input: {
   date: string
   cabin: Cabin
   adults?: number
-}): Promise<{ flights: KiwiMcpCashFlight[]; resultsCount: number | null; currency: string | null; searchTimeMs: number | null; protocol: 'modern' | 'legacy' }> {
+  fxProvider?: FxProvider
+}): Promise<{
+  flights: KiwiMcpCashFlight[]
+  resultsCount: number | null
+  currency: 'INR'
+  originalCurrency: string
+  fxRate: number | null
+  fxSource: string | null
+  fxFetchedAt: string | null
+  searchTimeMs: number | null
+  protocol: 'modern' | 'legacy'
+}> {
   const args = toolArguments(input)
   let call = await modernToolCall(args)
   let protocol: 'modern' | 'legacy' = 'modern'
@@ -275,20 +312,28 @@ export async function searchKiwiMcpFlights(input: {
   if (!call.res.ok) throw new Error(`Kiwi MCP search failed (${call.res.status})`)
 
   const payload = extractStructuredResult(call.rpc)
-  const currency = payload?.currency ? String(payload.currency).trim().toUpperCase() : null
+  const sourceCurrency = payload?.currency ? String(payload.currency).trim().toUpperCase() : ''
+  if (!sourceCurrency) throw new Error('Kiwi MCP returned unknown currency; cannot safely price in INR')
 
-  // CreditIQ's cash-flight surface is INR-denominated. Kiwi's legacy MCP
-  // currently may ignore `curr: INR` and return EUR. Never relabel or convert
-  // that amount without a verified FX source: reject it and let the provider
-  // chain continue to the next safe INR source.
-  if (currency !== REQUIRED_CURRENCY) {
-    throw new Error(`Kiwi MCP returned ${currency || 'unknown'} currency; ${REQUIRED_CURRENCY} required`)
+  let fx: FxSnapshot | null = null
+  let rateToInr = 1
+  if (sourceCurrency !== TARGET_CURRENCY) {
+    const provider = input.fxProvider ?? new LiveFxProvider()
+    fx = await provider.rate(sourceCurrency, TARGET_CURRENCY)
+    if (!fx) {
+      throw new Error(`Kiwi MCP returned ${sourceCurrency} currency and live FX conversion to INR was unavailable`)
+    }
+    rateToInr = fx.rate
   }
 
   return {
-    flights: normalize(payload, input),
+    flights: normalize(payload, input, { sourceCurrency, rateToInr, fx }),
     resultsCount: Number.isFinite(Number(payload?.resultsCount)) ? Number(payload.resultsCount) : null,
-    currency,
+    currency: 'INR',
+    originalCurrency: sourceCurrency,
+    fxRate: fx?.rate ?? null,
+    fxSource: fx?.source ?? null,
+    fxFetchedAt: fx?.fetched_at ?? null,
     searchTimeMs: Number.isFinite(Number(payload?.searchTimeMs)) ? Number(payload.searchTimeMs) : null,
     protocol,
   }
