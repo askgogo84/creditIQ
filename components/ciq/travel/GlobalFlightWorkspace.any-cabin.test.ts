@@ -19,4 +19,11 @@ describe('GlobalFlightWorkspace Any cabin search', () => {
   it('does not silently include unsupported Premium Economy or First in Any', () => {
     expect(source).not.toContain("['economy', 'premium_economy', 'business', 'first']")
   })
+
+  it('prioritizes exact-date live cash fares ahead of flexible award discovery', () => {
+    expect(source).toContain('function flightResultPriority')
+    expect(source).toContain('isTargetDate && hasLiveCash')
+    expect(source).toContain('flightResultPriority(a, date) - flightResultPriority(b, date)')
+    expect(source).toContain('Exact-date live cash fares')
+  })
 })
