@@ -1,19 +1,18 @@
 import type { Metadata } from 'next'
-import { MobileAppPrototype } from '@/components/ciq/mobile-app/MobileAppPrototype'
-import { PreviewBottomNav } from './PreviewBottomNav'
+import { CreditIQAppV2 } from '@/components/ciq/app-v2/CreditIQAppV2'
 import './preview.css'
+import './v2.css'
 
 export const metadata: Metadata = {
-  title: 'CreditIQ Mobile App Prototype',
-  description: 'Interactive mobile-first CreditIQ application prototype for product review.',
+  title: 'CreditIQ Mobile App Prototype V2',
+  description: 'Full first-run and mobile CreditIQ prototype for product review.',
   robots: { index: false, follow: false },
 }
 
 export default function AppPreviewPage() {
   return (
     <div id="creditiq-app-preview">
-      <MobileAppPrototype />
-      <PreviewBottomNav />
+      <CreditIQAppV2 />
     </div>
   )
 }
