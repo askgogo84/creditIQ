@@ -2,6 +2,11 @@ const FLIGHT_SOURCE_TO_PROGRAMME: Record<string, string> = {
   singapore: 'krisflyer',
   krisflyer: 'krisflyer',
   'air-india': 'air-india-maharaja',
+  airindia: 'air-india-maharaja',
+  indigo: 'indigo-bluchip',
+  'indigo-bluchip': 'indigo-bluchip',
+  spicejet: 'spiceclub',
+  spiceclub: 'spiceclub',
   flyingblue: 'flying-blue',
   'flying-blue': 'flying-blue',
   etihad: 'etihad-guest',
@@ -17,12 +22,11 @@ const FLIGHT_SOURCE_TO_PROGRAMME: Record<string, string> = {
   delta: 'delta-skymiles',
 }
 
-// Canonical destination node used by the CreditIQ transfer graph for each
-// programme id. Do not derive this mechanically from provider codes: transfer
-// edges use stable historical slugs such as `singapore`, `ba`, and `flyingblue`.
 const FLIGHT_PROGRAMME_TO_SOURCE: Record<string, string> = {
   krisflyer: 'singapore',
   'air-india-maharaja': 'air-india',
+  'indigo-bluchip': 'indigo',
+  spiceclub: 'spicejet',
   'flying-blue': 'flyingblue',
   'etihad-guest': 'etihad',
   'british-airways-club': 'ba',
@@ -43,6 +47,20 @@ function token(value: string): string {
 export function programmeIdForFlightSource(source: string): string | null {
   const raw = source.trim().toLowerCase()
   return FLIGHT_SOURCE_TO_PROGRAMME[raw] ?? FLIGHT_SOURCE_TO_PROGRAMME[token(source)] ?? null
+}
+
+/**
+ * Resolve a known operating carrier to its relevant loyalty programme even when
+ * the live award provider returns no award record. This exposes a genuine
+ * redemption relationship without pretending an award seat/price exists.
+ */
+export function programmeIdForFlightCarrier(carrier: string | null | undefined): string | null {
+  const n = token(carrier || '')
+  if (!n) return null
+  if (n === 'ai' || n === 'airindia') return 'air-india-maharaja'
+  if (n === '6e' || n === 'indigo') return 'indigo-bluchip'
+  if (n === 'sg' || n === 'spicejet') return 'spiceclub'
+  return null
 }
 
 export function flightSourceForProgrammeId(programmeId: string): string | null {
