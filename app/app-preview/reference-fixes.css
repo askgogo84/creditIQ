@@ -1,0 +1,291 @@
+/* Reference-parity hardening: keep onboarding within one viewport and prevent
+   global site typography/background rules from leaking into the prototype. */
+
+#creditiq-app-preview .ref-dark-screen,
+#creditiq-app-preview .ref-app,
+#creditiq-app-preview .ref-app-header,
+#creditiq-app-preview .ref-home-hero,
+#creditiq-app-preview .ref-travel-hero,
+#creditiq-app-preview .ref-decision-hero,
+#creditiq-app-preview .ref-card-detail-hero,
+#creditiq-app-preview .ref-cira-screen {
+  color: #fff !important;
+}
+
+#creditiq-app-preview .ref-dark-screen h1,
+#creditiq-app-preview .ref-dark-screen h2,
+#creditiq-app-preview .ref-dark-screen h3,
+#creditiq-app-preview .ref-dark-screen h4,
+#creditiq-app-preview .ref-app h1,
+#creditiq-app-preview .ref-app h2,
+#creditiq-app-preview .ref-app h3,
+#creditiq-app-preview .ref-app h4,
+#creditiq-app-preview .ref-home-hero-copy h2,
+#creditiq-app-preview .ref-travel-copy h2,
+#creditiq-app-preview .ref-decision-hero h2,
+#creditiq-app-preview .ref-card-detail-hero h2,
+#creditiq-app-preview .ref-cira-screen h2 {
+  color: #fff !important;
+  -webkit-text-fill-color: #fff !important;
+}
+
+#creditiq-app-preview .ref-app-header {
+  background: linear-gradient(180deg, rgba(5,15,22,.99), rgba(5,15,22,.94) 68%, rgba(5,15,22,.78)) !important;
+  border-bottom: 1px solid rgba(231,191,106,.08) !important;
+}
+
+#creditiq-app-preview .ref-app-header .ref-wordmark {
+  color: #fff !important;
+}
+
+#creditiq-app-preview .ref-app-header .ref-wordmark span,
+#creditiq-app-preview .ref-wordmark span {
+  color: #e7bf6a !important;
+  -webkit-text-fill-color: #e7bf6a !important;
+}
+
+#creditiq-app-preview .ref-app-title h1 {
+  color: #fff !important;
+  -webkit-text-fill-color: #fff !important;
+}
+
+/* The progress rail consumes 64px. The screen below must use the remaining
+   height rather than another full 100%, otherwise the CTA lands below fold. */
+#creditiq-app-preview .ref-setup-progress ~ .ref-dark-screen,
+#creditiq-app-preview .ref-setup-progress ~ .ref-cream-screen {
+  height: calc(100% - 64px) !important;
+  min-height: 0 !important;
+}
+
+#creditiq-app-preview .ref-setup-progress ~ .ref-dark-screen.ref-scrollable,
+#creditiq-app-preview .ref-setup-progress ~ .ref-cream-screen.ref-scrollable {
+  overflow-y: hidden !important;
+}
+
+/* Bottom CTAs always remain visible during first-run review. */
+#creditiq-app-preview .ref-setup .ref-bottom-pad {
+  position: absolute !important;
+  left: 0 !important;
+  right: 0 !important;
+  bottom: 0 !important;
+  z-index: 60 !important;
+}
+
+/* Desktop review uses the browser's available viewport without making the
+   simulated phone taller than the page. */
+@media (min-width: 760px) {
+  #creditiq-app-preview .ref-stage {
+    padding: 14px !important;
+  }
+
+  #creditiq-app-preview .ref-phone {
+    height: calc(100dvh - 28px) !important;
+    max-height: 844px !important;
+    width: min(430px, calc((100dvh - 28px) * .51)) !important;
+    min-width: 350px;
+    border-radius: 38px !important;
+  }
+}
+
+/* Compact first-run layout for laptop browser heights and shorter phones. */
+@media (max-height: 820px) {
+  #creditiq-app-preview .ref-setup-progress {
+    height: 54px !important;
+    padding-top: calc(6px + env(safe-area-inset-top)) !important;
+  }
+
+  #creditiq-app-preview .ref-setup-progress ~ .ref-dark-screen,
+  #creditiq-app-preview .ref-setup-progress ~ .ref-cream-screen {
+    height: calc(100% - 54px) !important;
+  }
+
+  #creditiq-app-preview .ref-skip {
+    top: calc(55px + env(safe-area-inset-top)) !important;
+    font-size: 8px !important;
+    padding: 6px 9px !important;
+  }
+
+  #creditiq-app-preview .ref-header-copy {
+    padding: 10px 18px 7px !important;
+  }
+
+  #creditiq-app-preview .ref-header-copy h2 {
+    margin-top: 5px !important;
+    font-size: 27px !important;
+    line-height: 1 !important;
+  }
+
+  #creditiq-app-preview .ref-header-copy > span {
+    margin-top: 6px !important;
+    font-size: 10px !important;
+    line-height: 1.32 !important;
+  }
+
+  #creditiq-app-preview .ref-cream-head {
+    padding: 18px 18px 5px !important;
+  }
+
+  #creditiq-app-preview .ref-cream-head h2 {
+    margin-top: 5px !important;
+    font-size: 28px !important;
+  }
+
+  #creditiq-app-preview .ref-cream-head > p:last-child {
+    margin-top: 6px !important;
+    font-size: 10px !important;
+    line-height: 1.3 !important;
+  }
+
+  #creditiq-app-preview .ref-story-visual {
+    height: 238px !important;
+    margin-top: 5px !important;
+    border-radius: 26px !important;
+  }
+
+  #creditiq-app-preview .ref-card-fan {
+    top: 43% !important;
+    transform: translate(-50%,-50%) scale(.82) !important;
+  }
+
+  #creditiq-app-preview .ref-story-features {
+    padding: 8px 16px 72px !important;
+  }
+
+  #creditiq-app-preview .ref-story-features b {
+    font-size: 9px !important;
+  }
+
+  #creditiq-app-preview .ref-story-features span {
+    font-size: 7px !important;
+  }
+
+  #creditiq-app-preview .ref-sign-photo {
+    height: 190px !important;
+  }
+
+  #creditiq-app-preview .ref-overlay-copy {
+    top: calc(46px + env(safe-area-inset-top)) !important;
+  }
+
+  #creditiq-app-preview .ref-overlay-copy h2 {
+    margin-top: 34px !important;
+    font-size: 27px !important;
+    color: #fff !important;
+    -webkit-text-fill-color: #fff !important;
+  }
+
+  #creditiq-app-preview .ref-overlay-copy p {
+    margin-top: 6px !important;
+    font-size: 10px !important;
+  }
+
+  #creditiq-app-preview .ref-provider-stack {
+    gap: 6px !important;
+    padding: 8px 18px 12px !important;
+  }
+
+  #creditiq-app-preview .ref-provider {
+    min-height: 41px !important;
+    font-size: 10px !important;
+  }
+
+  #creditiq-app-preview .ref-input {
+    min-height: 40px !important;
+  }
+
+  #creditiq-app-preview .ref-permission-list,
+  #creditiq-app-preview .ref-import-stack {
+    gap: 6px !important;
+    padding: 2px 16px !important;
+  }
+
+  #creditiq-app-preview .ref-toggle-row,
+  #creditiq-app-preview .ref-import-row {
+    min-height: 58px !important;
+    padding: 7px 10px !important;
+  }
+
+  #creditiq-app-preview .ref-toggle-row > span,
+  #creditiq-app-preview .ref-import-row > span {
+    width: 34px !important;
+    height: 34px !important;
+  }
+
+  #creditiq-app-preview .ref-trust-card {
+    margin-top: 6px !important;
+    padding: 8px 10px !important;
+  }
+
+  #creditiq-app-preview .ref-card-list {
+    gap: 6px !important;
+    padding: 0 16px 72px !important;
+  }
+
+  #creditiq-app-preview .ref-card-row {
+    grid-template-columns: 82px 1fr auto !important;
+    min-height: 66px !important;
+    padding: 6px !important;
+  }
+
+  #creditiq-app-preview .ref-card-row img {
+    width: 82px !important;
+    height: 52px !important;
+  }
+
+  #creditiq-app-preview .ref-category-tabs {
+    padding: 5px 16px !important;
+  }
+
+  #creditiq-app-preview .ref-detected-card {
+    margin: 6px 16px 72px !important;
+    padding: 10px !important;
+  }
+
+  #creditiq-app-preview .ref-goal-grid {
+    gap: 7px !important;
+    padding: 2px 16px !important;
+  }
+
+  #creditiq-app-preview .ref-goal-grid button {
+    min-height: 102px !important;
+    padding: 10px !important;
+  }
+
+  #creditiq-app-preview .ref-goal-grid b {
+    margin-top: 12px !important;
+    font-size: 14px !important;
+  }
+
+  #creditiq-app-preview .ref-goal-grid span {
+    font-size: 7px !important;
+  }
+
+  #creditiq-app-preview .ref-other-goal {
+    margin: 7px 16px 72px !important;
+    min-height: 38px !important;
+  }
+
+  #creditiq-app-preview .ref-insight-card {
+    margin: 2px 16px 72px !important;
+    padding: 9px !important;
+  }
+
+  #creditiq-app-preview .ref-bottom-pad {
+    padding: 10px 16px calc(10px + env(safe-area-inset-bottom)) !important;
+  }
+
+  #creditiq-app-preview .ref-gold-btn,
+  #creditiq-app-preview .ref-dark-btn {
+    min-height: 46px !important;
+  }
+}
+
+@media (max-height: 700px) {
+  #creditiq-app-preview .ref-story-visual { height: 205px !important; }
+  #creditiq-app-preview .ref-sign-photo { height: 160px !important; }
+  #creditiq-app-preview .ref-overlay-copy h2 { margin-top: 24px !important; font-size: 24px !important; }
+  #creditiq-app-preview .ref-toggle-row,
+  #creditiq-app-preview .ref-import-row { min-height: 52px !important; }
+  #creditiq-app-preview .ref-goal-grid button { min-height: 88px !important; }
+  #creditiq-app-preview .ref-goal-grid b { margin-top: 8px !important; }
+}
