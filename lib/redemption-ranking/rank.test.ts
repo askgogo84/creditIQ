@@ -65,8 +65,9 @@ describe('wallet rail ranking', () => {
     expect(hdfc?.cashPayableMinor).toBeNull()
     expect(hdfc?.reasons.join(' ')).toMatch(/different currencies/i)
     // Portal economics are independent of the award-tax currency and remain
-    // projectable against the INR cash fare.
-    expect(result.bestProjected?.railId).toBe('axis-atlas-travel-edge')
+    // projectable against the INR cash fare. Infinia's sourced 70% SmartBuy cap
+    // leaves less cash than this wallet's current Atlas balance on Travel EDGE.
+    expect(result.bestProjected?.railId).toBe('hdfc-infinia-smartbuy-travel')
     expect(result.bestExecutable?.railType).toBe('CASH_RETAIN')
   })
 
