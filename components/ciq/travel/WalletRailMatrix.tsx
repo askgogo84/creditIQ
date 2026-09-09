@@ -78,6 +78,32 @@ function candidateLabel(candidate: RankedRailCandidate, programmeId: string | nu
   return `${candidate.cardName} · ${candidate.railType.replaceAll('_', ' ').toLowerCase()}`
 }
 
+function SearchDecisionSummary({ decision }: { decision: TravelDecisionContract }) {
+  const summary = decision.searchSummary
+  if (!summary) return null
+
+  const best = summary.bestPath
+  const bestAmount = best
+    ? [best.bankPointsRequired != null ? `${best.bankPointsRequired.toLocaleString('en-IN')} pts` : null, moneyMinor(best.cashPayableMinor, best.cashCurrency)].filter(Boolean).join(' + ')
+    : ''
+  const cash = moneyMinor(summary.cash.amountMinor, summary.cash.currency)
+  const usable = summary.alternatives.filter(option => option.state !== 'NOT_COMPARABLE').length
+
+  return (
+    <div className={`wrm-ranking ${summary.verdict === 'PAY_CASH' ? 'executable-only' : summary.verdict.startsWith('VERIFY') ? 'projected' : 'executable-only'}`}>
+      <div className="wrm-ranking-row">
+        <div>
+          <small>CreditIQ search verdict</small>
+          <b>{summary.headline}</b>
+          <span>{best ? `${best.label}${bestAmount ? ` · ${bestAmount}` : ''}` : summary.blockedReasons[0] || 'No safe wallet route is currently promotable.'}</span>
+        </div>
+        <em>{summary.verdictLabel}</em>
+      </div>
+      <p>{cash ? `Cash benchmark ${cash}. ` : ''}{usable} sourced usable/verification path{usable === 1 ? '' : 's'} evaluated from the exact cards in this wallet.</p>
+    </div>
+  )
+}
+
 function RankingSummary({ ranking }: { ranking: RailRankingResult }) {
   const projected = ranking.bestProjected
   const executable = ranking.bestExecutable
@@ -198,6 +224,7 @@ export function WalletRailMatrix({
   cashCurrency = null,
 }: WalletRailMatrixProps) {
   const [matrix, setMatrix] = useState<Matrix | null>(null)
+  const [decision, setDecision] = useState<TravelDecisionContract | null>(null)
   const [ranking, setRanking] = useState<RailRankingResult | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
@@ -206,6 +233,7 @@ export function WalletRailMatrix({
     let cancelled = false
     setLoading(true)
     setError('')
+    setDecision(null)
     setRanking(null)
     authedFetch('/api/travel/redemption-rails', {
       method: 'POST',
@@ -225,12 +253,14 @@ export function WalletRailMatrix({
         if (!res.ok) throw new Error(data.error || 'rail matrix unavailable')
         if (!cancelled) {
           setMatrix(data.matrix ?? null)
+          setDecision(data.decision ?? null)
           setRanking(data.decision?.wallet.ranking ?? null)
         }
       })
       .catch(() => {
         if (!cancelled) {
           setMatrix(null)
+          setDecision(null)
           setRanking(null)
           setError('Couldn’t load your wallet redemption rails.')
         }
@@ -257,6 +287,7 @@ export function WalletRailMatrix({
         {programmeId && <small>{programmeId}</small>}
       </div>
 
+      {!loading && !error && decision && <SearchDecisionSummary decision={decision} />}
       {!loading && !error && ranking && <RankingSummary ranking={ranking} />}
       {!loading && !error && ranking && <FlightExecutionPaths ranking={ranking} />}
       {loading && <div className="wrm-loading">Loading card-specific rails…</div>}

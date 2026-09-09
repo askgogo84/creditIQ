@@ -11,6 +11,7 @@ import { rankWalletOptions } from '@/components/ciq/travel/flight-wallet-compari
 import { ConciergeRequestButton } from '@/components/ciq/concierge/ConciergeRequestButton'
 import { buildFlightConciergeRequest } from '@/components/ciq/concierge/travel-requests'
 import { buildFlightSelfServePlan } from '@/lib/travel/flight-redemption-plan'
+import type { TravelDecisionContract } from '@/lib/travel/decision-contract'
 import '@/components/ciq/fly-points/fly-points.css'
 
 type SearchCabin = 'economy' | 'business'
@@ -53,6 +54,7 @@ type FusionRow = {
   awardEvidenceProvider?: string | null
   redemption: RedemptionOption[]
   bestOption: RedemptionOption | null
+  decision?: TravelDecisionContract
   searchCabin?: SearchCabin
 }
 
@@ -134,7 +136,18 @@ function nativeTaxes(trip: AwardView['trip']) {
   return trip.taxesCurrency === 'INR' ? `₹${amount.toLocaleString('en-IN')}` : `${trip.taxesCurrency} ${amount.toLocaleString('en-IN')}`
 }
 
+function moneyMinor(value: number | null | undefined, currency: string | null | undefined) {
+  if (value == null || !currency) return null
+  try {
+    return new Intl.NumberFormat('en-IN', { style: 'currency', currency, maximumFractionDigits: 0 }).format(value / 100)
+  } catch {
+    return `${currency} ${Math.round(value / 100).toLocaleString('en-IN')}`
+  }
+}
+
 function rowReachable(row: FusionRow) {
+  const summary = row.decision?.searchSummary
+  if (summary) return summary.alternatives.some(option => option.state === 'EXECUTABLE' || option.state === 'PROJECTED_NEEDS_VERIFICATION')
   return row.redemption.some(option => option.status === 'ok')
 }
 
@@ -414,6 +427,12 @@ export function GlobalFlightWorkspace() {
               const evidenceProvider = evidenceProviderLabel(row.awardEvidenceProvider)
               const evidenceAuthority = authorityLabel(awardMeta?.authority)
               const awardPrefix = award && award.program !== carrier ? `${award.program} award · ` : ''
+              const summary = row.decision?.searchSummary ?? null
+              const bestSummaryPath = summary?.bestPath ?? null
+              const usableSummaryPaths = summary?.alternatives.filter(option => option.state !== 'NOT_COMPARABLE') ?? []
+              const rowSummaryDetail = bestSummaryPath
+                ? [bestSummaryPath.bankPointsRequired != null ? `${bestSummaryPath.bankPointsRequired.toLocaleString('en-IN')} pts` : null, moneyMinor(bestSummaryPath.cashPayableMinor, bestSummaryPath.cashCurrency)].filter(Boolean).join(' + ') || bestSummaryPath.label
+                : null
 
               return (
                 <article className={`approved-award-item${active ? ' open' : ''}`} key={row.id}>
@@ -430,17 +449,17 @@ export function GlobalFlightWorkspace() {
                     <span className="approved-award-programme"><i className="approved-airline-logo">{programmeMark(carrier)}</i><span><b>{carrier}</b><small>{awardPrefix}{row.from} {depart || ''} → {row.to} {arrive || ''} · {duration} · {fmtStops(stops)} · {cabinLabel(rowCabin)}</small></span></span>
                     <span><b>{economyCost.value}</b><small>{economyCost.label}</small></span>
                     <span><b>{businessCost.value}</b><small>{businessCost.label}</small></span>
-                    <span className="approved-wallet-path"><b>{award ? (selfServe.executable ? 'Ready to verify' : reachable ? 'Wallet route' : 'Verify route') : `Cash · ${cabinLabel(rowCabin)}`}</b><small>{award ? (selfServe.pointsNeeded ? `${selfServe.pointsNeeded.toLocaleString('en-IN')} card pts` : 'needs verification') : (row.price > 0 ? `₹${row.price.toLocaleString('en-IN')}` : 'fare unavailable')}</small></span>
+                    <span className="approved-wallet-path"><b>{summary?.verdictLabel || (award ? (selfServe.executable ? 'Ready to verify' : reachable ? 'Wallet route' : 'Verify route') : `Cash · ${cabinLabel(rowCabin)}`)}</b><small>{rowSummaryDetail || (award ? (selfServe.pointsNeeded ? `${selfServe.pointsNeeded.toLocaleString('en-IN')} card pts` : 'needs verification') : (row.price > 0 ? `₹${row.price.toLocaleString('en-IN')}` : 'fare unavailable'))}</small></span>
                     <ChevronDown className="approved-row-chevron" size={16} />
                   </button>
 
                   {active && (
                     <div className="approved-award-detail">
                       <div className="approved-decision-hero">
-                        <div><span className="approved-section-kicker">CreditIQ recommendation</span><h3>{award ? `Verify ${programme}, then choose self-serve or Concierge` : 'Pay cash or send the itinerary to Concierge'}</h3><p>{award ? 'Both execution paths use the same bounded itinerary and wallet snapshot.' : 'No award match was returned for this itinerary.'}</p></div>
+                        <div><span className="approved-section-kicker">CreditIQ recommendation</span><h3>{summary?.headline || (award ? `Verify ${programme}, then choose self-serve or Concierge` : 'Pay cash or send the itinerary to Concierge')}</h3><p>{summary ? 'Cash, every sourced wallet rail, affordability and verification state are ranked from the same server decision.' : award ? 'Both execution paths use the same bounded itinerary and wallet snapshot.' : 'No award match was returned for this itinerary.'}</p></div>
                         <div><small>Cabin</small><b>{cabinLabel(rowCabin)}</b></div>
                         <div><small>Award price</small><b>{award ? `${award.mileageCost.toLocaleString('en-IN')} miles` : 'No award'}</b></div>
-                        <div><small>Status</small><b>{selfServe.executable ? 'Self-serve ready' : award ? 'Verify / Concierge' : 'Cash only'}</b></div>
+                        <div><small>Status</small><b>{summary?.verdictLabel || (selfServe.executable ? 'Self-serve ready' : award ? 'Verify / Concierge' : 'Cash only')}</b></div>
                       </div>
 
                       <div className="approved-decision-tabs" role="tablist">
@@ -451,11 +470,35 @@ export function GlobalFlightWorkspace() {
 
                       <div className="approved-decision-panel">
                         {detailTab === 'compare' && (
-                          <div className="approved-path-grid">
-                            <article className={`approved-path-choice${award && selfServe.executable ? ' winner' : ''}`}><span>{award && selfServe.executable ? 'Mapped self-serve route' : 'Award route'}</span><b>{award ? programme : 'No award match'}</b><strong>{selfServe.pointsNeeded ? `${selfServe.pointsNeeded.toLocaleString('en-IN')} card pts` : award ? `${award.mileageCost.toLocaleString('en-IN')} miles` : 'Unavailable'}</strong><small>{selfServe.ratioLabel ? `Ratio ${selfServe.ratioLabel} · ${selfServe.durationLabel}` : taxes ? `Returned taxes ${taxes}` : 'Verify programme terms'}</small></article>
-                            <article className={`approved-path-choice${!award && row.price > 0 ? ' winner' : ''}`}><span>Cash alternative</span><b>Pay airline directly</b><strong>{row.price > 0 ? `₹${row.price.toLocaleString('en-IN')}` : 'Fare unavailable'}</strong><small>{row.price > 0 ? 'Keep all reward points' : 'No live cash number returned'}</small></article>
-                            <article className="approved-path-choice"><span>Keep your points</span><b>Wait for a better option</b><strong>0 points</strong><small>Useful when award availability or transfer timing is uncertain.</small></article>
-                          </div>
+                          summary ? (
+                            <div className="approved-path-grid">
+                              {usableSummaryPaths.map(option => {
+                                const amount = moneyMinor(option.cashPayableMinor, option.cashCurrency)
+                                const savings = option.savingsVsCashMinor != null && option.savingsVsCashMinor > 0
+                                  ? moneyMinor(option.savingsVsCashMinor, summary.cash.currency)
+                                  : null
+                                const primary = option.bankPointsRequired != null
+                                  ? `${option.bankPointsRequired.toLocaleString('en-IN')} pts${amount ? ` + ${amount}` : ''}`
+                                  : amount || 'Economics need verification'
+                                const stateLabel = option.isBestProjected ? 'Best projected path' : option.isBestExecutable ? 'Best executable path' : option.state.replaceAll('_', ' ').toLowerCase()
+                                return (
+                                  <article className={`approved-path-choice${option.id === summary.bestPath?.id ? ' winner' : ''}`} key={option.id}>
+                                    <span>{stateLabel}</span>
+                                    <b>{option.label}</b>
+                                    <strong>{primary}</strong>
+                                    <small>{savings ? `${savings} less cash than the matched fare` : option.reasons[0] || 'Sourced wallet path'}</small>
+                                  </article>
+                                )
+                              })}
+                              {usableSummaryPaths.length === 0 && <article className="approved-path-choice winner"><span>CreditIQ verdict</span><b>{summary.verdictLabel}</b><strong>{moneyMinor(summary.cash.amountMinor, summary.cash.currency) || 'No comparable amount'}</strong><small>{summary.blockedReasons[0] || 'No safe wallet route can be promoted.'}</small></article>}
+                            </div>
+                          ) : (
+                            <div className="approved-path-grid">
+                              <article className={`approved-path-choice${award && selfServe.executable ? ' winner' : ''}`}><span>{award && selfServe.executable ? 'Mapped self-serve route' : 'Award route'}</span><b>{award ? programme : 'No award match'}</b><strong>{selfServe.pointsNeeded ? `${selfServe.pointsNeeded.toLocaleString('en-IN')} card pts` : award ? `${award.mileageCost.toLocaleString('en-IN')} miles` : 'Unavailable'}</strong><small>{selfServe.ratioLabel ? `Ratio ${selfServe.ratioLabel} · ${selfServe.durationLabel}` : taxes ? `Returned taxes ${taxes}` : 'Verify programme terms'}</small></article>
+                              <article className={`approved-path-choice${!award && row.price > 0 ? ' winner' : ''}`}><span>Cash alternative</span><b>Pay airline directly</b><strong>{row.price > 0 ? `₹${row.price.toLocaleString('en-IN')}` : 'Fare unavailable'}</strong><small>{row.price > 0 ? 'Keep all reward points' : 'No live cash number returned'}</small></article>
+                              <article className="approved-path-choice"><span>Keep your points</span><b>Wait for a better option</b><strong>0 points</strong><small>Useful when award availability or transfer timing is uncertain.</small></article>
+                            </div>
+                          )
                         )}
 
                         {detailTab === 'book' && (
@@ -509,8 +552,8 @@ export function GlobalFlightWorkspace() {
                         {detailTab === 'sources' && (
                           <div className="approved-source-grid">
                             <article><b>Award evidence</b><p>{award ? `${evidenceProvider}. ${evidenceAuthority}. ${awardMeta?.reason || 'Direct programme checkout remains the final execution check.'}` : 'No award source matched this cash itinerary.'}</p></article>
-                            <article><b>Wallet path</b><p>{award ? (selfServe.pointsNeeded ? `Mapped card requirement: ${selfServe.pointsNeeded.toLocaleString('en-IN')} points${selfServe.ratioLabel ? ` at ${selfServe.ratioLabel}` : ''}. Transfer state: ${selfServe.transferState || 'unverified'}${selfServe.transferAsOf ? ` as of ${selfServe.transferAsOf}` : ''}.` : 'No safe mapped wallet route is promoted.') : 'Keeping points is the default when only cash inventory is available.'}</p></article>
-                            <article><b>Execution boundary</b><p>{awardMeta?.authority === 'DATE_SPECIFIC_LIVE' ? 'Date-specific live evidence improves confidence, but the selected programme checkout is still re-verified immediately before any irreversible points transfer.' : 'Cached or incomplete evidence is discovery only. CreditIQ will not tell you to move points until the seat, taxes and transfer facts are re-verified.'}</p></article>
+                            <article><b>Wallet path</b><p>{summary ? `${summary.alternatives.length} sourced candidate${summary.alternatives.length === 1 ? '' : 's'} were evaluated. ${summary.bestPath ? `Current verdict: ${summary.bestPath.label}.` : 'No safe path is currently promoted.'}` : award ? (selfServe.pointsNeeded ? `Mapped card requirement: ${selfServe.pointsNeeded.toLocaleString('en-IN')} points${selfServe.ratioLabel ? ` at ${selfServe.ratioLabel}` : ''}. Transfer state: ${selfServe.transferState || 'unverified'}${selfServe.transferAsOf ? ` as of ${selfServe.transferAsOf}` : ''}.` : 'No safe mapped wallet route is promoted.') : 'Keeping points is the default when only cash inventory is available.'}</p></article>
+                            <article><b>Execution boundary</b><p>{summary?.requiresLiveReverification || awardMeta?.authority !== 'DATE_SPECIFIC_LIVE' ? 'Cached, projected or incomplete evidence stays non-executable. CreditIQ will not tell you to move points until the seat, taxes and transfer facts are re-verified.' : 'Date-specific live evidence improves confidence, but the selected programme checkout is still re-verified immediately before any irreversible points transfer.'}</p></article>
                           </div>
                         )}
                       </div>
