@@ -311,12 +311,12 @@ async function bookingAutocompleteDestination(destination: string): Promise<Book
       language: 'en-gb',
       filters: { types: ['city'] },
     })
-    const rows = Array.isArray(json?.data) ? json.data : Array.isArray(json?.suggestions) ? json.suggestions : []
+    const rows: any[] = Array.isArray(json?.data) ? json.data : Array.isArray(json?.suggestions) ? json.suggestions : []
     const query = norm(destination)
     const candidates = rows
       .map(autocompleteCityFromRow)
       .filter((value: BookingDestinationProxy | null): value is BookingDestinationProxy => Boolean(value))
-      .sort((a, b) => {
+      .sort((a: BookingDestinationProxy, b: BookingDestinationProxy) => {
         const aName = norm(a.city)
         const bName = norm(b.city)
         const score = (name: string) => name === query ? 0 : name.startsWith(query) ? 1 : name.includes(query) ? 2 : 3
