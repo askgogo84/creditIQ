@@ -12,6 +12,7 @@ import {
   bookingDemandBaseUrl,
   bookingDemandConfigured,
   searchBookingDemandHotels,
+  type BookingDestinationProxy,
 } from '@/lib/hotels/providers/booking-demand'
 
 export const runtime = 'nodejs'
@@ -43,6 +44,17 @@ function unavailable(attempts: Attempt[]) {
   }, { status: 503 })
 }
 
+function bookingResolutionNote(proxy: BookingDestinationProxy) {
+  const environment = bookingDemandBaseUrl().includes('sandbox') ? 'sandbox' : 'production'
+  if (proxy.resolver === 'booking-autocomplete-city') {
+    return `Booking.com Demand v3.2 ${environment} search. Destination resolved by Booking.com city autocomplete (${proxy.city}, city ${proxy.bookingCityId}).`
+  }
+  if (proxy.resolver === 'creditiq-india-destination') {
+    return `Booking.com Demand v3.2 ${environment} search. ${proxy.city} resolved to a curated CreditIQ destination coordinate with a ${proxy.radiusKm} km search radius; Booking.com remains the source of live properties and prices.`
+  }
+  return `Booking.com Demand v3.2 ${environment} search. Destination resolved through CreditIQ's airport/city coordinates (${proxy.city}${proxy.iata ? `/${proxy.iata}` : ''}) with a ${proxy.radiusKm} km metro radius.`
+}
+
 async function bookingPage(body: any, pageToken: string | null) {
   const destination = typeof body.destination === 'string' ? body.destination.trim() : ''
   const checkin = typeof body.checkin === 'string' ? body.checkin : ''
@@ -69,7 +81,7 @@ async function bookingPage(body: any, pageToken: string | null) {
       provider: 'booking-demand',
       mode: result.nextPage ? 'PROVIDER_PAGEABLE' : 'PROVIDER_COMPLETE',
       destination,
-      entityId: `booking-proxy:${result.destinationProxy.iata}`,
+      entityId: `booking:${result.destinationProxy.providerKey}`,
       loaded: result.offers.length,
       provider_total: result.total,
       has_more: Boolean(result.nextPage),
@@ -77,7 +89,13 @@ async function bookingPage(body: any, pageToken: string | null) {
       limit,
       status: 'LIVE_PROVIDER_RETURNED',
       fetched_at: new Date().toISOString(),
-      note: `Booking.com Demand v3.2 ${bookingDemandBaseUrl().includes('sandbox') ? 'sandbox' : 'production'} search. Destination is currently resolved through CreditIQ's global airport/city coordinates (${result.destinationProxy.city}/${result.destinationProxy.iata}) with a ${result.destinationProxy.radiusKm} km metro radius.`,
+      destination_resolution: {
+        resolver: result.destinationProxy.resolver,
+        city: result.destinationProxy.city,
+        iata: result.destinationProxy.iata,
+        booking_city_id: result.destinationProxy.bookingCityId,
+      },
+      note: bookingResolutionNote(result.destinationProxy),
     },
     requestId: result.requestId,
   }
