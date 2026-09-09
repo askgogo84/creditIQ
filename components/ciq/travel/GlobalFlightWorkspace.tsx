@@ -186,6 +186,19 @@ function cabinCost(row: FusionRow, rowCabin: SearchCabin, targetCabin: SearchCab
   return { value: '—', label: 'fare unavailable' }
 }
 
+function resultDate(row: FusionRow) {
+  return (row.award?.date || row.departure || '').slice(0, 10)
+}
+
+function flightResultPriority(row: FusionRow, targetDate: string) {
+  const isTargetDate = resultDate(row) === targetDate
+  const hasLiveCash = row.price > 0 && !row.cashUnavailable
+  if (isTargetDate && hasLiveCash) return 0
+  if (isTargetDate) return 1
+  if (hasLiveCash) return 2
+  return 3
+}
+
 export function GlobalFlightWorkspace() {
   const params = useSearchParams()
   const qTo = resolveCity(params.get('q') || '') || ''
@@ -254,7 +267,14 @@ export function GlobalFlightWorkspace() {
           id: `${searchCabin}:${row.id}`,
           searchCabin,
         })))
-        .sort((a, b) => (a.departure || '').localeCompare(b.departure || '') || a.price - b.price)
+        .sort((a, b) => {
+          const priority = flightResultPriority(a, date) - flightResultPriority(b, date)
+          if (priority) return priority
+          return resultDate(a).localeCompare(resultDate(b))
+            || (a.departure || '').localeCompare(b.departure || '')
+            || (a.airline || '').localeCompare(b.airline || '')
+            || a.price - b.price
+        })
 
       const combinedCounts = responses.reduce<FusionCounts>((sum, { data }) => ({
         cashFlights: sum.cashFlights + Number(data.counts?.cashFlights || 0),
@@ -360,7 +380,8 @@ export function GlobalFlightWorkspace() {
               <button type="button" aria-pressed={nonStop} onClick={() => setNonStop(value => !value)}>Non-stop</button>
             </div>
           </div>
-          {cabin === 'any' && <div className="approved-flight-note">Any cabin runs separate Economy and Business pricing. The same flight time can appear twice when both cabins were returned; each row now shows the actual returned cost for that cabin instead of a misleading dash.</div>}
+          {flexDays > 0 && <div className="approved-flight-note">Exact-date live cash fares for {fmtDate(date)} are shown first. Nearby-date cash fares follow, and flexible-date award discovery is kept below them unless it is tied to the exact date. Cached awards remain discovery-only until live verification.</div>}
+          {cabin === 'any' && <div className="approved-flight-note">Any cabin runs separate Economy and Business pricing. The same flight time can appear twice when both cabins were returned; each row shows the actual returned cost for that cabin.</div>}
           <div className="approved-flight-note">{evidenceNote}</div>
 
           <section className="approved-award-list" aria-label="Flight award results">
