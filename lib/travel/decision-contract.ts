@@ -1,5 +1,6 @@
 import { rankWalletRails, type RailRankingResult, type RankedRailCandidate, type SelectedTravelPricing } from '@/lib/redemption-ranking'
 import type { WalletRailMatrix } from '@/lib/redemption-rails/matrix'
+import { buildSearchRedemptionSummary, type SearchRedemptionSummary } from '@/lib/travel/search-redemption-summary'
 
 export type TravelDecisionAwardStatus =
   | 'LIVE_OR_PROVIDER_RETURNED'
@@ -49,6 +50,11 @@ export interface TravelDecisionContract {
     requiresLiveReverification: boolean
     irreversibleTransferAllowed: false
   }
+  /**
+   * Compact search-surface projection of the same canonical decision. Builders
+   * always populate it; optional keeps older persisted/test fixtures compatible.
+   */
+  searchSummary?: SearchRedemptionSummary
   generatedAt: string
 }
 
@@ -125,7 +131,7 @@ export function buildTravelDecisionContract(input: BuildTravelDecisionContractIn
     ? ranking.bestProjected
     : ranking.bestExecutable
 
-  return {
+  const contract: TravelDecisionContract = {
     version: 'travel-decision-v1',
     travelKind: input.pricing.travelKind,
     inventory: input.inventory ?? { state: 'UNKNOWN', selection: {} },
@@ -159,4 +165,7 @@ export function buildTravelDecisionContract(input: BuildTravelDecisionContractIn
     },
     generatedAt: input.generatedAt ?? new Date().toISOString(),
   }
+
+  contract.searchSummary = buildSearchRedemptionSummary(contract)
+  return contract
 }
