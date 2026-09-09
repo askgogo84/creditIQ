@@ -14,12 +14,12 @@ import {
   type UserCard,
   type RedemptionOption,
   programLabel,
-  matchAward,
   buildRedemption,
   buildCabinBests,
   pickBest,
   pickBestAwardOnly,
 } from '@/lib/fusion-core';
+import { airlineDisplayName, cashSourceCabinVerified, matchAwardToCashFlight } from '@/lib/flights/fusion-match';
 import { loadDecisionPortfolio, type DecisionWalletCard } from '@/lib/wallet/decision-portfolio';
 import { buildWalletRailMatrix, type WalletRailCardInput } from '@/lib/redemption-rails/matrix';
 import { programmeIdForFlightSource } from '@/lib/redemption-rails/programme-resolver';
@@ -64,7 +64,7 @@ async function fetchCashFlights(
       coverage: data.coverage ?? null,
       attempts: Array.isArray(data.attempts) ? data.attempts : [],
       source: data.source ?? null,
-      cashCabinVerified: data.cashCabinVerified !== false && ['skyscanner-live', 'amadeus', 'kiwi'].includes(data.source),
+      cashCabinVerified: cashSourceCabinVerified(data.source, data.cashCabinVerified),
     };
   } catch (e) {
     console.error('fusion: cash flight fetch failed', e);
@@ -235,7 +235,8 @@ export async function POST(req: NextRequest) {
 
     const matchedKeys = new Set<string>();
     const cashResults = cashFlights.map((flight: any) => {
-      const awardMatch = matchAward(flight, awards);
+      const awardMatch = matchAwardToCashFlight(flight, awards, awardFetch.pricingAuthority);
+      const displayAirline = airlineDisplayName(flight.airline);
 
       if (!awardMatch) {
         const cashMinor = safeCashMinor(flight.price);
@@ -253,7 +254,7 @@ export async function POST(req: NextRequest) {
           },
           inventory: {
             state: 'AVAILABLE',
-            selection: { id: flight.id, from, to, departure: flight.departure, cabin, airline: flight.airline },
+            selection: { id: flight.id, from, to, departure: flight.departure, cabin, airline: displayAirline },
           },
           awardStatus: 'NOT_FOUND',
           cashSource: cashFetch.source,
@@ -263,6 +264,8 @@ export async function POST(req: NextRequest) {
 
         return {
           ...flight,
+          airlineCode: flight.airline,
+          airline: displayAirline,
           cashUnavailable: false,
           cashFareVerifiedForCabin: cashFetch.cashCabinVerified,
           award: null as AwardView | null,
@@ -306,7 +309,7 @@ export async function POST(req: NextRequest) {
             to,
             departure: flight.departure,
             cabin,
-            airline: flight.airline,
+            airline: displayAirline,
             awardDate: award.date,
             awardProgramme: award.program,
           },
@@ -324,6 +327,8 @@ export async function POST(req: NextRequest) {
 
       return {
         ...flight,
+        airlineCode: flight.airline,
+        airline: displayAirline,
         cashUnavailable: false,
         cashFareVerifiedForCabin: cashFetch.cashCabinVerified || cabin === 'economy',
         award,
@@ -348,6 +353,8 @@ export async function POST(req: NextRequest) {
         const matrix = buildWalletRailMatrix(railCards, 'flight', programmeId);
         const evidenceProvider = awardFetch.providerByAwardId.get(key) ?? null;
         const rowId = `award-${key}`;
+        const rawCarrier = a.airlines || trip?.carriers || '';
+        const displayAirline = rawCarrier ? airlineDisplayName(rawCarrier) : '';
         const decision = buildTravelDecisionContract({
           matrix,
           pricing: {
@@ -361,7 +368,7 @@ export async function POST(req: NextRequest) {
           },
           inventory: {
             state: 'AVAILABLE',
-            selection: { id: rowId, from, to, departure: trip?.departsAt || a.date, cabin, airline: a.airlines || trip?.carriers || '', awardDate: a.date, awardProgramme: award.program },
+            selection: { id: rowId, from, to, departure: trip?.departsAt || a.date, cabin, airline: displayAirline, awardDate: a.date, awardProgramme: award.program },
           },
           awardStatus: awardDecisionStatus(true, awardFetch.pricingAuthority),
           cashSource: null,
@@ -373,7 +380,8 @@ export async function POST(req: NextRequest) {
         return {
           id: rowId,
           price: 0,
-          airline: a.airlines || trip?.carriers || '',
+          airlineCode: rawCarrier,
+          airline: displayAirline,
           from,
           to,
           departure: trip?.departsAt || a.date,
