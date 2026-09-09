@@ -23,29 +23,33 @@ const flightPricing = {
 }
 
 describe('wallet rail ranking', () => {
-  it('keeps cash as the executable winner while surfacing a cheaper ratio-only transfer as projected', () => {
+  it('surfaces the strongest sourced transfer as projected while cash remains executable', () => {
     const result = rankWalletRails(demoMatrix(), flightPricing)
 
     expect(result.bestExecutable?.railType).toBe('CASH_RETAIN')
     expect(result.bestExecutable?.cashPayableMinor).toBe(5_260_000)
 
-    expect(result.bestProjected?.railId).toBe('hdfc-infinia-transfer-krisflyer')
-    expect(result.bestProjected?.bankPointsTargetMinimum).toBe(43_000)
+    // Axis Atlas -> KrisFlyer is a verified 1:2 edge in the 2026 Atlas graph,
+    // so 43,000 KrisFlyer miles require a ratio-derived 21,500 EDGE Miles.
+    expect(result.bestProjected?.railId).toBe('axis-atlas-transfer-krisflyer')
+    expect(result.bestProjected?.bankPointsTargetMinimum).toBe(21_500)
     expect(result.bestProjected?.bankPointsToTransferExact).toBeNull()
     expect(result.bestProjected?.cashPayableMinor).toBe(418_000)
     expect(result.bestProjected?.affordability).toBe('POSSIBLY_AFFORDABLE')
     expect(result.recommendationState).toBe('PROJECTED_WINNER_NEEDS_VERIFICATION')
+
+    const hdfc = result.candidates.find((candidate) => candidate.railId === 'hdfc-infinia-transfer-krisflyer')
+    expect(hdfc?.bankPointsTargetMinimum).toBe(43_000)
+    expect(hdfc?.cashPayableMinor).toBe(418_000)
   })
 
-  it('does not call a ratio-only transfer affordable when the wallet is below the ratio-derived target', () => {
+  it('does not call the HDFC transfer affordable when its wallet is below target and still evaluates other exact-card paths', () => {
     const result = rankWalletRails(demoMatrix(30_000), flightPricing)
     const hdfc = result.candidates.find((candidate) => candidate.railId === 'hdfc-infinia-transfer-krisflyer')
 
     expect(hdfc?.affordability).toBe('DEFINITELY_UNAFFORDABLE')
     expect(hdfc?.comparisonState).toBe('NOT_COMPARABLE')
-    // Axis Travel EDGE remains a legitimate projected portal path even when the
-    // HDFC transfer path is unaffordable.
-    expect(result.bestProjected?.railId).toBe('axis-atlas-travel-edge')
+    expect(result.bestProjected?.railId).toBe('axis-atlas-transfer-krisflyer')
     expect(result.bestExecutable?.railType).toBe('CASH_RETAIN')
     expect(result.recommendationState).toBe('PROJECTED_WINNER_NEEDS_VERIFICATION')
   })
@@ -160,7 +164,7 @@ describe('wallet rail ranking', () => {
     expect(result.recommendationState).toBe('EXECUTABLE_WINNER')
   })
 
-  it('still surfaces a projected transfer when no matched cash benchmark exists, without inventing an executable winner', () => {
+  it('still surfaces no economic winner when no matched cash benchmark exists', () => {
     const result = rankWalletRails(demoMatrix(), {
       ...flightPricing,
       cashPriceMinor: null,
