@@ -11,9 +11,10 @@ describe('GlobalHotelWorkspace provider failure state', () => {
     expect(source).toContain('Live hotel provider status')
   })
 
-  it('does not visually promote discovery-only properties by default after live failure', () => {
-    expect(source).toContain('const [showDiscovery, setShowDiscovery] = useState(false)')
-    expect(source).toContain("View discovery-only points properties")
-    expect(source).toContain('(!liveUnavailable || showDiscovery)')
+  it('keeps points-stay discovery visible after live cash failure without promoting it as live', () => {
+    expect(source).not.toContain('const [showDiscovery, setShowDiscovery]')
+    expect(source).toContain('Cash inventory unavailable does not mean there is no redemption path')
+    expect(source).toContain('<HotelAwardDiscoveryPanel search={submittedSearch} />')
+    expect(source).not.toContain('(!liveUnavailable || showDiscovery)')
   })
 })
