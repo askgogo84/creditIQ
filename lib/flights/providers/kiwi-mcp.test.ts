@@ -1,4 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
+import { FixedFxProvider } from '@/lib/hotels/providers/fx'
 import { searchKiwiMcpFlights } from './kiwi-mcp'
 
 const originalFetch = global.fetch
@@ -57,9 +58,15 @@ describe('Kiwi MCP cash-flight adapter', () => {
 
     expect(result.protocol).toBe('modern')
     expect(result.currency).toBe('INR')
+    expect(result.originalCurrency).toBe('INR')
+    expect(result.fxRate).toBeNull()
     expect(result.flights).toHaveLength(1)
     expect(result.flights[0]).toMatchObject({
       price: 12345,
+      priceCurrency: 'INR',
+      originalPrice: 12345,
+      originalCurrency: 'INR',
+      fxRate: null,
       provider: 'kiwi-mcp',
       cashCabin: 'business',
       from: 'BLR',
@@ -86,12 +93,35 @@ describe('Kiwi MCP cash-flight adapter', () => {
     expect(result.flights).toEqual([])
   })
 
-  it('rejects a structured non-INR result rather than relabelling or converting it', async () => {
+  it('converts a structured EUR result to INR only through an explicit FX provider', async () => {
+    global.fetch = vi.fn(async () => rpcResponse(businessPayload('Business', 'EUR'))) as typeof fetch
+
+    const result = await searchKiwiMcpFlights({
+      from: 'BLR', to: 'SIN', date: '2026-10-08', cabin: 'business', adults: 1,
+      fxProvider: new FixedFxProvider(100),
+    })
+
+    expect(result.currency).toBe('INR')
+    expect(result.originalCurrency).toBe('EUR')
+    expect(result.fxRate).toBe(100)
+    expect(result.fxSource).toBe('test')
+    expect(result.flights[0]).toMatchObject({
+      price: 1_234_500,
+      priceCurrency: 'INR',
+      originalPrice: 12345,
+      originalCurrency: 'EUR',
+      fxRate: 100,
+      fxSource: 'test',
+    })
+  })
+
+  it('fails closed when a non-INR result cannot obtain live FX', async () => {
     global.fetch = vi.fn(async () => rpcResponse(businessPayload('Business', 'EUR'))) as typeof fetch
 
     await expect(searchKiwiMcpFlights({
       from: 'BLR', to: 'SIN', date: '2026-10-08', cabin: 'business', adults: 1,
-    })).rejects.toThrow('EUR currency; INR required')
+      fxProvider: new FixedFxProvider(null),
+    })).rejects.toThrow('live FX conversion to INR was unavailable')
   })
 
   it('rejects a structured result with no declared currency', async () => {
@@ -101,7 +131,7 @@ describe('Kiwi MCP cash-flight adapter', () => {
 
     await expect(searchKiwiMcpFlights({
       from: 'BLR', to: 'SIN', date: '2026-10-08', cabin: 'business', adults: 1,
-    })).rejects.toThrow('unknown currency; INR required')
+    })).rejects.toThrow('unknown currency')
   })
 
   it('does not promote human-readable MCP text into a structured price', async () => {
