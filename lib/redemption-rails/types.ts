@@ -15,8 +15,8 @@ export type RedemptionRailType =
  * EXECUTABLE: every fact required for the instruction is sourced.
  * RATIO_ONLY: partner + rational transfer ratio are sourced, but an issuer
  *   minimum/increment or another execution fact is still missing.
- * CHECKOUT_REQUIRED: the rail exists, but value/cap/fee/availability must be
- *   read from the issuer/merchant checkout before arithmetic is authoritative.
+ * CHECKOUT_REQUIRED: the rail exists and CreditIQ may calculate any sourced
+ *   fixed-value/cap mechanics, but issuer/merchant checkout remains authoritative.
  * DISCOVERY_ONLY: useful to surface as a possible rail, but not enough sourced
  *   mechanics exist to rank it economically yet.
  */
@@ -63,10 +63,13 @@ export interface TransferMechanics {
 export interface PortalMechanics {
   portalName: string
   supportsPointsPlusCash: boolean
-  /** null when card/checkout-specific and not yet captured. */
+  /** Fixed issuer-published value in paise. Null means checkout quotes the value. */
   valuePerPointPaise: number | null
   /** basis-points cap of booking value payable with points; null if unknown. */
   maxPointsShareBps: number | null
+  /** Minimum points the portal requires for a redemption; null if not sourced. */
+  minimumPoints?: number | null
+  /** Known fixed redemption/booking fee in minor INR. Null means checkout may add a fee. */
   feeMinor: number | null
 }
 
