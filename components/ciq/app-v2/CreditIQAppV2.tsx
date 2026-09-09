@@ -10,7 +10,14 @@ export function CreditIQAppV2() {
 
   useEffect(() => {
     try {
-      setOnboarded(localStorage.getItem('creditiq-preview-v2-onboarded') === '1')
+      const params = new URLSearchParams(window.location.search)
+      if (params.get('review') === 'app') {
+        setOnboarded(true)
+      } else if (params.get('review') === 'setup') {
+        setOnboarded(false)
+      } else {
+        setOnboarded(localStorage.getItem('creditiq-preview-v2-onboarded') === '1')
+      }
     } finally {
       setReady(true)
     }
@@ -27,5 +34,14 @@ export function CreditIQAppV2() {
     setOnboarded(false)
   }
 
-  return <div className="ciq-v2-root">{onboarded ? <MainExperience onReset={reset} /> : <OnboardingJourney onComplete={complete} />}</div>
+  return (
+    <div className="ciq-v2-root">
+      {!onboarded && (
+        <button className="ciq-v2-review-skip" onClick={complete}>
+          Skip to full app
+        </button>
+      )}
+      {onboarded ? <MainExperience onReset={reset} /> : <OnboardingJourney onComplete={complete} />}
+    </div>
+  )
 }
