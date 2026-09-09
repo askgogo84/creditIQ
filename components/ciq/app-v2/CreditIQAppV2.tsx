@@ -37,7 +37,10 @@ export function CreditIQAppV2() {
   return (
     <div className="ciq-v2-root">
       {!onboarded && (
-        <button className="ciq-v2-review-skip" onClick={complete}>
+        <button
+          className="fixed right-3 top-[calc(10px+env(safe-area-inset-top))] z-[100] rounded-full border border-white/20 bg-black/75 px-3 py-2 text-[11px] font-extrabold text-white shadow-lg backdrop-blur-xl"
+          onClick={complete}
+        >
           Skip to full app
         </button>
       )}
