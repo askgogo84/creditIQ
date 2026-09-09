@@ -13,7 +13,8 @@ import { buildFlightConciergeRequest } from '@/components/ciq/concierge/travel-r
 import { buildFlightSelfServePlan } from '@/lib/travel/flight-redemption-plan'
 import '@/components/ciq/fly-points/fly-points.css'
 
-type Cabin = 'economy' | 'business'
+type SearchCabin = 'economy' | 'business'
+type CabinFilter = 'any' | SearchCabin
 type DetailTab = 'compare' | 'book' | 'sources'
 
 type AwardView = {
@@ -52,6 +53,7 @@ type FusionRow = {
   awardEvidenceProvider?: string | null
   redemption: RedemptionOption[]
   bestOption: RedemptionOption | null
+  searchCabin?: SearchCabin
 }
 
 type FusionCounts = {
@@ -154,7 +156,18 @@ function authorityLabel(authority: string | null | undefined) {
   if (authority === 'DATE_SPECIFIC_LIVE') return 'Date-specific live award evidence'
   if (authority === 'CACHED_DISCOVERY') return 'Cached discovery only · seat not verified'
   if (authority === 'DIRECT_ONLY') return 'Direct programme verification required'
+  if (authority === 'MIXED') return 'Mixed award evidence · inspect each option'
   return 'No award pricing authority established'
+}
+
+function cabinLabel(cabin: CabinFilter | SearchCabin) {
+  if (cabin === 'any') return 'Any cabin'
+  return cabin === 'business' ? 'Business' : 'Economy'
+}
+
+function cabinForRow(row: FusionRow): SearchCabin {
+  if (row.searchCabin) return row.searchCabin
+  return row.award?.cabin === 'business' ? 'business' : 'economy'
 }
 
 export function GlobalFlightWorkspace() {
@@ -164,7 +177,7 @@ export function GlobalFlightWorkspace() {
   const [to, setTo] = useState(qTo)
   const [date, setDate] = useState(isoPlusDays(21))
   const [flexDays, setFlexDays] = useState<0 | 3 | 7>(0)
-  const [cabin, setCabin] = useState<Cabin>('business')
+  const [cabin, setCabin] = useState<CabinFilter>('any')
   const [scope, setScope] = useState<'all' | 'mine'>('all')
   const [nonStop, setNonStop] = useState(false)
   const [rows, setRows] = useState<FusionRow[] | null>(null)
@@ -200,27 +213,54 @@ export function GlobalFlightWorkspace() {
     setDetailTab('compare')
 
     try {
-      const res = await authedFetch('/api/flights/fusion', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          from,
-          to: destination,
-          date_from: shiftDate(date, -flexDays),
-          date_to: shiftDate(date, flexDays),
-          cash_date: date,
-          cabin,
-        }),
-      })
-      const data = await res.json()
-      if (!res.ok || data.error) throw new Error(data.error || 'search failed')
-      setRows((data.flights || []) as FusionRow[])
-      setCounts(data.counts ?? null)
+      const cabinQueries: SearchCabin[] = cabin === 'any' ? ['economy', 'business'] : [cabin]
+      const responses = await Promise.all(cabinQueries.map(async searchCabin => {
+        const res = await authedFetch('/api/flights/fusion', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            from,
+            to: destination,
+            date_from: shiftDate(date, -flexDays),
+            date_to: shiftDate(date, flexDays),
+            cash_date: date,
+            cabin: searchCabin,
+          }),
+        })
+        const data = await res.json()
+        if (!res.ok || data.error) throw new Error(data.error || `${searchCabin} search failed`)
+        return { searchCabin, data }
+      }))
+
+      const combinedRows = responses
+        .flatMap(({ searchCabin, data }) => ((data.flights || []) as FusionRow[]).map(row => ({
+          ...row,
+          id: `${searchCabin}:${row.id}`,
+          searchCabin,
+        })))
+        .sort((a, b) => (a.departure || '').localeCompare(b.departure || '') || a.price - b.price)
+
+      const combinedCounts = responses.reduce<FusionCounts>((sum, { data }) => ({
+        cashFlights: sum.cashFlights + Number(data.counts?.cashFlights || 0),
+        awards: sum.awards + Number(data.counts?.awards || 0),
+        awardsEnriched: sum.awardsEnriched + Number(data.counts?.awardsEnriched || 0),
+        awardOnlyCards: sum.awardOnlyCards + Number(data.counts?.awardOnlyCards || 0),
+        cards: Math.max(sum.cards, Number(data.counts?.cards || 0)),
+      }), { cashFlights: 0, awards: 0, awardsEnriched: 0, awardOnlyCards: 0, cards: 0 })
+
+      const authorities = [...new Set(responses.map(({ data }) => String(data.awardPricingAuthority || 'NONE')))]
+      const combinedAuthority = authorities.length === 1 ? authorities[0] : 'MIXED'
+      const attempts = responses.flatMap(({ data }) => Array.isArray(data.awardAttempts) ? data.awardAttempts : []) as AwardAttempt[]
+
+      setRows(combinedRows)
+      setCounts(combinedCounts)
       setAwardMeta({
-        authority: String(data.awardPricingAuthority || 'NONE'),
-        searchMode: String(data.awardSearchMode || 'UNKNOWN'),
-        reason: String(data.awardReason || ''),
-        attempts: Array.isArray(data.awardAttempts) ? data.awardAttempts : [],
+        authority: combinedAuthority,
+        searchMode: cabin === 'any' ? 'ANY_ECONOMY_BUSINESS' : String(responses[0]?.data.awardSearchMode || 'UNKNOWN'),
+        reason: cabin === 'any'
+          ? 'Combined Economy and Business searches. Each itinerary keeps its returned cabin and provider evidence.'
+          : String(responses[0]?.data.awardReason || ''),
+        attempts,
       })
     } catch {
       setError('Couldn’t complete the provider search just now — try again in a moment.')
@@ -262,8 +302,8 @@ export function GlobalFlightWorkspace() {
         <AirportSelect label="To" value={to} exclude={from} onChange={setTo} />
         <div className="fp-fld"><label className="fp-fld-label" htmlFor="approved-global-date">Date</label><input id="approved-global-date" type="date" className="fp-fld-val fp-mono" value={date} onChange={event => setDate(event.target.value)} /></div>
         <div className="fp-fld"><label className="fp-fld-label" htmlFor="approved-global-flex">Dates</label><select id="approved-global-flex" className="fp-fld-val" value={flexDays} onChange={event => setFlexDays(Number(event.target.value) as 0 | 3 | 7)}><option value={0}>Exact</option><option value={3}>±3 days</option><option value={7}>±7 days</option></select></div>
-        <div className="fp-fld"><label className="fp-fld-label" htmlFor="approved-global-cabin">Cabin</label><select id="approved-global-cabin" className="fp-fld-val" value={cabin} onChange={event => setCabin(event.target.value as Cabin)}><option value="business">Business</option><option value="economy">Economy</option></select></div>
-        <button className="fp-btn" type="button" onClick={() => void search()} disabled={loading || !from || !to || from === to}>{loading ? 'Searching…' : 'Search awards'}</button>
+        <div className="fp-fld"><label className="fp-fld-label" htmlFor="approved-global-cabin">Cabin</label><select id="approved-global-cabin" className="fp-fld-val" value={cabin} onChange={event => setCabin(event.target.value as CabinFilter)}><option value="any">Any cabin</option><option value="economy">Economy</option><option value="business">Business</option></select></div>
+        <button className="fp-btn" type="button" onClick={() => void search()} disabled={loading || !from || !to || from === to}>{loading ? 'Searching…' : 'Search flights'}</button>
       </section>
 
       {loading && (
@@ -275,7 +315,7 @@ export function GlobalFlightWorkspace() {
             <span className="approved-flight-airport end"><b>{to}</b><small>{labelFor(to).replace(/\s*\([^)]*\)$/, '')}</small></span>
           </div>
           <strong>{loadingCopy[0]}</strong>
-          <p>{loadingCopy[1]}</p>
+          <p>{cabin === 'any' && loadingStage === 0 ? 'Checking Economy and Business cash and award inventory for the selected route…' : loadingCopy[1]}</p>
           <div className="approved-search-stage-dots" aria-hidden="true">
             {SEARCH_STAGES.map((_, index) => <i key={index} className={index <= loadingStage ? 'active' : undefined} />)}
           </div>
@@ -295,8 +335,8 @@ export function GlobalFlightWorkspace() {
         <>
           <div className="approved-flight-toolbar">
             <div>
-              <b>{filtered.length} award options</b>
-              <span>{labelFor(from)} → {labelFor(to)} · {fmtDate(date)}{flexDays ? ` ±${flexDays} days` : ''} · {cabin}{counts ? ` · ${counts.cashFlights} target-date cash rows · ${counts.awards} award records` : ''}{awardMeta ? ` · ${authorityLabel(awardMeta.authority)}` : ''}</span>
+              <b>{filtered.length} flight options</b>
+              <span>{labelFor(from)} → {labelFor(to)} · {fmtDate(date)}{flexDays ? ` ±${flexDays} days` : ''} · {cabinLabel(cabin)}{counts ? ` · ${counts.cashFlights} target-date cash rows · ${counts.awards} award records` : ''}{awardMeta ? ` · ${authorityLabel(awardMeta.authority)}` : ''}</span>
             </div>
             <div className="approved-flight-filters" role="group" aria-label="Flight result filters">
               <button type="button" aria-pressed={scope === 'all'} onClick={() => setScope('all')}>All options</button>
@@ -313,7 +353,8 @@ export function GlobalFlightWorkspace() {
             ) : filtered.map(row => {
               const award = row.award
               const trip = award?.trip ?? null
-              const stops = trip?.stops ?? (award?.isDirect ? 0 : row.stops)
+              const rowCabin = cabinForRow(row)
+              const stops = trip?.stops ?? (row.award?.isDirect ? 0 : row.stops)
               const active = selectedId === row.id
               const reachable = rowReachable(row)
               const taxes = nativeTaxes(trip)
@@ -321,8 +362,8 @@ export function GlobalFlightWorkspace() {
               const depart = fmtTime(trip?.departsAt || row.departure)
               const arrive = fmtTime(trip?.arrivesAt || row.arrival)
               const duration = fmtDuration(trip?.durationMinutes || row.duration * 60)
-              const economyMiles = award && cabin === 'economy' ? award.mileageCost.toLocaleString('en-IN') : '—'
-              const businessMiles = award && cabin === 'business' ? award.mileageCost.toLocaleString('en-IN') : '—'
+              const economyMiles = award && rowCabin === 'economy' ? award.mileageCost.toLocaleString('en-IN') : '—'
+              const businessMiles = award && rowCabin === 'business' ? award.mileageCost.toLocaleString('en-IN') : '—'
               const rankedOptions = rankWalletOptions(row.redemption)
               const selectedWalletOption = row.bestOption ?? rankedOptions.find(option => option.status === 'ok') ?? null
               const selfServe = buildFlightSelfServePlan({
@@ -346,9 +387,9 @@ export function GlobalFlightWorkspace() {
                     }}
                   >
                     <span><b>{fmtDate(award?.date || row.departure)}</b><small>{fmtWeekday(award?.date || row.departure)} {depart}</small></span>
-                    <span className="approved-award-programme"><i className="approved-airline-logo">{programmeMark(programme)}</i><span><b>{programme}</b><small>{row.from} {depart || ''} → {row.to} {arrive || ''} · {duration} · {fmtStops(stops)}</small></span></span>
-                    <span><b>{economyMiles}</b><small>{economyMiles === '—' ? 'not searched' : 'miles'}</small></span>
-                    <span><b>{businessMiles}</b><small>{businessMiles === '—' ? 'not searched' : 'miles'}</small></span>
+                    <span className="approved-award-programme"><i className="approved-airline-logo">{programmeMark(programme)}</i><span><b>{programme}</b><small>{row.from} {depart || ''} → {row.to} {arrive || ''} · {duration} · {fmtStops(stops)} · {cabinLabel(rowCabin)}</small></span></span>
+                    <span><b>{economyMiles}</b><small>{economyMiles === '—' ? (rowCabin === 'economy' && !award ? 'cash itinerary' : 'not searched') : 'miles'}</small></span>
+                    <span><b>{businessMiles}</b><small>{businessMiles === '—' ? (rowCabin === 'business' && !award ? 'cash itinerary' : 'not searched') : 'miles'}</small></span>
                     <span className="approved-wallet-path"><b>{award ? (selfServe.executable ? 'Ready to verify' : reachable ? 'Wallet route' : 'Verify route') : 'Cash'}</b><small>{award ? (selfServe.pointsNeeded ? `${selfServe.pointsNeeded.toLocaleString('en-IN')} card pts` : 'needs verification') : (row.price > 0 ? `₹${row.price.toLocaleString('en-IN')}` : 'fare unavailable')}</small></span>
                     <ChevronDown className="approved-row-chevron" size={16} />
                   </button>
@@ -357,8 +398,8 @@ export function GlobalFlightWorkspace() {
                     <div className="approved-award-detail">
                       <div className="approved-decision-hero">
                         <div><span className="approved-section-kicker">CreditIQ recommendation</span><h3>{award ? `Verify ${programme}, then choose self-serve or Concierge` : 'Pay cash or send the itinerary to Concierge'}</h3><p>{award ? 'Both execution paths use the same bounded itinerary and wallet snapshot.' : 'No award match was returned for this itinerary.'}</p></div>
+                        <div><small>Cabin</small><b>{cabinLabel(rowCabin)}</b></div>
                         <div><small>Award price</small><b>{award ? `${award.mileageCost.toLocaleString('en-IN')} miles` : 'No award'}</b></div>
-                        <div><small>Card points</small><b>{selfServe.pointsNeeded ? selfServe.pointsNeeded.toLocaleString('en-IN') : 'Not mapped'}</b></div>
                         <div><small>Status</small><b>{selfServe.executable ? 'Self-serve ready' : award ? 'Verify / Concierge' : 'Cash only'}</b></div>
                       </div>
 
