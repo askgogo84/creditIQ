@@ -33,19 +33,80 @@ type BookingSearchInput = {
   page?: string | null
 }
 
+export type BookingDestinationProxy = {
+  iata: string | null
+  city: string
+  latitude: number | null
+  longitude: number | null
+  radiusKm: number | null
+  bookingCityId: number | null
+  resolver: 'airport-coordinate' | 'creditiq-india-destination' | 'booking-autocomplete-city'
+  providerKey: string
+}
+
 export type BookingDemandPage = {
   offers: BookingDemandHotelOffer[]
   nextPage: string | null
   total: number | null
   requestId: string | null
-  destinationProxy: {
-    iata: string
-    city: string
-    latitude: number
-    longitude: number
-    radiusKm: number
-  }
+  destinationProxy: BookingDestinationProxy
 }
+
+type IndiaStayDestination = {
+  city: string
+  aliases: string[]
+  latitude: number
+  longitude: number
+  radiusKm: number
+}
+
+// Places without a useful airport-city proxy still need a truthful coordinate search.
+// This list is intentionally destination coordinates only — never hotel prices or inventory.
+// Booking.com remains the source of live properties, availability and prices.
+const INDIA_STAY_DESTINATIONS: IndiaStayDestination[] = [
+  { city: 'Agra', aliases: ['agra', 'taj mahal'], latitude: 27.1767, longitude: 78.0081, radiusKm: 25 },
+  { city: 'Alappuzha', aliases: ['alappuzha', 'alleppey'], latitude: 9.4981, longitude: 76.3388, radiusKm: 30 },
+  { city: 'Amritsar', aliases: ['amritsar', 'golden temple'], latitude: 31.634, longitude: 74.8723, radiusKm: 30 },
+  { city: 'Bhopal', aliases: ['bhopal'], latitude: 23.2599, longitude: 77.4126, radiusKm: 35 },
+  { city: 'Bhubaneswar', aliases: ['bhubaneswar', 'bhubaneshwar'], latitude: 20.2961, longitude: 85.8245, radiusKm: 35 },
+  { city: 'Chandigarh', aliases: ['chandigarh'], latitude: 30.7333, longitude: 76.7794, radiusKm: 35 },
+  { city: 'Coorg', aliases: ['coorg', 'kodagu', 'madikeri'], latitude: 12.4244, longitude: 75.7382, radiusKm: 45 },
+  { city: 'Darjeeling', aliases: ['darjeeling'], latitude: 27.041, longitude: 88.2663, radiusKm: 35 },
+  { city: 'Dehradun', aliases: ['dehradun'], latitude: 30.3165, longitude: 78.0322, radiusKm: 40 },
+  { city: 'Dharamshala', aliases: ['dharamshala', 'mcleod ganj', 'mcleodganj'], latitude: 32.219, longitude: 76.3234, radiusKm: 35 },
+  { city: 'Gangtok', aliases: ['gangtok'], latitude: 27.3389, longitude: 88.6065, radiusKm: 35 },
+  { city: 'Gokarna', aliases: ['gokarna'], latitude: 14.5479, longitude: 74.3188, radiusKm: 30 },
+  { city: 'Gulmarg', aliases: ['gulmarg'], latitude: 34.0484, longitude: 74.3805, radiusKm: 25 },
+  { city: 'Hampi', aliases: ['hampi', 'hospet', 'hosapete'], latitude: 15.335, longitude: 76.46, radiusKm: 35 },
+  { city: 'Haridwar', aliases: ['haridwar', 'hardwar'], latitude: 29.9457, longitude: 78.1642, radiusKm: 30 },
+  { city: 'Indore', aliases: ['indore'], latitude: 22.7196, longitude: 75.8577, radiusKm: 40 },
+  { city: 'Jaipur', aliases: ['jaipur'], latitude: 26.9124, longitude: 75.7873, radiusKm: 45 },
+  { city: 'Jaisalmer', aliases: ['jaisalmer'], latitude: 26.9157, longitude: 70.9083, radiusKm: 35 },
+  { city: 'Jodhpur', aliases: ['jodhpur'], latitude: 26.2389, longitude: 73.0243, radiusKm: 40 },
+  { city: 'Kodaikanal', aliases: ['kodaikanal', 'kodai'], latitude: 10.2381, longitude: 77.4892, radiusKm: 30 },
+  { city: 'Kovalam', aliases: ['kovalam'], latitude: 8.3988, longitude: 76.9781, radiusKm: 20 },
+  { city: 'Lonavala', aliases: ['lonavala', 'khandala'], latitude: 18.7546, longitude: 73.4062, radiusKm: 30 },
+  { city: 'Mahabaleshwar', aliases: ['mahabaleshwar'], latitude: 17.9307, longitude: 73.6477, radiusKm: 30 },
+  { city: 'Mahabalipuram', aliases: ['mahabalipuram', 'mamallapuram'], latitude: 12.6269, longitude: 80.1927, radiusKm: 25 },
+  { city: 'Manali', aliases: ['manali'], latitude: 32.2432, longitude: 77.1892, radiusKm: 35 },
+  { city: 'Munnar', aliases: ['munnar'], latitude: 10.0889, longitude: 77.0595, radiusKm: 35 },
+  { city: 'Mussoorie', aliases: ['mussoorie'], latitude: 30.4598, longitude: 78.0644, radiusKm: 25 },
+  { city: 'Mysuru', aliases: ['mysuru', 'mysore'], latitude: 12.2958, longitude: 76.6394, radiusKm: 35 },
+  { city: 'Nainital', aliases: ['nainital'], latitude: 29.3919, longitude: 79.4542, radiusKm: 30 },
+  { city: 'Ooty', aliases: ['ooty', 'udhagamandalam'], latitude: 11.4064, longitude: 76.6932, radiusKm: 30 },
+  { city: 'Pahalgam', aliases: ['pahalgam'], latitude: 34.0161, longitude: 75.315, radiusKm: 30 },
+  { city: 'Puducherry', aliases: ['puducherry', 'pondicherry'], latitude: 11.9416, longitude: 79.8083, radiusKm: 30 },
+  { city: 'Puri', aliases: ['puri', 'jagannath puri'], latitude: 19.8135, longitude: 85.8312, radiusKm: 30 },
+  { city: 'Rishikesh', aliases: ['rishikesh'], latitude: 30.0869, longitude: 78.2676, radiusKm: 30 },
+  { city: 'Shimla', aliases: ['shimla'], latitude: 31.1048, longitude: 77.1734, radiusKm: 30 },
+  { city: 'Srinagar', aliases: ['srinagar'], latitude: 34.0837, longitude: 74.7973, radiusKm: 40 },
+  { city: 'Thekkady', aliases: ['thekkady', 'periyar', 'kumily'], latitude: 9.6031, longitude: 77.1615, radiusKm: 30 },
+  { city: 'Tirupati', aliases: ['tirupati'], latitude: 13.6288, longitude: 79.4192, radiusKm: 35 },
+  { city: 'Udaipur', aliases: ['udaipur'], latitude: 24.5854, longitude: 73.7125, radiusKm: 40 },
+  { city: 'Varanasi', aliases: ['varanasi', 'banaras', 'benaras', 'kashi'], latitude: 25.3176, longitude: 82.9739, radiusKm: 35 },
+  { city: 'Varkala', aliases: ['varkala'], latitude: 8.7379, longitude: 76.7163, radiusKm: 25 },
+  { city: 'Wayanad', aliases: ['wayanad', 'kalpetta'], latitude: 11.6854, longitude: 76.132, radiusKm: 45 },
+]
 
 function token() {
   return process.env.BOOKING_DEMAND_API_TOKEN || ''
@@ -73,6 +134,10 @@ function headers() {
     'X-Affiliate-Id': affiliateId(),
     'Content-Type': 'application/json',
   }
+}
+
+function norm(value: string) {
+  return value.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().trim().replace(/\s+/g, ' ')
 }
 
 function finiteNumber(value: unknown): number | null {
@@ -169,19 +234,36 @@ function paymentLabel(product: any): string | null {
   return null
 }
 
-function resolveDestinationProxy(destination: string) {
+function localIndiaDestination(destination: string): BookingDestinationProxy | null {
+  const query = norm(destination)
+  if (!query) return null
+  const match = INDIA_STAY_DESTINATIONS.find(item => item.aliases.some(alias => query === norm(alias) || query.includes(norm(alias))))
+  if (!match) return null
+  return {
+    iata: null,
+    city: match.city,
+    latitude: match.latitude,
+    longitude: match.longitude,
+    radiusKm: match.radiusKm,
+    bookingCityId: null,
+    resolver: 'creditiq-india-destination',
+    providerKey: `india:${norm(match.city).replaceAll(' ', '-')}`,
+  }
+}
+
+function airportDestination(destination: string): BookingDestinationProxy | null {
   const iata = resolveCity(destination) || (destination.trim().toUpperCase().match(/^[A-Z]{3}$/)?.[0] ?? '')
   const airport = iata ? getAirport(iata) : undefined
-  if (!airport) throw new Error(`CreditIQ could not resolve ${destination} to a global city/airport coordinate yet`)
+  if (!airport) return null
   return {
     iata: airport.iata,
     city: airport.city,
     latitude: airport.lat,
     longitude: airport.lon,
-    // Airport coordinates are a conservative location proxy, not a claim that the
-    // airport is the city centre. 50 km keeps metro inventory in scope until the
-    // provider's own stable autocomplete/city-ID flow is enabled for our account.
     radiusKm: 50,
+    bookingCityId: null,
+    resolver: 'airport-coordinate',
+    providerKey: `airport:${airport.iata}`,
   }
 }
 
@@ -200,6 +282,72 @@ async function post(path: string, body: unknown) {
   return json
 }
 
+function autocompleteCityFromRow(row: any): BookingDestinationProxy | null {
+  const type = String(row?.type ?? row?.location?.type ?? '').toLowerCase()
+  if (type && type !== 'city') return null
+  const id = finiteNumber(row?.id ?? row?.city?.id ?? row?.location?.id)
+  if (id == null || !Number.isSafeInteger(id)) return null
+  const city = translated(row?.name) || translated(row?.city?.name) || translated(row?.location?.name)
+  if (!city) return null
+  const latitude = finiteNumber(row?.coordinates?.latitude ?? row?.location?.coordinates?.latitude)
+  const longitude = finiteNumber(row?.coordinates?.longitude ?? row?.location?.coordinates?.longitude)
+  return {
+    iata: null,
+    city,
+    latitude,
+    longitude,
+    radiusKm: latitude != null && longitude != null ? 30 : null,
+    bookingCityId: id,
+    resolver: 'booking-autocomplete-city',
+    providerKey: `city:${id}`,
+  }
+}
+
+async function bookingAutocompleteDestination(destination: string): Promise<BookingDestinationProxy | null> {
+  if (!bookingDemandConfigured() || destination.trim().length < 3) return null
+  try {
+    const json = await post('/common/autocomplete', {
+      query: destination.trim(),
+      language: 'en-gb',
+      filters: { types: ['city'] },
+    })
+    const rows: any[] = Array.isArray(json?.data) ? json.data : Array.isArray(json?.suggestions) ? json.suggestions : []
+    const query = norm(destination)
+    const candidates = rows
+      .map(autocompleteCityFromRow)
+      .filter((value: BookingDestinationProxy | null): value is BookingDestinationProxy => Boolean(value))
+      .sort((a: BookingDestinationProxy, b: BookingDestinationProxy) => {
+        const aName = norm(a.city)
+        const bName = norm(b.city)
+        const score = (name: string) => name === query ? 0 : name.startsWith(query) ? 1 : name.includes(query) ? 2 : 3
+        return score(aName) - score(bName) || aName.localeCompare(bName)
+      })
+    return candidates[0] ?? null
+  } catch (error: any) {
+    // Autocomplete is a limited-access Beta endpoint. Failing it must not break
+    // hotel search for destinations CreditIQ can safely resolve another way.
+    console.info('booking-demand: autocomplete unavailable; using local resolver', error?.message || error)
+    return null
+  }
+}
+
+export async function resolveBookingDestination(destination: string): Promise<BookingDestinationProxy> {
+  // Exact curated leisure destinations should beat a far-away airport city proxy.
+  const indiaDestination = localIndiaDestination(destination)
+  if (indiaDestination) return indiaDestination
+
+  // Airport/city data gives broad global coverage and remains deterministic.
+  const airport = airportDestination(destination)
+  if (airport) return airport
+
+  // Booking.com Beta autocomplete extends coverage to destinations that are not in
+  // the airport dataset when the partner account has access. It is fail-closed.
+  const booking = await bookingAutocompleteDestination(destination)
+  if (booking) return booking
+
+  throw new Error(`CreditIQ could not safely resolve ${destination} to a hotel-search location yet`)
+}
+
 async function detailsFor(ids: number[]) {
   if (!ids.length) return new Map<string, any>()
   const json = await post('/accommodations/details', {
@@ -213,14 +361,9 @@ async function detailsFor(ids: number[]) {
 
 export async function searchBookingDemandHotels(input: BookingSearchInput): Promise<BookingDemandPage> {
   if (!bookingDemandConfigured()) throw new Error('Booking.com Demand API is not configured')
-  const destinationProxy = resolveDestinationProxy(input.destination)
+  const destinationProxy = await resolveBookingDestination(input.destination)
   const limit = Math.min(100, Math.max(10, input.limit ?? 50))
   const body: Record<string, unknown> = {
-    coordinates: {
-      latitude: destinationProxy.latitude,
-      longitude: destinationProxy.longitude,
-      radius: destinationProxy.radiusKm,
-    },
     booker: { country: 'in', platform: 'desktop' },
     currency: 'INR',
     checkin: input.checkin,
@@ -232,6 +375,19 @@ export async function searchBookingDemandHotels(input: BookingSearchInput): Prom
     extras: ['products'],
     rows: limit,
   }
+
+  if (destinationProxy.bookingCityId != null) {
+    body.city = destinationProxy.bookingCityId
+  } else if (destinationProxy.latitude != null && destinationProxy.longitude != null && destinationProxy.radiusKm != null) {
+    body.coordinates = {
+      latitude: destinationProxy.latitude,
+      longitude: destinationProxy.longitude,
+      radius: destinationProxy.radiusKm,
+    }
+  } else {
+    throw new Error(`CreditIQ resolved ${input.destination}, but no safe Booking.com location filter is available`)
+  }
+
   if (input.page) body.page = input.page
 
   const search = await post('/accommodations/search', body)
