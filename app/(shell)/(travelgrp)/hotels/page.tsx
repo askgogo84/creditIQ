@@ -1,4 +1,5 @@
 import { GlobalHotelWorkspace } from '@/components/ciq/travel/GlobalHotelWorkspace'
+import { HotelWalletRedemptionDiscovery } from '@/components/ciq/travel/HotelWalletRedemptionDiscovery'
 
 export const metadata = {
   title: 'Hotels — global live inventory | CreditIQ',
@@ -6,5 +7,10 @@ export const metadata = {
 }
 
 export default function HotelsPage() {
-  return <GlobalHotelWorkspace />
+  return (
+    <>
+      <GlobalHotelWorkspace />
+      <HotelWalletRedemptionDiscovery />
+    </>
+  )
 }
