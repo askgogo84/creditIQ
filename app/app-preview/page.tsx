@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import { CreditIQAppV2 } from '@/components/ciq/app-v2/CreditIQAppV2'
 import './preview.css'
 import './v2.css'
+import './luxe.css'
 
 export const metadata: Metadata = {
   title: 'CreditIQ Mobile App Prototype V2',
