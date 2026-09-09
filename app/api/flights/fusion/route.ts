@@ -22,7 +22,8 @@ import {
 import { airlineDisplayName, cashSourceCabinVerified, matchAwardToCashFlight } from '@/lib/flights/fusion-match';
 import { loadDecisionPortfolio, type DecisionWalletCard } from '@/lib/wallet/decision-portfolio';
 import { buildWalletRailMatrix, type WalletRailCardInput } from '@/lib/redemption-rails/matrix';
-import { programmeIdForFlightSource } from '@/lib/redemption-rails/programme-resolver';
+import { programmeIdForFlightCarrier, programmeIdForFlightSource } from '@/lib/redemption-rails/programme-resolver';
+import { findAirIndiaMaharajaGuide } from '@/lib/data/air-india-maharaja-guide';
 import { buildTravelDecisionContract, type TravelDecisionAwardStatus } from '@/lib/travel/decision-contract';
 
 export const runtime = 'nodejs';
@@ -89,7 +90,6 @@ function decisionRailCards(portfolio: DecisionWalletCard[]): WalletRailCardInput
   return portfolio.map((card, index) => ({
     walletKey: `${card.source}:${card.bank}:${card.last4 ?? card.cardName ?? index}`,
     bank: card.bank,
-    // Keep unnamed linked cards in the matrix without guessing a product identity.
     cardName: card.cardName ?? `Unidentified ${card.bank} card${card.last4 ? ` ••••${card.last4}` : ''}`,
     pointsBalance: card.points,
     balanceVerified: card.verified,
@@ -167,6 +167,20 @@ function safeCashMinor(price: number): number | null {
   return Number.isSafeInteger(minor) ? minor : null;
 }
 
+function publishedGuideFor(
+  programmeId: string | null,
+  from: string,
+  to: string,
+  cabin: Cabin,
+) {
+  if (programmeId !== 'air-india-maharaja' || cabin === 'first') return null;
+  const guide = findAirIndiaMaharajaGuide(from, to);
+  if (!guide) return null;
+  const points = cabin === 'business' ? guide.businessPoints : guide.economyPoints;
+  if (points == null) return null;
+  return { ...guide, points, cabin };
+}
+
 export async function POST(req: NextRequest) {
   const gate = await requireAuth(req);
   if (!gate.ok) return gate.res;
@@ -177,9 +191,6 @@ export async function POST(req: NextRequest) {
     const to = (body.to || '').toUpperCase().trim();
     const dateFrom = body.date_from || '';
     const dateTo = body.date_to || dateFrom;
-    // Flexible award discovery may span a date window. Cash shopping remains tied
-    // to the user's selected reference date so a fare from the first flexible day
-    // is never silently presented as the target-date cash benchmark.
     const cashReferenceDate = body.cash_date || dateFrom;
     const cabin: Cabin = ['economy', 'business', 'first'].includes(body.cabin)
       ? body.cabin
@@ -201,9 +212,6 @@ export async function POST(req: NextRequest) {
     const cards = legacyFusionCards(portfolio);
     const railCards = decisionRailCards(portfolio);
 
-    // AwardTool/AwardWallet can return itinerary detail directly. Preserve it and
-    // only call Seats.aero's trip-details endpoint for rows that actually came
-    // from Seats.aero cached discovery.
     const tripByKey = new Map<string, SeatsAeroTrip | null>();
     for (const [key, trip] of awardFetch.tripsByAwardId.entries()) tripByKey.set(key, trip);
 
@@ -215,9 +223,7 @@ export async function POST(req: NextRequest) {
       })
       .slice(0, ENRICH_CAP);
     const tripPairs = await Promise.all(
-      toEnrich.map(
-        async (a) => [awardKey(a), await getAvailabilityTrips(a.id, cabin)] as const,
-      ),
+      toEnrich.map(async (a) => [awardKey(a), await getAvailabilityTrips(a.id, cabin)] as const),
     );
     for (const [key, trip] of tripPairs) tripByKey.set(key, trip);
 
@@ -240,13 +246,15 @@ export async function POST(req: NextRequest) {
 
       if (!awardMatch) {
         const cashMinor = safeCashMinor(flight.price);
-        const matrix = buildWalletRailMatrix(railCards, 'flight', null);
+        const programmeId = programmeIdForFlightCarrier(flight.airline) ?? programmeIdForFlightCarrier(displayAirline);
+        const guide = publishedGuideFor(programmeId, from, to, cabin);
+        const matrix = buildWalletRailMatrix(railCards, 'flight', programmeId);
         const decision = buildTravelDecisionContract({
           matrix,
           pricing: {
             travelKind: 'flight',
-            programmeId: null,
-            programmePointsRequired: null,
+            programmeId,
+            programmePointsRequired: guide?.points ?? null,
             awardTaxesMinor: null,
             awardTaxesCurrency: null,
             cashPriceMinor: cashMinor,
@@ -256,10 +264,18 @@ export async function POST(req: NextRequest) {
             state: 'AVAILABLE',
             selection: { id: flight.id, from, to, departure: flight.departure, cabin, airline: displayAirline },
           },
-          awardStatus: 'NOT_FOUND',
+          awardStatus: guide ? 'DISCOVERY_ONLY' : 'NOT_FOUND',
           cashSource: cashFetch.source,
-          awardPricingAuthority: awardFetch.pricingAuthority,
-          provenance: { cashFareVerifiedForCabin: cashFetch.cashCabinVerified || cabin === 'economy', awardSearchMode: awardFetch.mode },
+          awardSource: guide ? 'air-india-published-guide' : null,
+          awardPricingAuthority: guide ? 'PUBLISHED_GUIDE_DISCOVERY' : awardFetch.pricingAuthority,
+          provenance: {
+            cashFareVerifiedForCabin: cashFetch.cashCabinVerified || cabin === 'economy',
+            awardSearchMode: awardFetch.mode,
+            relevantProgrammeId: programmeId,
+            guideAsOf: guide?.asOf ?? null,
+            guideSourceUrl: guide?.sourceUrl ?? null,
+            guideAvailability: guide?.availability ?? null,
+          },
         });
 
         return {
@@ -267,8 +283,16 @@ export async function POST(req: NextRequest) {
           airlineCode: flight.airline,
           airline: displayAirline,
           cashUnavailable: false,
-          cashFareVerifiedForCabin: cashFetch.cashCabinVerified,
+          cashFareVerifiedForCabin: cashFetch.cashCabinVerified || cabin === 'economy',
           award: null as AwardView | null,
+          awardGuide: guide ? {
+            programme: guide.programme,
+            points: guide.points,
+            cabin: guide.cabin,
+            asOf: guide.asOf,
+            sourceUrl: guide.sourceUrl,
+            note: guide.note,
+          } : null,
           redemption: [] as RedemptionOption[],
           bestOption: null as RedemptionOption | null,
           decision,
@@ -332,6 +356,7 @@ export async function POST(req: NextRequest) {
         cashUnavailable: false,
         cashFareVerifiedForCabin: cashFetch.cashCabinVerified || cabin === 'economy',
         award,
+        awardGuide: null,
         awardEvidenceProvider: evidenceProvider,
         redemption,
         bestOption,
@@ -392,6 +417,7 @@ export async function POST(req: NextRequest) {
           cashUnavailable: true,
           cashFareVerifiedForCabin: false,
           award,
+          awardGuide: null,
           awardEvidenceProvider: evidenceProvider,
           redemption,
           bestOption,
