@@ -1,4 +1,11 @@
 import { HDFC_INFINIA_AS_OF, HDFC_INFINIA_SOURCE, HDFC_INFINIA_TRANSFER_PARTNERS } from '@/lib/data/hdfc-transfer-partners'
+import {
+  AXIS_ATLAS_AS_OF,
+  AXIS_ATLAS_CARD_SOURCE,
+  AXIS_ATLAS_PORTAL,
+  AXIS_ATLAS_TRANSFER_PARTNERS,
+  AXIS_ATLAS_TRAVEL_EDGE_SOURCE,
+} from '@/lib/data/axis-atlas-redemption'
 import { flightProgrammeBookingUrl } from '@/lib/data/flight-programme-booking'
 import type {
   RailQuery,
@@ -12,8 +19,6 @@ function integerRatio(fromPoints: number, toUnits: number): RationalRatio {
     throw new Error('invalid transfer ratio')
   }
 
-  // Current captured issuer data uses 1 and 0.5. Convert decimal display data to
-  // an exact integer rational before it enters the new registry.
   if (Number.isInteger(fromPoints) && Number.isInteger(toUnits)) {
     return { fromUnits: fromPoints, toUnits }
   }
@@ -30,8 +35,6 @@ const hdfcInfiniaTransferRails: RedemptionRailDefinition[] = HDFC_INFINIA_TRANSF
   issuer: 'HDFC',
   type: 'LOYALTY_TRANSFER',
   travelKinds: [partner.kind === 'hotel' ? 'hotel' : 'flight'],
-  // Partner, ratio and SLA are captured; issuer minimum/increment are not. That
-  // deliberately prevents an "exactly transfer N now" instruction.
   executionState: 'RATIO_ONLY',
   evidence: [{
     kind: 'ISSUER_CAPTURE',
@@ -55,50 +58,126 @@ const hdfcInfiniaTransferRails: RedemptionRailDefinition[] = HDFC_INFINIA_TRANSF
   ...(flightProgrammeBookingUrl(partner.id) ? { bookingUrl: flightProgrammeBookingUrl(partner.id)! } : {}),
 }))
 
+const axisAtlasTransferRails: RedemptionRailDefinition[] = AXIS_ATLAS_TRANSFER_PARTNERS.map((partner) => ({
+  id: `axis-atlas-transfer-${partner.id}`,
+  cardIds: ['axis-atlas'],
+  issuer: 'Axis',
+  type: 'LOYALTY_TRANSFER',
+  travelKinds: [partner.kind],
+  executionState: 'RATIO_ONLY',
+  evidence: [{
+    kind: 'ISSUER_PUBLIC',
+    sourceId: 'axis-travel-edge-partners-2026',
+    sourceUrl: AXIS_ATLAS_TRAVEL_EDGE_SOURCE,
+    capturedAt: AXIS_ATLAS_AS_OF,
+    note: 'Axis Travel EDGE partner table effective 2 Apr 2026; exact Atlas column only.',
+  }],
+  transfer: {
+    programmeId: partner.id,
+    programmeName: partner.displayName,
+    destinationCurrency: partner.destinationCurrency,
+    ratio: integerRatio(partner.fromMiles, partner.toPartnerUnits),
+    durationText: null,
+    durationHoursMax: null,
+    irreversible: true,
+    minimumBankPoints: null,
+    incrementBankPoints: null,
+  },
+  bookingDestination: partner.displayName,
+  ...(flightProgrammeBookingUrl(partner.id) ? { bookingUrl: flightProgrammeBookingUrl(partner.id)! } : {}),
+}))
+
 /**
- * Broad rails confirmed to exist, but intentionally not executable until the
- * card-specific checkout mechanics are captured into structured facts.
+ * Portal/native rails. CHECKOUT_REQUIRED means we may calculate sourced fixed
+ * value/cap mechanics, while the issuer's own fare, fees and final checkout stay
+ * authoritative. Unknown mechanics remain null rather than being invented.
  */
 const discoveryRails: RedemptionRailDefinition[] = [
   {
     id: 'hdfc-infinia-smartbuy-travel',
     cardIds: ['hdfc-infinia'], issuer: 'HDFC', type: 'BANK_TRAVEL_PORTAL',
     travelKinds: ['flight', 'hotel'], executionState: 'CHECKOUT_REQUIRED',
-    evidence: [{ kind: 'ISSUER_PUBLIC', sourceId: 'hdfc-smartbuy-travel', note: 'SmartBuy flight/hotel redemption exists; checkout/card-specific mechanics remain authoritative.' }],
-    portal: { portalName: 'HDFC SmartBuy', supportsPointsPlusCash: true, valuePerPointPaise: null, maxPointsShareBps: null, feeMinor: null },
+    evidence: [
+      {
+        kind: 'ISSUER_PUBLIC',
+        sourceId: 'hdfc-infinia-current-card-page',
+        sourceUrl: 'https://www.hdfc.bank.in/credit-cards/infinia-credit-card',
+        capturedAt: '2026-09-09',
+        note: 'Current Infinia page: flights/hotels redeem at ₹1 per Reward Point; travel/airmiles monthly cap is 1.5 lakh RP.',
+      },
+      {
+        kind: 'ISSUER_PUBLIC',
+        sourceId: 'hdfc-card-mitc-70-percent-travel',
+        sourceUrl: 'https://www.hdfc.bank.in/content/dam/hdfcbankpws/in/en/personal-banking/discover-products/cards/credit-cards/cc-mitc.pdf',
+        capturedAt: '2026-09-09',
+        note: 'HDFC MITC: Infinia flight/hotel bookings can use points for up to 70% of booking value; remainder is paid by card.',
+      },
+    ],
+    portal: {
+      portalName: 'HDFC SmartBuy', supportsPointsPlusCash: true,
+      valuePerPointPaise: 100, maxPointsShareBps: 7000, minimumPoints: null, feeMinor: null,
+    },
     bookingDestination: 'HDFC SmartBuy',
     bookingUrl: 'https://offers.smartbuy.hdfcbank.com/',
+    notes: ['Projected points/cash use the selected live cash fare as the benchmark; SmartBuy fare and any checkout fee must be rechecked.'],
   },
   {
     id: 'axis-atlas-travel-edge',
     cardIds: ['axis-atlas'], issuer: 'Axis', type: 'BANK_TRAVEL_PORTAL',
     travelKinds: ['flight', 'hotel'], executionState: 'CHECKOUT_REQUIRED',
-    evidence: [{ kind: 'ISSUER_PUBLIC', sourceId: 'axis-atlas-travel-edge', note: 'Travel EDGE booking rail confirmed; exact current redemption mechanics must be structured from issuer terms/checkout.' }],
-    portal: { portalName: 'Axis Travel EDGE', supportsPointsPlusCash: true, valuePerPointPaise: null, maxPointsShareBps: null, feeMinor: null },
+    evidence: [
+      {
+        kind: 'ISSUER_PUBLIC', sourceId: 'axis-atlas-card-tc', sourceUrl: AXIS_ATLAS_CARD_SOURCE,
+        capturedAt: AXIS_ATLAS_AS_OF, note: 'Atlas T&C: 1 EDGE Mile equals INR 1 and Travel EDGE is a redemption channel.',
+      },
+      {
+        kind: 'ISSUER_PUBLIC', sourceId: 'axis-travel-edge-current', sourceUrl: AXIS_ATLAS_TRAVEL_EDGE_SOURCE,
+        capturedAt: AXIS_ATLAS_AS_OF, note: 'Travel EDGE supports EDGE Miles alone or EDGE Miles + card; minimum Atlas redemption is 500 EDGE Miles.',
+      },
+    ],
+    portal: {
+      portalName: 'Axis Travel EDGE', supportsPointsPlusCash: true,
+      valuePerPointPaise: AXIS_ATLAS_PORTAL.valuePerEdgeMilePaise,
+      maxPointsShareBps: AXIS_ATLAS_PORTAL.maxPointsShareBps,
+      minimumPoints: AXIS_ATLAS_PORTAL.minimumEdgeMiles,
+      feeMinor: null,
+    },
     bookingDestination: 'Axis Travel EDGE',
+    bookingUrl: 'https://traveledge.axis.bank.in/',
+    notes: ['Projected points/cash use the selected live fare as a benchmark; Travel EDGE checkout fare and any fee remain authoritative.'],
   },
   {
     id: 'axis-magnus-burgundy-travel-edge',
     cardIds: ['axis-magnus-burgundy'], issuer: 'Axis', type: 'BANK_TRAVEL_PORTAL',
     travelKinds: ['flight', 'hotel'], executionState: 'CHECKOUT_REQUIRED',
-    evidence: [{ kind: 'ISSUER_PUBLIC', sourceId: 'axis-travel-edge', note: 'Travel EDGE exists; do not inherit Atlas transfer ratios.' }],
-    portal: { portalName: 'Axis Travel EDGE', supportsPointsPlusCash: true, valuePerPointPaise: null, maxPointsShareBps: null, feeMinor: null },
+    evidence: [{ kind: 'ISSUER_PUBLIC', sourceId: 'axis-travel-edge', sourceUrl: AXIS_ATLAS_TRAVEL_EDGE_SOURCE, note: 'Travel EDGE exists; do not inherit Atlas transfer ratios or value assumptions.' }],
+    portal: { portalName: 'Axis Travel EDGE', supportsPointsPlusCash: true, valuePerPointPaise: null, maxPointsShareBps: null, minimumPoints: null, feeMinor: null },
     bookingDestination: 'Axis Travel EDGE',
   },
   {
     id: 'amex-platinum-travel-amex-travel',
     cardIds: ['amex-platinum-travel'], issuer: 'American Express', type: 'MERCHANT_PAY_WITH_POINTS',
     travelKinds: ['flight', 'hotel'], executionState: 'CHECKOUT_REQUIRED',
-    evidence: [{ kind: 'ISSUER_PUBLIC', sourceId: 'amex-india-travel-points-pay', note: 'Amex Travel / Points + Pay rail confirmed; live checkout determines the payable mix.' }],
-    portal: { portalName: 'American Express Travel Online', supportsPointsPlusCash: true, valuePerPointPaise: null, maxPointsShareBps: null, feeMinor: null },
+    evidence: [{
+      kind: 'ISSUER_PUBLIC',
+      sourceId: 'amex-india-travel-points-pay',
+      sourceUrl: 'https://www.americanexpress.com/in/travel/terms-and-conditions/',
+      capturedAt: '2026-09-09',
+      note: 'Points for Travel / Points + Pay is supported. Minimum 1,000 MR points; exact itinerary points are set by Amex at booking time.',
+    }],
+    portal: {
+      portalName: 'American Express Travel Online', supportsPointsPlusCash: true,
+      valuePerPointPaise: null, maxPointsShareBps: null, minimumPoints: 1000, feeMinor: null,
+    },
     bookingDestination: 'American Express Travel Online',
+    bookingUrl: 'https://www.americanexpress.com/en-in/travel/',
   },
   {
     id: 'idfc-first-wealth-travel-shop',
     cardIds: ['idfc-first-wealth'], issuer: 'IDFC FIRST', type: 'BANK_TRAVEL_PORTAL',
     travelKinds: ['flight', 'hotel'], executionState: 'CHECKOUT_REQUIRED',
     evidence: [{ kind: 'ISSUER_PUBLIC', sourceId: 'idfc-first-travel-shop', note: 'Travel & Shop rail confirmed; exact caps/value must be card/current-rule specific.' }],
-    portal: { portalName: 'IDFC FIRST Travel & Shop', supportsPointsPlusCash: true, valuePerPointPaise: null, maxPointsShareBps: null, feeMinor: null },
+    portal: { portalName: 'IDFC FIRST Travel & Shop', supportsPointsPlusCash: true, valuePerPointPaise: null, maxPointsShareBps: null, minimumPoints: null, feeMinor: null },
     bookingDestination: 'IDFC FIRST Travel & Shop',
   },
   {
@@ -106,7 +185,7 @@ const discoveryRails: RedemptionRailDefinition[] = [
     cardIds: ['yes-marquee'], issuer: 'YES BANK', type: 'BANK_TRAVEL_PORTAL',
     travelKinds: ['flight', 'hotel'], executionState: 'CHECKOUT_REQUIRED',
     evidence: [{ kind: 'ISSUER_PUBLIC', sourceId: 'yes-rewardz-travel', note: 'YES Rewardz travel rail confirmed; current tier caps remain structured-source work.' }],
-    portal: { portalName: 'YES Rewardz', supportsPointsPlusCash: true, valuePerPointPaise: null, maxPointsShareBps: null, feeMinor: null },
+    portal: { portalName: 'YES Rewardz', supportsPointsPlusCash: true, valuePerPointPaise: null, maxPointsShareBps: null, minimumPoints: null, feeMinor: null },
     bookingDestination: 'YES Rewardz',
   },
   {
@@ -135,6 +214,7 @@ const discoveryRails: RedemptionRailDefinition[] = [
 
 export const REDEMPTION_RAIL_REGISTRY: readonly RedemptionRailDefinition[] = [
   ...hdfcInfiniaTransferRails,
+  ...axisAtlasTransferRails,
   ...discoveryRails,
 ]
 
