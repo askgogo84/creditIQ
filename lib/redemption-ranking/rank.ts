@@ -77,7 +77,7 @@ function transferCandidate(
   const programmePoints = safeNonNegative('programme points required', pricing.programmePointsRequired)
   const awardTaxes = safeNonNegative('award taxes minor', pricing.awardTaxesMinor)
 
-  if (!transfer || !pricing.programmeId || transfer.programmeId !== pricing.programmeId || programmePoints == null) {
+  if (!transfer || !pricing.programmeId || transfer.programmeId !== pricing.programmeId) {
     return {
       id: `${card.walletKey}|${rail.id}`,
       walletKey: card.walletKey,
@@ -92,7 +92,32 @@ function transferCandidate(
       bankPointsToTransferExact: null,
       cashPayableMinor: null,
       cashCurrency: null,
-      reasons: ['Selected award does not expose a compatible programme price for this transfer rail.'],
+      reasons: ['This transfer rail does not match the selected loyalty programme.'],
+    }
+  }
+
+  // A real exact-card transfer relationship is useful even before a live award
+  // provider returns the points price. Keep it visible as discovery rather than
+  // making the UI look as if no redemption path exists.
+  if (programmePoints == null) {
+    return {
+      id: `${card.walletKey}|${rail.id}`,
+      walletKey: card.walletKey,
+      bank: card.bank,
+      cardName: card.cardName,
+      railId: rail.id,
+      railType: rail.type,
+      railExecutionState: rail.executionState,
+      comparisonState: 'DISCOVERY_ONLY',
+      affordability: card.pointsBalance == null ? 'UNKNOWN' : 'POSSIBLY_AFFORDABLE',
+      bankPointsTargetMinimum: null,
+      bankPointsToTransferExact: null,
+      cashPayableMinor: null,
+      cashCurrency: null,
+      reasons: [
+        `${card.cardName} can transfer to ${transfer.programmeName} at ${transfer.ratio.fromUnits}:${transfer.ratio.toUnits}.`,
+        'The selected itinerary does not have a confirmed programme points price yet; verify the award before calculating a transfer amount.',
+      ],
     }
   }
 
@@ -105,7 +130,7 @@ function transferCandidate(
     assertSafeInteger('wallet points balance', balance, { min: 0 })
     if (balance < target) {
       affordability = 'DEFINITELY_UNAFFORDABLE'
-      reasons.push(`Wallet balance is below the minimum ratio-derived target of ${target.toLocaleString('en-IN')} points.`)
+      reasons.push(`Wallet balance is below the ratio-derived target of ${target.toLocaleString('en-IN')} points.`)
     } else if (transfer.minimumBankPoints != null && transfer.incrementBankPoints != null) {
       exact = roundUpTransfer(target, transfer.minimumBankPoints, transfer.incrementBankPoints)
       affordability = balance >= exact ? 'AFFORDABLE' : 'DEFINITELY_UNAFFORDABLE'
@@ -125,7 +150,7 @@ function transferCandidate(
   }
 
   if (rail.executionState === 'RATIO_ONLY') {
-    reasons.push('Transfer ratio is sourced, but an exact issuer transfer instruction is still blocked.')
+    reasons.push('Transfer ratio is sourced, but an exact issuer transfer instruction is still blocked until final award and issuer rules are verified.')
   }
 
   const comparisonState: RailComparisonState =
@@ -163,20 +188,49 @@ function genericRailCandidate(
     const cashPrice = safeNonNegative('cash price minor', pricing.cashPriceMinor)
     const portal = rail.portal
     const balance = card.pointsBalance
+
     if (
       cashPrice != null && normalizedCurrency(pricing.cashCurrency) === 'INR' && balance != null && balance > 0 &&
       portal?.supportsPointsPlusCash === true &&
       portal.valuePerPointPaise != null && portal.valuePerPointPaise > 0 &&
-      portal.maxPointsShareBps != null && portal.maxPointsShareBps >= 0 && portal.maxPointsShareBps <= 10_000 &&
-      portal.feeMinor != null && portal.feeMinor >= 0
+      portal.maxPointsShareBps != null && portal.maxPointsShareBps >= 0 && portal.maxPointsShareBps <= 10_000
     ) {
       assertSafeInteger('wallet points balance', balance, { min: 0 })
       const capMinor = Math.floor((cashPrice * portal.maxPointsShareBps) / 10_000)
       const pointsByCap = Math.floor(capMinor / portal.valuePerPointPaise)
+      const minimum = portal.minimumPoints ?? 0
+
+      if (pointsByCap < minimum || balance < minimum) {
+        const balanceTooLow = balance < minimum
+        return {
+          id: `${card.walletKey}|${rail.id}`,
+          walletKey: card.walletKey,
+          bank: card.bank,
+          cardName: card.cardName,
+          railId: rail.id,
+          railType: rail.type,
+          railExecutionState: rail.executionState,
+          comparisonState: 'NOT_COMPARABLE',
+          affordability: balanceTooLow ? 'DEFINITELY_UNAFFORDABLE' : 'UNKNOWN',
+          bankPointsTargetMinimum: minimum || null,
+          bankPointsToTransferExact: null,
+          cashPayableMinor: null,
+          cashCurrency: null,
+          reasons: [balanceTooLow
+            ? `${portal.portalName} requires at least ${minimum.toLocaleString('en-IN')} points; this wallet balance is below that minimum.`
+            : `${portal.portalName}'s minimum ${minimum.toLocaleString('en-IN')} points cannot fit inside the sourced booking cap for this fare.`],
+        }
+      }
+
       const pointsUsed = Math.min(balance, pointsByCap)
-      const cashPayable = cashPrice - (pointsUsed * portal.valuePerPointPaise) + portal.feeMinor
-      reasons.push(`${portal.portalName} uses ${pointsUsed.toLocaleString('en-IN')} points within its sourced booking cap.`)
+      const redemptionValueMinor = pointsUsed * portal.valuePerPointPaise
+      const cashRemainderBeforeFee = Math.max(0, cashPrice - redemptionValueMinor)
+      const cashPayable = cashRemainderBeforeFee + (portal.feeMinor ?? 0)
+      reasons.push(`${portal.portalName}: projected ${pointsUsed.toLocaleString('en-IN')} points against the selected ₹${Math.round(cashPrice / 100).toLocaleString('en-IN')} cash benchmark.`)
+      if (portal.maxPointsShareBps < 10_000) reasons.push(`Issuer cap allows points for up to ${(portal.maxPointsShareBps / 100).toLocaleString('en-IN')}% of booking value.`)
+      if (portal.feeMinor == null) reasons.push('Projected cash remainder excludes any portal checkout fee or provider fare difference; verify the final portal quote.')
       if (rail.executionState !== 'EXECUTABLE') reasons.push('Issuer/merchant checkout remains the authoritative execution boundary.')
+
       return {
         id: `${card.walletKey}|${rail.id}`,
         walletKey: card.walletKey,
@@ -187,7 +241,9 @@ function genericRailCandidate(
         railExecutionState: rail.executionState,
         comparisonState: state,
         affordability: 'AFFORDABLE',
-        bankPointsTargetMinimum: null,
+        // For portal rails this field is the projected number of bank points used;
+        // it is deliberately not an irreversible transfer instruction.
+        bankPointsTargetMinimum: pointsUsed,
         bankPointsToTransferExact: null,
         cashPayableMinor: cashPayable,
         cashCurrency: normalizedCurrency(pricing.cashCurrency),
@@ -197,8 +253,12 @@ function genericRailCandidate(
   }
 
   if (rail.type === 'BANK_TRAVEL_PORTAL' || rail.type === 'MERCHANT_PAY_WITH_POINTS') {
-    if (rail.portal?.valuePerPointPaise == null || rail.portal.maxPointsShareBps == null) {
-      reasons.push('Portal exists, but current card-specific value/cap is not fully structured.')
+    const portal = rail.portal
+    if (portal?.minimumPoints != null) {
+      reasons.push(`${portal.portalName} accepts points redemption from ${portal.minimumPoints.toLocaleString('en-IN')} points; exact itinerary points are determined at checkout.`)
+    }
+    if (portal?.valuePerPointPaise == null || portal.maxPointsShareBps == null) {
+      reasons.push('The redemption path exists, but this card/portal does not publish enough fixed economics for CreditIQ to calculate the itinerary points safely.')
     }
     reasons.push('Issuer/merchant checkout is the authoritative execution boundary.')
   } else if (rail.type === 'TRAVEL_VOUCHER') {
