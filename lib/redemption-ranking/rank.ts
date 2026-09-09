@@ -96,7 +96,10 @@ function transferCandidate(
     }
   }
 
-  const target = bankPointsForProgramme(programmePoints, transfer.ratio)
+  const ratioTarget = bankPointsForProgramme(programmePoints, transfer.ratio)
+  const target = transfer.minimumBankPoints != null
+    ? Math.max(ratioTarget, transfer.minimumBankPoints)
+    : ratioTarget
   const balance = card.pointsBalance
   let exact: number | null = null
   let affordability: RailAffordability = 'UNKNOWN'
@@ -105,14 +108,14 @@ function transferCandidate(
     assertSafeInteger('wallet points balance', balance, { min: 0 })
     if (balance < target) {
       affordability = 'DEFINITELY_UNAFFORDABLE'
-      reasons.push(`Wallet balance is below the minimum ratio-derived target of ${target.toLocaleString('en-IN')} points.`)
+      reasons.push(`Wallet balance is below the minimum ratio-derived/issuer target of ${target.toLocaleString('en-IN')} points.`)
     } else if (transfer.minimumBankPoints != null && transfer.incrementBankPoints != null) {
       exact = roundUpTransfer(target, transfer.minimumBankPoints, transfer.incrementBankPoints)
       affordability = balance >= exact ? 'AFFORDABLE' : 'DEFINITELY_UNAFFORDABLE'
       if (balance < exact) reasons.push('Rounded issuer minimum/increment makes this transfer unaffordable.')
     } else {
       affordability = 'POSSIBLY_AFFORDABLE'
-      reasons.push('Balance covers the ratio-derived target, but issuer minimum/increment are not fully sourced.')
+      reasons.push('Balance covers the sourced target, but issuer/account execution facts are not fully verified.')
     }
   } else {
     reasons.push('Wallet balance is unavailable for affordability checking.')
@@ -125,8 +128,9 @@ function transferCandidate(
   }
 
   if (rail.executionState === 'RATIO_ONLY') {
-    reasons.push('Transfer ratio is sourced, but an exact issuer transfer instruction is still blocked.')
+    reasons.push('Transfer ratio is sourced, but an exact irreversible transfer instruction is still blocked.')
   }
+  if (rail.notes?.length) reasons.push(...rail.notes)
 
   const comparisonState: RailComparisonState =
     affordability === 'DEFINITELY_UNAFFORDABLE'
@@ -167,16 +171,25 @@ function genericRailCandidate(
       cashPrice != null && normalizedCurrency(pricing.cashCurrency) === 'INR' && balance != null && balance > 0 &&
       portal?.supportsPointsPlusCash === true &&
       portal.valuePerPointPaise != null && portal.valuePerPointPaise > 0 &&
-      portal.maxPointsShareBps != null && portal.maxPointsShareBps >= 0 && portal.maxPointsShareBps <= 10_000 &&
-      portal.feeMinor != null && portal.feeMinor >= 0
+      portal.maxPointsShareBps != null && portal.maxPointsShareBps >= 0 && portal.maxPointsShareBps <= 10_000
     ) {
       assertSafeInteger('wallet points balance', balance, { min: 0 })
       const capMinor = Math.floor((cashPrice * portal.maxPointsShareBps) / 10_000)
       const pointsByCap = Math.floor(capMinor / portal.valuePerPointPaise)
       const pointsUsed = Math.min(balance, pointsByCap)
-      const cashPayable = cashPrice - (pointsUsed * portal.valuePerPointPaise) + portal.feeMinor
-      reasons.push(`${portal.portalName} uses ${pointsUsed.toLocaleString('en-IN')} points within its sourced booking cap.`)
+      const cashRemainderBeforeFee = cashPrice - (pointsUsed * portal.valuePerPointPaise)
+      const feeKnown = portal.feeMinor != null && portal.feeMinor >= 0
+      const cashPayable = feeKnown ? cashRemainderBeforeFee + portal.feeMinor! : null
+      const feeNote = rail.notes?.find((note) => /fee|tax/i.test(note))
+
+      reasons.push(
+        feeKnown
+          ? `${portal.portalName} can apply ${pointsUsed.toLocaleString('en-IN')} points within its sourced booking cap.`
+          : `${portal.portalName} can apply ${pointsUsed.toLocaleString('en-IN')} points within its sourced booking cap; ${feeNote || 'final redemption fee/tax must be verified at checkout.'}`,
+      )
+      if (rail.notes?.length) reasons.push(...rail.notes.filter((note) => note !== feeNote))
       if (rail.executionState !== 'EXECUTABLE') reasons.push('Issuer/merchant checkout remains the authoritative execution boundary.')
+
       return {
         id: `${card.walletKey}|${rail.id}`,
         walletKey: card.walletKey,
@@ -187,17 +200,20 @@ function genericRailCandidate(
         railExecutionState: rail.executionState,
         comparisonState: state,
         affordability: 'AFFORDABLE',
-        bankPointsTargetMinimum: null,
+        // For a portal rail this is the projected points application for the
+        // selected matched fare, not an instruction to transfer points.
+        bankPointsTargetMinimum: pointsUsed,
         bankPointsToTransferExact: null,
         cashPayableMinor: cashPayable,
-        cashCurrency: normalizedCurrency(pricing.cashCurrency),
+        cashCurrency: cashPayable != null ? normalizedCurrency(pricing.cashCurrency) : null,
         reasons,
       }
     }
   }
 
   if (rail.type === 'BANK_TRAVEL_PORTAL' || rail.type === 'MERCHANT_PAY_WITH_POINTS') {
-    if (rail.portal?.valuePerPointPaise == null || rail.portal.maxPointsShareBps == null) {
+    if (rail.notes?.length) reasons.push(...rail.notes)
+    else if (rail.portal?.valuePerPointPaise == null || rail.portal.maxPointsShareBps == null) {
       reasons.push('Portal exists, but current card-specific value/cap is not fully structured.')
     }
     reasons.push('Issuer/merchant checkout is the authoritative execution boundary.')
@@ -246,18 +262,6 @@ function chooseRecommendation(
   return 'PROJECTED_WINNER_NEEDS_VERIFICATION'
 }
 
-/**
- * Compare the selected inventory item across the wallet's sourced redemption rails.
- *
- * Two winners are deliberately tracked:
- * - bestExecutable: only facts sufficient for an action today.
- * - bestProjected: may include ratio-only/checkout-required paths when a cash
- *   comparison is known, but is never presented as an executable instruction.
- *
- * The registry/matrix enumerate rails. This function performs only bounded,
- * explicit arithmetic. It does not infer issuer portal values, FX, voucher values,
- * missing transfer minimums/increments or native-loyalty balances.
- */
 export function rankWalletRails(
   matrix: WalletRailMatrix,
   pricing: SelectedTravelPricing,
