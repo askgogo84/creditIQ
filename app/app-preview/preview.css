@@ -15,7 +15,7 @@ body:has(#creditiq-app-preview) {
   height: 100dvh;
 }
 
-/* Review feedback: global typography must never make dark cards unreadable. */
+/* Global typography must never make dark prototype cards unreadable. */
 #creditiq-app-preview [class*="bg-[#1b1c18]"] h1,
 #creditiq-app-preview [class*="bg-[#1b1c18]"] h2,
 #creditiq-app-preview [class*="bg-[#1b1c18]"] h3,
@@ -23,64 +23,96 @@ body:has(#creditiq-app-preview) {
   color: #fff !important;
 }
 
-/* Bottom-nav composition: Home + Wallet | CIRA | Travel + Menu. */
-#creditiq-app-preview nav[aria-label="Prototype primary navigation"] > div {
-  grid-template-columns: repeat(5, minmax(0, 1fr)) !important;
+/* Hide the prototype's original five-item bar visually but keep it mounted as
+   the internal state/navigation bridge for the review-only six-item bar. */
+#creditiq-app-preview nav[aria-label="Prototype primary navigation"] {
+  opacity: 0 !important;
+  pointer-events: none !important;
+}
+
+.preview-six-nav {
+  position: fixed;
+  left: 50%;
+  bottom: 0;
+  z-index: 45;
+  display: grid;
+  width: min(100vw, 430px);
+  min-height: 76px;
+  transform: translateX(-50%);
+  grid-template-columns: repeat(6, minmax(0, 1fr));
   align-items: end;
+  border-top: 1px solid #d8d3c8;
+  background: rgba(251, 249, 244, 0.96);
+  padding: 8px 4px calc(8px + env(safe-area-inset-bottom));
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
 }
 
-#creditiq-app-preview nav[aria-label="Prototype primary navigation"] > div > button:nth-child(1) {
-  grid-column: 1;
-  grid-row: 1;
+.preview-nav-item {
+  display: flex;
+  min-width: 0;
+  min-height: 58px;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 4px;
+  border: 0;
+  background: transparent;
+  color: #8b887f;
+  font-size: 9px;
+  font-weight: 700;
+  line-height: 1;
 }
 
-#creditiq-app-preview nav[aria-label="Prototype primary navigation"] > div > button:nth-child(2) {
-  grid-column: 2;
-  grid-row: 1;
+.preview-nav-item.is-active {
+  color: #1b1c18;
 }
 
-#creditiq-app-preview nav[aria-label="Prototype primary navigation"] > div > button:nth-child(4) {
-  grid-column: 3;
-  grid-row: 1;
+.preview-cira {
   position: relative;
   z-index: 2;
-}
-
-#creditiq-app-preview nav[aria-label="Prototype primary navigation"] > div > button:nth-child(3) {
-  grid-column: 4;
-  grid-row: 1;
-}
-
-#creditiq-app-preview nav[aria-label="Prototype primary navigation"] > div > button:nth-child(5) {
-  grid-column: 5;
-  grid-row: 1;
-}
-
-/* CIRA is the visual centre and primary action. */
-#creditiq-app-preview nav[aria-label="Prototype primary navigation"] > div > button:nth-child(4) > span:first-child {
-  width: 56px !important;
-  height: 56px !important;
-  border-radius: 20px !important;
-  transform: translateY(-8px);
-  border-color: #bd913d !important;
-  background: #1b1c18 !important;
-  color: #d5b56b !important;
-  box-shadow: 0 10px 24px rgba(27, 28, 24, 0.22) !important;
-}
-
-#creditiq-app-preview nav[aria-label="Prototype primary navigation"] > div > button:nth-child(4) > span:last-child {
-  margin-top: -6px;
-  color: #1b1c18 !important;
+  color: #1b1c18;
   font-weight: 800;
 }
 
-/* The far-right control is the app menu, not another product tab. */
-#creditiq-app-preview nav[aria-label="Prototype primary navigation"] > div > button:nth-child(5) > span:last-child {
-  font-size: 0;
+.preview-cira-orb {
+  display: grid;
+  width: 58px;
+  height: 58px;
+  transform: translateY(-8px);
+  place-items: center;
+  border: 1px solid #bd913d;
+  border-radius: 20px;
+  background: #1b1c18;
+  color: #d5b56b;
+  box-shadow: 0 10px 24px rgba(27, 28, 24, 0.22);
 }
 
-#creditiq-app-preview nav[aria-label="Prototype primary navigation"] > div > button:nth-child(5) > span:last-child::after {
-  content: "Menu";
-  font-size: 10px;
-  font-weight: 700;
+.preview-cira > span:last-child {
+  margin-top: -6px;
+}
+
+@media (min-width: 768px) {
+  .preview-six-nav {
+    bottom: 24px;
+    border-right: 1px solid #d8d3c8;
+    border-left: 1px solid #d8d3c8;
+    border-radius: 0 0 36px 36px;
+  }
+}
+
+@media (max-width: 360px) {
+  .preview-six-nav {
+    padding-right: 2px;
+    padding-left: 2px;
+  }
+
+  .preview-nav-item {
+    font-size: 8px;
+  }
+
+  .preview-cira-orb {
+    width: 54px;
+    height: 54px;
+  }
 }
