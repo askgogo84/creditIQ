@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import { authedFetch } from '@/lib/authed-fetch'
 import type { WalletRailMatrix } from '@/lib/redemption-rails/matrix'
 import type { RedemptionRailDefinition } from '@/lib/redemption-rails/types'
+import './wallet-rail-matrix.css'
 
 type Response = { matrix?: WalletRailMatrix; error?: string }
 
