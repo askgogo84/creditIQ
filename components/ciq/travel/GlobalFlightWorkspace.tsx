@@ -170,6 +170,22 @@ function cabinForRow(row: FusionRow): SearchCabin {
   return row.award?.cabin === 'business' ? 'business' : 'economy'
 }
 
+function cabinCost(row: FusionRow, rowCabin: SearchCabin, targetCabin: SearchCabin) {
+  if (rowCabin !== targetCabin) {
+    return { value: '—', label: `see ${targetCabin} option` }
+  }
+  if (row.award) {
+    return {
+      value: row.award.mileageCost.toLocaleString('en-IN'),
+      label: row.price > 0 ? `miles · cash ₹${row.price.toLocaleString('en-IN')}` : 'award miles',
+    }
+  }
+  if (row.price > 0) {
+    return { value: `₹${row.price.toLocaleString('en-IN')}`, label: 'cash fare' }
+  }
+  return { value: '—', label: 'fare unavailable' }
+}
+
 export function GlobalFlightWorkspace() {
   const params = useSearchParams()
   const qTo = resolveCity(params.get('q') || '') || ''
@@ -258,7 +274,7 @@ export function GlobalFlightWorkspace() {
         authority: combinedAuthority,
         searchMode: cabin === 'any' ? 'ANY_ECONOMY_BUSINESS' : String(responses[0]?.data.awardSearchMode || 'UNKNOWN'),
         reason: cabin === 'any'
-          ? 'Combined Economy and Business searches. Each itinerary keeps its returned cabin and provider evidence.'
+          ? 'Economy and Business are priced separately. Identical flight times can therefore appear once per cabin, and every row keeps its own returned fare and award evidence.'
           : String(responses[0]?.data.awardReason || ''),
         attempts,
       })
@@ -335,7 +351,7 @@ export function GlobalFlightWorkspace() {
         <>
           <div className="approved-flight-toolbar">
             <div>
-              <b>{filtered.length} flight options</b>
+              <b>{filtered.length} {cabin === 'any' ? 'cabin-priced options' : 'flight options'}</b>
               <span>{labelFor(from)} → {labelFor(to)} · {fmtDate(date)}{flexDays ? ` ±${flexDays} days` : ''} · {cabinLabel(cabin)}{counts ? ` · ${counts.cashFlights} target-date cash rows · ${counts.awards} award records` : ''}{awardMeta ? ` · ${authorityLabel(awardMeta.authority)}` : ''}</span>
             </div>
             <div className="approved-flight-filters" role="group" aria-label="Flight result filters">
@@ -344,10 +360,11 @@ export function GlobalFlightWorkspace() {
               <button type="button" aria-pressed={nonStop} onClick={() => setNonStop(value => !value)}>Non-stop</button>
             </div>
           </div>
+          {cabin === 'any' && <div className="approved-flight-note">Any cabin runs separate Economy and Business pricing. The same flight time can appear twice when both cabins were returned; each row now shows the actual returned cost for that cabin instead of a misleading dash.</div>}
           <div className="approved-flight-note">{evidenceNote}</div>
 
           <section className="approved-award-list" aria-label="Flight award results">
-            <div className="approved-award-head"><span>Date</span><span>Programme & route</span><span>Economy</span><span>Business</span><span>Best wallet path</span><span /></div>
+            <div className="approved-award-head"><span>Date</span><span>Flight & route</span><span>Economy cost</span><span>Business cost</span><span>Best wallet path</span><span /></div>
             {filtered.length === 0 ? (
               <div className="approved-flight-empty">No loaded option matches this filter.</div>
             ) : filtered.map(row => {
@@ -359,11 +376,12 @@ export function GlobalFlightWorkspace() {
               const reachable = rowReachable(row)
               const taxes = nativeTaxes(trip)
               const programme = award?.program || row.airline || 'Cash itinerary'
+              const carrier = row.airline || programme
               const depart = fmtTime(trip?.departsAt || row.departure)
               const arrive = fmtTime(trip?.arrivesAt || row.arrival)
               const duration = fmtDuration(trip?.durationMinutes || row.duration * 60)
-              const economyMiles = award && rowCabin === 'economy' ? award.mileageCost.toLocaleString('en-IN') : '—'
-              const businessMiles = award && rowCabin === 'business' ? award.mileageCost.toLocaleString('en-IN') : '—'
+              const economyCost = cabinCost(row, rowCabin, 'economy')
+              const businessCost = cabinCost(row, rowCabin, 'business')
               const rankedOptions = rankWalletOptions(row.redemption)
               const selectedWalletOption = row.bestOption ?? rankedOptions.find(option => option.status === 'ok') ?? null
               const selfServe = buildFlightSelfServePlan({
@@ -374,6 +392,7 @@ export function GlobalFlightWorkspace() {
               const conciergeRequest = buildFlightConciergeRequest(row, rankedOptions, selectedWalletOption)
               const evidenceProvider = evidenceProviderLabel(row.awardEvidenceProvider)
               const evidenceAuthority = authorityLabel(awardMeta?.authority)
+              const awardPrefix = award && award.program !== carrier ? `${award.program} award · ` : ''
 
               return (
                 <article className={`approved-award-item${active ? ' open' : ''}`} key={row.id}>
@@ -387,10 +406,10 @@ export function GlobalFlightWorkspace() {
                     }}
                   >
                     <span><b>{fmtDate(award?.date || row.departure)}</b><small>{fmtWeekday(award?.date || row.departure)} {depart}</small></span>
-                    <span className="approved-award-programme"><i className="approved-airline-logo">{programmeMark(programme)}</i><span><b>{programme}</b><small>{row.from} {depart || ''} → {row.to} {arrive || ''} · {duration} · {fmtStops(stops)} · {cabinLabel(rowCabin)}</small></span></span>
-                    <span><b>{economyMiles}</b><small>{economyMiles === '—' ? (rowCabin === 'economy' && !award ? 'cash itinerary' : 'not searched') : 'miles'}</small></span>
-                    <span><b>{businessMiles}</b><small>{businessMiles === '—' ? (rowCabin === 'business' && !award ? 'cash itinerary' : 'not searched') : 'miles'}</small></span>
-                    <span className="approved-wallet-path"><b>{award ? (selfServe.executable ? 'Ready to verify' : reachable ? 'Wallet route' : 'Verify route') : 'Cash'}</b><small>{award ? (selfServe.pointsNeeded ? `${selfServe.pointsNeeded.toLocaleString('en-IN')} card pts` : 'needs verification') : (row.price > 0 ? `₹${row.price.toLocaleString('en-IN')}` : 'fare unavailable')}</small></span>
+                    <span className="approved-award-programme"><i className="approved-airline-logo">{programmeMark(carrier)}</i><span><b>{carrier}</b><small>{awardPrefix}{row.from} {depart || ''} → {row.to} {arrive || ''} · {duration} · {fmtStops(stops)} · {cabinLabel(rowCabin)}</small></span></span>
+                    <span><b>{economyCost.value}</b><small>{economyCost.label}</small></span>
+                    <span><b>{businessCost.value}</b><small>{businessCost.label}</small></span>
+                    <span className="approved-wallet-path"><b>{award ? (selfServe.executable ? 'Ready to verify' : reachable ? 'Wallet route' : 'Verify route') : `Cash · ${cabinLabel(rowCabin)}`}</b><small>{award ? (selfServe.pointsNeeded ? `${selfServe.pointsNeeded.toLocaleString('en-IN')} card pts` : 'needs verification') : (row.price > 0 ? `₹${row.price.toLocaleString('en-IN')}` : 'fare unavailable')}</small></span>
                     <ChevronDown className="approved-row-chevron" size={16} />
                   </button>
 
