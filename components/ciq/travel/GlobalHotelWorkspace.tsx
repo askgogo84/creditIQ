@@ -49,11 +49,19 @@ type Coverage = {
   note?: string
 }
 
+type ProviderAttempt = {
+  provider: string
+  ok: boolean
+  loaded: number
+  note: string
+}
+
 type SearchPage = {
   sessionToken?: string
   offers?: HotelOffer[]
   hotels?: HotelOffer[]
   coverage?: Coverage
+  attempts?: ProviderAttempt[]
   error?: string
 }
 
@@ -124,6 +132,12 @@ function hotelConciergeRequest(offer: HotelOffer, destination: string, checkin: 
   }
 }
 
+function providerLabel(provider: string) {
+  if (provider === 'booking-demand') return 'Booking.com Demand'
+  if (provider === 'skyscanner-hotels-live') return 'Skyscanner Hotels Live'
+  return provider
+}
+
 export function GlobalHotelWorkspace() {
   const [destination, setDestination] = useState('Goa')
   const [checkin, setCheckin] = useState(plusDays(21))
@@ -131,9 +145,11 @@ export function GlobalHotelWorkspace() {
   const [adults, setAdults] = useState(2)
   const [offers, setOffers] = useState<HotelOffer[]>([])
   const [coverage, setCoverage] = useState<Coverage | null>(null)
+  const [attempts, setAttempts] = useState<ProviderAttempt[]>([])
   const [sessionToken, setSessionToken] = useState<string | null>(null)
   const [selectedId, setSelectedId] = useState<string | null>(null)
   const [submittedSearch, setSubmittedSearch] = useState<SubmittedHotelSearch | null>(null)
+  const [showDiscovery, setShowDiscovery] = useState(false)
   const [loading, setLoading] = useState(false)
   const [loadingMore, setLoadingMore] = useState(false)
   const [error, setError] = useState('')
@@ -153,6 +169,8 @@ export function GlobalHotelWorkspace() {
     setError('')
     setOffers([])
     setCoverage(null)
+    setAttempts([])
+    setShowDiscovery(false)
     setSessionToken(null)
     setSelectedId(null)
     try {
@@ -162,6 +180,7 @@ export function GlobalHotelWorkspace() {
         body: JSON.stringify({ destination: boundedDestination, checkin, checkout, adults, rooms: 1, limit: 50 }),
       })
       const data = await res.json() as SearchPage
+      setAttempts(data.attempts ?? [])
       if (!res.ok) {
         setCoverage(data.coverage ?? null)
         throw new Error(data.error || 'hotel search failed')
@@ -199,6 +218,7 @@ export function GlobalHotelWorkspace() {
         }),
       })
       const data = await res.json() as SearchPage
+      setAttempts(data.attempts ?? attempts)
       if (!res.ok) throw new Error(data.error || 'could not load next hotel page')
       setOffers((current) => dedupeOffers(current, data.offers ?? data.hotels ?? []))
       setCoverage(data.coverage ?? coverage)
@@ -213,6 +233,8 @@ export function GlobalHotelWorkspace() {
   const totalLabel = coverage?.provider_total != null
     ? `${offers.length.toLocaleString('en-IN')} loaded of ${coverage.provider_total.toLocaleString('en-IN')} provider properties`
     : `${offers.length.toLocaleString('en-IN')} provider offers loaded${coverage?.has_more ? ' · more available' : ''}`
+
+  const liveUnavailable = Boolean(error && offers.length === 0)
 
   return (
     <div className="ghw-root">
@@ -240,7 +262,19 @@ export function GlobalHotelWorkspace() {
 
       {coverage && <div className="ghw-coverage"><div><b>{totalLabel}</b><span>{coverage.provider} · {coverage.mode}{coverage.status ? ` · ${coverage.status}` : ''}</span></div>{coverage.fetched_at && <small>Fetched {new Date(coverage.fetched_at).toLocaleTimeString()}</small>}</div>}
 
-      {error && <div className="ghw-error"><b>Live cash-hotel inventory is unavailable for this search.</b><span>{error}</span><small>Points-property discovery can still load below. CreditIQ will not replace missing live cash rates with captured or historical prices.</small></div>}
+      {error && (
+        <div className="ghw-error">
+          <b>Live cash-hotel inventory is unavailable for this search.</b>
+          <span>{error}</span>
+          {attempts.length > 0 && (
+            <div className="ghw-provider-attempts" aria-label="Live hotel provider status">
+              {attempts.map((attempt) => <small key={attempt.provider}><b>{providerLabel(attempt.provider)}:</b> {attempt.ok ? `${attempt.loaded} live offers` : attempt.note}</small>)}
+            </div>
+          )}
+          <small>CreditIQ will not replace missing live cash rates with captured or historical prices. The points-stay discovery section is hidden by default while live inventory is unavailable.</small>
+          {submittedSearch && <button type="button" className="ghw-discovery-toggle" onClick={() => setShowDiscovery(value => !value)}>{showDiscovery ? 'Hide discovery-only properties' : 'View discovery-only points properties'}</button>}
+        </div>
+      )}
       {loading && <div className="ghw-loading">Starting the global cash-hotel provider chain for {destination}…</div>}
 
       {!loading && offers.length > 0 && (
@@ -267,7 +301,7 @@ export function GlobalHotelWorkspace() {
 
       {!loading && !error && coverage && offers.length === 0 && <div className="ghw-empty">The connected cash provider returned no hotel offers for this destination and date range.</div>}
 
-      <HotelAwardDiscoveryPanel search={submittedSearch} />
+      {(!liveUnavailable || showDiscovery) && <HotelAwardDiscoveryPanel search={submittedSearch} />}
     </div>
   )
 }
