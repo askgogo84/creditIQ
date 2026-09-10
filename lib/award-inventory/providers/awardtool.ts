@@ -8,17 +8,58 @@ const BASE_URL = 'https://apisv2.awardtoolapi.com'
 
 const PROGRAMME_BY_BRAND: Record<string, string> = {
   marriott: 'marriott-bonvoy',
+  'marriott bonvoy': 'marriott-bonvoy',
   hyatt: 'world-of-hyatt',
+  'world of hyatt': 'world-of-hyatt',
   ihg: 'ihg-one',
+  'ihg one rewards': 'ihg-one',
   hilton: 'hilton-honors',
+  'hilton honors': 'hilton-honors',
   wyndham: 'wyndham-rewards',
+  'wyndham rewards': 'wyndham-rewards',
   choice: 'choice-privileges',
+  'choice privileges': 'choice-privileges',
   'i prefer': 'i-prefer',
   iprefer: 'i-prefer',
+  accor: 'accor-all',
+  'all accor': 'accor-all',
+  'all - accor live limitless': 'accor-all',
+  radisson: 'radisson-rewards',
+  'radisson rewards': 'radisson-rewards',
+  'shangri-la': 'shangri-la-circle',
+  'shangri la': 'shangri-la-circle',
+  jumeirah: 'jumeirah-one',
+  taj: 'taj-neupass',
+  ihcl: 'taj-neupass',
+  'itc hotels': 'club-itc',
+  itc: 'club-itc',
+  'royal orchid': 'orchid-rewards',
+  regenta: 'orchid-rewards',
+  postcard: 'postcard-sunshine-club',
 }
+
+const BRAND_TOKEN_RULES: Array<{ programmeId: string; tokens: string[] }> = [
+  { programmeId: 'marriott-bonvoy', tokens: ['marriott', 'bonvoy'] },
+  { programmeId: 'world-of-hyatt', tokens: ['hyatt'] },
+  { programmeId: 'ihg-one', tokens: ['ihg', 'intercontinental', 'holidayinn', 'crowneplaza'] },
+  { programmeId: 'hilton-honors', tokens: ['hilton', 'waldorf', 'conrad', 'doubletree'] },
+  { programmeId: 'wyndham-rewards', tokens: ['wyndham', 'ramada'] },
+  { programmeId: 'accor-all', tokens: ['accor', 'novotel', 'pullman', 'ibis', 'sofitel', 'mercure', 'fairmont', 'raffles'] },
+  { programmeId: 'radisson-rewards', tokens: ['radisson'] },
+  { programmeId: 'shangri-la-circle', tokens: ['shangrila'] },
+  { programmeId: 'jumeirah-one', tokens: ['jumeirah'] },
+  { programmeId: 'taj-neupass', tokens: ['taj', 'ihcl', 'vivanta', 'seleqtions', 'ginger'] },
+  { programmeId: 'club-itc', tokens: ['itchotels', 'welcomhotel', 'fortunehotels'] },
+  { programmeId: 'orchid-rewards', tokens: ['royalorchid', 'regenta'] },
+  { programmeId: 'postcard-sunshine-club', tokens: ['postcard'] },
+]
 
 function norm(value: unknown): string {
   return typeof value === 'string' ? value.trim() : ''
+}
+
+function brandToken(value: string): string {
+  return value.toLowerCase().replace(/[^a-z0-9]+/g, '')
 }
 
 function finiteOrNull(value: unknown): number | null {
@@ -27,8 +68,13 @@ function finiteOrNull(value: unknown): number | null {
 }
 
 export function programmeIdForAwardToolBrand(brand: string): string | null {
-  const key = brand.trim().toLowerCase()
-  return PROGRAMME_BY_BRAND[key] ?? null
+  const raw = brand.trim().toLowerCase()
+  const exact = PROGRAMME_BY_BRAND[raw]
+  if (exact) return exact
+
+  const token = brandToken(brand)
+  const rule = BRAND_TOKEN_RULES.find(item => item.tokens.some(candidate => token.includes(candidate)))
+  return rule?.programmeId ?? null
 }
 
 type AwardToolHotelRow = Record<string, unknown>
@@ -82,8 +128,8 @@ function matchesQuery(property: HotelAwardProperty, query?: HotelAwardPropertyQu
   if (!query) return true
   if (query.programmeIds?.length && !query.programmeIds.includes(property.programmeId)) return false
   if (query.destination) {
-    const needle = query.destination.toLowerCase()
-    const haystack = `${property.name} ${property.formattedAddress ?? ''}`.toLowerCase()
+    const needle = query.destination.toLowerCase().replace(/\s+/g, ' ').trim()
+    const haystack = `${property.name} ${property.formattedAddress ?? ''}`.toLowerCase().replace(/\s+/g, ' ')
     if (!haystack.includes(needle)) return false
   }
   return true
