@@ -32,6 +32,8 @@ const FLIGHT_SOURCE_TO_PROGRAMME: Record<string, string> = {
   emirates: 'emirates-skywards',
   american: 'american-aadvantage',
   delta: 'delta-skymiles',
+  virginatlantic: 'virgin-atlantic-flying-club',
+  'virgin-atlantic': 'virgin-atlantic-flying-club',
 }
 
 const FLIGHT_PROGRAMME_TO_SOURCE: Record<string, string> = {
@@ -57,6 +59,7 @@ const FLIGHT_PROGRAMME_TO_SOURCE: Record<string, string> = {
   'emirates-skywards': 'emirates',
   'american-aadvantage': 'american',
   'delta-skymiles': 'delta',
+  'virgin-atlantic-flying-club': 'virginatlantic',
 }
 
 function token(value: string): string {
@@ -74,6 +77,8 @@ export function programmeIdForFlightCarrier(carrier: string | null | undefined):
   if (n === 'ai' || n === 'airindia') return 'air-india-maharaja'
   if (n === '6e' || n === 'indigo') return 'indigo-bluchip'
   if (n === 'sg' || n === 'spicejet') return 'spiceclub'
+  if (n === 'ek' || n === 'emirates') return 'emirates-skywards'
+  if (n === 'vs' || n === 'virginatlantic') return 'virgin-atlantic-flying-club'
   return null
 }
 
@@ -129,6 +134,10 @@ const HOTEL_CHAIN_RULES: Array<{ programmeId: string; tokens: string[] }> = [
   {
     programmeId: 'shangri-la-circle',
     tokens: ['shangrila', 'kerryhotel', 'jenhotel', 'hoteljen'],
+  },
+  {
+    programmeId: 'jumeirah-one',
+    tokens: ['jumeirah', 'burjalarab', 'jumeirahbeach', 'madinatjumeirah', 'zabeelhouse', 'jumeirahliving'],
   },
   {
     programmeId: 'taj-neupass',
