@@ -89,7 +89,7 @@ function scoreRow(row: any, wallet: WalletIdentity[]) {
   return { score, matchedCards: uniqueCards, matchedBanks: uniqueBanks };
 }
 
-async function loadWallet(sb: ReturnType<typeof createClient>, userId: string): Promise<WalletIdentity[]> {
+async function loadWallet(sb: any, userId: string): Promise<WalletIdentity[]> {
   const [{ data: points }, { data: manual }] = await Promise.all([
     sb.from('user_points').select('card_id').eq('user_id', userId).limit(100),
     sb.from('manual_cards').select('bank,card_name').eq('user_id', userId).limit(100),
