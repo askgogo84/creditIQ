@@ -28,16 +28,18 @@ type WalletRailMatrixProps = {
 function visibleRails(rails: RedemptionRailDefinition[], programmeId: string | null) {
   return rails.filter((rail) => {
     if (rail.type !== 'LOYALTY_TRANSFER') return true
-    // Before a specific airline/hotel programme is selected, show every sourced
-    // transfer partner for the exact card. Once a programme is selected, narrow
-    // transfer rails to that programme while keeping portal/cash alternatives.
     if (!programmeId) return true
     return rail.transfer?.programmeId === programmeId
   })
 }
 
+function isTransferHub(rail: RedemptionRailDefinition) {
+  return rail.id.includes('transfer-hub')
+}
+
 function railPriority(rail: RedemptionRailDefinition) {
   if (rail.type === 'LOYALTY_TRANSFER') return 0
+  if (isTransferHub(rail)) return 0.5
   if (rail.type === 'COBRAND_NATIVE') return 1
   if (rail.type === 'BANK_TRAVEL_PORTAL' || rail.type === 'MERCHANT_PAY_WITH_POINTS') return 2
   if (rail.type === 'TRAVEL_VOUCHER') return 3
@@ -46,7 +48,7 @@ function railPriority(rail: RedemptionRailDefinition) {
 
 function displayStatus(rails: RedemptionRailDefinition[]) {
   if (rails.some((r) => r.executionState === 'EXECUTABLE')) return 'EXECUTABLE'
-  if (rails.some((r) => r.executionState === 'RATIO_ONLY' || r.executionState === 'CHECKOUT_REQUIRED')) return 'VERIFICATION_REQUIRED'
+  if (rails.some((r) => r.executionState === 'RATIO_ONLY' || r.executionState === 'CHECKOUT_REQUIRED' || isTransferHub(r))) return 'VERIFICATION_REQUIRED'
   if (rails.some((r) => r.executionState === 'DISCOVERY_ONLY')) return 'DISCOVERY_ONLY'
   return 'NO_VERIFIED_REDEMPTION_RAIL'
 }
@@ -56,6 +58,8 @@ function railLabel(rail: RedemptionRailDefinition) {
     const { fromUnits, toUnits } = rail.transfer.ratio
     return `Transfer → ${rail.transfer.programmeName} · ${fromUnits}:${toUnits}`
   }
+  if (isTransferHub(rail) && rail.issuer === 'American Express') return 'Membership Rewards → airline & hotel transfer partners'
+  if (isTransferHub(rail) && rail.issuer === 'HSBC') return 'HSBC Rewards → airline & hotel transfer partners'
   if (rail.portal) return `${rail.portal.portalName}${rail.portal.supportsPointsPlusCash ? ' · Points + Cash' : ''}`
   if (rail.voucher) return `${rail.voucher.merchant} travel voucher`
   if (rail.type === 'COBRAND_NATIVE') return `Native points → ${rail.bookingDestination ?? 'loyalty programme'}`
@@ -63,6 +67,7 @@ function railLabel(rail: RedemptionRailDefinition) {
 }
 
 function railStateLabel(rail: RedemptionRailDefinition) {
+  if (isTransferHub(rail)) return 'Transfer available · verify partner ratio'
   if (rail.executionState === 'EXECUTABLE') return 'Executable'
   if (rail.executionState === 'RATIO_ONLY') return 'Ratio sourced · exact step withheld'
   if (rail.executionState === 'CHECKOUT_REQUIRED') return 'Checkout verification'
@@ -70,6 +75,10 @@ function railStateLabel(rail: RedemptionRailDefinition) {
 }
 
 function railMeta(rail: RedemptionRailDefinition) {
+  if (isTransferHub(rail)) {
+    if (rail.issuer === 'American Express') return 'LOYALTY TRANSFER HUB · 3–5 working days · irreversible · selected partner conversion verified in Amex'
+    return 'LOYALTY TRANSFER HUB · selected partner conversion verified in issuer account'
+  }
   const pieces = [rail.type.replaceAll('_', ' ')]
   if (rail.transfer?.durationText) pieces.push(`transfer ${rail.transfer.durationText}`)
   if (rail.transfer?.irreversible) pieces.push('irreversible')
@@ -297,7 +306,7 @@ export function WalletRailMatrix({
 
   const counts = useMemo(() => {
     const sourced = cards.reduce((sum, card) => sum + card.rails.length, 0)
-    const transfers = cards.reduce((sum, card) => sum + card.rails.filter((rail) => rail.type === 'LOYALTY_TRANSFER').length, 0)
+    const transfers = cards.reduce((sum, card) => sum + card.rails.filter((rail) => rail.type === 'LOYALTY_TRANSFER' || isTransferHub(rail)).length, 0)
     return {
       sourced,
       transfers,
@@ -314,7 +323,7 @@ export function WalletRailMatrix({
       <div className="wrm-head">
         <div>
           <b>All redemption paths in your wallet</b>
-          <span>{loading ? 'Comparing your cards…' : genericTransferDesk ? `${cards.length} cards · ${counts.transfers} ${travelKind} transfer paths · ${counts.sourced} sourced routes` : `${cards.length} cards compared · ${counts.usableCards} usable/verification · ${counts.discoveryCards} discovery · ${counts.unsupportedCards} unmapped`}</span>
+          <span>{loading ? 'Comparing your cards…' : genericTransferDesk ? `${cards.length} cards · ${counts.transfers} ${travelKind} transfer paths/hubs · ${counts.sourced} sourced routes` : `${cards.length} cards compared · ${counts.usableCards} usable/verification · ${counts.discoveryCards} discovery · ${counts.unsupportedCards} unmapped`}</span>
         </div>
         {programmeId && <small>{programmeId}</small>}
       </div>
@@ -326,8 +335,8 @@ export function WalletRailMatrix({
               <small>{travelKind === 'hotel' ? 'Hotel loyalty transfer desk' : 'Flight loyalty transfer desk'}</small>
               <b>{travelKind === 'hotel' ? 'Check points price → transfer → book direct' : 'Check award seat → transfer → book direct'}</b>
               <span>{travelKind === 'hotel'
-                ? 'Marriott Bonvoy, ALL Accor, IHG, Radisson, Wyndham, Club ITC and other programmes appear only where the exact card in your wallet has a sourced route.'
-                : 'Air India, KrisFlyer, Flying Blue, Qatar, British Airways, Etihad and other airline programmes appear only where the exact card in your wallet has a sourced route.'}</span>
+                ? 'Marriott Bonvoy, ALL Accor, IHG, Hilton, Radisson, Wyndham, Club ITC and other programmes are checked against the exact cards in your wallet.'
+                : 'Air India, KrisFlyer, Flying Blue, Qatar, British Airways, Etihad and other airline programmes are checked against the exact cards in your wallet.'}</span>
             </div>
             <em>{counts.transfers} transfer path{counts.transfers === 1 ? '' : 's'}</em>
           </div>
@@ -359,7 +368,7 @@ export function WalletRailMatrix({
                     <b>{railLabel(rail)}</b>
                     <span>
                       {railMeta(rail)}
-                      {rail.bookingUrl && <> · <a href={rail.bookingUrl} target="_blank" rel="noopener noreferrer" style={{ color: '#193d72', fontWeight: 700, textTransform: 'none' }}>{rail.type === 'LOYALTY_TRANSFER' || rail.type === 'COBRAND_NATIVE' ? 'Check points & book →' : 'Open booking path →'}</a></>}
+                      {rail.bookingUrl && <> · <a href={rail.bookingUrl} target="_blank" rel="noopener noreferrer" style={{ color: '#193d72', fontWeight: 700, textTransform: 'none' }}>{isTransferHub(rail) ? 'Open transfer hub →' : rail.type === 'LOYALTY_TRANSFER' || rail.type === 'COBRAND_NATIVE' ? 'Check points & book →' : 'Open booking path →'}</a></>}
                     </span>
                   </div>
                   <small>{railStateLabel(rail)}</small>
@@ -371,7 +380,7 @@ export function WalletRailMatrix({
       ))}
 
       {!loading && !error && <div className="wrm-cash"><b>Cash + retain points</b><span>Always available · selected booking provider</span><em>Executable</em></div>}
-      <div className="wrm-foot">{travelKind === 'hotel' ? 'Hotel' : 'Flight'} transfer ratios are card-exact, not bank-wide. Confirm the programme’s live {travelKind === 'hotel' ? 'award price' : 'award seat and price'} before transferring; exact transfer amounts remain withheld until issuer minimum/increment and final checkout are verified.</div>
+      <div className="wrm-foot">{travelKind === 'hotel' ? 'Hotel' : 'Flight'} transfer ratios are card-exact, not bank-wide. Issuer transfer hubs such as American Express remain visible even when the selected partner’s live conversion must be checked after login. Confirm the programme’s live {travelKind === 'hotel' ? 'award price' : 'award seat and price'} before transferring.</div>
     </section>
   )
 }
