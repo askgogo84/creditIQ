@@ -1,6 +1,7 @@
 import type { TravelKind, RedemptionRailDefinition } from './types'
 import { cashRetainRail, queryRails } from './registry'
 import { resolveRailCardId } from './card-resolver'
+import { supplementalRailsForCard } from './supplemental-rails'
 
 export type WalletRailStatus =
   | 'EXECUTABLE'
@@ -43,6 +44,28 @@ function statusFor(rails: RedemptionRailDefinition[]): WalletRailStatus {
   return 'NO_VERIFIED_REDEMPTION_RAIL'
 }
 
+function railIdentity(rail: RedemptionRailDefinition) {
+  if (rail.type === 'LOYALTY_TRANSFER') return `${rail.type}:${rail.transfer?.programmeId || rail.bookingDestination || rail.id}`
+  return `${rail.type}:${rail.bookingDestination || rail.portal?.portalName || rail.voucher?.merchant || rail.id}`
+}
+
+function mergedRails(cardId: string, travelKind: TravelKind, programmeId: string | null) {
+  const merged = new Map<string, RedemptionRailDefinition>()
+
+  // Supplemental rails are deliberately inserted first: when a broad catalogue
+  // fallback and a newer issuer-sourced rail describe the same path, the richer
+  // issuer-sourced definition wins rather than showing a duplicate.
+  for (const rail of supplementalRailsForCard(cardId, travelKind, programmeId)) {
+    merged.set(railIdentity(rail), rail)
+  }
+  for (const rail of queryRails({ cardId, travelKind, programmeId })) {
+    const key = railIdentity(rail)
+    if (!merged.has(key)) merged.set(key, rail)
+  }
+
+  return [...merged.values()]
+}
+
 /**
  * Enumerate every sourced travel-redemption rail for every card in the wallet.
  *
@@ -68,7 +91,7 @@ export function buildWalletRailMatrix(
 
     const cardId = resolveRailCardId({ bank: card.bank, cardName: card.cardName })
     const rails = cardId
-      ? queryRails({ cardId, travelKind, programmeId: programmeId ?? null })
+      ? mergedRails(cardId, travelKind, programmeId ?? null)
       : []
 
     cardResults.push({
