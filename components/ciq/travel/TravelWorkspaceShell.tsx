@@ -5,6 +5,7 @@ import { usePathname } from 'next/navigation'
 import type { ReactNode } from 'react'
 import { Building2, Compass, Plane, Sparkles, Target } from 'lucide-react'
 import { PanelFade } from '@/components/ciq/PanelFade'
+import './travel-experience.css'
 
 const tabs = [
   { label: 'Flights', href: '/trip-planner', Icon: Plane },
