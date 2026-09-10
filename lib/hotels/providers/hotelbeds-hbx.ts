@@ -234,7 +234,14 @@ export async function searchHotelbedsHotels(input: {
 
   const result = await requestJson(`${baseUrl()}/hotel-api/1.0/hotels`, body)
   if (result.status < 200 || result.status >= 300) {
-    const message = result.data?.error?.message || result.data?.error?.code || result.data?.message || `HTTP ${result.status}`
+    const errorValue = result.data?.error
+    const message =
+      (typeof errorValue === 'string' ? errorValue : null) ||
+      errorValue?.message ||
+      errorValue?.code ||
+      result.data?.message ||
+      (typeof result.data?.raw === 'string' ? result.data.raw.slice(0, 300) : null) ||
+      `HTTP ${result.status}`
     throw new Error(`HBX Hotelbeds availability failed: ${message}`)
   }
 
