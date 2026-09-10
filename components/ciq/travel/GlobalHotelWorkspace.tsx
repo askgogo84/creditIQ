@@ -1,13 +1,11 @@
 'use client'
 
 import { useEffect, useMemo, useState } from 'react'
-import Link from 'next/link'
 import { authedFetch } from '@/lib/authed-fetch'
 import { ConciergeRequestButton, type ConciergeRequest } from '@/components/ciq/concierge/ConciergeRequestButton'
 import { programmeIdForHotelChain } from '@/lib/redemption-rails/programme-resolver'
 import { HotelAwardJoinPanel } from './HotelAwardJoinPanel'
 import { HotelAwardDiscoveryPanel } from './HotelAwardDiscoveryPanel'
-import { HotelLoyaltyProgrammeDeck } from './HotelLoyaltyProgrammeDeck'
 import './global-hotel-workspace.css'
 
 type HotelOffer = {
@@ -141,7 +139,7 @@ function providerLabel(provider: string) {
 }
 
 export function GlobalHotelWorkspace() {
-  const [destination, setDestination] = useState('Goa')
+  const [destination, setDestination] = useState('Bangkok')
   const [checkin, setCheckin] = useState(plusDays(7))
   const [checkout, setCheckout] = useState(plusDays(10))
   const [adults, setAdults] = useState(2)
@@ -238,81 +236,91 @@ export function GlobalHotelWorkspace() {
     <div className="ghw-root">
       <div className="ghw-title-row">
         <div>
-          <div className="ghw-eyebrow">Search first · wallet-aware redemption second</div>
-          <h1>Turn your points into <em>better stays.</em></h1>
-          <p>Search the stay you want first. CreditIQ then compares the selected property against cash, hotel points and every sourced transfer route in your exact wallet.</p>
+          <div className="ghw-eyebrow">Property first · redemption intelligence second</div>
+          <h1>Find the hotel. <em>Then crack the points.</em></h1>
+          <p>Search a destination once. CreditIQ first surfaces real loyalty properties in that place, then tells you which cards can reach each programme, the transfer ratio, and where to book.</p>
         </div>
-        <div className="ghw-honesty">Card-exact ratios · no bank-wide guessing</div>
+        <div className="ghw-honesty">Actual properties · card-exact transfer paths</div>
       </div>
 
       <div className="ghw-search">
-        <label><span>Destination</span><input value={destination} onChange={(e) => setDestination(e.target.value)} placeholder="Goa, Mumbai, Delhi, Bengaluru, Manali, Coorg…" /></label>
+        <label><span>Destination</span><input value={destination} onChange={(e) => setDestination(e.target.value)} placeholder="Bangkok, Dubai, Goa, Singapore, London…" /></label>
         <label><span>Check-in</span><input type="date" value={checkin} onChange={(e) => setCheckin(e.target.value)} /></label>
         <label><span>Check-out</span><input type="date" value={checkout} onChange={(e) => setCheckout(e.target.value)} /></label>
         <label><span>Guests</span><input type="number" min={1} max={9} value={adults} onChange={(e) => setAdults(Math.max(1, Math.min(9, Number(e.target.value) || 1)))} /></label>
-        <button onClick={runSearch} disabled={loading || !destination.trim() || checkout <= checkin}>{loading ? 'Searching…' : 'Search'}</button>
+        <button onClick={runSearch} disabled={loading || !destination.trim() || checkout <= checkin}>{loading ? 'Searching…' : 'Search hotels'}</button>
       </div>
 
       <div className="ghw-demo-link">
-        <span>Search → choose a loyalty programme or property → compare cash vs points → see the exact card transfer path → book direct or hand off to Concierge.</span>
-        <Link href="/stay-on-points?demo=accor">Open captured Accor redemption demo →</Link>
+        <span>Search → choose an actual Marriott / Hilton / IHG / Accor / Taj / other loyalty property → compare wallet transfer paths → verify live points → book direct or use Concierge.</span>
       </div>
 
-      {coverage && <div className="ghw-coverage"><div><b>{totalLabel}</b><span>{providerLabel(coverage.provider)} · {coverage.mode}{coverage.status ? ` · ${coverage.status}` : ''}</span></div>{coverage.fetched_at && <small>Fetched {new Date(coverage.fetched_at).toLocaleTimeString()}</small>}</div>}
+      {/* Loyalty properties are the primary result surface. This intentionally renders
+          before the cash-provider benchmark so HBX/Booking/Skyscanner can never gate
+          whether Marriott/Accor/Hilton/etc. appear. */}
+      <HotelAwardDiscoveryPanel search={submittedSearch} />
 
-      {error && (
-        <div className="ghw-error">
-          <b>Live cash-hotel inventory is unavailable for this search.</b>
-          <span>{error}</span>
-          {attempts.length > 0 && (
-            <div className="ghw-provider-attempts" aria-label="Live hotel provider status">
-              {attempts.map((attempt) => <small key={attempt.provider}><b>{providerLabel(attempt.provider)}:</b> {attempt.ok ? `${attempt.loaded} live offers` : attempt.note}</small>)}
+      {(loading || coverage || error || offers.length > 0) && (
+        <section className="ghw-cash-benchmark" aria-label="Cash hotel benchmark">
+          <div className="ghw-coverage" style={{ marginTop: 20 }}>
+            <div><b>Cash benchmark</b><span>Secondary comparison layer · never the source of loyalty-programme eligibility</span></div>
+            {coverage?.fetched_at && <small>Fetched {new Date(coverage.fetched_at).toLocaleTimeString()}</small>}
+          </div>
+
+          {coverage && <div className="ghw-coverage"><div><b>{totalLabel}</b><span>{providerLabel(coverage.provider)} · {coverage.mode}{coverage.status ? ` · ${coverage.status}` : ''}</span></div></div>}
+
+          {error && (
+            <div className="ghw-error">
+              <b>Cash inventory is unavailable for this comparison.</b>
+              <span>{error}</span>
+              {attempts.length > 0 && (
+                <div className="ghw-provider-attempts" aria-label="Live hotel provider status">
+                  {attempts.map((attempt) => <small key={attempt.provider}><b>{providerLabel(attempt.provider)}:</b> {attempt.ok ? `${attempt.loaded} live offers` : attempt.note}</small>)}
+                </div>
+              )}
+              <small>The loyalty-property and redemption path above remains usable. CreditIQ does not turn a cash-provider failure into “no hotel redemption”.</small>
             </div>
           )}
-          <small>Cash inventory unavailable does not mean there is no redemption path. CreditIQ will not invent a cash rate; hotel-loyalty programme paths, cached points-stay discovery and direct-programme verification remain available below.</small>
-        </div>
-      )}
-      {loading && <div className="ghw-loading">Starting the global cash-hotel provider chain for {destination}…</div>}
 
-      {submittedSearch && !loading && <HotelLoyaltyProgrammeDeck destination={submittedSearch.destination} />}
+          {loading && <div className="ghw-loading">Loading cash benchmark for {destination}…</div>}
 
-      {!loading && offers.length > 0 && (
-        <div className="ghw-workspace">
-          <div className="ghw-left">
-            <div className="ghw-list" role="listbox" aria-label="Hotel offers">
-              {offers.map((offer) => {
-                const programmeId = programmeIdForHotelChain(offer.chainName)
-                return (
-                  <button key={offer.id} className={`ghw-row${selected?.id === offer.id ? ' active' : ''}`} onClick={() => setSelectedId(offer.id)} role="option" aria-selected={selected?.id === offer.id}>
-                    <div className="ghw-thumb">{offer.imageUrl ? <img src={offer.imageUrl} alt="" /> : <span>{offer.hotelName.slice(0, 1)}</span>}</div>
-                    <div className="ghw-main"><b>{offer.hotelName}</b><span>{[offer.chainName, offer.stars ? `${offer.stars} star` : null, offer.roomName || offer.roomType].filter(Boolean).join(' · ')}</span><small>{[offer.cancellationPolicy, offer.mealPlan, offer.agentName].filter(Boolean).join(' · ') || 'Rate-plan details returned by provider'}</small></div>
-                    <div className="ghw-price"><b>{money(offer.totalPrice, offer.currency)}</b><span>provider total</span>{offer.taxesAndFees != null && <small>tax/fee separation {money(offer.taxesAndFees, offer.currency)}</small>}</div>
-                    <div className="ghw-path"><b>{offer.chainName || 'Unmapped hotel'}</b><span>{programmeId ? 'loyalty redemption path available' : 'cash + generic wallet rails'}</span></div>
-                  </button>
-                )
-              })}
+          {!loading && offers.length > 0 && (
+            <div className="ghw-workspace">
+              <div className="ghw-left">
+                <div className="ghw-list" role="listbox" aria-label="Cash hotel offers">
+                  {offers.map((offer) => {
+                    const programmeId = programmeIdForHotelChain(offer.chainName)
+                    return (
+                      <button key={offer.id} className={`ghw-row${selected?.id === offer.id ? ' active' : ''}`} onClick={() => setSelectedId(offer.id)} role="option" aria-selected={selected?.id === offer.id}>
+                        <div className="ghw-thumb">{offer.imageUrl ? <img src={offer.imageUrl} alt="" /> : <span>{offer.hotelName.slice(0, 1)}</span>}</div>
+                        <div className="ghw-main"><b>{offer.hotelName}</b><span>{[offer.chainName, offer.stars ? `${offer.stars} star` : null, offer.roomName || offer.roomType].filter(Boolean).join(' · ')}</span><small>{[offer.cancellationPolicy, offer.mealPlan, offer.agentName].filter(Boolean).join(' · ') || 'Rate-plan details returned by provider'}</small></div>
+                        <div className="ghw-price"><b>{money(offer.totalPrice, offer.currency)}</b><span>cash provider total</span>{offer.taxesAndFees != null && <small>tax/fee separation {money(offer.taxesAndFees, offer.currency)}</small>}</div>
+                        <div className="ghw-path"><b>{offer.chainName || 'Cash hotel'}</b><span>{programmeId ? 'loyalty join available' : 'cash benchmark only'}</span></div>
+                      </button>
+                    )
+                  })}
+                </div>
+                {coverage?.has_more && <button className="ghw-load" onClick={loadMore} disabled={loadingMore}>{loadingMore ? 'Loading next cash page…' : `Load more · ${offers.length.toLocaleString('en-IN')} loaded${coverage.provider_total != null ? ` / ${coverage.provider_total.toLocaleString('en-IN')}` : ''}`}</button>}
+              </div>
+              <HotelOfferPanel offer={selected} destination={destination} checkin={checkin} checkout={checkout} adults={adults} />
             </div>
-            {coverage?.has_more && <button className="ghw-load" onClick={loadMore} disabled={loadingMore}>{loadingMore ? 'Loading next provider page…' : `Load more · ${offers.length.toLocaleString('en-IN')} loaded${coverage.provider_total != null ? ` / ${coverage.provider_total.toLocaleString('en-IN')}` : ''}`}</button>}
-          </div>
-          <HotelOfferPanel offer={selected} destination={destination} checkin={checkin} checkout={checkout} adults={adults} />
-        </div>
+          )}
+
+          {!loading && !error && coverage && offers.length === 0 && <div className="ghw-empty">The connected cash provider returned no hotel offers for this destination and date range.</div>}
+        </section>
       )}
-
-      {!loading && !error && coverage && offers.length === 0 && <div className="ghw-empty">The connected cash provider returned no hotel offers for this destination and date range.</div>}
-
-      <HotelAwardDiscoveryPanel search={submittedSearch} />
     </div>
   )
 }
 
 function HotelOfferPanel({ offer, destination, checkin, checkout, adults }: { offer: HotelOffer | null; destination: string; checkin: string; checkout: string; adults: number }) {
-  if (!offer) return <aside className="ghw-panel empty">Select a hotel to inspect its live rate and award join.</aside>
+  if (!offer) return <aside className="ghw-panel empty">Select a cash hotel to inspect its live rate and loyalty join.</aside>
   const request = hotelConciergeRequest(offer, destination, checkin, checkout)
   const programmeId = programmeIdForHotelChain(offer.chainName)
 
   return (
     <aside className="ghw-panel">
-      <div className="ghw-panel-head"><span>Selected hotel · redemption decision</span><h2>{offer.hotelName}</h2><p>{[offer.chainName, offer.roomName || offer.roomType, offer.agentName].filter(Boolean).join(' · ')}</p><strong>{money(offer.totalPrice, offer.currency)}</strong></div>
+      <div className="ghw-panel-head"><span>Selected cash benchmark</span><h2>{offer.hotelName}</h2><p>{[offer.chainName, offer.roomName || offer.roomType, offer.agentName].filter(Boolean).join(' · ')}</p><strong>{money(offer.totalPrice, offer.currency)}</strong></div>
       <div className="ghw-breakdown">
         <div><span>Base price</span><b>{offer.basePrice != null ? money(offer.basePrice, offer.currency) : 'Not separated'}</b></div>
         <div><span>Taxes & fees</span><b>{offer.taxesAndFees != null ? money(offer.taxesAndFees, offer.currency) : 'Not separated'}</b></div>
@@ -320,12 +328,12 @@ function HotelOfferPanel({ offer, destination, checkin, checkout, adults }: { of
         <div><span>Meal plan</span><b>{offer.mealPlan || 'Not labelled'}</b></div>
       </div>
       <div className={`ghw-mapping${programmeId ? ' mapped' : ''}`}>
-        <b>{programmeId ? `Loyalty programme mapped: ${programmeId}` : 'Loyalty programme not safely mapped'}</b>
-        <p>{programmeId ? 'CreditIQ now compares this exact property against its loyalty programme and the transfer routes available from the cards in your wallet.' : 'Cash remains searchable and generic portal/voucher rails remain visible without inventing a hotel loyalty programme.'}</p>
+        <b>{programmeId ? `Loyalty programme mapped: ${programmeId}` : 'No safe loyalty mapping from this cash result'}</b>
+        <p>{programmeId ? 'CreditIQ compares this same property with its loyalty programme and exact wallet transfer routes.' : 'This cash result remains a benchmark only. Loyalty properties are discovered independently above.'}</p>
       </div>
       <HotelAwardJoinPanel offer={offer} programmeId={programmeId} destination={destination} checkInDate={checkin} checkOutDate={checkout} adults={adults} />
       <div className="ghw-actions">{offer.deeplink ? <a href={offer.deeplink} target="_blank" rel="noopener noreferrer">Check provider offer →</a> : <span /> }<ConciergeRequestButton request={request} /></div>
-      <div className="ghw-source">Cash source: {providerLabel(offer.source)}. Award source and final programme checkout remain independently labelled.</div>
+      <div className="ghw-source">Cash source: {providerLabel(offer.source)}. Loyalty-property discovery and final programme checkout are independently sourced.</div>
     </aside>
   )
 }
