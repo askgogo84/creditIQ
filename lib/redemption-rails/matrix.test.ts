@@ -55,12 +55,20 @@ describe('wallet redemption rail matrix', () => {
       { walletKey: 'h', bank: 'HSBC', cardName: 'HSBC TravelOne Credit Card', pointsBalance: 45000 },
     ], 'hotel')
 
-    const amexHub = matrix.cards[0].rails.find(rail => rail.id === 'amex-membership-rewards-transfer-hub')
+    const amexHub = matrix.cards[0].rails.find(rail => rail.bookingDestination === 'Amex Membership Rewards transfer partners')
     const hsbcHub = matrix.cards[1].rails.find(rail => rail.id === 'hsbc-premium-rewards-transfer-hub')
     expect(amexHub?.executionState).toBe('DISCOVERY_ONLY')
     expect(amexHub?.transfer).toBeUndefined()
     expect(hsbcHub?.executionState).toBe('DISCOVERY_ONLY')
     expect(hsbcHub?.transfer).toBeUndefined()
+  })
+
+  it('keeps the Membership Rewards transfer hub visible for SmartEarn', () => {
+    const matrix = buildWalletRailMatrix([
+      { walletKey: 's', bank: 'AmEx', cardName: 'American Express SmartEarn', pointsBalance: 18000 },
+    ], 'flight', 'emirates-skywards')
+
+    expect(matrix.cards[0].rails.some(rail => rail.bookingDestination === 'Amex Membership Rewards transfer partners')).toBe(true)
   })
 
   it('preserves wallet provenance without promoting self-entered balances', () => {
