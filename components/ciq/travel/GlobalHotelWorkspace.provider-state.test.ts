@@ -11,6 +11,12 @@ describe('GlobalHotelWorkspace provider failure state', () => {
     expect(source).toContain('Live hotel provider status')
   })
 
+  it('defaults hotel search to the same near-term travel window as flights', () => {
+    expect(source).toContain('useState(plusDays(7))')
+    expect(source).toContain('useState(plusDays(10))')
+    expect(source).not.toContain('useState(plusDays(21))')
+  })
+
   it('keeps wallet and points-stay redemption paths visible after live cash failure without promoting discovery as live', () => {
     expect(source).not.toContain('const [showDiscovery, setShowDiscovery]')
     expect(source).toContain('Cash inventory unavailable does not mean there is no redemption path')
