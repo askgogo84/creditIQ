@@ -10,6 +10,7 @@ import type {
   TravelKind,
 } from './types'
 import { programmeIdForFlightSource } from './programme-resolver'
+import { catalogueFallbackRailsForCard } from './catalogue-fallback'
 
 function integerRatio(fromPoints: number, toUnits: number): RationalRatio {
   if (!Number.isFinite(fromPoints) || !Number.isFinite(toUnits) || fromPoints <= 0 || toUnits <= 0) {
@@ -270,9 +271,11 @@ export const REDEMPTION_RAIL_REGISTRY: readonly RedemptionRailDefinition[] = [
 ]
 
 export function railsForCard(cardId: string, travelKind?: TravelKind): RedemptionRailDefinition[] {
-  return REDEMPTION_RAIL_REGISTRY.filter((rail) =>
+  const exact = REDEMPTION_RAIL_REGISTRY.filter((rail) =>
     rail.cardIds.includes(cardId) && (!travelKind || rail.travelKinds.includes(travelKind)),
   )
+  if (!travelKind || exact.length) return exact
+  return catalogueFallbackRailsForCard(cardId, travelKind)
 }
 
 export function queryRails(query: RailQuery): RedemptionRailDefinition[] {
