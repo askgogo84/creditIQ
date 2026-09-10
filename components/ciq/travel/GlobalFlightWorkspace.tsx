@@ -217,6 +217,19 @@ function flightResultPriority(row: FusionRow, targetDate: string) {
   return 3
 }
 
+function rowStops(row: FusionRow) {
+  return row.award?.trip?.stops ?? (row.award?.isDirect ? 0 : Math.max(0, row.stops))
+}
+
+function rowDurationMinutes(row: FusionRow) {
+  const minutes = row.award?.trip?.durationMinutes ?? (row.duration > 0 ? row.duration * 60 : 0)
+  return minutes > 0 ? minutes : Number.MAX_SAFE_INTEGER
+}
+
+function isExactAirportRow(row: FusionRow, from: string, to: string) {
+  return String(row.from || '').toUpperCase() === from && String(row.to || '').toUpperCase() === to
+}
+
 function rowReachable(row: FusionRow) {
   const summary = row.decision?.searchSummary
   if (summary) return summary.alternatives.some(option => option.state === 'EXECUTABLE' || option.state === 'PROJECTED_NEEDS_VERIFICATION')
@@ -380,13 +393,18 @@ export function GlobalFlightWorkspace() {
 
       const combinedRows = responses
         .flatMap(({ searchCabin, data }) => ((data.flights || []) as FusionRow[]).map(row => ({ ...row, id: `${searchCabin}:${row.id}`, searchCabin })))
+        .filter(row => isExactAirportRow(row, from, destination))
         .sort((a, b) => {
           const priority = flightResultPriority(a, date) - flightResultPriority(b, date)
           if (priority) return priority
+          const stopPriority = rowStops(a) - rowStops(b)
+          if (stopPriority) return stopPriority
+          const durationPriority = rowDurationMinutes(a) - rowDurationMinutes(b)
+          if (durationPriority) return durationPriority
           return resultDate(a).localeCompare(resultDate(b))
+            || a.price - b.price
             || (a.departure || '').localeCompare(b.departure || '')
             || (a.airline || '').localeCompare(b.airline || '')
-            || a.price - b.price
         })
 
       const combinedCounts = responses.reduce<FusionCounts>((sum, { data }) => ({
@@ -419,7 +437,7 @@ export function GlobalFlightWorkspace() {
   const filtered = useMemo(() => {
     if (!rows) return []
     return rows.filter(row => {
-      const stops = row.award?.trip?.stops ?? (row.award?.isDirect ? 0 : row.stops)
+      const stops = rowStops(row)
       if (nonStop && stops !== 0) return false
       if (scope === 'mine' && !rowReachable(row)) return false
       return true
@@ -486,7 +504,7 @@ export function GlobalFlightWorkspace() {
               const award = row.award
               const trip = award?.trip ?? null
               const rowCabin = cabinForRow(row)
-              const stops = trip?.stops ?? (row.award?.isDirect ? 0 : row.stops)
+              const stops = rowStops(row)
               const active = selectedId === row.id
               const reachable = rowReachable(row)
               const taxes = nativeTaxes(trip)
@@ -501,7 +519,6 @@ export function GlobalFlightWorkspace() {
               const selectedWalletOption = row.bestOption ?? rankedOptions.find(option => option.status === 'ok') ?? null
               const selfServe = buildFlightSelfServePlan({ award: award ? { source: award.source, program: award.program, mileageCost: award.mileageCost } : null, option: selectedWalletOption, taxesLabel: taxes })
               const conciergeRequest = buildFlightConciergeRequest(row, rankedOptions, selectedWalletOption)
-              const evidenceProvider = evidenceProviderLabel(row.awardEvidenceProvider)
               const summary = row.decision?.searchSummary ?? null
               const usableSummaryPaths = summary?.alternatives.filter(option => option.state !== 'NOT_COMPARABLE') ?? []
               const executionPlans = summary && row.decision ? usableSummaryPaths.map(option => buildDecisionExecutionPlan(row, option)) : []
