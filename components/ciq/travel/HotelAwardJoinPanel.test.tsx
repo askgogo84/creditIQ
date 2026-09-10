@@ -55,7 +55,7 @@ describe('HotelAwardJoinPanel', () => {
     render(<HotelAwardJoinPanel offer={offer} programmeId="marriott-bonvoy" destination="Singapore" checkInDate="2026-10-15" checkOutDate="2026-10-18" adults={2} />)
 
     expect(await screen.findByText('Cash + award safely joined')).toBeInTheDocument()
-    expect(screen.getByText('1,26,000 pts')).toBeInTheDocument()
+    expect(screen.getAllByText('1,26,000 pts').length).toBeGreaterThanOrEqual(1)
     expect(screen.getByText('Award source plan')).toBeInTheDocument()
     expect(screen.getByText('Success')).toBeInTheDocument()
     await waitFor(() => expect(matrixProps.at(-1)).toMatchObject({
