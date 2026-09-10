@@ -17,6 +17,12 @@ vi.mock('next/link', () => ({
   ),
 }))
 
+vi.mock('./WalletRailMatrix', () => ({
+  WalletRailMatrix: ({ travelKind, programmeId }: { travelKind: string; programmeId: string | null }) => (
+    <div data-testid="wallet-rail-matrix">{travelKind}:{programmeId ?? 'all'}</div>
+  ),
+}))
+
 import { TravelWorkspaceShell } from './TravelWorkspaceShell'
 
 describe('TravelWorkspaceShell', () => {
@@ -33,6 +39,18 @@ describe('TravelWorkspaceShell', () => {
     expect(within(modes).getByRole('link', { name: /Hotels/ })).not.toHaveAttribute('aria-current')
     expect(within(modes).getByRole('link', { name: /Dream Trip/ })).toHaveAttribute('href', '/dream-trip')
     expect(within(modes).getByRole('link', { name: /Explore/ })).toHaveAttribute('href', '/sweet-spots')
+  })
+
+  it('shows the all-programme wallet transfer desk on Flights but not Hotels', () => {
+    nav.path = '/trip-planner'
+    const flight = render(<TravelWorkspaceShell><div>flight content</div></TravelWorkspaceShell>)
+    expect(within(flight.container).getByTestId('wallet-rail-matrix')).toHaveTextContent('flight:all')
+    flight.unmount()
+
+    nav.path = '/hotels'
+    const hotel = render(<TravelWorkspaceShell><div>hotel content</div></TravelWorkspaceShell>)
+    expect(within(hotel.container).queryByTestId('wallet-rail-matrix')).toBeNull()
+    hotel.unmount()
   })
 
   it('marks Hotels active on both global inventory and captured redemption-lab routes', () => {
