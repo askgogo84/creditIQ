@@ -7,31 +7,38 @@ export const maxDuration = 300
 export const dynamic = 'force-dynamic'
 export const revalidate = 0
 
-// Search queries that find Indian credit card YouTube channels
+// India-focused discovery queries. Keep the set targeted enough to stay within the
+// normal YouTube Data API daily quota while covering cards, airline miles AND hotel points.
 const DISCOVERY_QUERIES = [
   'Indian credit card rewards 2026',
-  'best credit card India hindi',
+  'best credit card India rewards',
   'credit card points transfer India',
   'HDFC Infinia Magnus review India',
   'credit card devaluation India 2026',
   'travel credit card India miles',
   'credit card lounge access India',
   'cashback credit card India',
-  'axis atlas HDFC infinia comparison',
+  'Axis Atlas HDFC Infinia comparison',
   'credit card sweet spot India',
+  'Marriott Bonvoy credit card points India',
+  'Accor ALL credit card points India',
+  'IHG credit card points transfer India',
+  'Air India Maharaja points credit card India',
+  'KrisFlyer HDFC Axis points India',
+  'Axis Atlas transfer partners 2026',
+  'American Express Membership Rewards transfer India',
+  'HSBC TravelOne transfer partners India',
 ]
 
-// Min quality bar: must have at least this many subscribers to be worth scraping
 const MIN_SUBSCRIBERS = 5000
 
 export async function GET(req: NextRequest) {
-  const denied = await requireAdminOrCron(req); if (denied) return denied;
+  const denied = await requireAdminOrCron(req); if (denied) return denied
   const ytKey = process.env.YOUTUBE_API_KEY
   const sb = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!)
 
   if (!ytKey) return NextResponse.json({ error: 'Missing YOUTUBE_API_KEY' }, { status: 500 })
 
-  // Get existing channel IDs to avoid re-adding
   const { data: existing } = await sb.from('youtube_channels').select('channel_id')
   const existingIds = new Set((existing || []).map((c: any) => c.channel_id))
 
@@ -40,14 +47,12 @@ export async function GET(req: NextRequest) {
 
   for (const query of DISCOVERY_QUERIES) {
     try {
-      // Search for videos
       const searchRes = await fetch(
         `https://www.googleapis.com/youtube/v3/search?part=snippet&q=${encodeURIComponent(query)}&type=video&relevanceLanguage=en&regionCode=IN&maxResults=10&key=${ytKey}`
       )
       if (!searchRes.ok) { errors.push(`search ${query}: ${searchRes.status}`); continue }
       const searchData = await searchRes.json()
 
-      // Collect unique channel IDs from results
       const channelIds = [...new Set(
         (searchData.items || [])
           .map((v: any) => v.snippet?.channelId)
@@ -56,7 +61,6 @@ export async function GET(req: NextRequest) {
 
       if (!channelIds.length) continue
 
-      // Get channel details in batch
       const chanRes = await fetch(
         `https://www.googleapis.com/youtube/v3/channels?part=snippet,statistics&id=${channelIds.join(',')}&key=${ytKey}`
       )
@@ -67,11 +71,14 @@ export async function GET(req: NextRequest) {
         const subs = parseInt(ch.statistics?.subscriberCount || '0')
         if (subs < MIN_SUBSCRIBERS) continue
 
-        // Quality check: does channel description mention credit cards / finance / points?
         const desc = (ch.snippet?.description || '').toLowerCase()
         const title = (ch.snippet?.title || '').toLowerCase()
-        const ccKeywords = ['credit card', 'creditcard', 'reward point', 'miles', 'lounge', 'cashback', 'travel card', 'finance', 'points']
-        const relevant = ccKeywords.some(k => desc.includes(k) || title.includes(k))
+        const keywords = [
+          'credit card', 'creditcard', 'reward point', 'miles', 'lounge', 'cashback',
+          'travel card', 'points', 'airline', 'award travel', 'marriott', 'bonvoy',
+          'accor', 'hotel points', 'krisflyer', 'avios', 'maharaja',
+        ]
+        const relevant = keywords.some(k => desc.includes(k) || title.includes(k))
         if (!relevant) continue
 
         if (!existingIds.has(ch.id)) {
@@ -91,7 +98,6 @@ export async function GET(req: NextRequest) {
     }
   }
 
-  // Insert newly discovered channels
   let added = 0
   if (discovered.length) {
     const { error } = await sb.from('youtube_channels').upsert(discovered, { onConflict: 'channel_id' })
