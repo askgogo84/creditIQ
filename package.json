@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "prebuild": "npm run check:card-links && npm run check:transfer-graph && npm run check:point-values && npm run check:airports && npm run check:travel-matrix && npm run check:airindia-guide && npm run check:awardtool-truth",
+    "prebuild": "npm run check:card-links && npm run check:transfer-graph && npm run check:point-values && npm run check:airports && npm run check:travel-matrix && npm run check:airindia-guide && npm run check:awardtool-truth && npm run check:gogo-bridge",
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
@@ -17,6 +17,7 @@
     "check:travel-matrix": "tsx scripts/validate-travel-matrix.ts",
     "check:airindia-guide": "tsx scripts/validate-air-india-maharaja-guide.ts",
     "check:awardtool-truth": "tsx scripts/validate-awardtool-truth.ts",
+    "check:gogo-bridge": "tsx scripts/validate-gogo-service-bridge.ts",
     "gen:airports": "tsx scripts/gen-airports.ts",
     "audit:affiliate-db": "tsx scripts/audit-affiliate-coverage-db.ts",
     "gen:card-art": "tsx scripts/gen-card-art-manifest.ts",
