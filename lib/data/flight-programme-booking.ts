@@ -24,6 +24,8 @@ const FLIGHT_PROGRAMME_BOOKING_URLS: Readonly<Record<string, string>> = {
   'jal-mileage-bank': 'https://www.jal.co.jp/jp/en/jalmile/use/flight/',
   'thai-royal-orchid': 'https://www.thaiairways.com/en-th/content/royal-orchid-plus/',
   lotusmiles: 'https://www.vietnamairlines.com/in/en/lotusmiles/redeem-mile/ticket-awards',
+  'emirates-skywards': 'https://www.emirates.com/in/english/skywards/spend-miles/',
+  'virgin-atlantic-flying-club': 'https://www.virginatlantic.com/flying-club/spend-points',
 }
 
 export function flightProgrammeBookingUrl(programmeId: string | null | undefined): string | null {
