@@ -49,26 +49,57 @@ describe('wallet redemption rail matrix', () => {
       .toEqual({ fromUnits: 5, toUnits: 4 })
   })
 
-  it('surfaces transfer hubs for Amex and HSBC without inventing partner-specific ratios', () => {
-    const matrix = buildWalletRailMatrix([
+  it('uses exact captured Amex Marriott and Hilton transfer ratios while keeping the broad hub', () => {
+    const marriott = buildWalletRailMatrix([
       { walletKey: 'a', bank: 'American Express', cardName: 'American Express Platinum Travel', pointsBalance: 52000 },
-      { walletKey: 'h', bank: 'HSBC', cardName: 'HSBC TravelOne Credit Card', pointsBalance: 45000 },
-    ], 'hotel')
+    ], 'hotel', 'marriott-bonvoy')
+    const hilton = buildWalletRailMatrix([
+      { walletKey: 'b', bank: 'American Express', cardName: 'American Express Platinum Travel', pointsBalance: 52000 },
+    ], 'hotel', 'hilton-honors')
 
-    const amexHub = matrix.cards[0].rails.find(rail => rail.bookingDestination === 'Amex Membership Rewards transfer partners')
-    const hsbcHub = matrix.cards[1].rails.find(rail => rail.id === 'hsbc-premium-rewards-transfer-hub')
+    const marriottRail = marriott.cards[0].rails.find(rail => rail.transfer?.programmeId === 'marriott-bonvoy')
+    const hiltonRail = hilton.cards[0].rails.find(rail => rail.transfer?.programmeId === 'hilton-honors')
+    const amexHub = marriott.cards[0].rails.find(rail => rail.bookingDestination === 'Amex Membership Rewards transfer partners')
+
+    expect(marriottRail?.transfer?.ratio).toEqual({ fromUnits: 100, toUnits: 100 })
+    expect(marriottRail?.transfer?.minimumBankPoints).toBe(100)
+    expect(marriottRail?.transfer?.incrementBankPoints).toBe(100)
+    expect(hiltonRail?.transfer?.ratio).toEqual({ fromUnits: 1000, toUnits: 1500 })
+    expect(hiltonRail?.transfer?.minimumBankPoints).toBe(1000)
+    expect(hiltonRail?.transfer?.incrementBankPoints).toBe(1000)
     expect(amexHub?.executionState).toBe('DISCOVERY_ONLY')
-    expect(amexHub?.transfer).toBeUndefined()
-    expect(hsbcHub?.executionState).toBe('DISCOVERY_ONLY')
-    expect(hsbcHub?.transfer).toBeUndefined()
   })
 
-  it('keeps the Membership Rewards transfer hub visible for SmartEarn', () => {
+  it('uses exact captured Amex airline ratios including KrisFlyer and Virgin Atlantic', () => {
+    const krisflyer = buildWalletRailMatrix([
+      { walletKey: 'k', bank: 'AmEx', cardName: 'Amex Membership Rewards Credit Card', pointsBalance: 52000 },
+    ], 'flight', 'krisflyer')
+    const virgin = buildWalletRailMatrix([
+      { walletKey: 'v', bank: 'AmEx', cardName: 'American Express SmartEarn', pointsBalance: 18000 },
+    ], 'flight', 'virgin-atlantic-flying-club')
+
+    expect(krisflyer.cards[0].rails.find(rail => rail.transfer?.programmeId === 'krisflyer')?.transfer?.ratio)
+      .toEqual({ fromUnits: 800, toUnits: 400 })
+    expect(virgin.cards[0].rails.find(rail => rail.transfer?.programmeId === 'virgin-atlantic-flying-club')?.transfer?.ratio)
+      .toEqual({ fromUnits: 800, toUnits: 640 })
+  })
+
+  it('keeps the Membership Rewards transfer hub visible for SmartEarn when a partner is not in the capture', () => {
     const matrix = buildWalletRailMatrix([
       { walletKey: 's', bank: 'AmEx', cardName: 'American Express SmartEarn', pointsBalance: 18000 },
     ], 'flight', 'emirates-skywards')
 
     expect(matrix.cards[0].rails.some(rail => rail.bookingDestination === 'Amex Membership Rewards transfer partners')).toBe(true)
+  })
+
+  it('surfaces HSBC transfer hub without inventing partner-specific ratios', () => {
+    const matrix = buildWalletRailMatrix([
+      { walletKey: 'h', bank: 'HSBC', cardName: 'HSBC TravelOne Credit Card', pointsBalance: 45000 },
+    ], 'hotel')
+
+    const hsbcHub = matrix.cards[0].rails.find(rail => rail.id === 'hsbc-premium-rewards-transfer-hub')
+    expect(hsbcHub?.executionState).toBe('DISCOVERY_ONLY')
+    expect(hsbcHub?.transfer).toBeUndefined()
   })
 
   it('preserves wallet provenance without promoting self-entered balances', () => {
