@@ -21,6 +21,7 @@ function atlasEdge(
   ratio: [number, number],
   group: 'A' | 'B',
   tat: string,
+  extraNote?: string,
 ): TransferEdge {
   return {
     from_currency: 'axis_atlas_miles',
@@ -36,7 +37,7 @@ function atlasEdge(
     bonus_note:
       `Axis Atlas · official TAT ${tat}. Partner Group ${group}; annual Atlas cap is ` +
       `${group === 'A' ? '30,000' : '1,20,000'} EDGE Miles across Group ${group} partners ` +
-      '(1,50,000 EDGE Miles overall per calendar year).',
+      `(1,50,000 EDGE Miles overall per calendar year).${extraNote ? ` ${extraNote}` : ''}`,
     state: 'verified',
     source: AXIS_TERMS,
     as_of: AXIS_AS_OF,
@@ -46,21 +47,28 @@ function atlasEdge(
 
 export const TRANSFER_EDGES: TransferEdge[] = [
   // ── Axis Atlas EDGE Miles — issuer-published ratios effective 2 Apr 2026 ──
+  // Complete airline subset of Axis's current 24-partner airline+hotel table.
   // Group A
   atlasEdge('aeroplan', [1, 2], 'A', 'up to 1 working day'),
   atlasEdge('ba', [2, 1], 'A', 'up to 1 working day'),
   atlasEdge('ethiopian', [1, 2], 'A', 'up to 10 working days'),
   atlasEdge('etihad', [1, 2], 'A', 'up to 1 working day'),
   atlasEdge('finnair', [2, 1], 'A', 'up to 1 working day'),
+  atlasEdge('jal', [1, 2], 'A', 'up to 10 working days'),
   atlasEdge('qatar', [2, 1], 'A', 'up to 1 working day'),
   atlasEdge('singapore', [1, 2], 'A', 'up to 10 working days'),
+  atlasEdge('thai', [1, 2], 'A', 'up to 1 working day'),
   atlasEdge('turkish', [1, 2], 'A', 'up to 10 working days'),
   atlasEdge('united', [1, 2], 'A', 'up to 1 working day'),
+  atlasEdge('lotusmiles', [2, 1], 'A', 'up to 1 working day'),
 
   // Group B
+  atlasEdge('airasia', [1, 2], 'B', 'up to 10 working days'),
   atlasEdge('flyingblue', [1, 2], 'B', 'up to 1 working day'),
   atlasEdge('air-india', [1, 2], 'B', 'up to 5 working days'),
+  atlasEdge('indigo', [2, 1], 'B', 'up to 1-2 working days', 'IndiGo BluChip is currently shown by Axis under a limited-period introductory transfer offer; verify the live Travel EDGE ratio before transferring.'),
   atlasEdge('qantas', [1, 2], 'B', 'up to 1 working day'),
+  atlasEdge('spicejet', [1, 2], 'B', 'up to 10 working days'),
 
   // ── Existing non-Atlas edges kept until their own issuer reconciliation ──
   // Axis EDGE Reward Points -> KrisFlyer, card variant not yet reconciled here.
@@ -79,7 +87,8 @@ export const TRANSFER_EDGES: TransferEdge[] = [
     card_name_allowlist: null,
   },
 
-  // HDFC reward-points -> Singapore KrisFlyer, Infinia + Diners Black only.
+  // HDFC reward-points -> Singapore KrisFlyer, card variant not yet reconciled
+  // in this legacy graph. Exact Infinia routes live in hdfc-transfer-partners.ts.
   {
     from_currency: 'hdfc_reward_points',
     to_programme: 'singapore',
