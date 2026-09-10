@@ -30,7 +30,7 @@ type HotelOffer = {
   taxesAndFees: number | null
   agentName: string | null
   deeplink: string | null
-  source: 'skyscanner-hotels-live' | 'booking-demand'
+  source: 'skyscanner-hotels-live' | 'booking-demand' | 'hotelbeds-hbx'
 }
 
 type Coverage = {
@@ -136,6 +136,7 @@ function hotelConciergeRequest(offer: HotelOffer, destination: string, checkin: 
 function providerLabel(provider: string) {
   if (provider === 'booking-demand') return 'Booking.com Demand'
   if (provider === 'skyscanner-hotels-live') return 'Skyscanner Hotels Live'
+  if (provider === 'hotelbeds-hbx') return 'HBX Hotelbeds'
   return provider
 }
 
@@ -237,11 +238,11 @@ export function GlobalHotelWorkspace() {
     <div className="ghw-root">
       <div className="ghw-title-row">
         <div>
-          <div className="ghw-eyebrow">Hotel award desk</div>
-          <h1>Stay better. Spend <em>smarter.</em></h1>
-          <p>Compare live cash rates with mapped hotel award inventory, then rank the exact paths your wallet can fund. Weak property matches are never promoted as certainty.</p>
+          <div className="ghw-eyebrow">Wallet-first hotel intelligence</div>
+          <h1>Turn your points into <em>better stays.</em></h1>
+          <p>Start with the cards and points you already own. See direct hotel-loyalty transfer paths first, then use live cash inventory as the benchmark for the same trip.</p>
         </div>
-        <div className="ghw-honesty">No derived hotel points · weak joins fail closed</div>
+        <div className="ghw-honesty">Card-exact ratios · no bank-wide guessing</div>
       </div>
 
       <div className="ghw-search">
@@ -253,11 +254,11 @@ export function GlobalHotelWorkspace() {
       </div>
 
       <div className="ghw-demo-link">
-        <span>Domestic hotel search is live-provider-first. The captured Accor Bangkok case remains a separate redemption fixture.</span>
+        <span>Your wallet transfer paths work independently of the cash-hotel provider. Live inventory is the benchmark, not the gate.</span>
         <Link href="/stay-on-points?demo=accor">Open captured Accor redemption demo →</Link>
       </div>
 
-      {coverage && <div className="ghw-coverage"><div><b>{totalLabel}</b><span>{coverage.provider} · {coverage.mode}{coverage.status ? ` · ${coverage.status}` : ''}</span></div>{coverage.fetched_at && <small>Fetched {new Date(coverage.fetched_at).toLocaleTimeString()}</small>}</div>}
+      {coverage && <div className="ghw-coverage"><div><b>{totalLabel}</b><span>{providerLabel(coverage.provider)} · {coverage.mode}{coverage.status ? ` · ${coverage.status}` : ''}</span></div>{coverage.fetched_at && <small>Fetched {new Date(coverage.fetched_at).toLocaleTimeString()}</small>}</div>}
 
       {error && (
         <div className="ghw-error">
@@ -272,6 +273,8 @@ export function GlobalHotelWorkspace() {
         </div>
       )}
       {loading && <div className="ghw-loading">Starting the global cash-hotel provider chain for {destination}…</div>}
+
+      {submittedSearch && <WalletRailMatrix travelKind="hotel" programmeId={null} />}
 
       {!loading && offers.length > 0 && (
         <div className="ghw-workspace">
@@ -297,7 +300,6 @@ export function GlobalHotelWorkspace() {
 
       {!loading && !error && coverage && offers.length === 0 && <div className="ghw-empty">The connected cash provider returned no hotel offers for this destination and date range.</div>}
 
-      {submittedSearch && <WalletRailMatrix travelKind="hotel" programmeId={null} />}
       <HotelAwardDiscoveryPanel search={submittedSearch} />
     </div>
   )
@@ -323,7 +325,7 @@ function HotelOfferPanel({ offer, destination, checkin, checkout, adults }: { of
       </div>
       <HotelAwardJoinPanel offer={offer} programmeId={programmeId} destination={destination} checkInDate={checkin} checkOutDate={checkout} adults={adults} />
       <div className="ghw-actions">{offer.deeplink ? <a href={offer.deeplink} target="_blank" rel="noopener noreferrer">Check provider offer →</a> : <span /> }<ConciergeRequestButton request={request} /></div>
-      <div className="ghw-source">Cash source: {offer.source}. Award source and final programme checkout remain independently labelled.</div>
+      <div className="ghw-source">Cash source: {providerLabel(offer.source)}. Award source and final programme checkout remain independently labelled.</div>
     </aside>
   )
 }
