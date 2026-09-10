@@ -18,10 +18,10 @@ type FeedItem = {
   insight_type: string;
   card_mentions: string[];
   date: string | null;
+  wallet_matches: string[];
+  relevance_reason: string | null;
 };
 
-// Human labels for the stored insight_type values. Community intel — presented
-// neutral/gold, NEVER verified-green (green is reserved for statement-verified data).
 const CATEGORY_LABEL: Record<string, string> = {
   transfer_hack: 'Transfer hack',
   devaluation: 'Devaluation',
@@ -53,6 +53,7 @@ export default function FeedPage() {
   const [checking, setChecking] = useState(true);
   const [loading, setLoading] = useState(true);
   const [items, setItems] = useState<FeedItem[]>([]);
+  const [walletCards, setWalletCards] = useState(0);
 
   useEffect(() => {
     const sb = createBrowserClient(process.env.NEXT_PUBLIC_SUPABASE_URL || '', process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '');
@@ -69,6 +70,7 @@ export default function FeedPage() {
       const res = await authedFetch('/api/feed');
       const data = await res.json();
       setItems(Array.isArray(data.items) ? data.items : []);
+      setWalletCards(Number(data.wallet_cards || 0));
     } catch {}
     setLoading(false);
   };
@@ -81,7 +83,6 @@ export default function FeedPage() {
     </div>
   );
 
-  // Logged-out -> login prompt (feed is free but requires an account).
   if (!checking && !user) {
     return (
       <CiqTheme>
@@ -110,35 +111,46 @@ export default function FeedPage() {
         {masthead}
 
         <div style={{ padding: '10px 20px 0' }}>
-          <h1 className="ciq-display" style={{ fontWeight: 600, fontSize: 28, letterSpacing: '-.02em' }}>Feed</h1>
-          {/* Honesty note: this is community intel, not statement-verified data. */}
+          <h1 className="ciq-display" style={{ fontWeight: 600, fontSize: 28, letterSpacing: '-.02em' }}>For you</h1>
           <p style={{ fontSize: 12.5, color: 'var(--ciq-ink-3)', marginTop: 6, lineHeight: 1.5 }}>
-            Community intelligence from creators &amp; discussion. Directional — not verified from your statements.
+            {walletCards > 0
+              ? `Fresh card intelligence ranked against the ${walletCards} card${walletCards === 1 ? '' : 's'} in your wallet.`
+              : 'Fresh reward tips, sweet spots and devaluations. Add cards to your wallet to personalise this feed.'}
+            {' '}Community signals are directional, not issuer-verified facts.
           </p>
         </div>
 
         <div className="ciq-rise" style={{ padding: '18px 20px 0', display: 'flex', flexDirection: 'column', gap: 12 }}>
           {loading ? (
-            <div className="ciq-mono" style={{ color: 'var(--ciq-ink-3)', fontSize: 12, padding: 20, textAlign: 'center' }}>loading…</div>
+            <div className="ciq-mono" style={{ color: 'var(--ciq-ink-3)', fontSize: 12, padding: 20, textAlign: 'center' }}>building your feed…</div>
           ) : items.length === 0 ? (
             <div style={{ padding: 24, textAlign: 'center', borderRadius: 16, border: '1px solid var(--ciq-line)', background: 'var(--ciq-panel)' }}>
               <p style={{ color: 'var(--ciq-ink-3)', fontSize: 13 }}>No community intel yet. Check back soon.</p>
             </div>
           ) : items.map(item => {
-            const handle = item.creator_handle ? `@${item.creator_handle}` : (item.source ? (SOURCE_LABEL[item.source] || item.source) : '');
+            const handle = item.creator_handle
+              ? item.source === 'instagram' ? `@${item.creator_handle}` : item.creator_handle
+              : (item.source ? (SOURCE_LABEL[item.source] || item.source) : '');
             const src = item.source ? (SOURCE_LABEL[item.source] || item.source) : '';
             const card = (
               <div style={{ borderRadius: 18, padding: 16, background: 'var(--ciq-panel)', border: '1px solid var(--ciq-line)' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap', marginBottom: 8 }}>
-                  {/* category badge — neutral/gold, never green */}
                   <span className="ciq-mono" style={{
                     fontSize: 9, fontWeight: 700, letterSpacing: '.05em', textTransform: 'uppercase',
                     padding: '3px 8px', borderRadius: 6, color: 'var(--ciq-gold-2)',
                     background: 'var(--ciq-gold-soft)', border: '1px solid var(--ciq-gold-line)',
                   }}>{labelFor(item.insight_type)}</span>
-                  {handle && <span className="ciq-mono" style={{ fontSize: 10.5, color: 'var(--ciq-ink-3)' }}>{handle}</span>}
+                  {item.wallet_matches?.length > 0 && (
+                    <span className="ciq-mono" style={{
+                      fontSize: 9, fontWeight: 700, padding: '3px 8px', borderRadius: 6,
+                      color: 'var(--ciq-gold-2)', background: 'var(--ciq-gold-soft)', border: '1px solid var(--ciq-gold-line)',
+                    }}>For your wallet</span>
+                  )}
                   {item.date && <span className="ciq-mono" style={{ fontSize: 10.5, color: 'var(--ciq-ink-3)', marginLeft: 'auto' }}>{fmtDate(item.date)}</span>}
                 </div>
+                {item.relevance_reason && (
+                  <div className="ciq-mono" style={{ fontSize: 9.5, color: 'var(--ciq-gold-2)', marginBottom: 6 }}>{item.relevance_reason}</div>
+                )}
                 {item.title && (
                   <div style={{ fontSize: 14.5, fontWeight: 600, letterSpacing: '-.01em', lineHeight: 1.35, color: 'var(--ciq-ink)' }}>{item.title}</div>
                 )}
@@ -147,9 +159,10 @@ export default function FeedPage() {
                     {item.summary.length > 240 ? `${item.summary.slice(0, 240)}…` : item.summary}
                   </div>
                 )}
-                {(src || item.card_mentions.length > 0) && (
+                {(src || handle || item.card_mentions.length > 0) && (
                   <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginTop: 10, alignItems: 'center' }}>
                     {src && <span className="ciq-mono" style={{ fontSize: 9.5, color: 'var(--ciq-ink-3)' }}>{src}</span>}
+                    {handle && handle !== src && <span className="ciq-mono" style={{ fontSize: 9.5, color: 'var(--ciq-ink-3)' }}>{handle}</span>}
                     {item.card_mentions.slice(0, 3).map((c, i) => (
                       <span key={i} style={{ fontSize: 10, padding: '2px 7px', borderRadius: 5, background: 'var(--ciq-line)', color: 'var(--ciq-ink-3)' }}>{c}</span>
                     ))}
@@ -157,7 +170,6 @@ export default function FeedPage() {
                 )}
               </div>
             );
-            // Whole card links out to the source post when available (read-only).
             return item.source_url
               ? <a key={item.id} href={item.source_url} target="_blank" rel="noopener noreferrer" style={{ textDecoration: 'none', color: 'var(--ciq-ink)' }}>{card}</a>
               : <div key={item.id}>{card}</div>;
