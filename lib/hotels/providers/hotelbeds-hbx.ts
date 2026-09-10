@@ -1,5 +1,6 @@
 import crypto from 'node:crypto'
 import https from 'node:https'
+import type { IncomingHttpHeaders } from 'node:http'
 
 export type HbxHotelOffer = {
   id: string
@@ -116,7 +117,7 @@ function normalizeDestination(destination: string) {
   return DESTINATION_CODES[key] || null
 }
 
-function requestJson(url: string, body: unknown): Promise<{ status: number; headers: https.IncomingHttpHeaders; data: any }> {
+function requestJson(url: string, body: unknown): Promise<{ status: number; headers: IncomingHttpHeaders; data: any }> {
   return new Promise((resolve, reject) => {
     const timestamp = Math.floor(Date.now() / 1000)
     const parsed = new URL(url)
