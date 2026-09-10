@@ -1,5 +1,5 @@
 // Global hotel search provider orchestration.
-// Priority: Booking.com Demand API -> Skyscanner Hotels Live Prices.
+// Priority: Booking.com Demand API -> Skyscanner Hotels Live Prices -> HBX Hotelbeds.
 // Captured fixtures are deliberately excluded from this endpoint.
 import { NextRequest, NextResponse } from 'next/server'
 import { requireAuth } from '@/lib/api-auth'
@@ -14,6 +14,11 @@ import {
   searchBookingDemandHotels,
   type BookingDestinationProxy,
 } from '@/lib/hotels/providers/booking-demand'
+import {
+  hotelbedsConfigured,
+  hotelbedsConfigurationState,
+  searchHotelbedsHotels,
+} from '@/lib/hotels/providers/hotelbeds-hbx'
 
 export const runtime = 'nodejs'
 export const maxDuration = 60
@@ -40,6 +45,7 @@ function unavailable(attempts: Attempt[]) {
       has_more: false,
       fetched_at: new Date().toISOString(),
       note: 'CreditIQ does not substitute captured/demo hotel rates for a different destination.',
+      hbx_configuration: hotelbedsConfigurationState(),
     },
   }, { status: 503 })
 }
@@ -146,6 +152,8 @@ async function execute(req: NextRequest, body: any) {
     return NextResponse.json({ error: 'destination, checkin and checkout are required' }, { status: 400 })
   }
   const limit = Number.isFinite(Number(body?.limit)) ? Number(body.limit) : 50
+  const adults = Number.isFinite(Number(body?.adults)) ? Number(body.adults) : 2
+  const rooms = Number.isFinite(Number(body?.rooms)) ? Number(body.rooms) : 1
 
   // 1. Booking.com Demand v3.2 — global search/look/redirect target.
   if (bookingDemandConfigured()) {
@@ -161,25 +169,60 @@ async function execute(req: NextRequest, body: any) {
     attempts.push({ provider: 'booking-demand', ok: false, loaded: 0, note: 'not configured' })
   }
 
-  // 2. Skyscanner Hotels Live Prices — existing pageable provider.
+  // 2. Skyscanner Hotels Live Prices — pageable provider.
   if (skyscannerHotelsConfigured()) {
     try {
-      const page = await createHotelSearch({
-        destination,
-        checkin,
-        checkout,
-        adults: Number.isFinite(Number(body.adults)) ? Number(body.adults) : 2,
-        rooms: Number.isFinite(Number(body.rooms)) ? Number(body.rooms) : 1,
-        limit,
-      })
-      attempts.push({ provider: 'skyscanner-hotels-live', ok: true, loaded: page.offers.length, note: page.offers.length ? 'live hotel session returned offers' : 'zero offers' })
+      const page = await createHotelSearch({ destination, checkin, checkout, adults, rooms, limit })
+      attempts.push({ provider: 'skyscanner-hotels-live', ok: true, loaded: page.offers.length, note: page.offers.length ? 'live hotel session returned offers' : 'zero offers; trying next provider' })
       if (page.offers.length > 0) return NextResponse.json({ hotels: page.offers, ...page, attempts })
     } catch (error: any) {
-      attempts.push({ provider: 'skyscanner-hotels-live', ok: false, loaded: 0, note: 'request failed' })
+      attempts.push({ provider: 'skyscanner-hotels-live', ok: false, loaded: 0, note: 'request failed; trying next provider' })
       console.error('global Skyscanner hotel search failed', error?.message || error)
     }
   } else {
     attempts.push({ provider: 'skyscanner-hotels-live', ok: false, loaded: 0, note: 'not configured' })
+  }
+
+  // 3. HBX / Hotelbeds Booking API — mTLS live availability fallback.
+  // Evaluation credentials default to the TEST mTLS host; no booking is created here.
+  if (hotelbedsConfigured()) {
+    try {
+      const page = await searchHotelbedsHotels({ destination, checkin, checkout, adults, rooms, limit })
+      attempts.push({ provider: 'hotelbeds-hbx', ok: true, loaded: page.offers.length, note: page.offers.length ? `HBX ${page.environment} availability returned offers` : 'HBX returned zero available hotels' })
+      if (page.offers.length > 0) {
+        return NextResponse.json({
+          hotels: page.offers,
+          offers: page.offers,
+          coverage: {
+            provider: 'hotelbeds-hbx',
+            mode: 'PROVIDER_WINDOW',
+            destination,
+            entityId: `hbx:${page.destinationCode}`,
+            loaded: page.offers.length,
+            provider_total: page.total,
+            has_more: false,
+            status: page.environment === 'production' ? 'LIVE_PROVIDER_RETURNED' : 'EVALUATION_PROVIDER_RETURNED',
+            fetched_at: new Date().toISOString(),
+            note: `HBX Hotelbeds ${page.environment} mTLS availability. Evaluation inventory is genuine provider-returned test availability and cannot create a real reservation from this search endpoint.`,
+          },
+          attempts,
+          requestId: page.requestId,
+        })
+      }
+    } catch (error: any) {
+      const note = String(error?.message || 'request failed')
+      attempts.push({ provider: 'hotelbeds-hbx', ok: false, loaded: 0, note })
+      console.error('HBX Hotelbeds search failed', note)
+    }
+  } else {
+    const state = hotelbedsConfigurationState()
+    const missing = [
+      !state.apiKey && 'API key',
+      !state.secret && 'secret',
+      !state.clientCert && 'client certificate',
+      !state.clientKey && 'client private key',
+    ].filter(Boolean).join(', ')
+    attempts.push({ provider: 'hotelbeds-hbx', ok: false, loaded: 0, note: `not configured${missing ? ` · missing ${missing}` : ''}` })
   }
 
   return unavailable(attempts)
