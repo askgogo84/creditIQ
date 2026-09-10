@@ -1,0 +1,93 @@
+/* Shared Travel interaction layer. Keeps the existing decision engine and markup intact,
+   but turns Flights + Hotels into one cohesive intelligence workspace. */
+
+.ciq-approved-travel { --travel-glow: color-mix(in srgb, var(--copper-3) 16%, transparent); }
+.approved-travel-header { position: relative; overflow: hidden; padding: 10px 0 18px; }
+.approved-travel-header::after { content: ''; position: absolute; inset: auto -10% -75% 25%; height: 180px; border-radius: 50%; background: radial-gradient(circle, var(--travel-glow), transparent 68%); pointer-events: none; }
+.approved-travel-header h1 { letter-spacing: -.045em; }
+.approved-travel-navigation { border: 1px solid var(--line); border-radius: 18px; background: color-mix(in srgb, var(--surface) 94%, transparent); box-shadow: 0 12px 36px rgba(18,27,45,.045); backdrop-filter: blur(14px); padding: 5px; }
+.approved-travel-tabs { gap: 4px; }
+.approved-travel-tabs a { border-radius: 12px; transition: transform .16s ease, background .16s ease, box-shadow .16s ease; }
+.approved-travel-tabs a:hover { transform: translateY(-1px); }
+.approved-travel-tabs a.active { box-shadow: 0 8px 24px rgba(18,27,45,.14); }
+.approved-travel-tools a { border-radius: 999px; transition: background .16s ease; }
+.approved-travel-tools a:hover { background: var(--surface-2); }
+
+.approved-flight-workspace { padding-top: 12px; }
+.approved-flight-search { border-radius: 20px !important; padding: 12px !important; border: 1px solid var(--line) !important; background: color-mix(in srgb, var(--surface) 94%, transparent) !important; box-shadow: 0 18px 50px rgba(18,27,45,.07) !important; backdrop-filter: blur(14px); transition: box-shadow .2s ease, transform .2s ease, border-color .2s ease; }
+.approved-flight-search:focus-within { transform: translateY(-1px); border-color: color-mix(in srgb, var(--copper-3) 45%, var(--line)) !important; box-shadow: 0 22px 60px rgba(18,27,45,.10) !important; }
+.approved-flight-search .fp-fld-val { border-radius: 12px; min-height: 50px; background: var(--surface); transition: border-color .16s ease, box-shadow .16s ease, background .16s ease; }
+.approved-flight-search .fp-fld-val:focus { box-shadow: 0 0 0 3px color-mix(in srgb, var(--copper-3) 10%, transparent); background: var(--surface-2); }
+.approved-flight-search .fp-btn { border-radius: 12px; min-height: 50px; box-shadow: 0 10px 26px color-mix(in srgb, var(--copper-3) 24%, transparent); transition: transform .16s ease, box-shadow .16s ease; }
+.approved-flight-search .fp-btn:hover:not(:disabled) { transform: translateY(-1px); box-shadow: 0 14px 32px color-mix(in srgb, var(--copper-3) 30%, transparent); }
+
+.approved-flight-loader-rich { position: relative; overflow: hidden; min-height: 200px; border-radius: 18px !important; background: radial-gradient(circle at 50% 10%, var(--travel-glow), transparent 42%), linear-gradient(180deg,var(--surface),var(--surface-2)); box-shadow: inset 0 0 0 1px var(--line), 0 16px 44px rgba(18,27,45,.05); }
+.approved-flight-loader-rich::after { content:''; position:absolute; left:-35%; right:-35%; bottom:0; height:2px; background: linear-gradient(90deg,transparent,var(--copper-3),transparent); animation: travel-scan 1.9s ease-in-out infinite; }
+@keyframes travel-scan { 0% { transform: translateX(-45%); opacity:.2; } 50% { opacity:1; } 100% { transform: translateX(45%); opacity:.2; } }
+.approved-flight-animation { min-height: 80px; }
+.approved-flight-moving-plane { filter: drop-shadow(0 8px 12px rgba(165,112,24,.22)); }
+.approved-search-stage-dots { gap: 7px !important; }
+.approved-search-stage-dots i { width: 22px !important; height: 3px !important; border-radius: 999px !important; transition: width .2s ease, background .2s ease; }
+.approved-search-stage-dots i.active { width: 32px !important; }
+
+.approved-flight-toolbar { margin-top: 18px; padding: 12px 14px; border-radius: 14px; background: var(--surface-2); border: 1px solid var(--line-soft); }
+.approved-flight-filters button { border-radius: 999px !important; transition: transform .15s ease, box-shadow .15s ease; }
+.approved-flight-filters button:hover { transform: translateY(-1px); }
+.approved-flight-filters button[aria-pressed='true'] { box-shadow: 0 7px 18px rgba(18,27,45,.12); }
+.approved-flight-note { border-radius: 10px; }
+
+.approved-award-list { border-radius: 16px !important; overflow: hidden; box-shadow: 0 16px 42px rgba(18,27,45,.045); }
+.approved-award-row { transition: background .16s ease, box-shadow .16s ease, transform .16s ease; }
+.approved-award-row:hover { background: var(--surface-2); box-shadow: inset 3px 0 0 color-mix(in srgb, var(--copper-3) 55%, transparent); }
+.approved-award-item.open > .approved-award-row { background: linear-gradient(90deg, color-mix(in srgb,var(--copper-3) 9%, var(--surface)) 0%, var(--surface) 42%); box-shadow: inset 3px 0 0 var(--copper-3); }
+.approved-airline-logo { border-radius: 11px !important; box-shadow: inset 0 0 0 1px rgba(255,255,255,.08), 0 6px 14px rgba(18,27,45,.08); }
+.approved-wallet-path b { letter-spacing: -.01em; }
+.approved-row-chevron { transition: transform .2s ease; }
+.approved-award-item.open .approved-row-chevron { transform: rotate(180deg); }
+
+.approved-award-detail { background: linear-gradient(180deg,var(--surface-2),var(--surface)); }
+.approved-decision-hero { border-radius: 14px; margin: 10px 12px 0; padding: 18px !important; background: linear-gradient(135deg,color-mix(in srgb,var(--copper-3) 8%,var(--surface)),var(--surface)); box-shadow: 0 10px 30px rgba(18,27,45,.045); }
+.approved-decision-hero h3 { font-size: clamp(18px,2vw,26px); letter-spacing: -.025em; }
+.approved-decision-tabs { position: sticky; top: 78px; z-index: 8; padding: 10px 12px !important; background: color-mix(in srgb,var(--surface) 92%, transparent); backdrop-filter: blur(16px); border-bottom: 1px solid var(--line-soft); }
+.approved-decision-tabs button { border-radius: 10px !important; transition: background .15s ease, transform .15s ease; }
+.approved-decision-tabs button:hover { transform: translateY(-1px); }
+.approved-decision-tabs button.active { box-shadow: 0 7px 18px rgba(18,27,45,.13); }
+.approved-decision-panel { padding: 14px !important; }
+.approved-path-grid { gap: 10px !important; }
+.approved-path-choice { border-radius: 13px !important; transition: transform .16s ease, box-shadow .16s ease, border-color .16s ease; }
+.approved-path-choice:hover { transform: translateY(-1px); box-shadow: 0 10px 26px rgba(18,27,45,.06); }
+.approved-path-choice.winner { background: linear-gradient(135deg,color-mix(in srgb,var(--prov-verified) 9%,var(--surface)),var(--surface)); border-color: color-mix(in srgb,var(--prov-verified) 28%,var(--line)) !important; }
+.approved-path-choice strong { letter-spacing: -.02em; }
+
+.approved-execution-split { gap: 14px !important; }
+.approved-execution-card { border-radius: 15px !important; box-shadow: 0 10px 30px rgba(18,27,45,.04); }
+.approved-execution-card.self-serve { background: linear-gradient(180deg,var(--surface),var(--surface-2)); }
+.approved-execution-card.concierge-path { background: linear-gradient(145deg,color-mix(in srgb,var(--copper-3) 7%,var(--surface)),var(--surface)); }
+.approved-self-serve-steps { text-transform: none !important; font-size: 12px !important; line-height: 1.55 !important; }
+.approved-self-serve-steps li span { text-transform: none !important; letter-spacing: normal !important; }
+.approved-execution-actions .approved-primary { border-radius: 10px !important; box-shadow: 0 8px 20px rgba(18,27,45,.10); transition: transform .15s ease, box-shadow .15s ease; }
+.approved-execution-actions .approved-primary:hover { transform: translateY(-1px); box-shadow: 0 12px 24px rgba(18,27,45,.14); }
+.approved-transfer-warning { border-radius: 10px !important; }
+.approved-concierge-checklist { gap: 8px !important; }
+.approved-concierge-checklist span { padding: 8px 10px; border-radius: 9px; background: color-mix(in srgb,var(--surface-2) 88%,transparent); }
+.approved-source-grid article { border-radius: 12px !important; background: var(--surface); box-shadow: 0 8px 22px rgba(18,27,45,.035); }
+
+@media (max-width: 780px) {
+  .approved-travel-header h1 { font-size: 34px !important; }
+  .approved-travel-navigation { border-radius: 14px; }
+  .approved-travel-tools { overflow-x: auto; scrollbar-width: none; }
+  .approved-flight-search { border-radius: 16px !important; padding: 10px !important; }
+  .approved-flight-search .fp-btn { min-height: 50px; }
+  .approved-flight-toolbar { align-items: flex-start !important; gap: 10px; }
+  .approved-flight-filters { width: 100%; overflow-x: auto; scrollbar-width: none; }
+  .approved-decision-hero { margin: 8px 8px 0; padding: 14px !important; }
+  .approved-decision-tabs { top: 62px; overflow-x: auto; scrollbar-width: none; }
+  .approved-decision-panel { padding: 10px !important; }
+  .approved-path-grid, .approved-execution-split, .approved-source-grid { grid-template-columns: 1fr !important; }
+  .approved-execution-card { padding: 14px !important; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .approved-flight-loader-rich::after { animation: none; }
+  .approved-award-row, .approved-row-chevron, .approved-path-choice, .approved-travel-tabs a { transition: none; }
+}
