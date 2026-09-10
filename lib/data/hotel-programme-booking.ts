@@ -54,6 +54,12 @@ const HOTEL_PROGRAMME_BOOKINGS: Record<string, HotelProgrammeBooking> = {
     bookingUrl: 'https://www.shangri-la.com/',
     region: 'global',
   },
+  'jumeirah-one': {
+    programmeId: 'jumeirah-one',
+    programmeName: 'Jumeirah One',
+    bookingUrl: 'https://www.jumeirah.com/en/loyalty',
+    region: 'global',
+  },
   'taj-neupass': {
     programmeId: 'taj-neupass',
     programmeName: 'Taj / NeuPass',
