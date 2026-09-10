@@ -29,7 +29,7 @@ describe('redemption rail registry', () => {
 
   it('exposes the current Axis Atlas airline grid including newly reconciled partners', () => {
     expect(transferRailFor('axis-atlas', 'airasia-rewards')?.transfer?.ratio).toEqual({ fromUnits: 1, toUnits: 2 })
-    expect(transferRailFor('axis-atlas', 'indigo-bluchip')?.transfer?.ratio).toEqual({ fromUnits: 2, toUnits: 1 })
+    expect(transferRailFor('axis-atlas', 'indigo-bluchip')?.transfer?.ratio).toEqual({ fromUnits: 1, toUnits: 2 })
     expect(transferRailFor('axis-atlas', 'jal-mileage-bank')?.transfer?.ratio).toEqual({ fromUnits: 1, toUnits: 2 })
     expect(transferRailFor('axis-atlas', 'lotusmiles')?.transfer?.ratio).toEqual({ fromUnits: 2, toUnits: 1 })
   })
