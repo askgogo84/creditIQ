@@ -38,16 +38,28 @@ const unsigned = new NextRequest('https://creditiq.app/api/internal/gogo/travel/
 })
 assert.equal(verifyGogoServiceRequest(unsigned, body), false, 'unsigned service request must fail')
 
-const route = readFileSync(new URL('../app/api/internal/gogo/travel/flights/route.ts', import.meta.url), 'utf8')
-assert.match(route, /verifyGogoServiceRequest/, 'flight bridge must verify service auth before parsing intent')
-assert.match(route, /loadDecisionPortfolio\(userLinkId\)/, 'linked CreditIQ identity must be used only for owner-scoped wallet reads')
-assert.match(route, /buildTravelDecisionContract/, 'flight bridge must use CreditIQ canonical decision contract')
-assert.match(route, /requiresRepriceBeforeBooking:\s*true/, 'booking handoff must require repricing')
-assert.match(route, /irreversiblePointsTransferAllowed:\s*false/, 'bridge must never authorize irreversible points transfer')
-assert.match(route, /PARTIAL_FALLBACK/, 'cached/discovery fares must be distinguishable from live provider inventory')
-assert.match(route, /pointsAware/, 'response must explicitly disclose whether linked rewards intelligence was available')
+const flightRoute = readFileSync(new URL('../app/api/internal/gogo/travel/flights/route.ts', import.meta.url), 'utf8')
+assert.match(flightRoute, /verifyGogoServiceRequest/, 'flight bridge must verify service auth before parsing intent')
+assert.match(flightRoute, /loadDecisionPortfolio\(userLinkId\)/, 'linked CreditIQ identity must be used only for owner-scoped wallet reads')
+assert.match(flightRoute, /buildTravelDecisionContract/, 'flight bridge must use CreditIQ canonical decision contract')
+assert.match(flightRoute, /requiresRepriceBeforeBooking:\s*true/, 'flight booking handoff must require repricing')
+assert.match(flightRoute, /irreversiblePointsTransferAllowed:\s*false/, 'flight bridge must never authorize irreversible points transfer')
+assert.match(flightRoute, /PARTIAL_FALLBACK/, 'cached/discovery fares must be distinguishable from live provider inventory')
+assert.match(flightRoute, /pointsAware/, 'flight response must explicitly disclose whether linked rewards intelligence was available')
+
+const hotelRoute = readFileSync(new URL('../app/api/internal/gogo/travel/hotels/route.ts', import.meta.url), 'utf8')
+assert.match(hotelRoute, /verifyGogoServiceRequest/, 'hotel bridge must verify service auth before parsing intent')
+assert.match(hotelRoute, /loadDecisionPortfolio\(userLinkId\)/, 'hotel bridge must use the linked identity only for owner-scoped wallet reads')
+assert.match(hotelRoute, /programmeIdForHotelChain/, 'hotel bridge must resolve known hotel loyalty programmes without guessing independent hotels')
+assert.match(hotelRoute, /buildWalletRailMatrix\(railCards, 'hotel', programmeId\)/, 'hotel bridge must enumerate card-exact hotel redemption rails')
+assert.match(hotelRoute, /buildTravelDecisionContract/, 'hotel bridge must use the canonical cash-vs-points decision contract')
+assert.match(hotelRoute, /awardInventoryVerified:\s*false/, 'hotel loyalty programme discovery must never claim live award-night inventory')
+assert.match(hotelRoute, /pointsAware/, 'hotel response must explicitly disclose linked rewards-intelligence availability')
+assert.match(hotelRoute, /requiresRepriceBeforeBooking:\s*true/, 'hotel booking handoff must require repricing')
+assert.match(hotelRoute, /irreversiblePointsTransferAllowed:\s*false/, 'hotel bridge must never authorize irreversible points transfer')
+assert.match(hotelRoute, /contract:\s*'gogo-creditiq-travel-v1'/, 'hotel bridge must use the same structured Gogo travel contract family')
 
 if (previous === undefined) delete process.env.GOGO_SERVICE_SECRET
 else process.env.GOGO_SERVICE_SECRET = previous
 
-console.log('✅ signed Gogo ↔ CreditIQ flight bridge checks passed')
+console.log('✅ signed Gogo ↔ CreditIQ flight + hotel rewards bridge checks passed')
