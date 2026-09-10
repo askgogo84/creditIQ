@@ -141,8 +141,8 @@ function providerLabel(provider: string) {
 
 export function GlobalHotelWorkspace() {
   const [destination, setDestination] = useState('Goa')
-  const [checkin, setCheckin] = useState(plusDays(21))
-  const [checkout, setCheckout] = useState(plusDays(24))
+  const [checkin, setCheckin] = useState(plusDays(7))
+  const [checkout, setCheckout] = useState(plusDays(10))
   const [adults, setAdults] = useState(2)
   const [offers, setOffers] = useState<HotelOffer[]>([])
   const [coverage, setCoverage] = useState<Coverage | null>(null)
