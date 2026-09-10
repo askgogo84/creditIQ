@@ -73,7 +73,7 @@ const HOTEL_CHAIN_RULES: Array<{ programmeId: string; tokens: string[] }> = [
     programmeId: 'marriott-bonvoy',
     tokens: [
       'marriott', 'jwmarriott', 'ritz', 'ritzcarlton', 'westin', 'sheraton', 'lemeridien', 'stregis',
-      'courtyard', 'renaissance', 'fairfield', 'aloft', 'w', 'luxurycollection', 'tributeportfolio',
+      'courtyard', 'renaissance', 'fairfield', 'aloft', 'whotel', 'whotels', 'luxurycollection', 'tributeportfolio',
       'autographcollection', 'moxy', 'element', 'fourpoints', 'proteahotels',
     ],
   },
