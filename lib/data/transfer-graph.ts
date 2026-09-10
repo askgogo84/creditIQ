@@ -66,7 +66,9 @@ export const TRANSFER_EDGES: TransferEdge[] = [
   atlasEdge('airasia', [1, 2], 'B', 'up to 10 working days'),
   atlasEdge('flyingblue', [1, 2], 'B', 'up to 1 working day'),
   atlasEdge('air-india', [1, 2], 'B', 'up to 5 working days'),
-  atlasEdge('indigo', [2, 1], 'B', 'up to 1-2 working days', 'IndiGo BluChip is currently shown by Axis under a limited-period introductory transfer offer; verify the live Travel EDGE ratio before transferring.'),
+  // The current limited-period IndiGo introductory table overrides the standard
+  // Atlas 2:1 row and gives Atlas 1 EDGE Mile -> 2 BluChips while the offer runs.
+  atlasEdge('indigo', [1, 2], 'B', 'up to 1-2 working days', 'IndiGo BluChip is a limited-period introductory transfer offer; verify the live Travel EDGE ratio before transferring.'),
   atlasEdge('qantas', [1, 2], 'B', 'up to 1 working day'),
   atlasEdge('spicejet', [1, 2], 'B', 'up to 10 working days'),
 
