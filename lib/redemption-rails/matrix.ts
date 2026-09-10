@@ -2,6 +2,7 @@ import type { TravelKind, RedemptionRailDefinition } from './types'
 import { cashRetainRail, queryRails } from './registry'
 import { resolveRailCardId } from './card-resolver'
 import { supplementalRailsForCard } from './supplemental-rails'
+import { walletIssuerHubRails } from './wallet-issuer-hubs'
 
 export type WalletRailStatus =
   | 'EXECUTABLE'
@@ -66,6 +67,20 @@ function mergedRails(cardId: string, travelKind: TravelKind, programmeId: string
   return [...merged.values()]
 }
 
+function mergeWalletHubs(
+  rails: RedemptionRailDefinition[],
+  card: WalletRailCardInput,
+  travelKind: TravelKind,
+) {
+  const merged = new Map<string, RedemptionRailDefinition>()
+  for (const rail of rails) merged.set(railIdentity(rail), rail)
+  for (const rail of walletIssuerHubRails({ bank: card.bank, cardName: card.cardName, travelKind })) {
+    const key = railIdentity(rail)
+    if (!merged.has(key)) merged.set(key, rail)
+  }
+  return [...merged.values()]
+}
+
 /**
  * Enumerate every sourced travel-redemption rail for every card in the wallet.
  *
@@ -90,9 +105,10 @@ export function buildWalletRailMatrix(
     seenWalletKeys.add(card.walletKey)
 
     const cardId = resolveRailCardId({ bank: card.bank, cardName: card.cardName })
-    const rails = cardId
+    const baseRails = cardId
       ? mergedRails(cardId, travelKind, programmeId ?? null)
       : []
+    const rails = mergeWalletHubs(baseRails, card, travelKind)
 
     cardResults.push({
       walletKey: card.walletKey,
