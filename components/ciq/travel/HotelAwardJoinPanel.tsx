@@ -6,6 +6,8 @@ import { joinHotelAwardRates } from '@/lib/award-inventory/hotel-join'
 import type { AwardWalletHotelAwardRate } from '@/lib/award-inventory/providers/awardwallet'
 import type { HotelAwardProperty } from '@/lib/award-inventory/types'
 import type { HotelAwardSourceAttempt, HotelAwardOrchestratorStatus } from '@/lib/award-inventory/orchestrator'
+import { hotelProgrammeBooking } from '@/lib/data/hotel-programme-booking'
+import { partnerFor } from '@/lib/data/hdfc-transfer-partners'
 import { WalletRailMatrix } from './WalletRailMatrix'
 import './hotel-award-join.css'
 
@@ -52,6 +54,16 @@ function attemptLabel(state: HotelAwardSourceAttempt['state']) {
   if (state === 'PENDING') return 'Pending'
   if (state === 'EMPTY') return 'No result'
   return 'Provider error'
+}
+
+function hotelAwardStateLabel(response: AwardSearchResponse | null, hasJoinedRate: boolean) {
+  if (hasJoinedRate) return 'Award rate found · verify before transfer'
+  if (response?.status === 'CACHED_DISCOVERY') return 'Property/programme discovered · live price not confirmed'
+  if (response?.status === 'DIRECT_REQUIRED') return 'Direct loyalty check required'
+  if (response?.status === 'NO_LIVE_RATES') return 'No live award rate returned · direct check still available'
+  if (response?.status === 'PROVIDER_UNAVAILABLE') return 'Award provider unavailable · direct check still available'
+  if (response?.status === 'PENDING') return 'Live award search pending'
+  return 'Availability not confirmed'
 }
 
 export function HotelAwardJoinPanel({
@@ -116,11 +128,18 @@ export function HotelAwardJoinPanel({
 
   const bestRate = join?.rates[0] ?? null
   const cashPriceMinor = Number.isFinite(offer.totalPrice) ? Math.round(offer.totalPrice * 100) : null
+  const booking = hotelProgrammeBooking(programmeId)
+  const hdfcTransfer = programmeId ? partnerFor(programmeId) ?? null : null
+  const awardState = hotelAwardStateLabel(response, Boolean(join && bestRate))
 
   if (!programmeId) {
     return (
       <div className="haj-root">
-        <div className="haj-status neutral"><b>No loyalty programme safely mapped</b><span>Cash and generic portal/voucher rails remain visible. CreditIQ does not invent a hotel programme.</span></div>
+        <div className="haj-status neutral"><b>No loyalty programme safely mapped</b><span>This is not the same as “no redemption”. Card travel portals, vouchers, native ecosystem rails and cash remain available without inventing a hotel loyalty programme.</span></div>
+        <div className="haj-joined">
+          <div className="haj-joined-head"><div><small>Hotel redemption paths</small><b>Card-portal redemption still applies</b><span>Use SmartBuy, Travel EDGE, Amex Travel or another sourced wallet rail when your card supports it.</span></div><em>Independent hotel</em></div>
+          <p>CreditIQ will not attach Marriott/Accor/IHG/Hilton/Hyatt points to an independent property. The wallet matrix below remains the execution source for non-loyalty hotel redemptions.</p>
+        </div>
         <WalletRailMatrix travelKind="hotel" programmeId={null} cashPriceMinor={cashPriceMinor} cashCurrency={offer.currency} />
       </div>
     )
@@ -139,11 +158,11 @@ export function HotelAwardJoinPanel({
       )}
 
       {!loading && response?.status === 'PROVIDER_UNAVAILABLE' && (
-        <div className="haj-status error"><b>Award sources unavailable</b><span>{response.reason || response.error || 'Cash inventory remains usable. Missing provider access is not treated as zero award space.'}</span></div>
+        <div className="haj-status error"><b>Award source unavailable — redemption path preserved</b><span>{response.reason || response.error || 'Missing provider access is not treated as zero award space.'}</span></div>
       )}
 
       {!loading && response?.status === 'NO_LIVE_RATES' && (
-        <div className="haj-status nojoin"><b>Live provider returned no award rates</b><span>{response.reason || 'This is different from a provider/configuration failure; direct programme verification remains available.'}</span></div>
+        <div className="haj-status nojoin"><b>No live award rate returned — redemption path preserved</b><span>{response.reason || 'Direct programme verification remains available. CreditIQ does not convert a provider miss into “no redemption”.'}</span></div>
       )}
 
       {!loading && response?.status === 'CACHED_DISCOVERY' && (
@@ -155,12 +174,32 @@ export function HotelAwardJoinPanel({
       )}
 
       {!loading && response?.status === 'SUCCESS' && !join && (
-        <div className="haj-status nojoin"><b>Award inventory returned, but this property was not safely joined</b><span>CreditIQ found no exact/high-confidence match for {offer.hotelName}. The award price is deliberately not attached.</span></div>
+        <div className="haj-status nojoin"><b>Award inventory returned, but this property was not safely joined</b><span>CreditIQ found no exact/high-confidence match for {offer.hotelName}. The returned award price is deliberately not attached, but the programme path remains available for direct verification.</span></div>
       )}
+
+      <div className="haj-joined">
+        <div className="haj-joined-head">
+          <div><small>Direct loyalty redemption path</small><b>{booking?.programmeName || programmeId}</b><span>{awardState}</span></div>
+          <em>{booking?.region === 'india' ? 'India programme' : 'Global programme'}</em>
+        </div>
+        <div className="haj-price-grid">
+          <div><small>Cash benchmark</small><b>{offer.currency} {Math.round(offer.totalPrice).toLocaleString('en-IN')}</b><span>Selected live cash offer</span></div>
+          <div><small>Loyalty price</small><b>{bestRate ? `${bestRate.totalPoints.toLocaleString('en-IN')} pts` : 'Verify directly'}</b><span>{bestRate ? `${bestRate.pointsPerNight.toLocaleString('en-IN')} / night · ${bestRate.numberOfNights} nights` : 'No exact points figure invented'}</span></div>
+          <div><small>Award cash component</small><b>{bestRate ? moneyMinor(bestRate.totalCashMinor, bestRate.cashCurrency) ?? 'None returned' : 'Verify at checkout'}</b><span>{bestRate?.rateName || bestRate?.roomName || 'Programme checkout authority'}</span></div>
+        </div>
+        <ol className="approved-self-serve-steps">
+          <li><b>1.</b><span>Open {booking?.programmeName || programmeId} and search {destination} for {checkInDate} → {checkOutDate}.</span></li>
+          <li><b>2.</b><span>Match the exact property and room/rate. {bestRate ? `Reconfirm the current award price is ${bestRate.totalPoints.toLocaleString('en-IN')} points before moving any bank points.` : 'Confirm the live points price and room availability before moving any bank points.'}</span></li>
+          {hdfcTransfer && <li><b>3.</b><span>HDFC Infinia can transfer to {hdfcTransfer.display_name} at {hdfcTransfer.from_points}:{hdfcTransfer.to_units}. Transfer timing: {hdfcTransfer.duration_text || 'not stated'}. Do not transfer until the stay is confirmed because transfers can be irreversible.</span></li>}
+          <li><b>{hdfcTransfer ? '4.' : '3.'}</b><span>Complete the award booking directly with the hotel programme and pay any taxes, resort fees or cash component shown at final checkout.</span></li>
+        </ol>
+        {booking?.bookingUrl && <div className="approved-execution-actions"><a className="approved-primary" href={booking.bookingUrl} target="_blank" rel="noopener noreferrer">Open {booking.programmeName} ↗</a></div>}
+        <div className="approved-transfer-warning"><b>Important:</b> Hotel award inventory can change quickly. A cached result, published programme path or provider failure never authorises an irreversible transfer; direct programme checkout remains the final availability and price check.</div>
+      </div>
 
       {!loading && join && bestRate && (
         <div className="haj-joined">
-          <div className="haj-joined-head"><div><small>Cash + award joined</small><b>{join.awardHotelName}</b><span>{join.confidence} property match · {join.rates.length} award rate{join.rates.length === 1 ? '' : 's'} returned</span></div><em>{bestRate.source} · {bestRate.freshness}</em></div>
+          <div className="haj-joined-head"><div><small>Cash + award safely joined</small><b>{join.awardHotelName}</b><span>{join.confidence} property match · {join.rates.length} award rate{join.rates.length === 1 ? '' : 's'} returned</span></div><em>{bestRate.source} · {bestRate.freshness}</em></div>
           <div className="haj-price-grid">
             <div><small>Lowest points option found</small><b>{bestRate.totalPoints.toLocaleString('en-IN')} pts</b><span>{bestRate.pointsPerNight.toLocaleString('en-IN')} / night · {bestRate.numberOfNights} nights</span></div>
             <div><small>Award cash component</small><b>{moneyMinor(bestRate.totalCashMinor, bestRate.cashCurrency) ?? 'None returned'}</b><span>{bestRate.rateName || bestRate.roomName || 'Award rate'}</span></div>
