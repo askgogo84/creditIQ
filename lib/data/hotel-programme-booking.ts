@@ -66,6 +66,18 @@ const HOTEL_PROGRAMME_BOOKINGS: Record<string, HotelProgrammeBooking> = {
     bookingUrl: 'https://www.itchotels.com/in/en',
     region: 'india',
   },
+  'orchid-rewards': {
+    programmeId: 'orchid-rewards',
+    programmeName: 'Orchid / Regenta Rewards',
+    bookingUrl: 'https://www.royalorchidhotels.com/',
+    region: 'india',
+  },
+  'postcard-sunshine-club': {
+    programmeId: 'postcard-sunshine-club',
+    programmeName: 'The Postcard Sunshine Club',
+    bookingUrl: 'https://www.postcardresorts.com/',
+    region: 'india',
+  },
 }
 
 export function hotelProgrammeBooking(programmeId: string | null | undefined): HotelProgrammeBooking | null {
