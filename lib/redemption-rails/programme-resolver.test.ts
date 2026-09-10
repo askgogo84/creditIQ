@@ -15,14 +15,17 @@ describe('travel programme resolver', () => {
     expect(programmeIdForFlightSource('thai')).toBe('thai-royal-orchid')
     expect(programmeIdForFlightSource('lotusmiles')).toBe('lotusmiles')
     expect(programmeIdForFlightSource('qantas')).toBe('qantas')
+    expect(programmeIdForFlightSource('virginatlantic')).toBe('virgin-atlantic-flying-club')
   })
 
-  it('resolves domestic operating carriers even when no award record was returned', () => {
+  it('resolves operating carriers even when no award record was returned', () => {
     expect(programmeIdForFlightCarrier('AI')).toBe('air-india-maharaja')
     expect(programmeIdForFlightCarrier('Air India')).toBe('air-india-maharaja')
     expect(programmeIdForFlightCarrier('6E')).toBe('indigo-bluchip')
     expect(programmeIdForFlightCarrier('IndiGo')).toBe('indigo-bluchip')
     expect(programmeIdForFlightCarrier('SG')).toBe('spiceclub')
+    expect(programmeIdForFlightCarrier('EK')).toBe('emirates-skywards')
+    expect(programmeIdForFlightCarrier('Virgin Atlantic')).toBe('virgin-atlantic-flying-club')
     expect(programmeIdForFlightCarrier('Akasa Air')).toBeNull()
   })
 
@@ -56,5 +59,7 @@ describe('travel programme resolver', () => {
     expect(programmeIdForHotelChain('Ramada by Wyndham')).toBe('wyndham-rewards')
     expect(programmeIdForHotelChain('Radisson Blu')).toBe('radisson-rewards')
     expect(programmeIdForHotelChain('Shangri-La')).toBe('shangri-la-circle')
+    expect(programmeIdForHotelChain('Jumeirah Beach Hotel')).toBe('jumeirah-one')
+    expect(programmeIdForHotelChain('Burj Al Arab Jumeirah')).toBe('jumeirah-one')
   })
 })
