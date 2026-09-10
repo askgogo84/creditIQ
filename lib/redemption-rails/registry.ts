@@ -1,5 +1,6 @@
 import { HDFC_INFINIA_AS_OF, HDFC_INFINIA_SOURCE, HDFC_INFINIA_TRANSFER_PARTNERS } from '@/lib/data/hdfc-transfer-partners'
 import { flightProgrammeBookingUrl } from '@/lib/data/flight-programme-booking'
+import { hotelProgrammeBookingUrl } from '@/lib/data/hotel-programme-booking'
 import { TRANSFER_EDGES } from '@/lib/data/transfer-graph'
 import type {
   RailQuery,
@@ -14,8 +15,6 @@ function integerRatio(fromPoints: number, toUnits: number): RationalRatio {
     throw new Error('invalid transfer ratio')
   }
 
-  // Current captured issuer data uses 1 and 0.5. Convert decimal display data to
-  // an exact integer rational before it enters the new registry.
   if (Number.isInteger(fromPoints) && Number.isInteger(toUnits)) {
     return { fromUnits: fromPoints, toUnits }
   }
@@ -26,36 +25,40 @@ function integerRatio(fromPoints: number, toUnits: number): RationalRatio {
   throw new Error(`unsupported non-integer transfer ratio ${fromPoints}:${toUnits}`)
 }
 
-const hdfcInfiniaTransferRails: RedemptionRailDefinition[] = HDFC_INFINIA_TRANSFER_PARTNERS.map((partner) => ({
-  id: `hdfc-infinia-transfer-${partner.id}`,
-  cardIds: ['hdfc-infinia'],
-  issuer: 'HDFC',
-  type: 'LOYALTY_TRANSFER',
-  travelKinds: [partner.kind === 'hotel' ? 'hotel' : 'flight'],
-  // Partner, ratio and SLA are captured; issuer minimum/increment are not. That
-  // deliberately prevents an "exactly transfer N now" instruction.
-  executionState: 'RATIO_ONLY',
-  evidence: [{
-    kind: 'ISSUER_CAPTURE',
-    sourceId: 'hdfc-infinia-reward360-transfer-partners',
-    sourceUrl: HDFC_INFINIA_SOURCE,
-    capturedAt: HDFC_INFINIA_AS_OF,
-    note: 'Logged-in Infinia transfer-partner page; card scope is Infinia only.',
-  }],
-  transfer: {
-    programmeId: partner.id,
-    programmeName: partner.display_name,
-    destinationCurrency: partner.destination_currency,
-    ratio: integerRatio(partner.from_points, partner.to_units),
-    durationText: partner.duration_text,
-    durationHoursMax: partner.duration_hours_max,
-    irreversible: true,
-    minimumBankPoints: null,
-    incrementBankPoints: null,
-  },
-  bookingDestination: partner.display_name,
-  ...(flightProgrammeBookingUrl(partner.id) ? { bookingUrl: flightProgrammeBookingUrl(partner.id)! } : {}),
-}))
+const hdfcInfiniaTransferRails: RedemptionRailDefinition[] = HDFC_INFINIA_TRANSFER_PARTNERS.map((partner) => {
+  const bookingUrl = partner.kind === 'hotel'
+    ? hotelProgrammeBookingUrl(partner.id)
+    : flightProgrammeBookingUrl(partner.id)
+
+  return {
+    id: `hdfc-infinia-transfer-${partner.id}`,
+    cardIds: ['hdfc-infinia'],
+    issuer: 'HDFC',
+    type: 'LOYALTY_TRANSFER',
+    travelKinds: [partner.kind === 'hotel' ? 'hotel' : 'flight'],
+    executionState: 'RATIO_ONLY',
+    evidence: [{
+      kind: 'ISSUER_CAPTURE',
+      sourceId: 'hdfc-infinia-reward360-transfer-partners',
+      sourceUrl: HDFC_INFINIA_SOURCE,
+      capturedAt: HDFC_INFINIA_AS_OF,
+      note: 'Logged-in Infinia transfer-partner page; card scope is Infinia only.',
+    }],
+    transfer: {
+      programmeId: partner.id,
+      programmeName: partner.display_name,
+      destinationCurrency: partner.destination_currency,
+      ratio: integerRatio(partner.from_points, partner.to_units),
+      durationText: partner.duration_text,
+      durationHoursMax: partner.duration_hours_max,
+      irreversible: true,
+      minimumBankPoints: null,
+      incrementBankPoints: null,
+    },
+    bookingDestination: partner.display_name,
+    ...(bookingUrl ? { bookingUrl } : {}),
+  }
+})
 
 const AXIS_PROGRAMME_META: Record<string, { name: string; currency: string }> = {
   aeroplan: { name: 'Aeroplan', currency: 'Aeroplan points' },
@@ -93,8 +96,6 @@ const axisAtlasTransferRails: RedemptionRailDefinition[] = TRANSFER_EDGES
       issuer: 'Axis',
       type: 'LOYALTY_TRANSFER',
       travelKinds: ['flight'],
-      // Atlas minimum is sourced, but transfer increments are not modelled yet.
-      // Keep this projected until the exact issuer transfer step is fully captured.
       executionState: 'RATIO_ONLY',
       evidence: [{
         kind: 'ISSUER_PUBLIC',
@@ -109,7 +110,6 @@ const axisAtlasTransferRails: RedemptionRailDefinition[] = TRANSFER_EDGES
         destinationCurrency: meta.currency,
         ratio: { fromUnits: edge.ratio_from, toUnits: edge.ratio_to },
         durationText: axisTat(edge.bonus_note),
-        // Axis publishes working-day TAT. Do not silently convert it to calendar hours.
         durationHoursMax: null,
         irreversible: true,
         minimumBankPoints: edge.min_transfer,
@@ -120,12 +120,6 @@ const axisAtlasTransferRails: RedemptionRailDefinition[] = TRANSFER_EDGES
     }]
   })
 
-/**
- * Broad rails confirmed to exist. Where card-specific value/cap facts are
- * structured, CreditIQ may show projected points arithmetic while keeping the
- * issuer checkout as the execution boundary. Unknown fees are never treated as
- * zero for an executable instruction.
- */
 const discoveryRails: RedemptionRailDefinition[] = [
   {
     id: 'hdfc-infinia-smartbuy-travel',
@@ -160,8 +154,6 @@ const discoveryRails: RedemptionRailDefinition[] = [
       portalName: 'Axis Travel EDGE',
       supportsPointsPlusCash: true,
       valuePerPointPaise: 100,
-      // Travel EDGE exposes both "Pay by EDGE Miles" and "EDGE Miles + Card".
-      // A full-points booking path therefore exists; checkout remains authoritative.
       maxPointsShareBps: 10_000,
       feeMinor: null,
     },
@@ -220,6 +212,7 @@ const discoveryRails: RedemptionRailDefinition[] = [
     travelKinds: ['hotel'], executionState: 'CHECKOUT_REQUIRED',
     evidence: [{ kind: 'PROGRAMME_PUBLIC', sourceId: 'marriott-bonvoy-native-card', note: 'Card earns native Bonvoy currency; hotel award price still comes from Bonvoy inventory/checkout.' }],
     bookingDestination: 'Marriott Bonvoy',
+    bookingUrl: 'https://www.marriott.com/search/findHotels.mi',
   },
   {
     id: 'tata-neu-infinity-neucoins-travel',
