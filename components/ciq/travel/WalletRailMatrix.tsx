@@ -25,19 +25,18 @@ type WalletRailMatrixProps = {
   cashCurrency?: string | null
 }
 
-function visibleRails(rails: RedemptionRailDefinition[], programmeId: string | null, travelKind: TravelKind) {
+function visibleRails(rails: RedemptionRailDefinition[], programmeId: string | null) {
   return rails.filter((rail) => {
     if (rail.type !== 'LOYALTY_TRANSFER') return true
-    // Generic hotel search is deliberately wallet-first: show every sourced
-    // hotel transfer partner for the exact card even before a property maps to
-    // one programme. Flights stay award/programme-specific.
-    if (travelKind === 'hotel' && !programmeId) return true
-    return !!programmeId && rail.transfer?.programmeId === programmeId
+    // Before a specific airline/hotel programme is selected, show every sourced
+    // transfer partner for the exact card. Once a programme is selected, narrow
+    // transfer rails to that programme while keeping portal/cash alternatives.
+    if (!programmeId) return true
+    return rail.transfer?.programmeId === programmeId
   })
 }
 
-function railPriority(rail: RedemptionRailDefinition, travelKind: TravelKind) {
-  if (travelKind !== 'hotel') return 0
+function railPriority(rail: RedemptionRailDefinition) {
   if (rail.type === 'LOYALTY_TRANSFER') return 0
   if (rail.type === 'COBRAND_NATIVE') return 1
   if (rail.type === 'BANK_TRAVEL_PORTAL' || rail.type === 'MERCHANT_PAY_WITH_POINTS') return 2
@@ -290,11 +289,11 @@ export function WalletRailMatrix({
   }, [travelKind, programmeId, programmePointsRequired, awardTaxesMinor, awardTaxesCurrency, cashPriceMinor, cashCurrency])
 
   const cards = useMemo(() => (matrix?.cards ?? []).map((card) => {
-    const rails = visibleRails(card.rails, programmeId, travelKind)
+    const rails = visibleRails(card.rails, programmeId)
       .slice()
-      .sort((a, b) => railPriority(a, travelKind) - railPriority(b, travelKind))
+      .sort((a, b) => railPriority(a) - railPriority(b))
     return { ...card, rails, displayStatus: displayStatus(rails) }
-  }), [matrix, programmeId, travelKind])
+  }), [matrix, programmeId])
 
   const counts = useMemo(() => {
     const sourced = cards.reduce((sum, card) => sum + card.rails.length, 0)
@@ -308,27 +307,33 @@ export function WalletRailMatrix({
     }
   }, [cards])
 
+  const genericTransferDesk = !programmeId
+
   return (
     <section className="wrm-root" aria-label="Wallet redemption paths">
       <div className="wrm-head">
         <div>
           <b>All redemption paths in your wallet</b>
-          <span>{loading ? 'Comparing your cards…' : travelKind === 'hotel' ? `${cards.length} cards · ${counts.transfers} hotel transfer paths · ${counts.sourced} sourced routes` : `${cards.length} cards compared · ${counts.usableCards} usable/verification · ${counts.discoveryCards} discovery · ${counts.unsupportedCards} unmapped`}</span>
+          <span>{loading ? 'Comparing your cards…' : genericTransferDesk ? `${cards.length} cards · ${counts.transfers} ${travelKind} transfer paths · ${counts.sourced} sourced routes` : `${cards.length} cards compared · ${counts.usableCards} usable/verification · ${counts.discoveryCards} discovery · ${counts.unsupportedCards} unmapped`}</span>
         </div>
         {programmeId && <small>{programmeId}</small>}
       </div>
 
-      {travelKind === 'hotel' && !loading && !error && (
+      {genericTransferDesk && !loading && !error && (
         <div className="wrm-ranking projected">
           <div className="wrm-ranking-row">
             <div>
-              <small>Hotel loyalty transfer desk</small>
-              <b>Check points price → transfer → book direct</b>
-              <span>Marriott Bonvoy, ALL Accor, IHG, Radisson, Wyndham, Club ITC and other programmes appear only where the exact card in your wallet has a sourced route.</span>
+              <small>{travelKind === 'hotel' ? 'Hotel loyalty transfer desk' : 'Flight loyalty transfer desk'}</small>
+              <b>{travelKind === 'hotel' ? 'Check points price → transfer → book direct' : 'Check award seat → transfer → book direct'}</b>
+              <span>{travelKind === 'hotel'
+                ? 'Marriott Bonvoy, ALL Accor, IHG, Radisson, Wyndham, Club ITC and other programmes appear only where the exact card in your wallet has a sourced route.'
+                : 'Air India, KrisFlyer, Flying Blue, Qatar, British Airways, Etihad and other airline programmes appear only where the exact card in your wallet has a sourced route.'}</span>
             </div>
             <em>{counts.transfers} transfer path{counts.transfers === 1 ? '' : 's'}</em>
           </div>
-          <p>These routes do not depend on HBX cash inventory. Check the loyalty programme’s live points price first; only then move bank points because loyalty transfers are irreversible.</p>
+          <p>{travelKind === 'hotel'
+            ? 'These routes do not depend on cash-hotel inventory. Check the loyalty programme’s live points price first; only then move bank points because loyalty transfers are irreversible.'
+            : 'These routes do not depend on one award-search provider. Check the airline programme’s live award seat and points price first; only then move bank points because loyalty transfers are irreversible.'}</p>
         </div>
       )}
 
@@ -366,7 +371,7 @@ export function WalletRailMatrix({
       ))}
 
       {!loading && !error && <div className="wrm-cash"><b>Cash + retain points</b><span>Always available · selected booking provider</span><em>Executable</em></div>}
-      <div className="wrm-foot">Hotel transfer ratios are card-exact, not bank-wide. Confirm the programme’s live award price before transferring; exact transfer amounts remain withheld until issuer minimum/increment and final checkout are verified.</div>
+      <div className="wrm-foot">{travelKind === 'hotel' ? 'Hotel' : 'Flight'} transfer ratios are card-exact, not bank-wide. Confirm the programme’s live {travelKind === 'hotel' ? 'award price' : 'award seat and price'} before transferring; exact transfer amounts remain withheld until issuer minimum/increment and final checkout are verified.</div>
     </section>
   )
 }
