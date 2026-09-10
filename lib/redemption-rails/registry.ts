@@ -1,4 +1,5 @@
 import { HDFC_INFINIA_AS_OF, HDFC_INFINIA_SOURCE, HDFC_INFINIA_TRANSFER_PARTNERS } from '@/lib/data/hdfc-transfer-partners'
+import { AXIS_ATLAS_HOTEL_AS_OF, AXIS_ATLAS_HOTEL_PARTNERS, AXIS_ATLAS_HOTEL_SOURCE } from '@/lib/data/axis-atlas-hotel-transfer-partners'
 import { flightProgrammeBookingUrl } from '@/lib/data/flight-programme-booking'
 import { hotelProgrammeBookingUrl } from '@/lib/data/hotel-programme-booking'
 import { TRANSFER_EDGES } from '@/lib/data/transfer-graph'
@@ -62,17 +63,23 @@ const hdfcInfiniaTransferRails: RedemptionRailDefinition[] = HDFC_INFINIA_TRANSF
 
 const AXIS_PROGRAMME_META: Record<string, { name: string; currency: string }> = {
   aeroplan: { name: 'Aeroplan', currency: 'Aeroplan points' },
+  'airasia-rewards': { name: 'AirAsia rewards', currency: 'AirAsia points' },
+  'air-india-maharaja': { name: 'Air India Maharaja Club', currency: 'Maharaja Points' },
   'british-airways-club': { name: 'The British Airways Club', currency: 'Avios' },
   ethiopian: { name: 'Ethiopian ShebaMiles', currency: 'ShebaMiles' },
   'etihad-guest': { name: 'Etihad Guest', currency: 'Etihad Guest Miles' },
   finnair: { name: 'Finnair Plus', currency: 'Avios' },
-  'qatar-privilege-club': { name: 'Qatar Privilege Club', currency: 'Avios' },
+  'flying-blue': { name: 'Flying Blue', currency: 'Flying Blue Miles' },
+  'indigo-bluchip': { name: 'IndiGo BluChip', currency: 'IndiGo BluChips' },
+  'jal-mileage-bank': { name: 'JAL Mileage Bank', currency: 'JAL miles' },
   krisflyer: { name: 'KrisFlyer', currency: 'KrisFlyer miles' },
+  lotusmiles: { name: 'Lotusmiles', currency: 'Lotusmiles miles' },
+  qantas: { name: 'Qantas Frequent Flyer', currency: 'Qantas Points' },
+  'qatar-privilege-club': { name: 'Qatar Privilege Club', currency: 'Avios' },
+  spiceclub: { name: 'SpiceClub', currency: 'SC Points' },
+  'thai-royal-orchid': { name: 'Thai Royal Orchid Plus', currency: 'Royal Orchid Plus miles' },
   'turkish-miles-smiles': { name: 'Turkish Airlines Miles&Smiles', currency: 'Miles&Smiles Miles' },
   'united-mileageplus': { name: 'United MileagePlus', currency: 'MileagePlus miles' },
-  'flying-blue': { name: 'Flying Blue', currency: 'Flying Blue Miles' },
-  'air-india-maharaja': { name: 'Air India Maharaja Club', currency: 'Maharaja Points' },
-  qantas: { name: 'Qantas Frequent Flyer', currency: 'Qantas Points' },
 }
 
 function axisTat(note: string | null): string | null {
@@ -119,6 +126,38 @@ const axisAtlasTransferRails: RedemptionRailDefinition[] = TRANSFER_EDGES
       ...(flightProgrammeBookingUrl(programmeId) ? { bookingUrl: flightProgrammeBookingUrl(programmeId)! } : {}),
     }]
   })
+
+const axisAtlasHotelTransferRails: RedemptionRailDefinition[] = AXIS_ATLAS_HOTEL_PARTNERS.map((partner) => {
+  const bookingUrl = hotelProgrammeBookingUrl(partner.id)
+  return {
+    id: `axis-atlas-transfer-${partner.id}`,
+    cardIds: ['axis-atlas'],
+    issuer: 'Axis',
+    type: 'LOYALTY_TRANSFER',
+    travelKinds: ['hotel'],
+    executionState: 'RATIO_ONLY',
+    evidence: [{
+      kind: 'ISSUER_PUBLIC',
+      sourceId: 'axis-atlas-hotel-transfer-grid-2026',
+      sourceUrl: AXIS_ATLAS_HOTEL_SOURCE,
+      capturedAt: AXIS_ATLAS_HOTEL_AS_OF,
+      note: `Axis Atlas official EDGE Miles ratio. Partner Group ${partner.group}; Atlas annual cap is ${partner.group === 'A' ? '30,000' : '1,20,000'} EDGE Miles across Group ${partner.group}, 1,50,000 overall.`,
+    }],
+    transfer: {
+      programmeId: partner.id,
+      programmeName: partner.displayName,
+      destinationCurrency: partner.destinationCurrency,
+      ratio: { fromUnits: partner.ratioFrom, toUnits: partner.ratioTo },
+      durationText: partner.tat,
+      durationHoursMax: null,
+      irreversible: true,
+      minimumBankPoints: 500,
+      incrementBankPoints: null,
+    },
+    bookingDestination: partner.displayName,
+    ...(bookingUrl ? { bookingUrl } : {}),
+  }
+})
 
 const discoveryRails: RedemptionRailDefinition[] = [
   {
@@ -226,6 +265,7 @@ const discoveryRails: RedemptionRailDefinition[] = [
 export const REDEMPTION_RAIL_REGISTRY: readonly RedemptionRailDefinition[] = [
   ...hdfcInfiniaTransferRails,
   ...axisAtlasTransferRails,
+  ...axisAtlasHotelTransferRails,
   ...discoveryRails,
 ]
 
