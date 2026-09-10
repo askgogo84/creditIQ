@@ -7,6 +7,7 @@ import { ConciergeRequestButton, type ConciergeRequest } from '@/components/ciq/
 import { programmeIdForHotelChain } from '@/lib/redemption-rails/programme-resolver'
 import { HotelAwardJoinPanel } from './HotelAwardJoinPanel'
 import { HotelAwardDiscoveryPanel } from './HotelAwardDiscoveryPanel'
+import { HotelLoyaltyProgrammeDeck } from './HotelLoyaltyProgrammeDeck'
 import './global-hotel-workspace.css'
 
 type HotelOffer = {
@@ -253,7 +254,7 @@ export function GlobalHotelWorkspace() {
       </div>
 
       <div className="ghw-demo-link">
-        <span>Search → select a property → compare cash vs loyalty points → see the exact card transfer path → book direct or hand off to Concierge.</span>
+        <span>Search → choose a loyalty programme or property → compare cash vs points → see the exact card transfer path → book direct or hand off to Concierge.</span>
         <Link href="/stay-on-points?demo=accor">Open captured Accor redemption demo →</Link>
       </div>
 
@@ -268,10 +269,12 @@ export function GlobalHotelWorkspace() {
               {attempts.map((attempt) => <small key={attempt.provider}><b>{providerLabel(attempt.provider)}:</b> {attempt.ok ? `${attempt.loaded} live offers` : attempt.note}</small>)}
             </div>
           )}
-          <small>Cash inventory unavailable does not mean there is no redemption path. CreditIQ will not invent a cash rate; cached points-stay discovery and direct-programme verification remain available below.</small>
+          <small>Cash inventory unavailable does not mean there is no redemption path. CreditIQ will not invent a cash rate; hotel-loyalty programme paths, cached points-stay discovery and direct-programme verification remain available below.</small>
         </div>
       )}
       {loading && <div className="ghw-loading">Starting the global cash-hotel provider chain for {destination}…</div>}
+
+      {submittedSearch && !loading && <HotelLoyaltyProgrammeDeck destination={submittedSearch.destination} />}
 
       {!loading && offers.length > 0 && (
         <div className="ghw-workspace">
