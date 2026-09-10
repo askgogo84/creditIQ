@@ -26,4 +26,16 @@ describe('GlobalFlightWorkspace Any cabin search', () => {
     expect(source).toContain('flightResultPriority(a, date) - flightResultPriority(b, date)')
     expect(source).toContain('Exact-date live cash fares')
   })
+
+  it('fails closed on nearby-airport provider substitutions', () => {
+    expect(source).toContain('function isExactAirportRow')
+    expect(source).toContain('isExactAirportRow(row, from, destination)')
+  })
+
+  it('ranks non-stop and shorter itineraries ahead of awkward routings on the same date', () => {
+    expect(source).toContain('function rowStops')
+    expect(source).toContain('function rowDurationMinutes')
+    expect(source).toContain('rowStops(a) - rowStops(b)')
+    expect(source).toContain('rowDurationMinutes(a) - rowDurationMinutes(b)')
+  })
 })
