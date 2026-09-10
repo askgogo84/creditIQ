@@ -25,11 +25,24 @@ type WalletRailMatrixProps = {
   cashCurrency?: string | null
 }
 
-function visibleRails(rails: RedemptionRailDefinition[], programmeId: string | null) {
+function visibleRails(rails: RedemptionRailDefinition[], programmeId: string | null, travelKind: TravelKind) {
   return rails.filter((rail) => {
     if (rail.type !== 'LOYALTY_TRANSFER') return true
+    // Generic hotel search is deliberately wallet-first: show every sourced
+    // hotel transfer partner for the exact card even before a property maps to
+    // one programme. Flights stay award/programme-specific.
+    if (travelKind === 'hotel' && !programmeId) return true
     return !!programmeId && rail.transfer?.programmeId === programmeId
   })
+}
+
+function railPriority(rail: RedemptionRailDefinition, travelKind: TravelKind) {
+  if (travelKind !== 'hotel') return 0
+  if (rail.type === 'LOYALTY_TRANSFER') return 0
+  if (rail.type === 'COBRAND_NATIVE') return 1
+  if (rail.type === 'BANK_TRAVEL_PORTAL' || rail.type === 'MERCHANT_PAY_WITH_POINTS') return 2
+  if (rail.type === 'TRAVEL_VOUCHER') return 3
+  return 4
 }
 
 function displayStatus(rails: RedemptionRailDefinition[]) {
@@ -55,6 +68,13 @@ function railStateLabel(rail: RedemptionRailDefinition) {
   if (rail.executionState === 'RATIO_ONLY') return 'Ratio sourced · exact step withheld'
   if (rail.executionState === 'CHECKOUT_REQUIRED') return 'Checkout verification'
   return 'Discovery only'
+}
+
+function railMeta(rail: RedemptionRailDefinition) {
+  const pieces = [rail.type.replaceAll('_', ' ')]
+  if (rail.transfer?.durationText) pieces.push(`transfer ${rail.transfer.durationText}`)
+  if (rail.transfer?.irreversible) pieces.push('irreversible')
+  return pieces.join(' · ')
 }
 
 function moneyMinor(value: number | null, currency: string | null) {
@@ -270,22 +290,47 @@ export function WalletRailMatrix({
   }, [travelKind, programmeId, programmePointsRequired, awardTaxesMinor, awardTaxesCurrency, cashPriceMinor, cashCurrency])
 
   const cards = useMemo(() => (matrix?.cards ?? []).map((card) => {
-    const rails = visibleRails(card.rails, programmeId)
+    const rails = visibleRails(card.rails, programmeId, travelKind)
+      .slice()
+      .sort((a, b) => railPriority(a, travelKind) - railPriority(b, travelKind))
     return { ...card, rails, displayStatus: displayStatus(rails) }
-  }), [matrix, programmeId])
+  }), [matrix, programmeId, travelKind])
 
-  const counts = useMemo(() => ({
-    usable: cards.filter((c) => c.displayStatus === 'EXECUTABLE' || c.displayStatus === 'VERIFICATION_REQUIRED').length,
-    discovery: cards.filter((c) => c.displayStatus === 'DISCOVERY_ONLY').length,
-    unsupported: cards.filter((c) => c.displayStatus === 'NO_VERIFIED_REDEMPTION_RAIL').length,
-  }), [cards])
+  const counts = useMemo(() => {
+    const sourced = cards.reduce((sum, card) => sum + card.rails.length, 0)
+    const transfers = cards.reduce((sum, card) => sum + card.rails.filter((rail) => rail.type === 'LOYALTY_TRANSFER').length, 0)
+    return {
+      sourced,
+      transfers,
+      usableCards: cards.filter((c) => c.displayStatus === 'EXECUTABLE' || c.displayStatus === 'VERIFICATION_REQUIRED').length,
+      discoveryCards: cards.filter((c) => c.displayStatus === 'DISCOVERY_ONLY').length,
+      unsupportedCards: cards.filter((c) => c.displayStatus === 'NO_VERIFIED_REDEMPTION_RAIL').length,
+    }
+  }, [cards])
 
   return (
     <section className="wrm-root" aria-label="Wallet redemption paths">
       <div className="wrm-head">
-        <div><b>All redemption paths in your wallet</b><span>{loading ? 'Comparing your cards…' : `${cards.length} cards compared · ${counts.usable} usable/verification paths · ${counts.discovery} discovery · ${counts.unsupported} unmapped`}</span></div>
+        <div>
+          <b>All redemption paths in your wallet</b>
+          <span>{loading ? 'Comparing your cards…' : travelKind === 'hotel' ? `${cards.length} cards · ${counts.transfers} hotel transfer paths · ${counts.sourced} sourced routes` : `${cards.length} cards compared · ${counts.usableCards} usable/verification · ${counts.discoveryCards} discovery · ${counts.unsupportedCards} unmapped`}</span>
+        </div>
         {programmeId && <small>{programmeId}</small>}
       </div>
+
+      {travelKind === 'hotel' && !loading && !error && (
+        <div className="wrm-ranking projected">
+          <div className="wrm-ranking-row">
+            <div>
+              <small>Hotel loyalty transfer desk</small>
+              <b>Check points price → transfer → book direct</b>
+              <span>Marriott Bonvoy, ALL Accor, IHG, Radisson, Wyndham, Club ITC and other programmes appear only where the exact card in your wallet has a sourced route.</span>
+            </div>
+            <em>{counts.transfers} transfer path{counts.transfers === 1 ? '' : 's'}</em>
+          </div>
+          <p>These routes do not depend on HBX cash inventory. Check the loyalty programme’s live points price first; only then move bank points because loyalty transfers are irreversible.</p>
+        </div>
+      )}
 
       {!loading && !error && decision && <SearchDecisionSummary decision={decision} />}
       {!loading && !error && ranking && <RankingSummary ranking={ranking} />}
@@ -305,7 +350,13 @@ export function WalletRailMatrix({
             <div className="wrm-rails">
               {card.rails.map((rail) => (
                 <div className="wrm-rail" key={rail.id}>
-                  <div><b>{railLabel(rail)}</b><span>{rail.type.replaceAll('_', ' ')}</span></div>
+                  <div>
+                    <b>{railLabel(rail)}</b>
+                    <span>
+                      {railMeta(rail)}
+                      {rail.bookingUrl && <> · <a href={rail.bookingUrl} target="_blank" rel="noopener noreferrer" style={{ color: '#193d72', fontWeight: 700, textTransform: 'none' }}>{rail.type === 'LOYALTY_TRANSFER' || rail.type === 'COBRAND_NATIVE' ? 'Check points & book →' : 'Open booking path →'}</a></>}
+                    </span>
+                  </div>
                   <small>{railStateLabel(rail)}</small>
                 </div>
               ))}
@@ -315,7 +366,7 @@ export function WalletRailMatrix({
       ))}
 
       {!loading && !error && <div className="wrm-cash"><b>Cash + retain points</b><span>Always available · selected booking provider</span><em>Executable</em></div>}
-      <div className="wrm-foot">This panel assembles safe next steps from the server decision contract. Exact transfer amounts remain withheld until issuer minimum/increment and final checkout are verified.</div>
+      <div className="wrm-foot">Hotel transfer ratios are card-exact, not bank-wide. Confirm the programme’s live award price before transferring; exact transfer amounts remain withheld until issuer minimum/increment and final checkout are verified.</div>
     </section>
   )
 }
