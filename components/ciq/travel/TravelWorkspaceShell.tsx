@@ -5,7 +5,6 @@ import { usePathname } from 'next/navigation'
 import type { ReactNode } from 'react'
 import { Building2, Compass, Plane, Sparkles, Target } from 'lucide-react'
 import { PanelFade } from '@/components/ciq/PanelFade'
-import { WalletRailMatrix } from './WalletRailMatrix'
 import './travel-experience.css'
 
 const tabs = [
@@ -32,7 +31,6 @@ function activeFor(pathname: string, href: string) {
 export function TravelWorkspaceShell({ children, previewPath }: { children: ReactNode; previewPath?: string }) {
   const currentPath = usePathname()
   const pathname = previewPath || currentPath || '/trip-planner'
-  const flightWorkspace = activeFor(pathname, '/trip-planner')
 
   return (
     <main className="ciq-approved-stage ciq-approved-travel">
@@ -52,7 +50,6 @@ export function TravelWorkspaceShell({ children, previewPath }: { children: Reac
         </nav>
       </div>
       <PanelFade fill>
-        {flightWorkspace && <WalletRailMatrix travelKind="flight" programmeId={null} />}
         {children}
       </PanelFade>
     </main>
