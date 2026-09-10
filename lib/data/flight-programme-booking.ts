@@ -12,6 +12,7 @@ const FLIGHT_PROGRAMME_BOOKING_URLS: Readonly<Record<string, string>> = {
   'british-airways-club': 'https://www.britishairways.com/travel/redeem/execclub/',
   'united-mileageplus': 'https://www.united.com/en/us/book-flight/united-award',
   aeroplan: 'https://www.aircanada.com/aeroplan/redeem/',
+  'avianca-lifemiles': 'https://www.lifemiles.com/fly/find',
   'flying-blue': 'https://www.flyingblue.com/en/spend/flights',
   'etihad-guest': 'https://www.etihad.com/en/etihadguest/spend-miles',
   'qatar-privilege-club': 'https://www.qatarairways.com/en/Privilege-Club/redeem-qmiles.html',
