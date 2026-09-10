@@ -27,6 +27,25 @@ describe('redemption rail registry', () => {
     expect(rail?.executionState).toBe('RATIO_ONLY')
   })
 
+  it('exposes the current Axis Atlas airline grid including newly reconciled partners', () => {
+    expect(transferRailFor('axis-atlas', 'airasia-rewards')?.transfer?.ratio).toEqual({ fromUnits: 1, toUnits: 2 })
+    expect(transferRailFor('axis-atlas', 'indigo-bluchip')?.transfer?.ratio).toEqual({ fromUnits: 2, toUnits: 1 })
+    expect(transferRailFor('axis-atlas', 'jal-mileage-bank')?.transfer?.ratio).toEqual({ fromUnits: 1, toUnits: 2 })
+    expect(transferRailFor('axis-atlas', 'lotusmiles')?.transfer?.ratio).toEqual({ fromUnits: 2, toUnits: 1 })
+  })
+
+  it('exposes Axis Atlas hotel transfer paths with exact card ratios and direct booking destinations', () => {
+    const ihg = transferRailFor('axis-atlas', 'ihg-one')
+    const radisson = transferRailFor('axis-atlas', 'radisson-rewards')
+    const wyndham = transferRailFor('axis-atlas', 'wyndham-rewards')
+    expect(ihg?.travelKinds).toEqual(['hotel'])
+    expect(ihg?.transfer?.ratio).toEqual({ fromUnits: 1, toUnits: 2 })
+    expect(ihg?.transfer?.minimumBankPoints).toBe(500)
+    expect(radisson?.transfer?.ratio).toEqual({ fromUnits: 1, toUnits: 1 })
+    expect(wyndham?.transfer?.ratio).toEqual({ fromUnits: 1, toUnits: 2 })
+    expect(ihg?.bookingUrl).toContain('ihg.com')
+  })
+
   it('keeps a portal rail visible even when exact checkout economics are not captured', () => {
     const rails = railsForCard('amex-platinum-travel', 'flight')
     expect(rails).toHaveLength(1)
