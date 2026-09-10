@@ -25,10 +25,27 @@ describe('travel programme resolver', () => {
     expect(programmeIdForFlightSource('american')).toBe('american-aadvantage')
   })
 
-  it('maps major hotel families without guessing unrelated independents', () => {
-    expect(programmeIdForHotelChain('Marriott International')).toBe('marriott-bonvoy')
-    expect(programmeIdForHotelChain('Accor')).toBe('accor-all')
+  it('maps Indian hotel families and sub-brands without guessing independents', () => {
     expect(programmeIdForHotelChain('IHCL - Taj Hotels')).toBe('taj-neupass')
+    expect(programmeIdForHotelChain('Vivanta Bengaluru')).toBe('taj-neupass')
+    expect(programmeIdForHotelChain('Ginger Goa')).toBe('taj-neupass')
+    expect(programmeIdForHotelChain('ITC Grand Chola')).toBe('club-itc')
+    expect(programmeIdForHotelChain('Welcomhotel by ITC')).toBe('club-itc')
+    expect(programmeIdForHotelChain('Fortune Hotels')).toBe('club-itc')
     expect(programmeIdForHotelChain('Independent Collection')).toBeNull()
+  })
+
+  it('maps major global hotel families and common sub-brands', () => {
+    expect(programmeIdForHotelChain('Marriott International')).toBe('marriott-bonvoy')
+    expect(programmeIdForHotelChain('JW Marriott')).toBe('marriott-bonvoy')
+    expect(programmeIdForHotelChain('Le Meridien')).toBe('marriott-bonvoy')
+    expect(programmeIdForHotelChain('Accor')).toBe('accor-all')
+    expect(programmeIdForHotelChain('Fairmont')).toBe('accor-all')
+    expect(programmeIdForHotelChain('Holiday Inn Express')).toBe('ihg-one')
+    expect(programmeIdForHotelChain('Conrad Hotels')).toBe('hilton-honors')
+    expect(programmeIdForHotelChain('Park Hyatt')).toBe('world-of-hyatt')
+    expect(programmeIdForHotelChain('Ramada by Wyndham')).toBe('wyndham-rewards')
+    expect(programmeIdForHotelChain('Radisson Blu')).toBe('radisson-rewards')
+    expect(programmeIdForHotelChain('Shangri-La')).toBe('shangri-la-circle')
   })
 })
