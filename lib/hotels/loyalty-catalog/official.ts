@@ -11,7 +11,7 @@ export type OfficialLoyaltyProperty = {
   observedPointsMedian: number | null
   observedPointsMax: number | null
   updatedAt: string | null
-  source: 'FIRST_PARTY'
+  source: 'FIRST_PARTY' | 'LICENSED_CONTENT'
   sourceName: string
   sourceUrl: string
 }
@@ -75,9 +75,6 @@ const ADAPTERS: readonly Adapter[] = [
     sourceName: 'ALL Accor',
     buildUrl: ({ destination }) => {
       const slug = destination.toLowerCase().normalize('NFKD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')
-      // Accor's destination SEO pages redirect/resolve the canonical city page when available.
-      // If a city requires an internal destination id, this adapter fails closed and the cached
-      // loyalty catalogue remains available until the id resolver is added.
       return `https://all.accor.com/a/en/destination/city/hotels-${slug}.html`
     },
     hotelNameTokens: ['accor', 'novotel', 'mercure', 'ibis', 'sofitel', 'pullman', 'mgallery', 'fairmont', 'raffles', 'swissotel', 'movenpick', 'mövenpick', 'banyan tree', 'angsana', 'mondrian', '25hours', 'tribe'],
@@ -178,12 +175,9 @@ export function parseOfficialHotelHtml(html: string, adapter: Adapter, sourceUrl
 
   const scripts = html.matchAll(/<script[^>]*type=["']application\/ld\+json["'][^>]*>([\s\S]*?)<\/script>/gi)
   for (const match of scripts) {
-    try { collectJsonLd(JSON.parse(match[1]), adapter, sourceUrl, out) } catch { /* issuer page may contain malformed optional JSON-LD */ }
+    try { collectJsonLd(JSON.parse(match[1]), adapter, sourceUrl, out) } catch { /* optional JSON-LD can be malformed */ }
   }
 
-  // Major hotel destination pages are SSR'd with hotel names in h2/h3/card links even
-  // when their internal search API is private. This fallback extracts only names carrying
-  // a known brand token, so generic navigation headings cannot become fake properties.
   const headings = html.matchAll(/<(h2|h3)[^>]*>([\s\S]*?)<\/\1>/gi)
   for (const match of headings) {
     const name = normalizeName(match[2])
