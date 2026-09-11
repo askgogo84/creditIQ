@@ -24,6 +24,9 @@ type Property = {
   observedPointsMedian: number | null
   observedPointsMax: number | null
   updatedAt: string | null
+  source?: 'FIRST_PARTY' | 'CACHED_INDEX'
+  sourceName?: string | null
+  sourceUrl?: string | null
 }
 
 type Response = {
@@ -32,6 +35,7 @@ type Response = {
   provider?: string
   freshness?: string
   properties?: Property[]
+  sourceSummary?: { firstParty?: number; cachedIndex?: number }
   reason?: string
   error?: string
 }
@@ -67,6 +71,7 @@ export function HotelAwardDiscoveryPanel({ search }: { search: Search | null }) 
   const [loading, setLoading] = useState(false)
   const [message, setMessage] = useState('')
   const [status, setStatus] = useState('')
+  const [sourceSummary, setSourceSummary] = useState<{ firstParty: number; cachedIndex: number }>({ firstParty: 0, cachedIndex: 0 })
   const [programmeFilter, setProgrammeFilter] = useState<string>('all')
   const [selectedId, setSelectedId] = useState<string | null>(null)
 
@@ -75,6 +80,7 @@ export function HotelAwardDiscoveryPanel({ search }: { search: Search | null }) 
       setProperties([])
       setMessage('')
       setStatus('')
+      setSourceSummary({ firstParty: 0, cachedIndex: 0 })
       setProgrammeFilter('all')
       setSelectedId(null)
       return
@@ -88,7 +94,11 @@ export function HotelAwardDiscoveryPanel({ search }: { search: Search | null }) 
     void authedFetch('/api/hotels/award-discovery', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ destination: search.destination }),
+      body: JSON.stringify({
+        destination: search.destination,
+        checkInDate: search.checkInDate,
+        checkOutDate: search.checkOutDate,
+      }),
     })
       .then(async response => {
         const data = await response.json().catch(() => ({})) as Response
@@ -98,6 +108,10 @@ export function HotelAwardDiscoveryPanel({ search }: { search: Search | null }) 
         setProperties(next)
         setSelectedId(next[0] ? `${next[0].programmeId}:${next[0].providerPropertyId}` : null)
         setStatus(data.pricingAuthority || data.status || '')
+        setSourceSummary({
+          firstParty: Number(data.sourceSummary?.firstParty || next.filter(property => property.source === 'FIRST_PARTY').length),
+          cachedIndex: Number(data.sourceSummary?.cachedIndex || next.filter(property => property.source !== 'FIRST_PARTY').length),
+        })
         setMessage(data.reason || '')
       })
       .catch(error => {
@@ -137,13 +151,13 @@ export function HotelAwardDiscoveryPanel({ search }: { search: Search | null }) 
         <div>
           <div className="ciq-editorial-kicker">Loyalty hotels in {search.destination}</div>
           <h2 style={{ margin: '4px 0 3px', fontSize: 19 }}>Choose the actual hotel first. Then CreditIQ works out how to redeem.</h2>
-          <p style={{ margin: 0, color: 'var(--ink-2)', fontSize: 10.5, maxWidth: 780 }}>This is the primary points-hotel result set: Marriott, Hilton, IHG, Hyatt, Wyndham, Accor, Radisson, Taj, ITC/Fortune, Jumeirah and other supported loyalty properties for the destination. Select a hotel to see the card-specific path and open the hotel programme for the final live points check.</p>
+          <p style={{ margin: 0, color: 'var(--ink-2)', fontSize: 10.5, maxWidth: 780 }}>First-party hotel programme catalogues are preferred. Cached award observations are merged only as supporting discovery. Select a hotel to see your card-specific transfer path and open the programme for the final live points check.</p>
         </div>
-        <span style={{ color: properties.length ? 'var(--copper)' : 'var(--ink-3)', fontSize: 9, fontWeight: 850, textTransform: 'uppercase', whiteSpace: 'nowrap' }}>{loading ? 'Finding loyalty hotels…' : properties.length ? `${properties.length} hotels found` : status || 'Unavailable'}</span>
+        <span style={{ color: properties.length ? 'var(--copper)' : 'var(--ink-3)', fontSize: 9, fontWeight: 850, textTransform: 'uppercase', whiteSpace: 'nowrap' }}>{loading ? 'Finding loyalty hotels…' : properties.length ? `${properties.length} hotels · ${sourceSummary.firstParty} official` : status || 'Unavailable'}</span>
       </div>
 
       {loading ? (
-        <div style={{ padding: 28, color: 'var(--ink-3)', fontSize: 11, textAlign: 'center' }}>Finding loyalty hotels in {search.destination}…</div>
+        <div style={{ padding: 28, color: 'var(--ink-3)', fontSize: 11, textAlign: 'center' }}>Checking Marriott, Hilton, IHG, Accor and the loyalty catalogue for {search.destination}…</div>
       ) : properties.length ? (
         <>
           <div style={{ display: 'flex', gap: 7, overflowX: 'auto', padding: '10px 14px', borderBottom: '1px solid var(--line)', background: 'var(--surface-2)' }}>
@@ -167,7 +181,7 @@ export function HotelAwardDiscoveryPanel({ search }: { search: Search | null }) 
                       <div style={{ minWidth: 0 }}>
                         <span style={{ display: 'block', color: 'var(--copper)', fontSize: 8, textTransform: 'uppercase', fontWeight: 850, letterSpacing: '.06em' }}>{programmeName(property.programmeId)}</span>
                         <b style={{ display: 'block', fontSize: 12, lineHeight: 1.3, marginTop: 3 }}>{property.name}</b>
-                        <small style={{ display: 'block', marginTop: 4, color: 'var(--ink-3)', fontSize: 8.5 }}>{property.subBrand || property.brand || 'Loyalty hotel'}</small>
+                        <small style={{ display: 'block', marginTop: 4, color: property.source === 'FIRST_PARTY' ? 'var(--prov-verified)' : 'var(--ink-3)', fontSize: 8.5, fontWeight: property.source === 'FIRST_PARTY' ? 750 : 500 }}>{property.source === 'FIRST_PARTY' ? `Official catalogue · ${property.sourceName || programmeName(property.programmeId)}` : property.subBrand || property.brand || 'Cached loyalty discovery'}</small>
                       </div>
                     </div>
                     <div style={{ marginTop: 12, display: 'grid', gridTemplateColumns: 'repeat(2,1fr)', gap: 8 }}>
@@ -187,11 +201,13 @@ export function HotelAwardDiscoveryPanel({ search }: { search: Search | null }) 
                     <small style={{ color: 'var(--copper)', textTransform: 'uppercase', fontSize: 8, fontWeight: 850 }}>Selected loyalty hotel</small>
                     <h3 style={{ margin: '5px 0 2px', fontSize: 17 }}>{selected.name}</h3>
                     <span style={{ color: 'var(--ink-3)', fontSize: 9 }}>{programmeName(selected.programmeId)} · {search.checkInDate} → {search.checkOutDate}</span>
+                    <div style={{ marginTop: 5, fontSize: 8.5, color: selected.source === 'FIRST_PARTY' ? 'var(--prov-verified)' : 'var(--ink-3)', fontWeight: 750 }}>{selected.source === 'FIRST_PARTY' ? `Property identity from ${selected.sourceName || programmeName(selected.programmeId)}` : 'Property identity from cached loyalty index'}</div>
                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginTop: 12 }}>
                       <div style={{ padding: 9, border: '1px solid var(--line)', borderRadius: 10, background: 'var(--surface)' }}><small style={{ color: 'var(--ink-3)', fontSize: 8 }}>Observed low</small><b style={{ display: 'block', marginTop: 2 }}>{points(selected.observedPointsMin)}</b></div>
                       <div style={{ padding: 9, border: '1px solid var(--line)', borderRadius: 10, background: 'var(--surface)' }}><small style={{ color: 'var(--ink-3)', fontSize: 8 }}>Observed typical</small><b style={{ display: 'block', marginTop: 2 }}>{points(selected.observedPointsMedian)}</b></div>
                     </div>
-                    {booking?.bookingUrl && <a href={booking.bookingUrl} target="_blank" rel="noopener noreferrer" style={{ display: 'block', marginTop: 12, padding: '10px 12px', borderRadius: 10, background: 'var(--ink)', color: 'var(--surface)', textDecoration: 'none', textAlign: 'center', fontSize: 9, fontWeight: 850 }}>Verify live points &amp; book on {booking.programmeName} ↗</a>}
+                    {selected.sourceUrl && <a href={selected.sourceUrl} target="_blank" rel="noopener noreferrer" style={{ display: 'block', marginTop: 10, color: 'var(--copper)', fontSize: 9, fontWeight: 800, textAlign: 'center', textDecoration: 'none' }}>Open property/programme source ↗</a>}
+                    {booking?.bookingUrl && <a href={booking.bookingUrl} target="_blank" rel="noopener noreferrer" style={{ display: 'block', marginTop: 8, padding: '10px 12px', borderRadius: 10, background: 'var(--ink)', color: 'var(--surface)', textDecoration: 'none', textAlign: 'center', fontSize: 9, fontWeight: 850 }}>Verify live points &amp; book on {booking.programmeName} ↗</a>}
                   </div>
                   <div style={{ padding: 12 }}>
                     <WalletRailMatrix travelKind="hotel" programmeId={selected.programmeId} programmePointsRequired={selected.observedPointsMin} />
@@ -202,10 +218,10 @@ export function HotelAwardDiscoveryPanel({ search }: { search: Search | null }) 
           </div>
         </>
       ) : (
-        <div style={{ padding: 18, color: 'var(--ink-3)', fontSize: 11 }}>{message || 'No loyalty properties are currently cached for this destination. Open the hotel programme directly for the live destination search.'}</div>
+        <div style={{ padding: 18, color: 'var(--ink-3)', fontSize: 11 }}>{message || 'No loyalty properties are currently available for this destination. Open the hotel programme directly for the live destination search.'}</div>
       )}
 
-      <div style={{ padding: '10px 14px', color: 'var(--ink-3)', fontSize: 9.5, lineHeight: 1.45, borderTop: '1px solid var(--line)' }}><b>Live-booking gate:</b> these are destination-level loyalty hotel identities with observed award ranges where available. The hotel programme site is always the final source for the selected dates, room and current points price before any irreversible bank-points transfer.</div>
+      <div style={{ padding: '10px 14px', color: 'var(--ink-3)', fontSize: 9.5, lineHeight: 1.45, borderTop: '1px solid var(--line)' }}><b>Live-booking gate:</b> first-party catalogue identity is preferred. Historical points ranges are supporting observations only. The hotel programme is always the final source for the selected dates, room and current points price before any irreversible bank-points transfer.</div>
     </section>
   )
 }
