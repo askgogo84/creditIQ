@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { requireAuth } from '@/lib/api-auth'
 import { AwardToolHotelProvider } from '@/lib/award-inventory/providers/awardtool'
 import { fetchOfficialLoyaltyProperties } from '@/lib/hotels/loyalty-catalog/official'
+import { fetchAdditionalOfficialLoyaltyProperties } from '@/lib/hotels/loyalty-catalog/official-extra'
 
 export const runtime = 'nodejs'
 export const maxDuration = 20
@@ -40,22 +41,25 @@ export async function POST(req: NextRequest) {
   const checkOutDate = date(body.checkOutDate ?? body.checkout)
   const guestCount = adults(body.adults)
   const cachedProvider = new AwardToolHotelProvider()
+  const searchInput = {
+    destination: query,
+    checkInDate,
+    checkOutDate,
+    adults: guestCount,
+  }
 
   try {
     // First-party programme sites are the preferred property-identity source.
     // The cached award index is complementary: it contributes historical points
     // observations and fills programmes whose first-party adapter is not live yet.
-    const [official, cachedRaw] = await Promise.all([
-      fetchOfficialLoyaltyProperties({
-        destination: query,
-        checkInDate,
-        checkOutDate,
-        adults: guestCount,
-      }),
+    const [coreOfficial, extraOfficial, cachedRaw] = await Promise.all([
+      fetchOfficialLoyaltyProperties(searchInput),
+      fetchAdditionalOfficialLoyaltyProperties(searchInput),
       cachedProvider.isConfigured()
         ? cachedProvider.listSupportedProperties({ destination: query }).catch(() => [])
         : Promise.resolve([]),
     ])
+    const official = [...coreOfficial, ...extraOfficial]
 
     const merged = new Map<string, any>()
     for (const property of cachedRaw) {
@@ -95,6 +99,18 @@ export async function POST(req: NextRequest) {
 
     const officialCount = properties.filter(property => property.source === 'FIRST_PARTY').length
     const cachedCount = properties.length - officialCount
+    const byProgramme = properties.reduce<Record<string, number>>((acc, property) => {
+      const key = String(property.programmeId || 'unknown')
+      acc[key] = (acc[key] || 0) + 1
+      return acc
+    }, {})
+
+    console.info('hotel loyalty discovery', {
+      destination: query,
+      officialCount,
+      cachedCount,
+      byProgramme,
+    })
 
     return NextResponse.json({
       status: properties.length
@@ -110,6 +126,7 @@ export async function POST(req: NextRequest) {
       sourceSummary: {
         firstParty: officialCount,
         cachedIndex: cachedCount,
+        byProgramme,
       },
       fetchedAt: new Date().toISOString(),
       reason: properties.length
