@@ -3,6 +3,7 @@ import { cashRetainRail, queryRails } from './registry'
 import { resolveRailCardId } from './card-resolver'
 import { supplementalRailsForCard } from './supplemental-rails'
 import { walletIssuerHubRails } from './wallet-issuer-hubs'
+import { amexExactRailsForCard } from './amex-exact-rails'
 
 export type WalletRailStatus =
   | 'EXECUTABLE'
@@ -53,11 +54,16 @@ function railIdentity(rail: RedemptionRailDefinition) {
 function mergedRails(cardId: string, travelKind: TravelKind, programmeId: string | null) {
   const merged = new Map<string, RedemptionRailDefinition>()
 
-  // Supplemental rails are deliberately inserted first: when a broad catalogue
-  // fallback and a newer issuer-sourced rail describe the same path, the richer
-  // issuer-sourced definition wins rather than showing a duplicate.
-  for (const rail of supplementalRailsForCard(cardId, travelKind, programmeId)) {
+  // Current issuer-captured exact transfer ratios win before generic hubs/fallbacks.
+  for (const rail of amexExactRailsForCard(cardId, travelKind, programmeId)) {
     merged.set(railIdentity(rail), rail)
+  }
+
+  // Supplemental rails are deliberately inserted before the broad catalogue
+  // fallback so richer issuer-sourced definitions win rather than duplicating.
+  for (const rail of supplementalRailsForCard(cardId, travelKind, programmeId)) {
+    const key = railIdentity(rail)
+    if (!merged.has(key)) merged.set(key, rail)
   }
   for (const rail of queryRails({ cardId, travelKind, programmeId })) {
     const key = railIdentity(rail)
