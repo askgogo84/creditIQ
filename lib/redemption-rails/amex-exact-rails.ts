@@ -6,7 +6,7 @@ const AMEX_TRANSFER_URL = 'https://global.americanexpress.com/rewards/transfer'
 const AMEX_CARD_IDS = ['amex-platinum-travel', 'amex-mrcc', 'amex-gold', 'amex-gold-charge', 'amex-smartearn']
 
 const AMEX_PARTNERS = [
-  { id: 'asia-miles', name: 'Asia Miles', currency: 'Asia Miles', kind: 'flight' as const, from: 800, to: 400, min: 800, inc: 800, duration: 'up to 48 hours', durationHoursMax: 48 },
+  { id: 'cathay', name: 'Asia Miles', currency: 'Asia Miles', kind: 'flight' as const, from: 800, to: 400, min: 800, inc: 800, duration: 'up to 48 hours', durationHoursMax: 48 },
   { id: 'british-airways-club', name: 'British Airways Executive Club', currency: 'Avios', kind: 'flight' as const, from: 1200, to: 600, min: null, inc: null, duration: null, durationHoursMax: null },
   { id: 'qatar-privilege-club', name: 'Qatar Privilege Club', currency: 'Avios', kind: 'flight' as const, from: 500, to: 250, min: null, inc: null, duration: null, durationHoursMax: null },
   { id: 'krisflyer', name: 'Singapore KrisFlyer', currency: 'KrisFlyer Miles', kind: 'flight' as const, from: 800, to: 400, min: null, inc: null, duration: null, durationHoursMax: null },
