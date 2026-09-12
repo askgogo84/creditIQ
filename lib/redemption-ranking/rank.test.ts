@@ -71,13 +71,13 @@ describe('wallet rail ranking', () => {
     expect(result.bestExecutable?.railType).toBe('CASH_RETAIN')
   })
 
-  it('preserves unsupported wallet cards instead of pretending another card rule applies', () => {
+  it('keeps fallback-only wallet cards visible without promoting them as verified redemption routes', () => {
     const result = rankWalletRails(demoMatrix(), flightPricing)
-    expect(result.unsupportedWalletCards).toContainEqual({
-      walletKey: 'au-3302',
-      bank: 'AU',
-      cardName: 'AU Zenith Plus',
-    })
+    const au = result.candidates.filter((candidate) => candidate.walletKey === 'au-3302')
+
+    expect(au.length).toBeGreaterThan(0)
+    expect(au.every((candidate) => candidate.comparisonState === 'DISCOVERY_ONLY' || candidate.comparisonState === 'NOT_COMPARABLE')).toBe(true)
+    expect(au.some((candidate) => candidate.railType === 'LOYALTY_TRANSFER' && candidate.comparisonState === 'PROJECTED_NEEDS_VERIFICATION')).toBe(false)
   })
 
   it('projects Axis Atlas Travel EDGE points instead of hiding a sourced portal redemption', () => {
