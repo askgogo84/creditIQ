@@ -114,7 +114,16 @@ export function buildWalletRailMatrix(
     const baseRails = cardId
       ? mergedRails(cardId, travelKind, programmeId ?? null)
       : []
-    const rails = mergeWalletHubs(baseRails, card, travelKind)
+    const allCardRails = mergeWalletHubs(baseRails, card, travelKind)
+
+    // A generic flight search does not yet have an airline loyalty programme to
+    // price against, so partner-specific transfer ratios must not masquerade as
+    // applicable paths. Keep portals/hubs visible; exact transfer rails return
+    // once the selected itinerary resolves to a programme. Generic hotel search
+    // intentionally keeps hotel transfer discovery visible for property matching.
+    const rails = travelKind === 'flight' && !programmeId
+      ? allCardRails.filter((rail) => rail.type !== 'LOYALTY_TRANSFER')
+      : allCardRails
 
     cardResults.push({
       walletKey: card.walletKey,
