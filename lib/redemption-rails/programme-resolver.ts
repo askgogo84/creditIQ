@@ -174,8 +174,14 @@ export function programmeIdForHotelChain(chainName: string | null | undefined): 
   const n = token(chainName || '')
   if (!n) return null
 
+  let best: { programmeId: string; tokenLength: number } | null = null
   for (const rule of HOTEL_CHAIN_RULES) {
-    if (rule.tokens.some((brandToken) => n.includes(brandToken))) return rule.programmeId
+    for (const brandToken of rule.tokens) {
+      if (!n.includes(brandToken)) continue
+      if (!best || brandToken.length > best.tokenLength) {
+        best = { programmeId: rule.programmeId, tokenLength: brandToken.length }
+      }
+    }
   }
-  return null
+  return best?.programmeId ?? null
 }

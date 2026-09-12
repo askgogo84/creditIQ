@@ -1,5 +1,11 @@
 import { assertSafeInteger, bankPointsForProgramme, roundUpTransfer } from '@/lib/redemption-engine/rational'
 import type { RedemptionRailDefinition, WalletRailMatrix } from '@/lib/redemption-rails'
+import {
+  AXIS_ATLAS_ANNUAL_TRANSFER_CAP_POINTS,
+  HDFC_INFINIA_SMARTBUY_MONTHLY_REDEMPTION_CAP_POINTS,
+  axisAtlasGroupAnnualCapPoints,
+  axisAtlasTransferGroup,
+} from './issuer-caps'
 import type {
   RailAffordability,
   RailComparisonState,
@@ -101,21 +107,42 @@ function transferCandidate(
   let exact: number | null = null
   let affordability: RailAffordability = 'UNKNOWN'
 
-  if (balance != null) {
-    assertSafeInteger('wallet points balance', balance, { min: 0 })
-    if (balance < target) {
-      affordability = 'DEFINITELY_UNAFFORDABLE'
-      reasons.push(`Wallet balance is below the minimum ratio-derived target of ${target.toLocaleString('en-IN')} points.`)
-    } else if (transfer.minimumBankPoints != null && transfer.incrementBankPoints != null) {
-      exact = roundUpTransfer(target, transfer.minimumBankPoints, transfer.incrementBankPoints)
-      affordability = balance >= exact ? 'AFFORDABLE' : 'DEFINITELY_UNAFFORDABLE'
-      if (balance < exact) reasons.push('Rounded issuer minimum/increment makes this transfer unaffordable.')
+  if (card.cardId === 'axis-atlas') {
+    const group = axisAtlasTransferGroup(transfer.programmeId)
+    if (group) {
+      const groupCap = axisAtlasGroupAnnualCapPoints(group)
+      if (target > AXIS_ATLAS_ANNUAL_TRANSFER_CAP_POINTS || target > groupCap) {
+        affordability = 'DEFINITELY_UNAFFORDABLE'
+        reasons.push(
+          `This transfer requires ${target.toLocaleString('en-IN')} EDGE Miles, above the published Atlas Group ${group} calendar-year ceiling of ${groupCap.toLocaleString('en-IN')} EDGE Miles.`,
+        )
+      } else {
+        reasons.push(
+          `Atlas Group ${group} allows up to ${groupCap.toLocaleString('en-IN')} EDGE Miles per calendar year (${AXIS_ATLAS_ANNUAL_TRANSFER_CAP_POINTS.toLocaleString('en-IN')} overall); remaining annual allowance must be verified before transfer.`,
+        )
+      }
     } else {
-      affordability = 'POSSIBLY_AFFORDABLE'
-      reasons.push('Balance covers the ratio-derived target, but issuer minimum/increment are not fully sourced.')
+      reasons.push('Atlas partner group could not be resolved, so annual transfer-cap eligibility must be verified before transfer.')
     }
-  } else {
-    reasons.push('Wallet balance is unavailable for affordability checking.')
+  }
+
+  if (affordability !== 'DEFINITELY_UNAFFORDABLE') {
+    if (balance != null) {
+      assertSafeInteger('wallet points balance', balance, { min: 0 })
+      if (balance < target) {
+        affordability = 'DEFINITELY_UNAFFORDABLE'
+        reasons.push(`Wallet balance is below the minimum ratio-derived target of ${target.toLocaleString('en-IN')} points.`)
+      } else if (transfer.minimumBankPoints != null && transfer.incrementBankPoints != null) {
+        exact = roundUpTransfer(target, transfer.minimumBankPoints, transfer.incrementBankPoints)
+        affordability = balance >= exact ? 'AFFORDABLE' : 'DEFINITELY_UNAFFORDABLE'
+        if (balance < exact) reasons.push('Rounded issuer minimum/increment makes this transfer unaffordable.')
+      } else {
+        affordability = 'POSSIBLY_AFFORDABLE'
+        reasons.push('Balance covers the ratio-derived target, but issuer minimum/increment are not fully sourced.')
+      }
+    } else {
+      reasons.push('Wallet balance is unavailable for affordability checking.')
+    }
   }
 
   const taxesComparable = awardTaxes != null && sameCurrency(pricing.awardTaxesCurrency, pricing.cashCurrency)
@@ -171,7 +198,15 @@ function genericRailCandidate(
     ) {
       assertSafeInteger('wallet points balance', balance, { min: 0 })
       const capMinor = Math.floor((cashPrice * portal.maxPointsShareBps) / 10_000)
-      const pointsByCap = Math.floor(capMinor / portal.valuePerPointPaise)
+      let pointsByCap = Math.floor(capMinor / portal.valuePerPointPaise)
+
+      if (card.cardId === 'hdfc-infinia' && rail.id === 'hdfc-infinia-smartbuy-travel') {
+        pointsByCap = Math.min(pointsByCap, HDFC_INFINIA_SMARTBUY_MONTHLY_REDEMPTION_CAP_POINTS)
+        reasons.push(
+          `Infinia SmartBuy travel/airmiles redemptions are capped at ${HDFC_INFINIA_SMARTBUY_MONTHLY_REDEMPTION_CAP_POINTS.toLocaleString('en-IN')} Reward Points per calendar month; remaining monthly allowance must be verified at checkout.`,
+        )
+      }
+
       const pointsUsed = Math.min(balance, pointsByCap)
       const knownFeeMinor = portal.feeMinor
       const cashPayableBeforeUnknownFee = cashPrice - (pointsUsed * portal.valuePerPointPaise)

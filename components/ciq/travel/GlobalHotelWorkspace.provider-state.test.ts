@@ -17,12 +17,11 @@ describe('GlobalHotelWorkspace provider failure state', () => {
     expect(source).not.toContain('useState(plusDays(21))')
   })
 
-  it('keeps wallet and points-stay redemption paths visible after live cash failure without promoting discovery as live', () => {
+  it('keeps loyalty discovery visible independently of live cash-provider failure', () => {
     expect(source).not.toContain('const [showDiscovery, setShowDiscovery]')
-    expect(source).toContain('Cash inventory unavailable does not mean there is no redemption path')
-    expect(source).toContain('import { WalletRailMatrix }')
-    expect(source).toContain('<WalletRailMatrix travelKind="hotel" programmeId={null} />')
     expect(source).toContain('<HotelAwardDiscoveryPanel search={submittedSearch} />')
+    expect(source).toContain('never the source of loyalty-programme eligibility')
+    expect(source).toContain('does not turn a cash-provider failure into “no hotel redemption”')
     expect(source).not.toContain('(!liveUnavailable || showDiscovery)')
   })
 })
