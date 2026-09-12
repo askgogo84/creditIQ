@@ -34,6 +34,17 @@ describe('concierge booking execution plan', () => {
     expect(plan.steps.join(' ')).toMatch(/PNR\/reservation reference/i)
   })
 
+  it('normalizes the legacy hotel transfer-then-book path into points-assisted execution', () => {
+    const plan = buildBookingExecutionPlan({
+      ...base,
+      source_type: 'HOTEL',
+      selection: { booking_url: 'https://hotel-programme.example/redeem' },
+      redemption_snapshot: { recommended_path: 'TRANSFER_THEN_BOOK' },
+    })
+    expect(plan.mode).toBe('POINTS_ASSISTED')
+    expect(plan.requiresPointsTransfer).toBe(true)
+  })
+
   it('uses the selected provider deeplink for a verified cash booking', () => {
     const plan = buildBookingExecutionPlan({
       ...base,
@@ -41,6 +52,22 @@ describe('concierge booking execution plan', () => {
     })
     expect(plan.mode).toBe('CASH_PROVIDER_DEEPLINK')
     expect(plan.bookingUrl).toBe('https://provider.example/book/abc')
+    expect(plan.canStartBooking).toBe(true)
+  })
+
+  it('accepts an operator-verified replacement booking link after exact re-pricing', () => {
+    const plan = buildBookingExecutionPlan({
+      ...base,
+      selection: { provider: 'amadeus' },
+      verified_redemption_snapshot: {
+        verified: true,
+        booking_link: 'https://supplier.example/exact-offer',
+        provider: 'approved-consolidator',
+      },
+    })
+    expect(plan.mode).toBe('CASH_PROVIDER_DEEPLINK')
+    expect(plan.bookingUrl).toBe('https://supplier.example/exact-offer')
+    expect(plan.provider).toBe('approved-consolidator')
     expect(plan.canStartBooking).toBe(true)
   })
 
