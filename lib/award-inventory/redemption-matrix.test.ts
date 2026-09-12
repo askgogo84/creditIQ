@@ -33,11 +33,12 @@ const hotelAward: HotelAwardProperty = {
 }
 
 describe('award inventory redemption rail join', () => {
-  it('attaches exact-programme flight transfer rails while preserving unsupported cards', () => {
+  it('attaches exact-programme flight transfer rails while keeping unsupported cards discovery-only', () => {
     const result = attachRailsToFlightAward(flightAward, wallet)
     expect(result.railMatrix.programmeId).toBe('krisflyer')
     expect(result.railMatrix.cards[0].rails.some((rail) => rail.id === 'hdfc-infinia-transfer-krisflyer')).toBe(true)
-    expect(result.railMatrix.cards[1].status).toBe('NO_VERIFIED_REDEMPTION_RAIL')
+    expect(result.railMatrix.cards[1].status).toBe('DISCOVERY_ONLY')
+    expect(result.railMatrix.cards[1].rails.some((rail) => rail.type === 'LOYALTY_TRANSFER' && rail.transfer?.programmeId === 'krisflyer')).toBe(false)
     expect(result.railMatrix.cashRail.executionState).toBe('EXECUTABLE')
   })
 
