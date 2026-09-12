@@ -3,6 +3,7 @@ import { ReferenceApp } from '@/components/ciq/reference-app/ReferenceApp'
 import './preview.css'
 import './reference-parity.css'
 import './reference-fixes.css'
+import './mobile-grid.css'
 
 export const metadata: Metadata = {
   title: 'CreditIQ Mobile App Prototype — Reference Parity',
