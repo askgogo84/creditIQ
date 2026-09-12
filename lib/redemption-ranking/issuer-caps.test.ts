@@ -27,7 +27,7 @@ describe('issuer redemption caps', () => {
     const portal = result.candidates.find(candidate => candidate.railId === 'hdfc-infinia-smartbuy-travel')
     expect(portal?.bankPointsTargetMinimum).toBe(150_000)
     expect(portal?.cashPayableMinor).toBe(15_000_000)
-    expect(portal?.reasons.join(' ')).toMatch(/150,000 Reward Points per calendar month/i)
+    expect(portal?.reasons.join(' ')).toMatch(/1,50,000 Reward Points per calendar month/i)
     expect(portal?.reasons.join(' ')).toMatch(/remaining monthly allowance must be verified/i)
   })
 
