@@ -35,14 +35,18 @@ describe('wallet redemption rail matrix', () => {
     expect(hotel.cards[0].rails.some(rail => rail.id === 'hdfc-diners-black-smartbuy-travel')).toBe(true)
   })
 
-  it('exposes current Magnus for Burgundy partner ratios for both flights and hotels', () => {
+  it('exposes current Magnus for Burgundy partner ratios only after the selected programme is known', () => {
+    const genericFlight = buildWalletRailMatrix([
+      { walletKey: 'g', bank: 'Axis', cardName: 'Axis Magnus for Burgundy', pointsBalance: 70000 },
+    ], 'flight')
     const flight = buildWalletRailMatrix([
       { walletKey: 'm', bank: 'Axis', cardName: 'Axis Magnus for Burgundy', pointsBalance: 70000 },
-    ], 'flight')
+    ], 'flight', 'krisflyer')
     const hotel = buildWalletRailMatrix([
       { walletKey: 'm2', bank: 'Axis', cardName: 'Axis Magnus for Burgundy', pointsBalance: 70000 },
-    ], 'hotel')
+    ], 'hotel', 'ihg-one')
 
+    expect(genericFlight.cards[0].rails.some(rail => rail.type === 'LOYALTY_TRANSFER')).toBe(false)
     expect(flight.cards[0].rails.find(rail => rail.transfer?.programmeId === 'krisflyer')?.transfer?.ratio)
       .toEqual({ fromUnits: 5, toUnits: 4 })
     expect(hotel.cards[0].rails.find(rail => rail.transfer?.programmeId === 'ihg-one')?.transfer?.ratio)
