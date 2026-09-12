@@ -118,17 +118,17 @@ export function buildBookingExecutionPlan(c: CaseLike): BookingExecutionPlan {
   }
 
   return {
-    mode: 'CASH_API_BOOKING', canStartBooking: true,
+    mode: 'CASH_API_BOOKING', canStartBooking: false,
     requiresUserApproval: true, requiresLiveReverification: false,
     requiresPayment: true, requiresPointsTransfer: false,
     bookingUrl: null, provider,
     steps: [
-      'Re-price the exact selected itinerary/property through the booking-capable supplier',
+      'Connect a booking-capable supplier/order API for this search result',
+      'Re-price the exact selected itinerary/property through that supplier',
       'Receive approval for the final cash amount',
       'Create the supplier order/reservation',
-      'Capture the PNR/reservation reference',
-      'Reconcile final supplier cost, fees and customer payment',
+      'Capture the PNR/reservation reference and reconcile',
     ],
-    blockedReasons: [],
+    blockedReasons: ['This result is searchable but has no executable provider deeplink and no booking-order adapter is configured. Do not take payment or mark it booked.'],
   }
 }
