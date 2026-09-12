@@ -17,12 +17,6 @@ vi.mock('next/link', () => ({
   ),
 }))
 
-vi.mock('./WalletRailMatrix', () => ({
-  WalletRailMatrix: ({ travelKind, programmeId }: { travelKind: string; programmeId: string | null }) => (
-    <div data-testid="wallet-rail-matrix">{travelKind}:{programmeId ?? 'all'}</div>
-  ),
-}))
-
 import { TravelWorkspaceShell } from './TravelWorkspaceShell'
 
 describe('TravelWorkspaceShell', () => {
@@ -41,14 +35,16 @@ describe('TravelWorkspaceShell', () => {
     expect(within(modes).getByRole('link', { name: /Explore/ })).toHaveAttribute('href', '/sweet-spots')
   })
 
-  it('shows the all-programme wallet transfer desk on Flights but not Hotels', () => {
+  it('keeps redemption intelligence inside the selected flight/hotel result instead of injecting a generic transfer desk', () => {
     nav.path = '/trip-planner'
-    const flight = render(<TravelWorkspaceShell><div>flight content</div></TravelWorkspaceShell>)
-    expect(within(flight.container).getByTestId('wallet-rail-matrix')).toHaveTextContent('flight:all')
+    const flight = render(<TravelWorkspaceShell><div data-testid="selected-result">flight result intelligence</div></TravelWorkspaceShell>)
+    expect(within(flight.container).getByTestId('selected-result')).toHaveTextContent('flight result intelligence')
+    expect(within(flight.container).queryByTestId('wallet-rail-matrix')).toBeNull()
     flight.unmount()
 
     nav.path = '/hotels'
-    const hotel = render(<TravelWorkspaceShell><div>hotel content</div></TravelWorkspaceShell>)
+    const hotel = render(<TravelWorkspaceShell><div data-testid="selected-result">hotel result intelligence</div></TravelWorkspaceShell>)
+    expect(within(hotel.container).getByTestId('selected-result')).toHaveTextContent('hotel result intelligence')
     expect(within(hotel.container).queryByTestId('wallet-rail-matrix')).toBeNull()
     hotel.unmount()
   })
