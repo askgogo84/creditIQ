@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useMemo, useState } from 'react'
+import { buildBookingExecutionPlan } from '@/lib/concierge/execution-plan'
 
 type CaseRow = {
   id: string
@@ -36,6 +37,14 @@ export default function AdminConciergePage() {
   const [reconciliationJson, setReconciliationJson] = useState('{}')
 
   const selected = useMemo(() => cases.find(c => c.id === selectedId) ?? cases[0] ?? null, [cases, selectedId])
+  const executionPlan = useMemo(() => selected ? buildBookingExecutionPlan({
+    source_type: selected.source_type,
+    selection: selected.selection ?? {},
+    redemption_snapshot: selected.redemption_snapshot ?? {},
+    source_snapshot: selected.source_snapshot ?? {},
+    snapshot_trust: selected.snapshot_trust,
+    verified_redemption_snapshot: selected.verified_redemption_snapshot ?? null,
+  }) : null, [selected])
 
   async function load() {
     setError('')
@@ -67,7 +76,10 @@ export default function AdminConciergePage() {
         method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body),
       })
       const json = await res.json().catch(() => ({}))
-      if (!res.ok) throw new Error(json?.error || 'Could not update case')
+      if (!res.ok) {
+        const detail = json?.executionPlan?.blockedReasons?.length ? ` · ${json.executionPlan.blockedReasons.join(' · ')}` : ''
+        throw new Error(`${json?.error || 'Could not update case'}${detail}`)
+      }
       await load()
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Could not update case')
@@ -89,12 +101,21 @@ export default function AdminConciergePage() {
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, minmax(0,1fr))', gap: 8, marginBottom: 16 }}>
             {[['Status', selected.status],['Trust',selected.snapshot_trust],['Approval',selected.approval_state],['Expected cash',money(selected.expected_cash_minor,selected.currency)]].map(([k,v]) => <div key={k} style={{ padding: 10, borderRadius: 10, background: 'var(--surface-2)' }}><small style={{ display: 'block', color: 'var(--ink-3)' }}>{k}</small><b style={{ fontSize: 11 }}>{v}</b></div>)}
           </div>
+
+          {executionPlan && <div style={{ marginBottom: 16, padding: 14, border: `1px solid ${executionPlan.canStartBooking ? '#2e9d66' : '#c58b2c'}`, borderRadius: 12, background: 'var(--surface-2)' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', gap: 12 }}><div><small style={{ display: 'block', color: 'var(--ink-3)' }}>EXECUTION MODE</small><b>{executionPlan.mode.replaceAll('_',' ')}</b></div><strong style={{ fontSize: 11 }}>{executionPlan.canStartBooking ? 'Executable after approval' : 'Blocked'}</strong></div>
+            {!!executionPlan.provider && <p style={{ margin: '7px 0 0', fontSize: 11 }}>Provider: <b>{executionPlan.provider}</b></p>}
+            {!!executionPlan.bookingUrl && <p style={{ margin: '5px 0 0', fontSize: 10, wordBreak: 'break-all' }}>Booking URL: {executionPlan.bookingUrl}</p>}
+            {!!executionPlan.blockedReasons.length && <div style={{ marginTop: 8 }}>{executionPlan.blockedReasons.map(reason => <div key={reason} style={{ fontSize: 10, marginTop: 4 }}>⚠ {reason}</div>)}</div>}
+            <ol style={{ margin: '10px 0 0', paddingLeft: 18 }}>{executionPlan.steps.map(step => <li key={step} style={{ fontSize: 10, margin: '4px 0' }}>{step}</li>)}</ol>
+          </div>}
+
           <details open><summary style={{ fontWeight: 800, marginBottom: 8 }}>Exact selection</summary><pre style={{ whiteSpace: 'pre-wrap', fontSize: 11, background: 'var(--surface-2)', padding: 12, borderRadius: 10 }}>{JSON.stringify(selected.selection, null, 2)}</pre></details>
           <details><summary style={{ fontWeight: 800, marginBottom: 8 }}>Source snapshot</summary><pre style={{ whiteSpace: 'pre-wrap', fontSize: 11, background: 'var(--surface-2)', padding: 12, borderRadius: 10 }}>{JSON.stringify(selected.source_snapshot, null, 2)}</pre></details>
 
-          {(selected.status === 'REVIEWING' || selected.status === 'PRICE_CHANGED' || selected.status === 'NEEDS_INFORMATION') && <div style={{ marginTop: 18 }}><label style={{ display: 'block', fontWeight: 800, fontSize: 12, marginBottom: 6 }}>Verified redemption snapshot</label><textarea value={verifiedJson} onChange={e => setVerifiedJson(e.target.value)} rows={12} style={{ width: '100%', fontFamily: 'monospace', fontSize: 11, padding: 10 }} /><button disabled={busy} onClick={() => void act('CONFIRM_OPTION')} style={{ marginTop: 8, minHeight: 42, padding: '0 15px' }}>Confirm exact option</button></div>}
+          {(selected.status === 'REVIEWING' || selected.status === 'PRICE_CHANGED' || selected.status === 'NEEDS_INFORMATION') && <div style={{ marginTop: 18 }}><label style={{ display: 'block', fontWeight: 800, fontSize: 12, marginBottom: 6 }}>Verified redemption snapshot</label><textarea value={verifiedJson} onChange={e => setVerifiedJson(e.target.value)} rows={12} style={{ width: '100%', fontFamily: 'monospace', fontSize: 11, padding: 10 }} /><small style={{ display: 'block', color: 'var(--ink-3)', marginTop: 5 }}>For a verified cash deeplink that was not present in the original search result, include booking_link/provider here. For a points path, include the verified recommended_candidate rail_type.</small><button disabled={busy} onClick={() => void act('CONFIRM_OPTION')} style={{ marginTop: 8, minHeight: 42, padding: '0 15px' }}>Confirm exact option</button></div>}
           {selected.status === 'OPTION_CONFIRMED' && <button disabled={busy} onClick={() => void act('REQUEST_APPROVAL')} style={{ minHeight: 42, padding: '0 15px' }}>Request user approval</button>}
-          {selected.status === 'TRANSFER_APPROVED' && <button disabled={busy} onClick={() => void act('START_BOOKING')} style={{ minHeight: 42, padding: '0 15px' }}>Start booking</button>}
+          {selected.status === 'TRANSFER_APPROVED' && <button disabled={busy || !executionPlan?.canStartBooking} onClick={() => void act('START_BOOKING')} style={{ minHeight: 42, padding: '0 15px' }}>{executionPlan?.canStartBooking ? 'Start booking' : 'Booking blocked — resolve execution path'}</button>}
           {selected.status === 'BOOKING_IN_PROGRESS' && <div style={{ marginTop: 16 }}><label style={{ display: 'block', fontWeight: 800, fontSize: 12, marginBottom: 6 }}>Real PNR / reservation reference</label><input value={bookingReference} onChange={e => setBookingReference(e.target.value)} style={{ width: '100%', minHeight: 42, padding: '0 10px' }} /><button disabled={busy || !bookingReference.trim()} onClick={() => void act('MARK_BOOKED')} style={{ marginTop: 8, minHeight: 42, padding: '0 15px' }}>Mark booked</button></div>}
           {selected.status === 'BOOKED' && <div style={{ marginTop: 16 }}><label style={{ display: 'block', fontWeight: 800, fontSize: 12, marginBottom: 6 }}>Reconciliation</label><textarea value={reconciliationJson} onChange={e => setReconciliationJson(e.target.value)} rows={10} style={{ width: '100%', fontFamily: 'monospace', fontSize: 11, padding: 10 }} /><button disabled={busy} onClick={() => void act('RECONCILE')} style={{ marginTop: 8, minHeight: 42, padding: '0 15px' }}>Reconcile case</button></div>}
 
