@@ -37,19 +37,31 @@ function bool(value: unknown): boolean {
   return value === true
 }
 
-function nested(obj: Record<string, unknown>, key: string): Record<string, unknown> | null {
+function nested(obj: Record<string, unknown> | null | undefined, key: string): Record<string, unknown> | null {
+  if (!obj) return null
   const value = obj[key]
   return value && typeof value === 'object' && !Array.isArray(value) ? value as Record<string, unknown> : null
 }
 
 export function buildBookingExecutionPlan(c: CaseLike): BookingExecutionPlan {
   const verified = c.snapshot_trust === 'SERVER_VERIFIED' || !!c.verified_redemption_snapshot
+  const verifiedSnapshot = c.verified_redemption_snapshot ?? null
+  const verifiedSelection = nested(verifiedSnapshot, 'selection')
   const travelDecision = nested(c.redemption_snapshot, 'travel_decision')
-  const recommended = travelDecision ? nested(travelDecision, 'recommended_candidate') : null
-  const railType = text(recommended?.rail_type)
-  const requiresReverify = travelDecision ? bool(travelDecision.requires_live_reverification) : !verified
-  const bookingUrl = text(c.selection.booking_url) || text(c.selection.deeplink) || text(c.selection.booking_link)
-  const provider = text(c.selection.provider) || text(c.source_snapshot.provider)
+  const verifiedRecommended = nested(verifiedSnapshot, 'recommended_candidate')
+    ?? nested(nested(verifiedSnapshot, 'travel_decision'), 'recommended_candidate')
+  const recommended = verifiedRecommended ?? (travelDecision ? nested(travelDecision, 'recommended_candidate') : null)
+  const railType = text(recommended?.rail_type) ?? text(verifiedSnapshot?.rail_type)
+  const requiresReverify = verified
+    ? false
+    : travelDecision ? bool(travelDecision.requires_live_reverification) : true
+  const bookingUrl =
+    text(verifiedSnapshot?.booking_url) || text(verifiedSnapshot?.booking_link) || text(verifiedSnapshot?.deeplink) ||
+    text(verifiedSelection?.booking_url) || text(verifiedSelection?.booking_link) || text(verifiedSelection?.deeplink) ||
+    text(c.selection.booking_url) || text(c.selection.deeplink) || text(c.selection.booking_link)
+  const provider =
+    text(verifiedSnapshot?.provider) || text(verifiedSelection?.provider) ||
+    text(c.selection.provider) || text(c.source_snapshot.provider)
   const blocked: string[] = []
 
   if (!verified) blocked.push('Concierge must re-verify the selected inventory and redemption snapshot before requesting approval.')
