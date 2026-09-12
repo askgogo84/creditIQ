@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 import { CONCIERGE_STATUSES, opsTransition, type ConciergeOpsAction, type ConciergeStatus } from '@/lib/concierge/contract'
+import { buildBookingExecutionPlan } from '@/lib/concierge/execution-plan'
 
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
@@ -37,7 +38,9 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
   const actorId = typeof body?.actorId === 'string' && body.actorId.trim() ? body.actorId.trim().slice(0, 120) : 'ops'
 
   const sb = service()
-  const { data: current, error: readError } = await sb.from('concierge_cases').select('id,status').eq('id', params.id).maybeSingle()
+  const { data: current, error: readError } = await sb.from('concierge_cases')
+    .select('id,status,source_type,selection,redemption_snapshot,source_snapshot,snapshot_trust,verified_redemption_snapshot')
+    .eq('id', params.id).maybeSingle()
   if (readError) return NextResponse.json({ error: 'could not load case' }, { status: 500 })
   if (!current) return NextResponse.json({ error: 'not found' }, { status: 404 })
   if (!CONCIERGE_STATUSES.includes(current.status as ConciergeStatus)) return NextResponse.json({ error: 'invalid current state' }, { status: 409 })
@@ -53,6 +56,20 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
   }
   if (action === 'RECONCILE' && (!body?.reconciliation || typeof body.reconciliation !== 'object')) {
     return NextResponse.json({ error: 'reconciliation is required' }, { status: 400 })
+  }
+
+  if (action === 'START_BOOKING') {
+    const plan = buildBookingExecutionPlan({
+      source_type: current.source_type,
+      selection: current.selection ?? {},
+      redemption_snapshot: current.redemption_snapshot ?? {},
+      source_snapshot: current.source_snapshot ?? {},
+      snapshot_trust: current.snapshot_trust,
+      verified_redemption_snapshot: current.verified_redemption_snapshot ?? null,
+    })
+    if (!plan.canStartBooking) {
+      return NextResponse.json({ error: 'booking path is not executable', executionPlan: plan }, { status: 409 })
+    }
   }
 
   const { data, error } = await sb.rpc('concierge_apply_ops_action', {
