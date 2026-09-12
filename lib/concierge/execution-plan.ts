@@ -43,6 +43,14 @@ function nested(obj: Record<string, unknown> | null | undefined, key: string): R
   return value && typeof value === 'object' && !Array.isArray(value) ? value as Record<string, unknown> : null
 }
 
+function legacyRailType(snapshot: Record<string, unknown> | null | undefined): string | null {
+  const path = text(snapshot?.recommended_path)?.toUpperCase()
+  if (!path) return null
+  if (path === 'TRANSFER_THEN_BOOK' || path === 'TRANSFER') return 'LOYALTY_TRANSFER'
+  if (path === 'PORTAL' || path === 'PORTAL_NO_TRANSFER' || path === 'BANK_PORTAL') return 'PORTAL'
+  return null
+}
+
 export function buildBookingExecutionPlan(c: CaseLike): BookingExecutionPlan {
   const verified = c.snapshot_trust === 'SERVER_VERIFIED' || !!c.verified_redemption_snapshot
   const verifiedSnapshot = c.verified_redemption_snapshot ?? null
@@ -51,7 +59,10 @@ export function buildBookingExecutionPlan(c: CaseLike): BookingExecutionPlan {
   const verifiedRecommended = nested(verifiedSnapshot, 'recommended_candidate')
     ?? nested(nested(verifiedSnapshot, 'travel_decision'), 'recommended_candidate')
   const recommended = verifiedRecommended ?? (travelDecision ? nested(travelDecision, 'recommended_candidate') : null)
-  const railType = text(recommended?.rail_type) ?? text(verifiedSnapshot?.rail_type)
+  const railType = text(recommended?.rail_type)
+    ?? text(verifiedSnapshot?.rail_type)
+    ?? legacyRailType(verifiedSnapshot)
+    ?? legacyRailType(c.redemption_snapshot)
   const requiresReverify = verified
     ? false
     : travelDecision ? bool(travelDecision.requires_live_reverification) : true
