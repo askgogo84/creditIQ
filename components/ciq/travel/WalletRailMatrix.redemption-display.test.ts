@@ -1,10 +1,11 @@
 import { describe, expect, it } from 'vitest'
-import { rankWalletRedemptionRails } from '@/lib/redemption-ranking'
+import { rankWalletRails } from '@/lib/redemption-ranking'
 import type { WalletRailMatrix } from '@/lib/redemption-rails/matrix'
 
 function matrixFor(cardId: string, rail: any): WalletRailMatrix {
   return {
     travelKind: 'hotel',
+    programmeId: 'hilton-honors',
     cards: [{
       walletKey: 'wallet-1',
       cardId,
@@ -32,12 +33,10 @@ describe('wallet redemption display economics', () => {
         irreversible: true, minimumBankPoints: null, incrementBankPoints: null,
       },
     }
-    const ranking = rankWalletRedemptionRails({
-      matrix: matrixFor('amex-platinum-travel', rail as any),
-      pricing: {
-        travelKind: 'hotel', programmeId: 'hilton-honors', programmePointsRequired: 45000,
-        awardTaxesMinor: null, awardTaxesCurrency: null, cashPriceMinor: null, cashCurrency: null,
-      },
+    const matrix = matrixFor('amex-platinum-travel', rail as any)
+    const ranking = rankWalletRails(matrix, {
+      travelKind: 'hotel', programmeId: 'hilton-honors', programmePointsRequired: 45000,
+      awardTaxesMinor: null, awardTaxesCurrency: null, cashPriceMinor: null, cashCurrency: null,
     })
     const candidate = ranking.candidates.find(c => c.railId === 'amex-hilton-test')
     expect(candidate?.bankPointsTargetMinimum).toBe(30000)
