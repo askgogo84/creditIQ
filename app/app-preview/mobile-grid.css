@@ -1,0 +1,139 @@
+/* CreditIQ mobile composition system.
+   One horizontal grid for header, content, cards and bottom-nav alignment. */
+#creditiq-app-preview {
+  --ref-gutter: 18px;
+  --ref-radius-lg: 24px;
+  --ref-radius-md: 18px;
+  --ref-section-gap: 14px;
+}
+
+#creditiq-app-preview .ref-app,
+#creditiq-app-preview .ref-stack,
+#creditiq-app-preview .ref-detail-screen {
+  width: 100%;
+  min-width: 0;
+}
+
+#creditiq-app-preview .ref-stack {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ref-section-gap);
+  padding-inline: var(--ref-gutter);
+  padding-bottom: 104px;
+  box-sizing: border-box;
+}
+
+/* Anything already carrying its own viewport-wide artwork is pulled back to the
+   phone edges while its text remains aligned to the same content grid. */
+#creditiq-app-preview .ref-stack > .ref-home-hero,
+#creditiq-app-preview .ref-stack > .ref-travel-hero,
+#creditiq-app-preview .ref-stack > .ref-card-detail-hero {
+  margin-inline: calc(var(--ref-gutter) * -1);
+}
+
+#creditiq-app-preview .ref-cards-intro,
+#creditiq-app-preview .ref-section-title,
+#creditiq-app-preview .ref-subtabs,
+#creditiq-app-preview .ref-reco-card,
+#creditiq-app-preview .ref-quick-grid,
+#creditiq-app-preview .ref-home-duo,
+#creditiq-app-preview .ref-balance-list,
+#creditiq-app-preview .ref-wallet-total,
+#creditiq-app-preview .ref-wallet-iq {
+  width: 100%;
+  box-sizing: border-box;
+  margin-inline: 0 !important;
+}
+
+#creditiq-app-preview .ref-cards-intro {
+  padding: 4px 0 0 !important;
+}
+
+#creditiq-app-preview .ref-cards-intro h2 {
+  margin: 4px 0 3px !important;
+  letter-spacing: -0.035em;
+}
+
+#creditiq-app-preview .ref-cards-intro p {
+  max-width: 32ch;
+  margin: 0;
+}
+
+#creditiq-app-preview .ref-subtabs {
+  display: grid !important;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 7px !important;
+  padding: 0 !important;
+  overflow: visible !important;
+}
+
+#creditiq-app-preview .ref-subtabs button {
+  width: 100%;
+  min-width: 0 !important;
+  padding-inline: 5px !important;
+  justify-content: center;
+  white-space: nowrap;
+}
+
+#creditiq-app-preview .ref-reco-card {
+  position: relative;
+  border-radius: var(--ref-radius-lg) !important;
+  padding: 14px !important;
+  overflow: hidden;
+}
+
+#creditiq-app-preview .ref-reco-card > img {
+  display: block;
+  width: min(44%, 154px) !important;
+  height: auto !important;
+  margin: 0 0 10px !important;
+  object-fit: contain;
+}
+
+#creditiq-app-preview .ref-fit-ring {
+  top: 14px !important;
+  right: 14px !important;
+}
+
+#creditiq-app-preview .ref-reco-feature-grid,
+#creditiq-app-preview .ref-quick-grid,
+#creditiq-app-preview .ref-home-duo {
+  display: grid !important;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 9px !important;
+}
+
+#creditiq-app-preview .ref-reco-feature-grid span,
+#creditiq-app-preview .ref-quick-grid > button,
+#creditiq-app-preview .ref-home-duo > button {
+  min-width: 0;
+  box-sizing: border-box;
+}
+
+#creditiq-app-preview .ref-dual-actions {
+  display: grid !important;
+  grid-template-columns: 1fr 1fr;
+  gap: 9px !important;
+}
+
+#creditiq-app-preview .ref-dual-actions button {
+  width: 100%;
+  min-width: 0;
+}
+
+/* Keep the simulated phone centred without making the actual app content tiny
+   on desktop review. The phone is a review shell, not a scaled screenshot. */
+@media (min-width: 760px) {
+  #creditiq-app-preview .ref-phone {
+    width: 390px !important;
+    min-width: 390px !important;
+    max-width: 390px !important;
+  }
+}
+
+@media (max-width: 430px) {
+  #creditiq-app-preview { --ref-gutter: 16px; --ref-section-gap: 12px; }
+  #creditiq-app-preview .ref-subtabs { gap: 5px !important; }
+  #creditiq-app-preview .ref-subtabs button { font-size: 8px !important; }
+  #creditiq-app-preview .ref-reco-card { padding: 13px !important; }
+}

@@ -9,6 +9,7 @@ import type { HotelAwardSourceAttempt, HotelAwardOrchestratorStatus } from '@/li
 import { hotelProgrammeBooking } from '@/lib/data/hotel-programme-booking'
 import { partnerFor } from '@/lib/data/hdfc-transfer-partners'
 import { WalletRailMatrix } from './WalletRailMatrix'
+import { HotelProviderGallery } from './HotelProviderGallery'
 import './hotel-award-join.css'
 
 type AwardSearchResponse = {
@@ -26,10 +27,13 @@ type AwardSearchResponse = {
 
 export interface HotelAwardJoinOffer {
   id: string
+  hotelId?: string
   hotelName: string
   chainName: string | null
   latitude: number | null
   longitude: number | null
+  imageUrl?: string | null
+  source?: string
   currency: string
   totalPrice: number
 }
@@ -131,10 +135,12 @@ export function HotelAwardJoinPanel({
   const booking = hotelProgrammeBooking(programmeId)
   const hdfcTransfer = programmeId ? partnerFor(programmeId) ?? null : null
   const awardState = hotelAwardStateLabel(response, Boolean(join && bestRate))
+  const gallery = <HotelProviderGallery provider={offer.source} hotelId={offer.hotelId} fallbackImageUrl={offer.imageUrl} hotelName={offer.hotelName} />
 
   if (!programmeId) {
     return (
       <div className="haj-root">
+        {gallery}
         <div className="haj-status neutral"><b>No loyalty programme safely mapped</b><span>This is not the same as “no redemption”. Card travel portals, vouchers, native ecosystem rails and cash remain available without inventing a hotel loyalty programme.</span></div>
         <div className="haj-joined">
           <div className="haj-joined-head"><div><small>Hotel redemption paths</small><b>Card-portal redemption still applies</b><span>Use SmartBuy, Travel EDGE, Amex Travel or another sourced wallet rail when your card supports it.</span></div><em>Independent hotel</em></div>
@@ -147,6 +153,7 @@ export function HotelAwardJoinPanel({
 
   return (
     <div className="haj-root">
+      {gallery}
       {loading && <div className="haj-status loading"><b>Checking hotel award sources…</b><span>{programmeId} · {checkInDate} → {checkOutDate}</span></div>}
 
       {!loading && response?.status === 'DIRECT_REQUIRED' && (

@@ -54,6 +54,23 @@ describe('Travel → Concierge request snapshots', () => {
     expect(request.selection).toMatchObject({ taxes_minor: 5000, taxes_currency: 'USD' })
   })
 
+  it('preserves the exact cash provider booking link and cabin for the selected itinerary', () => {
+    const request = buildFlightConciergeRequest({
+      id: 'kiwi-abc', price: 18250, from: 'BLR', to: 'SIN',
+      airline: 'SQ', airlines: ['SQ'], cashCabin: 'business', provider: 'kiwi-mcp',
+      departure: '2026-10-02T23:10:00', arrival: '2026-10-03T06:15:00', stops: 0,
+      bookingLink: 'https://www.kiwi.com/deep-link/abc',
+    }, [], null)
+
+    expect(request.sourceRef).toBe('kiwi-abc')
+    expect(request.selection).toMatchObject({
+      from: 'BLR', to: 'SIN', cabin: 'business', provider: 'kiwi-mcp',
+      booking_link: 'https://www.kiwi.com/deep-link/abc', cash_fare_inr: 18250,
+      departs_at: '2026-10-02T23:10:00', arrives_at: '2026-10-03T06:15:00',
+    })
+    expect(request.sourceSnapshot).toMatchObject({ cash: { source: 'kiwi-mcp', booking_link_present: true } })
+  })
+
   it('carries hotel execution blockers into Concierge rather than removing them', () => {
     const card = {
       id: 'novotel', name: 'Novotel Bangkok', area: 'Sukhumvit', star_rating: 4,
