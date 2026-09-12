@@ -57,4 +57,15 @@ describe('concierge booking execution plan', () => {
     expect(plan.mode).toBe('PORTAL_ASSISTED')
     expect(plan.requiresPointsTransfer).toBe(false)
   })
+
+  it('does not pretend a search-only supplier can issue a booking', () => {
+    const plan = buildBookingExecutionPlan({
+      ...base,
+      selection: { provider: 'amadeus' },
+    })
+    expect(plan.mode).toBe('CASH_API_BOOKING')
+    expect(plan.canStartBooking).toBe(false)
+    expect(plan.blockedReasons.join(' ')).toMatch(/no executable provider deeplink/i)
+    expect(plan.blockedReasons.join(' ')).toMatch(/no booking-order adapter/i)
+  })
 })
