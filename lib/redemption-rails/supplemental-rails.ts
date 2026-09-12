@@ -195,8 +195,8 @@ const membershipRewardHubs: RedemptionRailDefinition[] = [
     portalName: 'Amex Membership Rewards transfer partners',
     sourceId: 'amex-india-membership-rewards-transfers',
     sourceUrl: AMEX_MR,
-    note: 'Amex India confirms Membership Rewards transfers to participating airline and hotel programmes. Transfers usually take 3–5 working days and are irreversible. Partner-specific conversion levels can change and are not fabricated here; open the logged-in transfer hub to verify the selected partner.',
-    bookingUrl: 'https://global.americanexpress.com/rewards',
+    note: 'Amex India confirms Membership Rewards transfers to participating airline and hotel programmes. Partner-specific ratios are surfaced by CreditIQ where captured; final availability must be checked before an irreversible transfer.',
+    bookingUrl: 'https://global.americanexpress.com/rewards/transfer',
   }),
   transferHubRail({
     id: 'hsbc-premium-rewards-transfer-hub',

@@ -25,16 +25,25 @@ type WalletRailMatrixProps = {
   cashCurrency?: string | null
 }
 
+function isTransferHub(rail: RedemptionRailDefinition) {
+  return rail.id.includes('transfer-hub')
+}
+
 function visibleRails(rails: RedemptionRailDefinition[], programmeId: string | null) {
   return rails.filter((rail) => {
+    // Amex India online Travel is currently paused. Never send a user into that
+    // dead checkout from the wallet matrix; generic Amex discovery belongs on MR transfer.
+    if (rail.id === 'amex-platinum-travel-amex-travel') return false
+
+    // Once a hotel/airline programme is selected, generic Amex transfer discovery
+    // must not imply Amex transfers to that programme. Exact Amex partner rails are
+    // already card-specific and programme-specific, so only those remain visible.
+    if (programmeId && rail.issuer === 'American Express' && isTransferHub(rail)) return false
+
     if (rail.type !== 'LOYALTY_TRANSFER') return true
     if (!programmeId) return true
     return rail.transfer?.programmeId === programmeId
   })
-}
-
-function isTransferHub(rail: RedemptionRailDefinition) {
-  return rail.id.includes('transfer-hub')
 }
 
 function railPriority(rail: RedemptionRailDefinition) {
@@ -46,7 +55,9 @@ function railPriority(rail: RedemptionRailDefinition) {
   return 4
 }
 
-function displayStatus(rails: RedemptionRailDefinition[]) {
+function displayStatus(rails: RedemptionRailDefinition[], candidates: RankedRailCandidate[]) {
+  if (candidates.some((c) => c.comparisonState === 'EXECUTABLE' && c.railType !== 'CASH_RETAIN')) return 'EXECUTABLE'
+  if (candidates.some((c) => c.comparisonState === 'PROJECTED_NEEDS_VERIFICATION' && (c.bankPointsTargetMinimum != null || c.cashPayableMinor != null))) return 'CALCULATED_VERIFY'
   if (rails.some((r) => r.executionState === 'EXECUTABLE')) return 'EXECUTABLE'
   if (rails.some((r) => r.executionState === 'RATIO_ONLY' || r.executionState === 'CHECKOUT_REQUIRED' || isTransferHub(r))) return 'VERIFICATION_REQUIRED'
   if (rails.some((r) => r.executionState === 'DISCOVERY_ONLY')) return 'DISCOVERY_ONLY'
@@ -67,16 +78,16 @@ function railLabel(rail: RedemptionRailDefinition) {
 }
 
 function railStateLabel(rail: RedemptionRailDefinition) {
-  if (isTransferHub(rail)) return 'Transfer available · verify partner ratio'
+  if (isTransferHub(rail)) return 'Open transfer partners'
   if (rail.executionState === 'EXECUTABLE') return 'Executable'
-  if (rail.executionState === 'RATIO_ONLY') return 'Ratio sourced · exact step withheld'
-  if (rail.executionState === 'CHECKOUT_REQUIRED') return 'Checkout verification'
+  if (rail.executionState === 'RATIO_ONLY') return 'Ratio sourced'
+  if (rail.executionState === 'CHECKOUT_REQUIRED') return 'Verify checkout'
   return 'Discovery only'
 }
 
 function railMeta(rail: RedemptionRailDefinition) {
   if (isTransferHub(rail)) {
-    if (rail.issuer === 'American Express') return 'LOYALTY TRANSFER HUB · 3–5 working days · irreversible · selected partner conversion verified in Amex'
+    if (rail.issuer === 'American Express') return 'MEMBERSHIP REWARDS TRANSFER HUB · partner-specific ratios shown when the selected programme is sourced'
     return 'LOYALTY TRANSFER HUB · selected partner conversion verified in issuer account'
   }
   const pieces = [rail.type.replaceAll('_', ' ')]
@@ -104,6 +115,63 @@ function candidateLabel(candidate: RankedRailCandidate, programmeId: string | nu
     return `${candidate.cardName}${programmeId ? ` → ${programmeId}` : ' → loyalty transfer'}`
   }
   return `${candidate.cardName} · ${candidate.railType.replaceAll('_', ' ').toLowerCase()}`
+}
+
+function candidateForRail(ranking: RailRankingResult | null, walletKey: string, railId: string) {
+  return ranking?.candidates.find((candidate) => candidate.walletKey === walletKey && candidate.railId === railId) ?? null
+}
+
+function candidateForCard(ranking: RailRankingResult | null, walletKey: string, railIds: Set<string>) {
+  if (!ranking) return null
+  const candidates = ranking.candidates.filter((candidate) => candidate.walletKey === walletKey && railIds.has(candidate.railId) && candidate.railType !== 'CASH_RETAIN')
+  return candidates.find((candidate) => candidate.comparisonState === 'EXECUTABLE')
+    ?? candidates.find((candidate) => candidate.comparisonState === 'PROJECTED_NEEDS_VERIFICATION' && candidate.bankPointsTargetMinimum != null)
+    ?? candidates.find((candidate) => candidate.comparisonState === 'PROJECTED_NEEDS_VERIFICATION')
+    ?? candidates[0]
+    ?? null
+}
+
+function candidateEconomics(
+  candidate: RankedRailCandidate | null,
+  rail: RedemptionRailDefinition,
+  programmePointsRequired: number | null,
+  awardTaxesMinor: number | null,
+  awardTaxesCurrency: string | null,
+) {
+  if (!candidate) return null
+  const bankPoints = candidate.bankPointsToTransferExact ?? candidate.bankPointsTargetMinimum
+  const pieces: string[] = []
+
+  if (bankPoints != null) pieces.push(`${bankPoints.toLocaleString('en-IN')} bank pts`)
+  if (rail.type === 'LOYALTY_TRANSFER' && programmePointsRequired != null) {
+    pieces.push(`→ ${programmePointsRequired.toLocaleString('en-IN')} ${rail.transfer?.destinationCurrency || 'programme pts'}`)
+    const taxes = moneyMinor(awardTaxesMinor, awardTaxesCurrency)
+    if (taxes) pieces.push(`+ ${taxes}`)
+  } else {
+    const cash = moneyMinor(candidate.cashPayableMinor, candidate.cashCurrency)
+    if (cash) pieces.push(`+ ${cash}`)
+  }
+
+  if (!pieces.length) return null
+  const qualifier = candidate.comparisonState === 'EXECUTABLE'
+    ? 'Executable economics'
+    : candidate.bankPointsToTransferExact != null
+      ? 'Calculated · verify availability'
+      : 'Calculated minimum · verify final transfer/checkout'
+  return { text: pieces.join(' '), qualifier }
+}
+
+function cardStatusCopy(status: string, candidate: RankedRailCandidate | null) {
+  if (candidate && (candidate.bankPointsTargetMinimum != null || candidate.cashPayableMinor != null)) {
+    const pts = candidate.bankPointsToTransferExact ?? candidate.bankPointsTargetMinimum
+    const cash = moneyMinor(candidate.cashPayableMinor, candidate.cashCurrency)
+    return [pts != null ? `${pts.toLocaleString('en-IN')} pts` : null, cash].filter(Boolean).join(' + ') || 'Path calculated'
+  }
+  if (status === 'VERIFICATION_REQUIRED') return 'Path available'
+  if (status === 'NO_VERIFIED_REDEMPTION_RAIL') return 'No sourced rail'
+  if (status === 'DISCOVERY_ONLY') return 'Discovery only'
+  if (status === 'CALCULATED_VERIFY') return 'Calculated · verify'
+  return 'Executable'
 }
 
 function SearchDecisionSummary({ decision }: { decision: TravelDecisionContract }) {
@@ -158,7 +226,7 @@ function RankingSummary({ ranking }: { ranking: RailRankingResult }) {
             <em>Executable</em>
           </div>
         )}
-        <p>Projected paths are never promoted to an exact transfer instruction until the missing issuer/checkout facts are verified.</p>
+        <p>CreditIQ shows the calculated economics now. Verification is only the final availability/checkout gate; it no longer hides known point requirements.</p>
       </div>
     )
   }
@@ -301,8 +369,11 @@ export function WalletRailMatrix({
     const rails = visibleRails(card.rails, programmeId)
       .slice()
       .sort((a, b) => railPriority(a) - railPriority(b))
-    return { ...card, rails, displayStatus: displayStatus(rails) }
-  }), [matrix, programmeId])
+    const railIds = new Set(rails.map((rail) => rail.id))
+    const candidates = ranking?.candidates.filter((candidate) => candidate.walletKey === card.walletKey && railIds.has(candidate.railId)) ?? []
+    const primaryCandidate = candidateForCard(ranking, card.walletKey, railIds)
+    return { ...card, rails, primaryCandidate, displayStatus: displayStatus(rails, candidates) }
+  }), [matrix, programmeId, ranking])
 
   const counts = useMemo(() => {
     const sourced = cards.reduce((sum, card) => sum + card.rails.length, 0)
@@ -310,7 +381,7 @@ export function WalletRailMatrix({
     return {
       sourced,
       transfers,
-      usableCards: cards.filter((c) => c.displayStatus === 'EXECUTABLE' || c.displayStatus === 'VERIFICATION_REQUIRED').length,
+      usableCards: cards.filter((c) => c.displayStatus === 'EXECUTABLE' || c.displayStatus === 'CALCULATED_VERIFY' || c.displayStatus === 'VERIFICATION_REQUIRED').length,
       discoveryCards: cards.filter((c) => c.displayStatus === 'DISCOVERY_ONLY').length,
       unsupportedCards: cards.filter((c) => c.displayStatus === 'NO_VERIFIED_REDEMPTION_RAIL').length,
     }
@@ -323,7 +394,7 @@ export function WalletRailMatrix({
       <div className="wrm-head">
         <div>
           <b>All redemption paths in your wallet</b>
-          <span>{loading ? 'Comparing your cards…' : genericTransferDesk ? `${cards.length} cards · ${counts.transfers} ${travelKind} transfer paths/hubs · ${counts.sourced} sourced routes` : `${cards.length} cards compared · ${counts.usableCards} usable/verification · ${counts.discoveryCards} discovery · ${counts.unsupportedCards} unmapped`}</span>
+          <span>{loading ? 'Comparing your cards…' : genericTransferDesk ? `${cards.length} cards · ${counts.transfers} ${travelKind} transfer paths/hubs · ${counts.sourced} sourced routes` : `${cards.length} cards compared · ${counts.usableCards} calculated/usable · ${counts.discoveryCards} discovery · ${counts.unsupportedCards} unmapped`}</span>
         </div>
         {programmeId && <small>{programmeId}</small>}
       </div>
@@ -357,30 +428,35 @@ export function WalletRailMatrix({
         <div className="wrm-card" key={card.walletKey}>
           <div className="wrm-card-head">
             <div><b>{card.cardName}</b><span>{card.bank}{card.pointsBalance != null ? ` · ${card.pointsBalance.toLocaleString('en-IN')} points` : ''}</span></div>
-            <div className={`wrm-state ${card.displayStatus.toLowerCase()}`}>{card.displayStatus === 'VERIFICATION_REQUIRED' ? 'Needs verification' : card.displayStatus === 'NO_VERIFIED_REDEMPTION_RAIL' ? 'No sourced rail' : card.displayStatus === 'DISCOVERY_ONLY' ? 'Discovery only' : 'Executable'}</div>
+            <div className={`wrm-state ${card.displayStatus.toLowerCase()}`}>{cardStatusCopy(card.displayStatus, card.primaryCandidate)}</div>
           </div>
           <div className="wrm-provenance">Balance: {card.balanceVerified ? 'verified/connected source' : 'self-entered or unverified'}{card.cardId ? ` · exact product: ${card.cardId}` : ' · exact product not safely resolved'}</div>
           {card.rails.length ? (
             <div className="wrm-rails">
-              {card.rails.map((rail) => (
-                <div className="wrm-rail" key={rail.id}>
-                  <div>
-                    <b>{railLabel(rail)}</b>
-                    <span>
-                      {railMeta(rail)}
-                      {rail.bookingUrl && <> · <a href={rail.bookingUrl} target="_blank" rel="noopener noreferrer" style={{ color: '#193d72', fontWeight: 700, textTransform: 'none' }}>{isTransferHub(rail) ? 'Open transfer hub →' : rail.type === 'LOYALTY_TRANSFER' || rail.type === 'COBRAND_NATIVE' ? 'Check points & book →' : 'Open booking path →'}</a></>}
-                    </span>
+              {card.rails.map((rail) => {
+                const candidate = candidateForRail(ranking, card.walletKey, rail.id)
+                const economics = candidateEconomics(candidate, rail, programmePointsRequired, awardTaxesMinor, awardTaxesCurrency)
+                return (
+                  <div className="wrm-rail" key={rail.id}>
+                    <div>
+                      <b>{railLabel(rail)}</b>
+                      {economics && <strong style={{ display: 'block', marginTop: 4, fontSize: 11, color: 'var(--ink)' }}>{economics.text} <em style={{ fontStyle: 'normal', color: 'var(--copper)', fontSize: 8, textTransform: 'uppercase' }}>· {economics.qualifier}</em></strong>}
+                      <span>
+                        {railMeta(rail)}
+                        {rail.bookingUrl && <> · <a href={rail.bookingUrl} target="_blank" rel="noopener noreferrer" style={{ color: '#193d72', fontWeight: 700, textTransform: 'none' }}>{isTransferHub(rail) ? 'Open Membership Rewards transfers →' : rail.type === 'LOYALTY_TRANSFER' || rail.type === 'COBRAND_NATIVE' ? 'Check points & book →' : 'Open booking path →'}</a></>}
+                      </span>
+                    </div>
+                    <small>{economics ? economics.qualifier : railStateLabel(rail)}</small>
                   </div>
-                  <small>{railStateLabel(rail)}</small>
-                </div>
-              ))}
+                )
+              })}
             </div>
           ) : <p className="wrm-none">The card remains in the comparison, but CreditIQ has no sourced redemption rail for this selected programme/property yet.</p>}
         </div>
       ))}
 
       {!loading && !error && <div className="wrm-cash"><b>Cash + retain points</b><span>Always available · selected booking provider</span><em>Executable</em></div>}
-      <div className="wrm-foot">{travelKind === 'hotel' ? 'Hotel' : 'Flight'} transfer ratios are card-exact, not bank-wide. Issuer transfer hubs such as American Express remain visible even when the selected partner’s live conversion must be checked after login. Confirm the programme’s live {travelKind === 'hotel' ? 'award price' : 'award seat and price'} before transferring.</div>
+      <div className="wrm-foot">{travelKind === 'hotel' ? 'Hotel' : 'Flight'} transfer ratios are card-exact, not bank-wide. When CreditIQ already knows the selected programme points requirement and card conversion ratio, the bank-points requirement is shown immediately; “verify” refers only to live availability/final checkout. Confirm the programme’s live {travelKind === 'hotel' ? 'award price' : 'award seat and price'} before transferring.</div>
     </section>
   )
 }

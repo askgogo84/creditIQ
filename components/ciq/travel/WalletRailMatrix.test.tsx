@@ -95,7 +95,7 @@ describe('WalletRailMatrix', () => {
     expect(screen.getByText(/at least 43,000 bank points/)).toBeInTheDocument()
     expect(screen.getAllByText('Best executable now')).toHaveLength(2)
     expect(screen.getAllByText('Cash + retain points').length).toBeGreaterThanOrEqual(1)
-    expect(screen.getByText(/Projected paths are never promoted/)).toBeInTheDocument()
+    expect(screen.getByText(/Verification is only the final availability\/checkout gate/)).toBeInTheDocument()
     expect(screen.getByText('What happens next')).toBeInTheDocument()
     expect(screen.getByText('Reconfirm this exact award first')).toBeInTheDocument()
     expect(screen.getByText(/Transfer timing: 5-7 days. The transfer cannot be reversed/)).toBeInTheDocument()
