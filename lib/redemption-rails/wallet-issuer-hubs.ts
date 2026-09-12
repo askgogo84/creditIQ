@@ -16,6 +16,10 @@ function isAmex(bank: string) {
   return n === 'amex' || n.includes('americanexpress')
 }
 
+function isHsbc(bank: string) {
+  return norm(bank).includes('hsbc')
+}
+
 function isMembershipRewardsEligibleName(cardName: string) {
   const n = norm(cardName)
   return [
@@ -29,6 +33,11 @@ function isMembershipRewardsEligibleName(cardName: string) {
     'mrcc',
     'smartearn',
   ].some(token => n.includes(token))
+}
+
+function isHsbcTransferEligibleName(cardName: string) {
+  const n = norm(cardName)
+  return ['travelone', 'premier'].some(token => n.includes(token))
 }
 
 type CapturedAmexPartner = {
@@ -181,17 +190,46 @@ function exactAmexTransferRail(cardName: string, partner: CapturedAmexPartner): 
   }
 }
 
+function hsbcTransferHub(travelKind: TravelKind): RedemptionRailDefinition {
+  return {
+    id: 'hsbc-premium-rewards-transfer-hub',
+    cardIds: [],
+    issuer: 'HSBC',
+    type: 'BANK_TRAVEL_PORTAL',
+    travelKinds: [travelKind],
+    executionState: 'DISCOVERY_ONLY',
+    evidence: [{
+      kind: 'ISSUER_PUBLIC',
+      sourceId: 'hsbc-india-rewards-transfer-hub',
+      note: 'Eligible HSBC premium travel cards can access airline/hotel rewards transfers. Partner-specific ratio, minimum and live eligibility must be verified in the issuer rewards account before CreditIQ can promote a transfer instruction.',
+    }],
+    portal: {
+      portalName: 'HSBC Rewards transfer partners',
+      supportsPointsPlusCash: false,
+      valuePerPointPaise: null,
+      maxPointsShareBps: null,
+      feeMinor: null,
+    },
+    bookingDestination: 'HSBC Rewards transfer partners',
+    notes: ['Discovery-only transfer hub. No partner ratio is inferred.'],
+  }
+}
+
 /**
- * Keep the Amex ecosystem visible for eligible MR-earning wallet products even
+ * Keep issuer transfer ecosystems visible for eligible wallet products even
  * when a duplicate catalogue row cannot be mapped to a canonical card slug.
- * Exact captured partners are emitted as real loyalty-transfer rails; the broad
- * hub remains as a fallback for any other participating partner.
+ * Exact captured partners are emitted as real loyalty-transfer rails where we
+ * have them; broad hubs remain discovery/verification paths without guessed ratios.
  */
 export function walletIssuerHubRails(input: {
   bank: string
   cardName: string
   travelKind: TravelKind
 }): RedemptionRailDefinition[] {
+  if (isHsbc(input.bank) && isHsbcTransferEligibleName(input.cardName)) {
+    return [hsbcTransferHub(input.travelKind)]
+  }
+
   if (!isAmex(input.bank) || !isMembershipRewardsEligibleName(input.cardName)) return []
 
   const exact = AMEX_CAPTURED_PARTNERS
