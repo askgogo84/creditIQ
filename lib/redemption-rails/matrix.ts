@@ -87,16 +87,56 @@ function mergeWalletHubs(
   return [...merged.values()]
 }
 
+function isPausedAmexTravelRail(rail: RedemptionRailDefinition) {
+  return rail.id === 'amex-platinum-travel-amex-travel' ||
+    rail.bookingDestination === 'American Express Travel Online' ||
+    rail.portal?.portalName === 'American Express Travel Online'
+}
+
+function isGenericTransferHub(rail: RedemptionRailDefinition) {
+  return rail.id.includes('wallet-hub') ||
+    rail.id === 'hsbc-premium-rewards-transfer-hub' ||
+    /transfer partners/i.test(rail.bookingDestination || rail.portal?.portalName || '')
+}
+
+/**
+ * Apply the same applicability rules before ranking, display and Concierge.
+ * This is deliberately upstream of every surface so a stale/generic rail cannot
+ * appear in the recommendation cards and then disappear only in the detail UI.
+ */
+function applicableRails(
+  rails: RedemptionRailDefinition[],
+  travelKind: TravelKind,
+  programmeId: string | null,
+) {
+  return rails.filter((rail) => {
+    // Amex India Travel Online is paused. It must never be ranked, displayed as
+    // a checkout path, or handed to Concierge while the service is unavailable.
+    if (isPausedAmexTravelRail(rail)) return false
+
+    if (programmeId) {
+      // A selected programme is an exact decision boundary. Loyalty transfers
+      // to any other programme and broad issuer transfer hubs are not candidates.
+      if (rail.type === 'LOYALTY_TRANSFER') return rail.transfer?.programmeId === programmeId
+      if (isGenericTransferHub(rail)) return false
+      return true
+    }
+
+    // Generic flight search has no airline programme yet, so partner-specific
+    // transfers cannot be treated as applicable. Generic issuer hubs/portals may
+    // remain as discovery until an itinerary resolves to a programme.
+    if (travelKind === 'flight' && rail.type === 'LOYALTY_TRANSFER') return false
+    return true
+  })
+}
+
 /**
  * Enumerate every sourced travel-redemption rail for every card in the wallet.
  *
- * This layer intentionally DOES NOT rank economic value or calculate an exact
- * transfer instruction. It only answers: "what sourced ways could this exact
- * card participate in this flight/hotel decision?"
- *
- * Financial arithmetic remains in the redemption engine. A card is never
- * dropped merely because its exact catalogue identity or travel rail is not yet
- * known; it stays visible with NO_VERIFIED_REDEMPTION_RAIL.
+ * The resulting matrix is the canonical source consumed by ranking, search
+ * summary, UI and Concierge. Programme scoping happens here — never later only
+ * in presentation — so unsupported cards cannot leak generic transfer hubs into
+ * a selected Air India/Hilton/etc decision.
  */
 export function buildWalletRailMatrix(
   cards: WalletRailCardInput[],
@@ -105,6 +145,7 @@ export function buildWalletRailMatrix(
 ): WalletRailMatrix {
   const seenWalletKeys = new Set<string>()
   const cardResults: WalletRailCardResult[] = []
+  const selectedProgrammeId = programmeId ?? null
 
   for (const card of cards) {
     if (!card.walletKey || seenWalletKeys.has(card.walletKey)) continue
@@ -112,18 +153,10 @@ export function buildWalletRailMatrix(
 
     const cardId = resolveRailCardId({ bank: card.bank, cardName: card.cardName })
     const baseRails = cardId
-      ? mergedRails(cardId, travelKind, programmeId ?? null)
+      ? mergedRails(cardId, travelKind, selectedProgrammeId)
       : []
     const allCardRails = mergeWalletHubs(baseRails, card, travelKind)
-
-    // A generic flight search does not yet have an airline loyalty programme to
-    // price against, so partner-specific transfer ratios must not masquerade as
-    // applicable paths. Keep portals/hubs visible; exact transfer rails return
-    // once the selected itinerary resolves to a programme. Generic hotel search
-    // intentionally keeps hotel transfer discovery visible for property matching.
-    const rails = travelKind === 'flight' && !programmeId
-      ? allCardRails.filter((rail) => rail.type !== 'LOYALTY_TRANSFER')
-      : allCardRails
+    const rails = applicableRails(allCardRails, travelKind, selectedProgrammeId)
 
     cardResults.push({
       walletKey: card.walletKey,
@@ -139,7 +172,7 @@ export function buildWalletRailMatrix(
 
   return {
     travelKind,
-    programmeId: programmeId ?? null,
+    programmeId: selectedProgrammeId,
     cards: cardResults,
     cashRail: cashRetainRail(travelKind),
   }
