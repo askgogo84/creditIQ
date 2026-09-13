@@ -53,7 +53,7 @@ describe('wallet redemption rail matrix', () => {
       .toEqual({ fromUnits: 5, toUnits: 4 })
   })
 
-  it('uses exact captured Amex Marriott and Hilton transfer ratios while keeping the broad hub', () => {
+  it('uses exact captured Amex Marriott and Hilton transfer ratios and removes the broad hub after programme selection', () => {
     const marriott = buildWalletRailMatrix([
       { walletKey: 'a', bank: 'American Express', cardName: 'American Express Platinum Travel', pointsBalance: 52000 },
     ], 'hotel', 'marriott-bonvoy')
@@ -63,7 +63,6 @@ describe('wallet redemption rail matrix', () => {
 
     const marriottRail = marriott.cards[0].rails.find(rail => rail.transfer?.programmeId === 'marriott-bonvoy')
     const hiltonRail = hilton.cards[0].rails.find(rail => rail.transfer?.programmeId === 'hilton-honors')
-    const amexHub = marriott.cards[0].rails.find(rail => rail.bookingDestination === 'Amex Membership Rewards transfer partners')
 
     expect(marriottRail?.transfer?.ratio).toEqual({ fromUnits: 100, toUnits: 100 })
     expect(marriottRail?.transfer?.minimumBankPoints).toBe(100)
@@ -71,7 +70,8 @@ describe('wallet redemption rail matrix', () => {
     expect(hiltonRail?.transfer?.ratio).toEqual({ fromUnits: 1000, toUnits: 1500 })
     expect(hiltonRail?.transfer?.minimumBankPoints).toBe(1000)
     expect(hiltonRail?.transfer?.incrementBankPoints).toBe(1000)
-    expect(amexHub?.executionState).toBe('DISCOVERY_ONLY')
+    expect(marriott.cards[0].rails.some(rail => /transfer partners/i.test(rail.bookingDestination || ''))).toBe(false)
+    expect(hilton.cards[0].rails.some(rail => /transfer partners/i.test(rail.bookingDestination || ''))).toBe(false)
   })
 
   it('uses exact captured Amex airline ratios including KrisFlyer and Virgin Atlantic', () => {
@@ -88,15 +88,34 @@ describe('wallet redemption rail matrix', () => {
       .toEqual({ fromUnits: 800, toUnits: 640 })
   })
 
-  it('keeps the Membership Rewards transfer hub visible for SmartEarn when a partner is not in the capture', () => {
+  it('does not imply Amex supports a selected uncaptured programme', () => {
     const matrix = buildWalletRailMatrix([
       { walletKey: 's', bank: 'AmEx', cardName: 'American Express SmartEarn', pointsBalance: 18000 },
-    ], 'flight', 'emirates-skywards')
+    ], 'flight', 'air-india-maharaja')
 
-    expect(matrix.cards[0].rails.some(rail => rail.bookingDestination === 'Amex Membership Rewards transfer partners')).toBe(true)
+    expect(matrix.cards[0].rails.some(rail => rail.type === 'LOYALTY_TRANSFER')).toBe(false)
+    expect(matrix.cards[0].rails.some(rail => /transfer partners/i.test(rail.bookingDestination || ''))).toBe(false)
   })
 
-  it('surfaces HSBC transfer hub without inventing partner-specific ratios', () => {
+  it('never exposes paused American Express Travel Online as a flight or hotel rail', () => {
+    for (const travelKind of ['flight', 'hotel'] as const) {
+      const matrix = buildWalletRailMatrix([
+        { walletKey: `amex-${travelKind}`, bank: 'American Express', cardName: 'American Express Platinum Travel', pointsBalance: 52000 },
+      ], travelKind)
+      expect(matrix.cards[0].rails.some(rail => rail.bookingDestination === 'American Express Travel Online')).toBe(false)
+      expect(matrix.cards[0].rails.some(rail => rail.portal?.portalName === 'American Express Travel Online')).toBe(false)
+    }
+  })
+
+  it('keeps generic Membership Rewards discovery visible only before a programme is selected', () => {
+    const generic = buildWalletRailMatrix([
+      { walletKey: 's', bank: 'AmEx', cardName: 'American Express SmartEarn', pointsBalance: 18000 },
+    ], 'flight')
+
+    expect(generic.cards[0].rails.some(rail => rail.bookingDestination === 'Amex Membership Rewards transfer partners')).toBe(true)
+  })
+
+  it('surfaces HSBC transfer hub without inventing partner-specific ratios before programme selection', () => {
     const matrix = buildWalletRailMatrix([
       { walletKey: 'h', bank: 'HSBC', cardName: 'HSBC TravelOne Credit Card', pointsBalance: 45000 },
     ], 'hotel')
