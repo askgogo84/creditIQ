@@ -24,4 +24,13 @@ jobs:
       - name: Run production QA
         env:
           QA_BASE_URL: https://www.creditiq.app
-        run: npm run qa:e2e
+        run: |
+          set -o pipefail
+          npm run qa:e2e 2>&1 | tee qa-output.txt
+      - name: Upload QA log
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: production-qa-log
+          path: qa-output.txt
+          if-no-files-found: warn
