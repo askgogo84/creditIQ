@@ -26,7 +26,7 @@ jobs:
           QA_BASE_URL: https://www.creditiq.app
         run: |
           set -o pipefail
-          npm run qa:e2e 2>&1 | tee qa-output.txt
+          npx tsx scripts/qa-cira-regression.ts 2>&1 | tee qa-output.txt
       - name: Upload QA log
         if: always()
         uses: actions/upload-artifact@v4
