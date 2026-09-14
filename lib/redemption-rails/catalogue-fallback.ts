@@ -11,7 +11,10 @@ function bookingUrlForPartner(partner: string | undefined): string | undefined {
   if (!p) return undefined
   if (p.includes('smartbuy')) return 'https://offers.smartbuy.hdfcbank.com/'
   if (p.includes('travel edge') || p.includes('traveledge')) return 'https://traveledge.axis.bank.in/'
-  if (p.includes('american express') || p.includes('amex travel')) return 'https://www.americanexpress.com/in/travel/'
+  // American Express India Travel Online is currently paused. Never revive the
+  // paused checkout through a broad catalogue fallback; exact Membership Rewards
+  // transfer rails are supplied by amex-exact-rails / the canonical wallet matrix.
+  if (p.includes('american express') || p.includes('amex travel')) return undefined
   if (p.includes('make my trip') || p.includes('makemytrip')) return 'https://www.makemytrip.com/'
   if (p.includes('marriott')) return 'https://www.marriott.com/search/findHotels.mi'
   if (p.includes('tata neu')) return 'https://www.tataneu.com/'
@@ -37,12 +40,8 @@ function optionToRail(cardId: string, issuer: string, verifiedAt: string | undef
   if (option.type === 'cashback') {
     return {
       id: `catalogue-${cardId}-${travelKind}-statement-${index}`,
-      cardIds: [cardId],
-      issuer,
-      type: 'STATEMENT_OFFSET',
-      travelKinds: [travelKind],
-      executionState: 'DISCOVERY_ONLY',
-      evidence,
+      cardIds: [cardId], issuer, type: 'STATEMENT_OFFSET', travelKinds: [travelKind],
+      executionState: 'DISCOVERY_ONLY', evidence,
       bookingDestination: 'Statement credit / cashback',
       notes: [`Catalogue value reference: ₹${option.value_per_point_inr.toFixed(2)} per point. Re-check current issuer redemption rules before relying on this value.`],
     }
@@ -52,19 +51,9 @@ function optionToRail(cardId: string, issuer: string, verifiedAt: string | undef
     const merchant = option.partner || 'Rewards voucher catalogue'
     return {
       id: `catalogue-${cardId}-${travelKind}-voucher-${index}`,
-      cardIds: [cardId],
-      issuer,
-      type: 'TRAVEL_VOUCHER',
-      travelKinds: [travelKind],
-      executionState: 'DISCOVERY_ONLY',
-      evidence,
-      voucher: {
-        merchant,
-        denominationsInr: null,
-        pointsCostPerVoucher: null,
-        expiryDays: null,
-        canCombine: null,
-      },
+      cardIds: [cardId], issuer, type: 'TRAVEL_VOUCHER', travelKinds: [travelKind],
+      executionState: 'DISCOVERY_ONLY', evidence,
+      voucher: { merchant, denominationsInr: null, pointsCostPerVoucher: null, expiryDays: null, canCombine: null },
       bookingDestination: merchant,
       ...(bookingUrlForPartner(merchant) ? { bookingUrl: bookingUrlForPartner(merchant) } : {}),
     }
@@ -72,14 +61,11 @@ function optionToRail(cardId: string, issuer: string, verifiedAt: string | undef
 
   if (option.type === 'flight' || option.type === 'hotel') {
     const portalName = option.partner || `${issuer} travel redemption`
+    const pausedAmex = /american express|amex travel/i.test(portalName)
     return {
       id: `catalogue-${cardId}-${travelKind}-portal-${index}`,
-      cardIds: [cardId],
-      issuer,
-      type: 'BANK_TRAVEL_PORTAL',
-      travelKinds: [travelKind],
-      executionState: 'DISCOVERY_ONLY',
-      evidence,
+      cardIds: [cardId], issuer, type: 'BANK_TRAVEL_PORTAL', travelKinds: [travelKind],
+      executionState: 'DISCOVERY_ONLY', evidence,
       portal: {
         portalName,
         supportsPointsPlusCash: false,
@@ -88,8 +74,10 @@ function optionToRail(cardId: string, issuer: string, verifiedAt: string | undef
         feeMinor: null,
       },
       bookingDestination: portalName,
-      ...(bookingUrlForPartner(portalName) ? { bookingUrl: bookingUrlForPartner(portalName) } : {}),
-      notes: ['Catalogue route only. CreditIQ will not promote it as an exact economic winner until the current issuer/checkout terms are verified.'],
+      ...(!pausedAmex && bookingUrlForPartner(portalName) ? { bookingUrl: bookingUrlForPartner(portalName) } : {}),
+      notes: [pausedAmex
+        ? 'American Express India Travel Online is paused; this catalogue reference is non-executable. Use only exact Membership Rewards transfer rails that CreditIQ can source.'
+        : 'Catalogue route only. CreditIQ will not promote it as an exact economic winner until the current issuer/checkout terms are verified.'],
     }
   }
 
@@ -105,7 +93,6 @@ function optionToRail(cardId: string, issuer: string, verifiedAt: string | undef
 export function catalogueFallbackRailsForCard(cardId: string, travelKind: TravelKind): RedemptionRailDefinition[] {
   const card = SEED_CARDS.find(candidate => candidate.id === cardId && candidate.active)
   if (!card) return []
-
   return card.redemption_options
     .map((option, index) => optionToRail(card.id, card.bank, card.last_verified, option, travelKind, index))
     .filter((rail): rail is RedemptionRailDefinition => Boolean(rail))
