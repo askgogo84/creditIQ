@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 import { requireAuth } from '@/lib/api-auth'
+import { syncWalletIntelligenceNotifications } from '@/lib/intelligence/wallet-intelligence'
 
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
@@ -19,6 +20,16 @@ export async function GET(req: NextRequest) {
   const limitRaw = Number(new URL(req.url).searchParams.get('limit') || 20)
   const limit = Math.max(1, Math.min(50, Number.isFinite(limitRaw) ? limitRaw : 20))
   const sb = service()
+
+  // Opportunistically sync material wallet intelligence before reading the bell.
+  // The matcher deduplicates by (user, INTELLIGENCE source_ref), so polling the
+  // topbar cannot create duplicate notifications for the same insight.
+  try {
+    await syncWalletIntelligenceNotifications(sb, gate.userId)
+  } catch (error) {
+    console.error('wallet intelligence notification sync failed', error)
+  }
+
   const [{ data, error }, { count, error: countError }] = await Promise.all([
     sb.from('user_notifications').select(SELECT).eq('user_id', gate.userId).order('created_at', { ascending: false }).limit(limit),
     sb.from('user_notifications').select('id', { count: 'exact', head: true }).eq('user_id', gate.userId).is('read_at', null),
