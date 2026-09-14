@@ -1,7 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { createClient } from '@supabase/supabase-js';
 import { retrieveRelevantCards, buildRagSystemPrompt } from '@/lib/rag';
 import { callClaude, MODELS } from '@/lib/ai';
 import { rateLimit } from '@/lib/rate-limit';
+import { callerId } from '@/lib/api-auth';
+import { rankedWalletIntelligence, walletIntelligencePrompt } from '@/lib/intelligence/wallet-intelligence';
 
 export const runtime = 'nodejs';
 
@@ -26,7 +29,23 @@ export async function POST(req: NextRequest) {
       intent: 'general',
     });
 
-    const systemPrompt = buildRagSystemPrompt(context, devaluations, igInsights, sourced) +
+    let personalisedIntel = '';
+    try {
+      const userId = await callerId(req);
+      if (userId && process.env.SUPABASE_SERVICE_ROLE_KEY) {
+        const sb = createClient(
+          process.env.NEXT_PUBLIC_SUPABASE_URL!,
+          process.env.SUPABASE_SERVICE_ROLE_KEY!,
+          { auth: { persistSession: false } },
+        );
+        const { ranked } = await rankedWalletIntelligence(sb, userId, 40);
+        personalisedIntel = walletIntelligencePrompt(ranked, 8);
+      }
+    } catch (error) {
+      console.error('CIRA wallet intelligence context failed', error);
+    }
+
+    const systemPrompt = buildRagSystemPrompt(context, devaluations, igInsights, sourced) + personalisedIntel +
       `\n\nYou are the CreditIQ Assistant  --  India's most honest credit card advisor.
 You help users find the best credit card for any merchant, category, or spend pattern.
 You have zero bank bias  --  you are not paid by any bank.
@@ -37,6 +56,7 @@ IMPORTANT RULES:
 - Keep responses SHORT -- 2-4 sentences max unless complex.
 - Be direct and specific with card names and numbers.
 - Use Rs. for rupee amounts.
+- If PERSONALISED WALLET INTELLIGENCE is present, prioritise insights relevant to cards/programmes the user can actually reach, and clearly label community intelligence as something to verify before an irreversible transfer or booking.
 - TRAVEL CTA RULE: If the answer involves award flights, transfer partners, miles redemption, or booking flights on points, ALWAYS end with a travel link on a new line. Build the link URL with the user's destination and context pre-filled as a query param, like: → [Check live award availability](/travel?q=Bangkok+flights+next+week+Vistara+miles) — use the actual destination/airline/points from the conversation. This auto-fills the Travel AI search so users don't have to retype anything.
 
 When asked "best card for X":
