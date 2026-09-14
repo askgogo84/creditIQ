@@ -9,15 +9,36 @@ function getSupabaseClient() {
   return createClient(url, key)
 }
 
+function cardIdentity(card: Pick<CreditCard, 'id' | 'slug' | 'name' | 'bank'>): string {
+  const id = String(card.id || '').trim().toLowerCase()
+  if (id) return `id:${id}`
+  const slug = String(card.slug || '').trim().toLowerCase()
+  if (slug) return `slug:${slug}`
+  const norm = (value: unknown) => String(value || '').toLowerCase().replace(/[^a-z0-9]+/g, '')
+  return `name:${norm(card.bank)}:${norm(card.name)}`
+}
+
+/**
+ * Return the complete active catalogue while allowing live DB rows to override
+ * the curated seed data. A partially populated `cards` table must never make a
+ * valid seed card disappear from CIRA or any other catalogue consumer.
+ */
+export function mergeCatalogueCards(dbCards: CreditCard[], seedCards: CreditCard[] = SEED_CARDS): CreditCard[] {
+  const merged = new Map<string, CreditCard>()
+  for (const card of seedCards.filter(card => card.active !== false)) merged.set(cardIdentity(card), card)
+  for (const card of dbCards.filter(card => card.active !== false)) merged.set(cardIdentity(card), card)
+  return [...merged.values()]
+}
+
 export async function getAllCards(): Promise<CreditCard[]> {
   try {
     const sb = getSupabaseClient()
-    if (!sb) return SEED_CARDS
+    if (!sb) return SEED_CARDS.filter(card => card.active !== false)
     const { data, error } = await sb.from('cards').select('*').eq('active', true).order('iq_score', { ascending: false })
-    if (error || !data || data.length === 0) return SEED_CARDS
-    return data as CreditCard[]
+    if (error || !data || data.length === 0) return SEED_CARDS.filter(card => card.active !== false)
+    return mergeCatalogueCards(data as CreditCard[])
   } catch {
-    return SEED_CARDS
+    return SEED_CARDS.filter(card => card.active !== false)
   }
 }
 
