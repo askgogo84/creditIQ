@@ -59,10 +59,6 @@ export const APP_NAV: AppNavItem[] = [
 export type SectionTab = { label: string; href: string; Icon: LucideIcon }
 
 export const SECTION_TABS: Record<string, SectionTab[]> = {
-  dashboard: [
-    { label: 'Overview', href: '/dashboard', Icon: Home },
-    { label: 'Intelligence', href: '/feed', Icon: Sparkles },
-  ],
   wallet: [
     { label: 'Your cards', href: '/wallet', Icon: CreditCard },
     { label: 'Statement Truth', href: '/statement-truth', Icon: FileCheck },
@@ -99,7 +95,8 @@ export function sectionTabsFor(pathname: string | null): SectionTab[] | null {
   return item ? SECTION_TABS[item.key] ?? null : null
 }
 
-export const APP_ACTIVE: Record<string, (p: string) => boolean> = Object.fromEntries(APP_NAV.map(i => [i.href, i.match]))
+export const APP_ACTIVE: Record<string, (p: string) => boolean> =
+  Object.fromEntries(APP_NAV.map(i => [i.href, i.match]))
 
 export function appActive(href: string, pathname: string | null): boolean {
   if (!pathname) return false
