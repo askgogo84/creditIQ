@@ -44,31 +44,47 @@ async function publicChecks(context: BrowserContext, viewportName: string) {
     await page.goto(`${BASE}/login`, { waitUntil: 'domcontentloaded', timeout: 30_000 })
     await checkOverflow(page, `${viewportName}: login horizontal overflow`)
 
-    await page.goto(`${BASE}/travel`, { waitUntil: 'domcontentloaded', timeout: 30_000 })
-    if (/\/login(?:\?|$)/.test(new URL(page.url()).pathname + new URL(page.url()).search)) {
-      pass(`${viewportName}: /travel auth redirect`)
+    await page.goto(`${BASE}/feed`, { waitUntil: 'domcontentloaded', timeout: 30_000 })
+    await checkOverflow(page, `${viewportName}: feed horizontal overflow`)
+    const feedText = await page.locator('body').innerText()
+    if (/Add cards to your wallet to personalise this feed/i.test(feedText)) {
+      pass(`${viewportName}: no-wallet intelligence stays broad`)
     } else {
-      fail(`${viewportName}: /travel auth redirect`, `ended at ${page.url()}`)
+      fail(`${viewportName}: no-wallet intelligence stays broad`, 'expected no-wallet personalisation guidance missing')
     }
+
+    await page.goto(`${BASE}/travel`, { waitUntil: 'domcontentloaded', timeout: 30_000 })
+    const current = new URL(page.url())
+    if (current.pathname === '/login') pass(`${viewportName}: /travel auth redirect`)
+    else fail(`${viewportName}: /travel auth redirect`, `ended at ${page.url()}`)
   } finally {
     await page.close()
   }
 }
 
 async function apiChecks() {
-  const anonymousProtected = [
-    `${BASE}/api/travel/redemption-rails?travelKind=flight&programmeId=air-india-maharaja`,
-    `${BASE}/api/travel/wallet`,
-    `${BASE}/api/travel/providers`,
+  const anonymousProtected: Array<{ name: string; url: string; init?: RequestInit }> = [
+    {
+      name: '/api/travel/redemption-rails',
+      url: `${BASE}/api/travel/redemption-rails`,
+      init: {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ travelKind: 'flight', programmeId: 'air-india-maharaja' }),
+      },
+    },
+    { name: '/api/travel/wallet', url: `${BASE}/api/travel/wallet` },
+    { name: '/api/travel/providers', url: `${BASE}/api/travel/providers` },
+    { name: '/api/feed', url: `${BASE}/api/feed` },
   ]
-  for (const url of anonymousProtected) {
+
+  for (const item of anonymousProtected) {
     try {
-      const res = await fetch(url, { redirect: 'manual' })
-      const path = new URL(url).pathname
-      if (res.status === 401 || res.status === 403) pass(`API auth: ${path}`, String(res.status))
-      else fail(`API auth: ${path}`, `expected 401/403, got ${res.status}`)
+      const res = await fetch(item.url, { redirect: 'manual', ...(item.init || {}) })
+      if (res.status === 401 || res.status === 403) pass(`API auth: ${item.name}`, String(res.status))
+      else fail(`API auth: ${item.name}`, `expected 401/403, got ${res.status}`)
     } catch (error) {
-      fail(`API auth: ${new URL(url).pathname}`, String(error))
+      fail(`API auth: ${item.name}`, String(error))
     }
   }
 
@@ -103,6 +119,40 @@ async function apiChecks() {
       fail(`flight provider chain: ${cabin}`, String(error))
     }
   }
+
+  const ciraPrompts = [
+    {
+      name: 'CIRA Amex to Hilton public knowledge',
+      message: 'Can I use my Amex Platinum Travel points for Hilton Honors?',
+      mustMatch: /Amex|Membership Rewards|Hilton/i,
+    },
+    {
+      name: 'CIRA irreversible-transfer safety',
+      message: 'I have Amex Platinum Travel. Should I transfer my points to Hilton right now?',
+      mustMatch: /verify|check|availability|before|transfer/i,
+    },
+  ]
+
+  for (const test of ciraPrompts) {
+    try {
+      const res = await fetch(`${BASE}/api/assistant`, {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ message: test.message, history: [] }),
+      })
+      const body = await res.json().catch(() => null) as any
+      const text = typeof body?.message === 'string' ? body.message : ''
+      if (!res.ok || !text) {
+        fail(test.name, `HTTP ${res.status}; ${JSON.stringify(body)}`)
+      } else if (!test.mustMatch.test(text)) {
+        fail(test.name, `response missing expected safety/context language: ${text}`)
+      } else {
+        pass(test.name, text.replace(/\s+/g, ' ').slice(0, 180))
+      }
+    } catch (error) {
+      fail(test.name, String(error))
+    }
+  }
 }
 
 async function authenticatedChecks(browser: Awaited<ReturnType<typeof chromium.launch>>) {
@@ -117,7 +167,7 @@ async function authenticatedChecks(browser: Awaited<ReturnType<typeof chromium.l
     const context = await browser.newContext({ viewport: { width: vp.width, height: vp.height }, storageState: STORAGE_STATE })
     const page = await context.newPage()
     try {
-      for (const route of ['/travel', '/wallet', '/hotels', '/concierge']) {
+      for (const route of ['/travel', '/wallet', '/hotels', '/concierge', '/feed']) {
         await page.goto(`${BASE}${route}`, { waitUntil: 'domcontentloaded', timeout: 30_000 })
         if (/\/login(?:\?|$)/.test(new URL(page.url()).pathname + new URL(page.url()).search)) {
           fail(`${vp.name}: authenticated ${route}`, 'storage state was not accepted')
