@@ -1,5 +1,20 @@
 const BASE_URL = 'https://apisv2.awardtoolapi.com'
 
+const AWARDTOOL_TO_PROGRAMME: Record<string, string> = {
+  AA: 'american-aadvantage',
+  AC: 'aeroplan',
+  BA: 'british-airways-club',
+  CX: 'cathay',
+  DL: 'delta-skymiles',
+  EK: 'emirates-skywards',
+  EY: 'etihad-guest',
+  KL: 'flying-blue',
+  QR: 'qatar-privilege-club',
+  SQ: 'krisflyer',
+  TK: 'turkish-miles-smiles',
+  UA: 'united-mileageplus',
+}
+
 export type PanoramaCabin = 'economy' | 'business'
 
 export interface AwardToolPanoramaQuery {
@@ -13,6 +28,7 @@ export interface AwardToolPanoramaOption {
   date: string
   route: string
   programmeCode: string
+  programmeId: string
   economyPoints: number | null
   businessPoints: number | null
   economyNonstopPoints: number | null
@@ -63,19 +79,25 @@ export function splitPanoramaRange(origin: string, destination: string, from: st
   return out
 }
 
+export function programmeIdForAwardToolCode(code: string): string | null {
+  return AWARDTOOL_TO_PROGRAMME[code.trim().toUpperCase()] ?? null
+}
+
 export function normalizePanoramaRow(raw: unknown): AwardToolPanoramaOption | null {
   if (!raw || typeof raw !== 'object') return null
   const row = raw as Record<string, unknown>
   const date = text(row.date)
   const route = text(row.route)
   const programmeCode = text(row.program ?? row.programme ?? row.program_code).toUpperCase()
-  if (!/^\d{4}-\d{2}-\d{2}$/.test(date) || !route || !programmeCode) return null
+  const programmeId = programmeIdForAwardToolCode(programmeCode)
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(date) || !route || !programmeCode || !programmeId) return null
   const points = row.points && typeof row.points === 'object' ? row.points as Record<string, unknown> : {}
   const nonstop = row.points_ns && typeof row.points_ns === 'object' ? row.points_ns as Record<string, unknown> : {}
   return {
     date,
     route,
     programmeCode,
+    programmeId,
     economyPoints: positiveInteger(points.y),
     businessPoints: positiveInteger(points.j),
     economyNonstopPoints: positiveInteger(nonstop.y),
