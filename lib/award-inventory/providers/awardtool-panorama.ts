@@ -1,4 +1,5 @@
 const BASE_URL = 'https://apisv2.awardtoolapi.com'
+const MAX_FLEXIBLE_DAYS = 15
 
 const AWARDTOOL_TO_PROGRAMME: Record<string, string> = {
   AA: 'american-aadvantage',
@@ -63,9 +64,13 @@ export function validatePanoramaRange(query: AwardToolPanoramaQuery): void {
 }
 
 export function splitPanoramaRange(origin: string, destination: string, from: string, to: string): AwardToolPanoramaQuery[] {
+  const totalDays = dayDiffInclusive(from, to)
+  if (totalDays > MAX_FLEXIBLE_DAYS) {
+    throw new Error(`Panorama flexible discovery is limited to ${MAX_FLEXIBLE_DAYS} days`)
+  }
+
   const start = new Date(`${from}T00:00:00Z`)
   const end = new Date(`${to}T00:00:00Z`)
-  if (!Number.isFinite(start.getTime()) || !Number.isFinite(end.getTime()) || end < start) throw new Error('Invalid Panorama date range')
   const out: AwardToolPanoramaQuery[] = []
   let cursor = start
   while (cursor <= end) {
@@ -145,7 +150,7 @@ export class AwardToolPanoramaProvider {
   async searchFlexible(origin: string, destination: string, from: string, to: string): Promise<AwardToolPanoramaOption[]> {
     const chunks = splitPanoramaRange(origin, destination, from, to)
     const results: AwardToolPanoramaOption[] = []
-    // Trial guidance asks us to keep concurrency minimal, so requests are intentionally sequential.
+    // Provider guidance asks us to keep evaluation concurrency minimal, so these are intentionally sequential.
     for (const chunk of chunks) results.push(...await this.searchRoute(chunk))
     return results.sort((a, b) => a.date.localeCompare(b.date) || (a.businessPoints ?? Number.MAX_SAFE_INTEGER) - (b.businessPoints ?? Number.MAX_SAFE_INTEGER))
   }
