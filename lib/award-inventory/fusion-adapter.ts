@@ -67,8 +67,9 @@ function toPanoramaAward(
   option: AwardToolPanoramaOption,
   origin: string,
   destination: string,
-  cabin: 'economy' | 'business',
+  cabin: 'economy' | 'business' | 'first',
 ): SeatsAeroResult | null {
+  if (cabin === 'first') return null
   const source = flightSourceForProgrammeId(option.programmeId)
   if (!source) return null
   const miles = cabin === 'business' ? option.businessPoints : option.economyPoints
