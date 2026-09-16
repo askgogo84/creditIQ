@@ -38,8 +38,6 @@ function minutesBetween(start: string | null | undefined, end: string | null | u
 }
 
 function legacyDataSource(_option: FlightAwardOption): SeatsAeroResult['dataSource'] {
-  // The legacy fusion DTO predates multi-provider award search and has only two
-  // source labels. Authoritative provider/freshness is returned separately.
   return 'estimated'
 }
 
@@ -80,8 +78,6 @@ function toPanoramaAward(
     mileageCost: miles,
     remainingSeats: 0,
     airlines: '',
-    // Route Data gives route/programme/date pricing, not a flight-level itinerary.
-    // Never infer nonstop status from the existence of a points_ns summary.
     isDirect: false,
     source,
     date: option.date,
@@ -140,7 +136,7 @@ async function flexibleCachedAwards(input: {
         .filter((award): award is SeatsAeroResult => award !== null)
 
       attempts.push({
-        source: 'awardtool-panorama',
+        source: 'awardtool',
         configured: true,
         state: awards.length ? 'SUCCESS' : 'EMPTY',
         freshness: 'CACHED',
@@ -163,7 +159,7 @@ async function flexibleCachedAwards(input: {
       }
     } catch (error) {
       attempts.push({
-        source: 'awardtool-panorama',
+        source: 'awardtool',
         configured: true,
         state: 'ERROR',
         freshness: 'CACHED',
@@ -172,7 +168,7 @@ async function flexibleCachedAwards(input: {
     }
   } else {
     attempts.push({
-      source: 'awardtool-panorama',
+      source: 'awardtool',
       configured: panorama.isConfigured(),
       state: 'UNAVAILABLE',
       freshness: panorama.isConfigured() ? 'CACHED' : null,
@@ -214,12 +210,6 @@ async function flexibleCachedAwards(input: {
   }
 }
 
-/**
- * Feed the modern award orchestrator into the existing cash+wallet fusion engine.
- * Exact dates use the live-orchestrated provider chain. Flexible windows use
- * AwardTool Panorama Route Data first, then Seats.aero cached discovery fallback.
- * Neither flexible source is permitted to authorize an irreversible transfer.
- */
 export async function searchFusionAwards(input: {
   origin: string
   destination: string
