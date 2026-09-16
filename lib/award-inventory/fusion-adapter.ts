@@ -1,6 +1,7 @@
 import { searchAwardAvailability, type SeatsAeroResult, type SeatsAeroTrip } from '@/lib/seats-aero'
 import { flightSourceForProgrammeId } from '@/lib/redemption-rails/programme-resolver'
 import { searchFlightAwards, type FlightAwardSourceAttempt } from './flight-orchestrator'
+import { AwardToolPanoramaProvider, type AwardToolPanoramaOption } from './providers/awardtool-panorama'
 import type { FlightAwardOption, FlightAwardSearchQuery } from './types'
 
 export type FusionAwardFetch = {
@@ -37,11 +38,6 @@ function minutesBetween(start: string | null | undefined, end: string | null | u
 }
 
 function legacyDataSource(_option: FlightAwardOption): SeatsAeroResult['dataSource'] {
-  // The legacy fusion DTO predates multi-provider award search and has only two
-  // source labels. The authoritative provider/freshness is returned separately
-  // in awardAttempts/awardPricingAuthority and in providerByAwardId. Keep this
-  // compatibility value non-authoritative instead of pretending AwardTool is
-  // Seats.aero.
   return 'estimated'
 }
 
@@ -67,6 +63,34 @@ function toLegacyAward(option: FlightAwardOption, query: FlightAwardSearchQuery)
   }
 }
 
+function toPanoramaAward(
+  option: AwardToolPanoramaOption,
+  origin: string,
+  destination: string,
+  cabin: 'economy' | 'business' | 'first',
+): SeatsAeroResult | null {
+  if (cabin === 'first') return null
+  const source = flightSourceForProgrammeId(option.programmeId)
+  if (!source) return null
+  const miles = cabin === 'business' ? option.businessPoints : option.economyPoints
+  if (!miles) return null
+  return {
+    available: true,
+    mileageCost: miles,
+    remainingSeats: 0,
+    airlines: '',
+    isDirect: false,
+    source,
+    date: option.date,
+    id: `awardtool-panorama:${option.programmeCode}:${option.date}:${cabin}:${miles}`,
+    originAirport: origin,
+    destinationAirport: destination,
+    dataSource: 'estimated',
+    yMileageCost: cabin === 'economy' ? miles : 0,
+    jMileageCost: cabin === 'business' ? miles : 0,
+  }
+}
+
 function toTrip(option: FlightAwardOption, query: FlightAwardSearchQuery): SeatsAeroTrip | null {
   const first = option.segments[0]
   const last = option.segments[option.segments.length - 1]
@@ -87,8 +111,6 @@ function toTrip(option: FlightAwardOption, query: FlightAwardSearchQuery): Seats
     stops: option.segments.length ? Math.max(0, option.segments.length - 1) : 0,
     cabin: query.cabin,
     mileageCost: option.miles,
-    // FlightAwardOption carries minor currency units; the existing Travel UI also
-    // treats SeatsAeroTrip.totalTaxes as minor units and divides by 100 for display.
     totalTaxes: option.taxesMinor ?? 0,
     taxesCurrency: option.taxesCurrency ?? '',
     remainingSeats: 0,
@@ -97,12 +119,98 @@ function toTrip(option: FlightAwardOption, query: FlightAwardSearchQuery): Seats
   }
 }
 
-/**
- * Feed the modern award orchestrator into the existing cash+wallet fusion engine.
- * Exact dates may use AwardTool Real-Time. Flexible windows remain on one cached
- * Seats.aero request until AwardTool Panorama is integrated, avoiding 7-15 paid
- * real-time searches from a single ±3/±7 click.
- */
+async function flexibleCachedAwards(input: {
+  origin: string
+  destination: string
+  startDate: string
+  endDate: string
+  cabin: 'economy' | 'business' | 'first'
+}): Promise<FusionAwardFetch> {
+  const panorama = new AwardToolPanoramaProvider()
+  const attempts: FlightAwardSourceAttempt[] = []
+
+  if (input.cabin !== 'first' && panorama.isConfigured()) {
+    try {
+      const options = await panorama.searchFlexible(input.origin, input.destination, input.startDate, input.endDate)
+      const awards = options
+        .map(option => toPanoramaAward(option, input.origin, input.destination, input.cabin))
+        .filter((award): award is SeatsAeroResult => award !== null)
+
+      attempts.push({
+        source: 'awardtool',
+        configured: true,
+        state: awards.length ? 'SUCCESS' : 'EMPTY',
+        freshness: 'CACHED',
+        reason: awards.length
+          ? `${awards.length} AwardTool Panorama cached flexible-date option(s) returned; live verification is still required.`
+          : 'AwardTool Panorama returned no cached option. This is not proof that no award exists; fallback discovery will run.',
+      })
+
+      if (awards.length) {
+        return {
+          awards,
+          tripsByAwardId: new Map(),
+          providerByAwardId: new Map(awards.map(award => [award.id, 'awardtool-panorama'])),
+          attempts,
+          status: 'SUCCESS_CACHED_DISCOVERY',
+          pricingAuthority: 'CACHED_DISCOVERY',
+          reason: 'Flexible-date awards come from AwardTool Panorama cached Route Data. Shortlisted dates must be verified with Real-Time or direct programme checkout before transfer.',
+          mode: 'FLEX_CACHED',
+        }
+      }
+    } catch (error) {
+      attempts.push({
+        source: 'awardtool',
+        configured: true,
+        state: 'ERROR',
+        freshness: 'CACHED',
+        reason: error instanceof Error ? error.message : 'AwardTool Panorama flexible-date discovery failed.',
+      })
+    }
+  } else {
+    attempts.push({
+      source: 'awardtool',
+      configured: panorama.isConfigured(),
+      state: 'UNAVAILABLE',
+      freshness: panorama.isConfigured() ? 'CACHED' : null,
+      reason: input.cabin === 'first'
+        ? 'Panorama Route Data integration currently covers Economy and Business; First uses cached fallback discovery.'
+        : 'AwardTool Panorama is not configured.',
+    })
+  }
+
+  const awards = await searchAwardAvailability(
+    input.origin,
+    input.destination,
+    input.startDate,
+    input.endDate,
+    undefined,
+    input.cabin,
+  )
+  attempts.push({
+    source: 'seats-aero',
+    configured: Boolean(process.env.SEATS_AERO_API_KEY),
+    state: awards.length ? 'SUCCESS' : (process.env.SEATS_AERO_API_KEY ? 'EMPTY' : 'UNAVAILABLE'),
+    freshness: process.env.SEATS_AERO_API_KEY ? 'CACHED' : null,
+    reason: awards.length
+      ? `${awards.length} cached Seats.aero fallback option(s) returned after Panorama was unavailable or empty.`
+      : 'Cached fallback discovery returned no award options. This still does not prove that no live award exists.',
+  })
+
+  return {
+    awards,
+    tripsByAwardId: new Map(),
+    providerByAwardId: new Map(awards.map(award => [award.id, 'seats-aero-cached'])),
+    attempts,
+    status: awards.length ? 'SUCCESS_CACHED_DISCOVERY' : 'NO_AWARD_OPTIONS',
+    pricingAuthority: awards.length ? 'CACHED_DISCOVERY' : 'NONE',
+    reason: awards.length
+      ? 'Flexible-date Panorama discovery fell back to Seats.aero cached inventory. Live verification remains required.'
+      : 'No cached flexible-date discovery source returned an option. Search the selected exact date with Real-Time/direct programme verification before concluding that no award exists.',
+    mode: 'FLEX_CACHED',
+  }
+}
+
 export async function searchFusionAwards(input: {
   origin: string
   destination: string
@@ -110,34 +218,7 @@ export async function searchFusionAwards(input: {
   endDate: string
   cabin: 'economy' | 'business' | 'first'
 }): Promise<FusionAwardFetch> {
-  if (input.startDate !== input.endDate) {
-    const awards = await searchAwardAvailability(
-      input.origin,
-      input.destination,
-      input.startDate,
-      input.endDate,
-      undefined,
-      input.cabin,
-    )
-    return {
-      awards,
-      tripsByAwardId: new Map(),
-      providerByAwardId: new Map(awards.map(award => [award.id, 'seats-aero-cached'])),
-      attempts: [{
-        source: 'seats-aero',
-        configured: Boolean(process.env.SEATS_AERO_API_KEY),
-        state: awards.length ? 'SUCCESS' : (process.env.SEATS_AERO_API_KEY ? 'EMPTY' : 'UNAVAILABLE'),
-        freshness: process.env.SEATS_AERO_API_KEY ? 'CACHED' : null,
-        reason: awards.length
-          ? `${awards.length} cached flexible-window option(s) returned; Panorama is the planned flexible-date replacement.`
-          : 'Flexible-window cached discovery returned no award options.',
-      }],
-      status: awards.length ? 'SUCCESS_CACHED_DISCOVERY' : 'NO_AWARD_OPTIONS',
-      pricingAuthority: awards.length ? 'CACHED_DISCOVERY' : 'NONE',
-      reason: 'Flexible date ranges use cached discovery until AwardTool Panorama is wired.',
-      mode: 'FLEX_CACHED',
-    }
-  }
+  if (input.startDate !== input.endDate) return flexibleCachedAwards(input)
 
   const query: FlightAwardSearchQuery = {
     origin: input.origin,
