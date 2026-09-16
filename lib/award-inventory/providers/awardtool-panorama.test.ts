@@ -14,6 +14,10 @@ describe('AwardTool Panorama', () => {
     expect(() => splitPanoramaRange('BLR', 'SIN', '2026-10-01', '2026-10-16')).toThrow(/limited to 15 days/i)
   })
 
+  it('rejects extreme caller-controlled ranges without constructing paid-request chunks', () => {
+    expect(() => splitPanoramaRange('BLR', 'SIN', '2026-01-01', '2999-12-31')).toThrow(/limited to 15 days/i)
+  })
+
   it('rejects airport-pair Route Data requests longer than eight days', () => {
     expect(() => validatePanoramaRange({ origin: 'BLR', destination: 'SIN', from: '2026-10-01', to: '2026-10-09' })).toThrow(/eight days/i)
   })
