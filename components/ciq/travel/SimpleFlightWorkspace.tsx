@@ -218,8 +218,8 @@ export function SimpleFlightWorkspace() {
       </div>
 
       <section style={{ border: '1px solid var(--line)', borderRadius: 18, background: 'var(--surface)', padding: 14, display: 'grid', gridTemplateColumns: '1fr 1fr 160px 130px 130px auto', gap: 9, alignItems: 'end' }}>
-        <label><small>From</small><AirportSelect value={from} onChange={setFrom} /></label>
-        <label><small>To</small><AirportSelect value={to} onChange={setTo} /></label>
+        <AirportSelect label="From" value={from} exclude={to} onChange={setFrom} />
+        <AirportSelect label="To" value={to} exclude={from} onChange={setTo} />
         <label><small>Date</small><input type="date" value={date} onChange={e => setDate(e.target.value)} style={{ width: '100%', height: 42, border: '1px solid var(--line)', borderRadius: 10, padding: '0 10px', background: 'var(--surface)' }} /></label>
         <label><small>Dates</small><select value={flex} onChange={e => setFlex(Number(e.target.value) as 0 | 3 | 7)} style={{ width: '100%', height: 42, border: '1px solid var(--line)', borderRadius: 10, background: 'var(--surface)', padding: '0 8px' }}><option value={0}>Exact</option><option value={3}>±3 days</option><option value={7}>±7 days</option></select></label>
         <label><small>Cabin</small><select value={cabin} onChange={e => setCabin(e.target.value as Cabin)} style={{ width: '100%', height: 42, border: '1px solid var(--line)', borderRadius: 10, background: 'var(--surface)', padding: '0 8px' }}><option value="economy">Economy</option><option value="business">Business</option></select></label>
