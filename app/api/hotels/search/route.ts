@@ -188,26 +188,35 @@ async function execute(req: NextRequest, body: any) {
   if (hotelbedsConfigured()) {
     try {
       const page = await searchHotelbedsHotels({ destination, checkin, checkout, adults, rooms, limit })
-      attempts.push({ provider: 'hotelbeds-hbx', ok: true, loaded: page.offers.length, note: page.offers.length ? `HBX ${page.environment} availability returned offers` : 'HBX returned zero available hotels' })
-      if (page.offers.length > 0) {
-        return NextResponse.json({
-          hotels: page.offers,
-          offers: page.offers,
-          coverage: {
-            provider: 'hotelbeds-hbx',
-            mode: 'PROVIDER_WINDOW',
-            destination,
-            entityId: `hbx:${page.destinationCode}`,
-            loaded: page.offers.length,
-            provider_total: page.total,
-            has_more: false,
-            status: page.environment === 'production' ? 'LIVE_PROVIDER_RETURNED' : 'EVALUATION_PROVIDER_RETURNED',
-            fetched_at: new Date().toISOString(),
-            note: `HBX Hotelbeds ${page.environment} mTLS availability. Evaluation inventory is genuine provider-returned test availability and cannot create a real reservation from this search endpoint.`,
-          },
-          attempts,
-          requestId: page.requestId,
+      if (page.environment !== 'production') {
+        attempts.push({
+          provider: 'hotelbeds-hbx',
+          ok: false,
+          loaded: 0,
+          note: 'evaluation/test inventory is intentionally hidden from customer search',
         })
+      } else {
+        attempts.push({ provider: 'hotelbeds-hbx', ok: true, loaded: page.offers.length, note: page.offers.length ? 'HBX production availability returned offers' : 'HBX returned zero available hotels' })
+        if (page.offers.length > 0) {
+          return NextResponse.json({
+            hotels: page.offers,
+            offers: page.offers,
+            coverage: {
+              provider: 'hotelbeds-hbx',
+              mode: 'PROVIDER_WINDOW',
+              destination,
+              entityId: `hbx:${page.destinationCode}`,
+              loaded: page.offers.length,
+              provider_total: page.total,
+              has_more: false,
+              status: 'LIVE_PROVIDER_RETURNED',
+              fetched_at: new Date().toISOString(),
+              note: 'HBX Hotelbeds production availability.',
+            },
+            attempts,
+            requestId: page.requestId,
+          })
+        }
       }
     } catch (error: any) {
       const note = String(error?.message || 'request failed')
