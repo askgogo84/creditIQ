@@ -58,7 +58,7 @@ export async function GET(req: NextRequest) {
       const catalogue = catalogueCard(card.bank, card.cardName)
       const partners = partnersFor(card)
       return {
-        id: String(card.cardId || card.last4 || index),
+        id: String(card.last4 || (card.bank + ':' + (card.cardName || index))),
         bank: card.bank,
         cardName: card.cardName || ('Unidentified ' + card.bank + ' card'),
         last4: card.last4,
