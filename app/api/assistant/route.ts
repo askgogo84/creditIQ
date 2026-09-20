@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 import { retrieveRelevantCards, buildRagSystemPrompt } from '@/lib/rag';
-import { callClaude, MODELS } from '@/lib/ai';
+import { callAI } from '@/lib/ai';
 import { rateLimit } from '@/lib/rate-limit';
 import { callerId } from '@/lib/api-auth';
 import { rankedWalletIntelligence, walletIntelligencePrompt } from '@/lib/intelligence/wallet-intelligence';
@@ -100,8 +100,7 @@ IMPORTANT RULES:
       { role: 'user', content: message },
     ];
 
-    const ai = await callClaude({
-      model: MODELS.haiku,
+    const ai = await callAI({
       max_tokens: 300,
       system: systemPrompt,
       messages,
@@ -121,7 +120,7 @@ IMPORTANT RULES:
     text = text.replace(/```json[\s\S]*?```/g, '').trim();
     text = text.replace(/```[\s\S]*?```/g, '').trim();
 
-    return NextResponse.json({ ok: true, message: text });
+    return NextResponse.json({ ok: true, provider: ai.provider || null, message: text });
   } catch (err) {
     console.error('Assistant error:', err);
     return NextResponse.json({
