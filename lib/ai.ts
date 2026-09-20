@@ -56,7 +56,7 @@ export async function callGemini(opts: CallAIOpts): Promise<AIResult> {
   const apiKey = process.env.GEMINI_API_KEY || process.env.GOOGLE_AI_API_KEY
   if (!apiKey) return { ok: false, reason: 'ai_not_configured', status: 503, detail: 'gemini_key_missing' }
 
-  const model = opts.geminiModel || process.env.GEMINI_MODEL || 'gemini-3.5-flash'
+  const model = opts.geminiModel || process.env.GEMINI_MODEL || 'gemini-3.8-flash'
   const controller = new AbortController()
   const timer = setTimeout(() => controller.abort(), opts.timeoutMs ?? 20000)
 
