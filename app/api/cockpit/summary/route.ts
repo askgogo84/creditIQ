@@ -23,10 +23,11 @@ function catalogueCard(bank: string, name: string | null | undefined) {
 }
 
 function partnersFor(card: { bank: string; cardName: string | null }) {
+  if (!card.cardName) return []
   const input = [{
-    walletKey: String(card.bank) + ':' + String(card.cardName || ''),
+    walletKey: String(card.bank) + ':' + card.cardName,
     bank: card.bank,
-    cardName: card.cardName || undefined,
+    cardName: card.cardName,
   }]
 
   const rails = [
