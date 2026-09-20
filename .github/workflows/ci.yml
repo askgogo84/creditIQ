@@ -23,3 +23,9 @@ jobs:
         run: npm test
       - name: Data and travel validators
         run: npm run prebuild
+      - name: Production build
+        env:
+          NEXT_PUBLIC_SUPABASE_URL: https://example.supabase.co
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: ci-build-placeholder
+          SUPABASE_SERVICE_ROLE_KEY: ci-build-placeholder
+        run: npm run build
