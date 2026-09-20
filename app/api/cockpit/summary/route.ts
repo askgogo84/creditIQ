@@ -1,7 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { requireAuth } from '@/lib/api-auth'
 import { loadDecisionPortfolio } from '@/lib/wallet/decision-portfolio'
-import { buildWalletRailMatrix } from '@/lib/redemption-rails/matrix'
+import { railsForCard } from '@/lib/redemption-rails/registry'
+import { supplementalRailsForCard } from '@/lib/redemption-rails/supplemental-rails'
+import { amexExactRailsForCard } from '@/lib/redemption-rails/amex-exact-rails'
+import { resolveRailCardId } from '@/lib/redemption-rails/card-resolver'
 import { SEED_CARDS } from '@/lib/data/seed-cards'
 
 export const runtime = 'nodejs'
@@ -24,28 +27,29 @@ function catalogueCard(bank: string, name: string | null | undefined) {
 
 function partnersFor(card: { bank: string; cardName: string | null }) {
   if (!card.cardName) return []
-  const input = [{
-    walletKey: String(card.bank) + ':' + card.cardName,
-    bank: card.bank,
-    cardName: card.cardName,
-  }]
+  const cardId = resolveRailCardId({ bank: card.bank, cardName: card.cardName })
+  if (!cardId) return []
 
   const rails = [
-    ...buildWalletRailMatrix(input, 'flight').cards.flatMap(item => item.rails),
-    ...buildWalletRailMatrix(input, 'hotel').cards.flatMap(item => item.rails),
+    ...railsForCard(cardId),
+    ...supplementalRailsForCard(cardId, 'flight'),
+    ...supplementalRailsForCard(cardId, 'hotel'),
+    ...amexExactRailsForCard(cardId, 'flight'),
+    ...amexExactRailsForCard(cardId, 'hotel'),
   ]
+  const seenRails = new Map(rails.map(rail => [rail.id, rail]))
 
-  const partners = rails.flatMap(rail => {
+  const partners = [...seenRails.values()].flatMap(rail => {
     if (rail.type === 'LOYALTY_TRANSFER' && rail.transfer) {
       return [rail.transfer.programmeName || rail.transfer.destinationCurrency || rail.transfer.programmeId]
     }
-    if ((rail.type === 'BANK_TRAVEL_PORTAL' || rail.type === 'MERCHANT_PAY_WITH_POINTS') && rail.bookingDestination) {
+    if ((rail.type === 'BANK_TRAVEL_PORTAL' || rail.type === 'MERCHANT_PAY_WITH_POINTS' || rail.type === 'COBRAND_NATIVE') && rail.bookingDestination) {
       return [rail.bookingDestination]
     }
     return []
   }).filter(Boolean) as string[]
 
-  return [...new Set(partners)].slice(0, 8)
+  return [...new Set(partners)].slice(0, 12)
 }
 
 export async function GET(req: NextRequest) {
