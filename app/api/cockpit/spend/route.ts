@@ -86,7 +86,7 @@ export async function POST(req: NextRequest) {
       if (!card) return []
       const estimate = expectedValue(card, amount, categories)
       return [{
-        id: String(walletCard.cardId || walletCard.last4 || index),
+        id: String(walletCard.last4 || (walletCard.bank + ':' + (walletCard.cardName || index))),
         bank: walletCard.bank,
         cardName: walletCard.cardName || card.name,
         catalogueId: card.id,
