@@ -28,9 +28,9 @@ function renderMarkdown(text: string) {
     if (part.startsWith('**') && part.endsWith('**')) {
       return <strong key={index}>{part.slice(2, -2)}</strong>
     }
-    const link = part.match(/^(→\s*)?\[([^\]]+)\]\((https?:\/\/[^)]+)\)$/i)
+    const link = part.match(/^(→\s*)?\[([^\]]+)\]\((https?:\/\/[^)]+|\/[^)]+)\)$/i)
     if (link) {
-      return <a key={index} href={link[3]} target="_blank" rel="noopener noreferrer nofollow">{link[2]} →</a>
+      return <a key={index} href={link[3]} target={link[3].startsWith('/') ? undefined : '_blank'} rel={link[3].startsWith('/') ? undefined : 'noopener noreferrer nofollow'}>{link[2]} →</a>
     }
     return <span key={index}>{part}</span>
   })
