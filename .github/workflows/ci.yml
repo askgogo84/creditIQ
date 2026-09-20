@@ -23,3 +23,5 @@ jobs:
         run: npm test
       - name: Data and travel validators
         run: npm run prebuild
+      - name: Production build
+        run: npm run build
