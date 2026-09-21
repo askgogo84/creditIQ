@@ -6,7 +6,7 @@ import { Header } from '@/components/Header'
 import { AppRail } from '@/components/ciq/AppRail'
 import { AppTopbar } from '@/components/ciq/AppTopbar'
 import { TabBar } from '@/components/ciq/TabBar'
-import { reassertTheme } from '@/lib/store'
+import { reassertTheme, useTheme } from '@/lib/store'
 import { usePathname } from 'next/navigation'
 
 // NavShell — the nav chrome for the (shell) route group, gated on AUTH STATE
@@ -102,7 +102,59 @@ const SHELL_CSS = `
        "112" is SectionShell's paddingBottom on the (wallet) layout — a real BOTTOM reserve
        specific to those pages — NOT this global floor, and unrelated to the .pt-28 (7rem)
        TOP padding that public marketing pages use. */
-    .ciq-shell-main { padding-top: 58px; padding-bottom: calc(76px + env(safe-area-inset-bottom)) !important; }
+    .ciq-shell-main { padding-top: 64px; padding-bottom: calc(82px + env(safe-area-inset-bottom)) !important; }
+
+    /* Unified mobile chrome. The old header squeezed breadcrumb, long search,
+       theme toggle, notifications and Ask CIRA into a 360px row. */
+    .ciq-app-topbar {
+      left: 0 !important;
+      right: 0 !important;
+      min-width: 0 !important;
+      min-height: 58px !important;
+      padding: 8px 12px !important;
+      display: grid !important;
+      grid-template-columns: minmax(0, 1fr) auto !important;
+      align-items: center !important;
+      gap: 8px !important;
+      background: rgba(247,246,241,.96) !important;
+      border-bottom: 1px solid var(--line) !important;
+      backdrop-filter: blur(18px) saturate(130%);
+    }
+    .ciq-app-crumb { display: none !important; }
+    .ciq-app-search {
+      min-width: 0 !important;
+      width: 100% !important;
+      max-width: none !important;
+      margin: 0 !important;
+    }
+    .ciq-app-search input { min-width: 0 !important; font-size: 14px !important; }
+    .ciq-app-search kbd { display: none !important; }
+    .ciq-app-actions { margin: 0 !important; gap: 6px !important; flex-shrink: 0 !important; }
+    .ciq-app-theme-toggle { display: none !important; }
+    .ciq-ask-cira {
+      width: 40px !important;
+      height: 40px !important;
+      min-width: 40px !important;
+      padding: 0 !important;
+      border-radius: 12px !important;
+      display: grid !important;
+      place-items: center !important;
+    }
+    .ciq-ask-cira span { display: none !important; }
+    .ciq-app-icon { width: 40px !important; height: 40px !important; border-radius: 12px !important; }
+
+    .ciq-mobile-tabbar {
+      max-width: none !important;
+      background: rgba(255,255,255,.97) !important;
+      border-top: 1px solid #e4e1d9 !important;
+      box-shadow: 0 -10px 28px rgba(37,31,19,.06) !important;
+    }
+  }
+
+  @media (max-width: 420px) {
+    .ciq-app-topbar { padding-left: 10px !important; padding-right: 10px !important; }
+    .ciq-app-actions { gap: 4px !important; }
+    .ciq-mobile-tab-label { font-size: 9px !important; }
   }
 `
 
@@ -121,6 +173,7 @@ function hasSupabaseAuthCookie(): boolean {
 
 export function NavShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname()
+  const setTheme = useTheme((state) => state.setTheme)
   // undefined = auth not resolved yet (matches the server render -> Header).
   const [user, setUser] = useState<any>(undefined)
 
@@ -129,6 +182,12 @@ export function NavShell({ children }: { children: React.ReactNode }) {
   // restores data-theme when React strips it on server-rendered routes. Routes
   // through lib/store's single writer (applyTheme); no-op if the attr survived.
   useEffect(() => { reassertTheme() }, [])
+  // The signed-in product now has one approved visual system: the Claude light
+  // cockpit. Persisted dark-mode state from older builds must not leak into some
+  // pages while newer pages stay light.
+  useEffect(() => {
+    if (user) setTheme('light')
+  }, [user, setTheme])
 
   // Flash-mitigation timestamp; set at hydration by the layout effect below so both
   // the cookie-hint flip and the getSession flip can be measured from the same t0.
