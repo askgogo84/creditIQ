@@ -100,7 +100,7 @@ export function WalletView({
                 <CardMockup card={selectedCatalogue as CreditCard} size="lg" interactive={false} />
               </CardArt>
             ) : (
-              <div className="ciq-sub-card-fallback" style={{ background: `linear-gradient(135deg,${selectedCatalogue?.color || '#24161B'},#B5811E)` }}>
+              <div className="ciq-sub-card-fallback" style={{ background: 'linear-gradient(135deg,#24161B,#B5811E)' }}>
                 <b>{selected.bank}</b><span>{selected.card_name || selected.cardName || 'Credit card'}</span>
               </div>
             )}
