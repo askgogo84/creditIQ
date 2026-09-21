@@ -77,7 +77,7 @@ export function CreditIQAssistant() {
 
   // Hide the floating assistant on the auth screen — /login is a focused,
   // full-bleed surface and the widget would crowd the mode toggle.
-  if (pathname === '/login') return null;
+  if (pathname === '/login' || pathname === '/dashboard') return null;
 
   return (
     <>
