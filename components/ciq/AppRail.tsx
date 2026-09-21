@@ -5,7 +5,6 @@ import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import { createBrowserClient } from '@supabase/ssr'
 import { APP_NAV, appActive } from '@/components/ciq/appNav'
-import { useTheme } from '@/lib/store'
 
 // AppRail — the fixed left sidebar shown to SIGNED-IN users at >=900px. Below
 // that, NavShell hides it and shows the existing ciq TabBar instead. This mirrors
@@ -34,11 +33,6 @@ export function AppRail() {
   const path = usePathname()
   const router = useRouter()
   const [user, setUser] = useState<any>(null)
-  // Theme is owned by the single store writer (lib/store.ts) — read it, never
-  // mirror it into local state, so this toggle's icon can never disagree with the
-  // actual site theme. See lib/theme-single-writer.test.ts.
-  const theme = useTheme((s) => s.theme)
-  const toggleTheme = useTheme((s) => s.toggle)
 
   useEffect(() => {
     const sb = createBrowserClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!)
@@ -131,20 +125,6 @@ export function AppRail() {
             {email && <div style={{ fontSize: 11, color: '#7890a4', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{email}</div>}
           </div>
         </div>
-
-        {/* Theme toggle */}
-        <button type="button" onClick={toggleTheme} aria-label="Toggle light or dark theme" style={{
-          display: 'flex', alignItems: 'center', gap: 10, width: '100%', padding: '9px 12px', marginBottom: 4,
-          borderRadius: 10, border: '1px solid transparent', background: 'transparent', cursor: 'pointer',
-          fontFamily: 'inherit', fontSize: 13, fontWeight: 600, color: '#91a7ba', textAlign: 'left',
-        }}>
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
-            {theme === 'dark'
-              ? <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
-              : <><circle cx="12" cy="12" r="4" /><path d="M12 2v2M12 20v2M2 12h2M20 12h2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4" /></>}
-          </svg>
-          <span style={{ flex: 1 }}>{theme === 'dark' ? 'Dark mode' : 'Light mode'}</span>
-        </button>
 
         {/* Sign out */}
         <button type="button" onClick={signOut} style={{

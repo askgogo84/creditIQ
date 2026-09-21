@@ -6,7 +6,6 @@ import { useEffect, useState } from 'react';
 import { createBrowserClient } from '@supabase/ssr';
 import { MoreHorizontal } from 'lucide-react';
 import { APP_NAV } from '@/components/ciq/appNav';
-import { useTheme } from '@/lib/store';
 
 const ICON_SIZE = 21;
 const ICON_STROKE = 1.8;
@@ -54,8 +53,6 @@ export function TabBar() {
   const path = usePathname();
   const router = useRouter();
   const [moreOpen, setMoreOpen] = useState(false);
-  const theme = useTheme((s) => s.theme);
-  const toggleTheme = useTheme((s) => s.toggle);
 
   useEffect(() => { setMoreOpen(false); }, [path]);
 
@@ -151,33 +148,6 @@ export function TabBar() {
                 </Link>
               );
             })}
-
-            <div style={{
-              fontSize: 10, fontWeight: 700, color: 'var(--copper)',
-              letterSpacing: '1.6px', textTransform: 'uppercase', padding: '22px 4px 0',
-            }}>Settings</div>
-            <div style={{ ...sheetRow, cursor: 'default' }}>
-              <span style={sheetIconTile}>
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
-                  <circle cx="12" cy="12" r="4" /><path d="M12 2v2M12 20v2M2 12h2M20 12h2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4" />
-                </svg>
-              </span>
-              <span style={{ flex: 1, minWidth: 0 }}>
-                <span style={{ display: 'block', fontSize: 15, fontWeight: 600, color: 'var(--ink)' }}>Appearance</span>
-                <span style={{ display: 'block', fontSize: 11.5, color: 'var(--ink-3)', marginTop: 1 }}>{theme === 'light' ? 'Light mode' : 'Dark mode'}</span>
-              </span>
-              <button type="button" onClick={toggleTheme} aria-label="Toggle theme" style={{
-                width: 48, height: 27, borderRadius: 999, position: 'relative', cursor: 'pointer', flexShrink: 0,
-                border: '1.5px solid var(--line-strong)', background: 'var(--surface-2)',
-              }}>
-                <span style={{
-                  position: 'absolute', top: 2, left: 2, width: 20, height: 20, borderRadius: '50%',
-                  background: 'var(--copper)',
-                  transform: theme === 'light' ? 'translateX(21px)' : 'none',
-                  transition: 'transform .3s cubic-bezier(.34,1.56,.64,1)',
-                }} />
-              </button>
-            </div>
 
             <button type="button" onClick={signOut} style={{
               ...sheetRow, justifyContent: 'flex-start', marginTop: 22,

@@ -226,8 +226,8 @@ function FlightCard({ row }: { row: Row }) {
   const conciergeRequest = buildFlightConciergeRequest(row, ranked, bestLegacy)
 
   return (
-    <article style={{ border: '1px solid var(--line)', borderRadius: 18, background: 'var(--surface)', overflow: 'hidden' }}>
-      <div style={{ padding: 16, display: 'grid', gridTemplateColumns: 'minmax(0,1.2fr) minmax(150px,.55fr) minmax(220px,.8fr)', gap: 16, alignItems: 'center' }}>
+    <article className="ciq-simple-flight-card" style={{ border: '1px solid var(--line)', borderRadius: 18, background: 'var(--surface)', overflow: 'hidden' }}>
+      <div className="ciq-simple-flight-card-head" style={{ padding: 16, display: 'grid', gridTemplateColumns: 'minmax(0,1.2fr) minmax(150px,.55fr) minmax(220px,.8fr)', gap: 16, alignItems: 'center' }}>
         <div>
           <div style={{ fontSize: 12, color: 'var(--ink-3)' }}>{date}</div>
           <strong style={{ display: 'block', fontSize: 16, marginTop: 3 }}>{row.airline || 'Flight option'}</strong>
@@ -239,7 +239,7 @@ function FlightCard({ row }: { row: Row }) {
           <strong style={{ display: 'block', fontSize: 19, marginTop: 3 }}>{cashPrice(row)}</strong>
         </div>
 
-        <div style={{ borderLeft: '1px solid var(--line)', paddingLeft: 16 }}>
+        <div className="ciq-simple-flight-verdict" style={{ borderLeft: '1px solid var(--line)', paddingLeft: 16 }}>
           <small style={{ color: action.tone, fontWeight: 800 }}>CREDITIQ SAYS</small>
           <strong style={{ display: 'block', fontSize: 16, marginTop: 4 }}>{action.label}</strong>
           {summary?.bestPath?.label && <span style={{ display: 'block', fontSize: 12, marginTop: 4, color: 'var(--ink-2)' }}>{summary.bestPath.label}</span>}
@@ -262,7 +262,7 @@ function FlightCard({ row }: { row: Row }) {
           {plan.amount && <span style={{ display: 'block', marginTop: 3, fontSize: 13, color: 'var(--ink-2)' }}>{plan.amount}</span>}
         </div>
 
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(290px,1fr))', gap: 12 }}>
+        <div className="ciq-simple-execution-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(290px,1fr))', gap: 12 }}>
           <div style={{ border: '1px solid var(--line)', borderRadius: 14, background: 'var(--surface)', padding: 14 }}>
             <small style={{ color: 'var(--ink-3)', fontWeight: 800 }}>DO IT YOURSELF</small>
             <ol style={{ paddingLeft: 20, margin: '10px 0 0', display: 'grid', gap: 8 }}>
@@ -401,14 +401,14 @@ export function SimpleFlightWorkspace() {
   }
 
   return (
-    <div style={{ maxWidth: 1040, margin: '0 auto', padding: '22px 18px 60px' }}>
-      <div style={{ marginBottom: 18 }}>
+    <div className="ciq-simple-travel-workspace" style={{ maxWidth: 1040, margin: '0 auto', padding: '22px 18px 60px' }}>
+      <div className="ciq-simple-travel-intro" style={{ marginBottom: 18 }}>
         <div className="ciq-editorial-kicker">Travel</div>
         <h1 style={{ margin: '5px 0 6px', fontSize: 30 }}>Find the flight. CreditIQ tells you how to book it.</h1>
         <p style={{ margin: 0, color: 'var(--ink-2)', maxWidth: 760 }}>See the simple verdict first, then the exact redemption steps or hand the same itinerary to CreditIQ Concierge.</p>
       </div>
 
-      <section style={{ border: '1px solid var(--line)', borderRadius: 18, background: 'var(--surface)', padding: 14, display: 'grid', gridTemplateColumns: '1fr 1fr 160px 130px 130px auto', gap: 9, alignItems: 'end' }}>
+      <section className="ciq-simple-travel-search" style={{ border: '1px solid var(--line)', borderRadius: 18, background: 'var(--surface)', padding: 14, display: 'grid', gridTemplateColumns: '1fr 1fr 160px 130px 130px auto', gap: 9, alignItems: 'end' }}>
         <AirportSelect label="From" value={from} exclude={to} onChange={setFrom} />
         <AirportSelect label="To" value={to} exclude={from} onChange={setTo} />
         <label><small>Date</small><input type="date" value={date} onChange={e => setDate(e.target.value)} style={{ width: '100%', height: 42, border: '1px solid var(--line)', borderRadius: 10, padding: '0 10px', background: 'var(--surface)' }} /></label>
@@ -417,7 +417,7 @@ export function SimpleFlightWorkspace() {
         <button onClick={search} disabled={loading} style={{ height: 42, border: 0, borderRadius: 10, padding: '0 16px', background: 'var(--copper)', color: '#fff', fontWeight: 800, cursor: 'pointer' }}>{loading ? 'Searching…' : 'Search'}</button>
       </section>
 
-      <div style={{ marginTop: 14, padding: '11px 13px', borderRadius: 12, background: 'var(--surface-2)', display: 'flex', gap: 9, alignItems: 'center', color: 'var(--ink-2)', fontSize: 11.5 }}>
+      <div className="ciq-simple-travel-safe" style={{ marginTop: 14, padding: '11px 13px', borderRadius: 12, background: 'var(--surface-2)', display: 'flex', gap: 9, alignItems: 'center', color: 'var(--ink-2)', fontSize: 11.5 }}>
         <ShieldCheck size={17} />
         <span><b>Safe by default:</b> “Check award first” means CreditIQ found a promising path but will not tell you to transfer points until availability is live-verified.</span>
       </div>

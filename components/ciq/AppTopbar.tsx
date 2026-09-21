@@ -3,9 +3,8 @@
 import { useEffect, useRef, useState } from 'react'
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
-import { Bell, Search, Sparkles, Sun, Moon } from 'lucide-react'
+import { Bell, Search, Sparkles } from 'lucide-react'
 import { APP_NAV } from '@/components/ciq/appNav'
-import { useTheme } from '@/lib/store'
 import { authedFetch } from '@/lib/authed-fetch'
 
 const COMMANDS = [
@@ -42,8 +41,6 @@ export function AppTopbar() {
   const [notificationsOpen, setNotificationsOpen] = useState(false)
   const [notifications, setNotifications] = useState<Notification[]>([])
   const [unreadCount, setUnreadCount] = useState(0)
-  const theme = useTheme(state => state.theme)
-  const toggleTheme = useTheme(state => state.toggle)
 
   async function loadNotifications() {
     try {
@@ -133,9 +130,6 @@ export function AppTopbar() {
       </form>
 
       <div className="ciq-app-actions">
-        <button type="button" className="ciq-app-icon" onClick={toggleTheme} aria-label="Switch light or dark theme">
-          {theme === 'dark' ? <Moon size={18} strokeWidth={1.8} /> : <Sun size={18} strokeWidth={1.8} />}
-        </button>
         <div ref={notificationRef} style={{ position: 'relative' }}>
           <button
             type="button"
