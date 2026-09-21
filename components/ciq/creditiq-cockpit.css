@@ -214,3 +214,86 @@
 .ciq-sub-proof{display:flex;gap:7px;flex-wrap:wrap;margin-top:18px}.ciq-sub-proof span{padding:6px 9px;border-radius:999px;background:#EEF2F7;color:#66758A;font-size:9.5px}
 @media(min-width:900px){.ciq-sub-home{width:min(100%,680px);padding-top:46px}.ciq-sub-home h1{font-size:46px}}
 @media(max-width:430px){.ciq-sub-home{padding:28px 18px 104px}.ciq-sub-home h1{font-size:36px}}
+
+
+/* Claude Cockpit fidelity layer — values transcribed from the uploaded artifact.
+   Responsive changes only; no product redesign. */
+.ciq-cockpit .cq-shell{max-width:none;box-shadow:none}
+.ciq-cockpit .cq-main{padding:28px 48px 120px;display:flex;flex-direction:column;align-items:center}
+.ciq-cockpit .cq-top{width:100%;max-width:1120px;margin:0 auto}
+.cq-greeting-row{width:100%;display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap;color:#6B6F7B;font-size:13px}
+.cq-greeting-row .cq-wallet-chips{margin:0}
+.cq-chip-swatch{width:14px;height:10px;border-radius:2px;display:inline-block}
+.cq-wallet-total{background:#12151F!important;color:#F6F2EA!important;border-color:#12151F!important}
+.cq-wallet-total span{font-size:11px;color:#C9A86A}
+.ciq-cockpit .cq-hero{padding:0}
+.ciq-cockpit .cq-eyebrow{margin-top:44px;text-align:center}
+.ciq-cockpit .cq-hero h1{
+  font-family:'Newsreader',Georgia,'Times New Roman',serif;
+  font-weight:400;
+  font-size:48px;
+  line-height:1.06;
+  letter-spacing:-.012em;
+  margin:12px auto 24px;
+  max-width:720px;
+  text-wrap:pretty;
+}
+.ciq-cockpit .cq-cmd{max-width:760px;border-radius:18px;padding:8px 8px 8px 20px;box-shadow:0 18px 50px rgba(18,21,31,.08)}
+.ciq-cockpit .cq-cmd input{min-height:44px;font-size:16px}
+.ciq-cockpit .cq-cmd button{background:#12151F;color:#F6F2EA;padding:12px 18px;border-radius:12px;font-size:14px;font-weight:500;border:0;min-height:44px;white-space:nowrap}
+.ciq-cockpit .cq-suggest{max-width:820px;margin:14px auto 0}
+.ciq-cockpit .cq-suggest a{border:1px solid #E3DDD1;background:#fff;color:#12151F;border-radius:999px;padding:9px 14px;font-size:13px;text-decoration:none;white-space:nowrap}
+.ciq-cockpit .cq-suggest a.primary{background:#12151F;color:#F6F2EA;border-color:#12151F;font-weight:600}
+.ciq-cockpit .cq-work{grid-template-columns:minmax(0,1.35fr) minmax(0,1fr);gap:16px;max-width:1120px;margin-top:36px}
+.ciq-cockpit .cq-panel-dark{padding:26px 28px;position:relative;overflow:hidden}
+.cq-trip-sub{color:#A9ADB8;font-size:14px;margin-bottom:22px}
+.cq-smart-line{height:1px;background:rgba(255,255,255,.1);margin-top:22px}
+.cq-action-buttons{display:flex;gap:8px}
+.cq-verdict{font-size:13px;color:#C9A86A;display:flex;align-items:center;gap:8px}
+.ciq-cockpit .cq-lower{max-width:1120px}
+.ciq-cockpit .cq-cirabar{width:min(560px,calc(100% - 140px));bottom:24px;transform:translateX(38px)}
+
+@media(max-width:900px){
+  .ciq-cockpit .cq-shell{flex-direction:column}
+  .ciq-cockpit .cq-rail{
+    order:2;position:fixed;bottom:0;top:auto;width:100%;height:auto;
+    flex-direction:row;justify-content:space-around;padding:8px 8px 12px;
+    border-right:0;border-top:1px solid rgba(255,255,255,.08);z-index:30
+  }
+  .ciq-cockpit .cq-logo,.ciq-cockpit .cq-avatar{display:none}
+  .ciq-cockpit .cq-nav{flex-direction:row;justify-content:space-around}
+  .ciq-cockpit .cq-nav a,.ciq-cockpit .cq-nav button{
+    min-height:48px;width:auto;padding:6px 10px;height:auto;gap:3px
+  }
+  .ciq-cockpit .cq-nav span{display:block}
+  .ciq-cockpit .cq-main{padding:24px 18px 110px}
+  .cq-greeting-row>span{display:none}
+  .cq-greeting-row{justify-content:flex-start}
+  .ciq-cockpit .cq-wallet-chips{justify-content:flex-start;gap:6px;width:100%}
+  .ciq-cockpit .cq-eyebrow{text-align:left;align-self:stretch;margin-top:26px}
+  .ciq-cockpit .cq-hero{text-align:left;width:100%}
+  .ciq-cockpit .cq-hero h1{font-size:32px;text-align:left;max-width:100%;margin-left:0}
+  .ciq-cockpit .cq-cmd{width:100%;padding:6px 6px 6px 14px}
+  .ciq-cockpit .cq-cmd input{font-size:14px}
+  .ciq-cockpit .cq-suggest{
+    flex-wrap:nowrap;overflow-x:auto;justify-content:flex-start;width:100%;
+    padding-bottom:4px;scrollbar-width:none
+  }
+  .ciq-cockpit .cq-suggest::-webkit-scrollbar{display:none}
+  .ciq-cockpit .cq-work,.ciq-cockpit .cq-lower,.ciq-cockpit .cq-trip-grid,.ciq-cockpit .cq-spend-grid{grid-template-columns:1fr}
+  .ciq-cockpit .cq-work{width:100%}
+  .ciq-cockpit .cq-deck{display:flex;overflow-x:auto;height:auto;gap:12px;padding:4px 2px 12px;scrollbar-width:none}
+  .ciq-cockpit .cq-card,.ciq-cockpit .cq-card.selected,.ciq-cockpit .cq-card.stack1,.ciq-cockpit .cq-card.stack2{
+    position:relative;left:auto;top:auto;transform:none;flex:0 0 250px;width:250px;height:156px
+  }
+  .ciq-cockpit .cq-orbit{height:340px}
+  .ciq-cockpit .cq-cirabar{width:calc(100% - 32px);transform:none;bottom:78px}
+}
+@media(max-width:520px){
+  .ciq-cockpit .cq-main{padding:18px 14px 104px}
+  .ciq-cockpit .cq-panel,.ciq-cockpit .cq-panel-dark{padding:20px}
+  .ciq-cockpit .cq-wallet-chip{font-size:11px;padding:7px 9px}
+  .ciq-cockpit .cq-title{font-size:24px}
+  .ciq-cockpit .cq-work{gap:16px}
+  .ciq-cockpit .cq-lower{margin-top:28px}
+}
