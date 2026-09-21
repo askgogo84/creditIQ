@@ -102,11 +102,13 @@ const SHELL_CSS = `
        "112" is SectionShell's paddingBottom on the (wallet) layout — a real BOTTOM reserve
        specific to those pages — NOT this global floor, and unrelated to the .pt-28 (7rem)
        TOP padding that public marketing pages use. */
-    .ciq-shell-main { padding-top: 64px; padding-bottom: calc(82px + env(safe-area-inset-bottom)) !important; }
+    .ciq-shell-main { padding-top: 0; padding-bottom: calc(82px + env(safe-area-inset-bottom)) !important; }
 
-    /* Unified mobile chrome. The old header squeezed breadcrumb, long search,
-       theme toggle, notifications and Ask CIRA into a 360px row. */
-    .ciq-app-topbar {
+    /* Newer Claude subscription mockup owns its header inside each screen. */
+    .ciq-app-topbar { display: none !important; }
+
+    /* Legacy mobile topbar rules retained below only for desktop-resize safety. */
+    .ciq-app-topbar.ciq-app-topbar-disabled {
       left: 0 !important;
       right: 0 !important;
       min-width: 0 !important;
@@ -144,10 +146,42 @@ const SHELL_CSS = `
     .ciq-app-icon { width: 40px !important; height: 40px !important; border-radius: 12px !important; }
 
     .ciq-mobile-tabbar {
+      position: fixed !important;
+      left: 0 !important;
+      right: 0 !important;
+      bottom: 0 !important;
+      z-index: 500 !important;
       max-width: none !important;
-      background: rgba(255,255,255,.97) !important;
-      border-top: 1px solid #e4e1d9 !important;
-      box-shadow: 0 -10px 28px rgba(37,31,19,.06) !important;
+      margin: 0 !important;
+      padding: 8px 8px calc(8px + env(safe-area-inset-bottom)) !important;
+      display: grid !important;
+      grid-template-columns: repeat(5,minmax(0,1fr)) !important;
+      background: rgba(250,248,242,.98) !important;
+      border-top: 1px solid #ded8ce !important;
+      box-shadow: 0 -10px 28px rgba(37,31,19,.05) !important;
+      backdrop-filter: blur(18px);
+    }
+    .ciq-mobile-tabbar a {
+      min-height: 52px;
+      display: flex !important;
+      flex-direction: column !important;
+      align-items: center !important;
+      justify-content: center !important;
+      gap: 4px !important;
+      border-radius: 12px;
+      text-decoration: none !important;
+      color: #9aa2af !important;
+      font-size: 9px !important;
+      font-weight: 650 !important;
+    }
+    .ciq-mobile-tabbar a.active { color: #142335 !important; }
+    .ciq-mobile-tabbar a.active svg { color: #142335 !important; }
+    .ciq-mobile-tabbar a:nth-child(3) svg {
+      padding: 6px;
+      width: 32px;
+      height: 32px;
+      border: 1.5px dashed #9aa2af;
+      border-radius: 10px;
     }
   }
 
