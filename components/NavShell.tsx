@@ -237,13 +237,7 @@ export function NavShell({ children }: { children: React.ReactNode }) {
     )
   }
 
-  // Dashboard owns its Claude-designed cockpit chrome. Keep the global app rail/topbar
-  // off this route so we do not double-navigate or distort the source-of-truth design.
-  if (pathname === '/dashboard') {
-    return <div className="ciq-cockpit-route">{children}</div>
-  }
-
-  // Signed in -> app shell.
+  // Signed in -> one shared app shell for every app route, including Dashboard.
   return (
     <>
       <style>{SHELL_CSS}</style>
