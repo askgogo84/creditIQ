@@ -184,3 +184,33 @@
   .ciq-home-quick-grid{grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}
   .ciq-home-quick-grid a{padding:11px;min-height:82px}
 }
+
+
+/* Newer Claude subscription-experience Dashboard */
+.ciq-sub-home{
+  width:min(100%,430px);
+  margin:0 auto;
+  min-height:calc(100vh - 82px);
+  padding:34px 22px 110px;
+  background:#F8F5EE;
+  color:#0F2A55;
+  font-family:"Avenir Next",Avenir,"Helvetica Neue",Arial,sans-serif;
+}
+.ciq-sub-home *{box-sizing:border-box;min-width:0}
+.ciq-sub-home-top{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:18px}
+.ciq-sub-bot{width:42px;height:42px;border-radius:50%;display:grid;place-items:center;background:#0F2A55;color:#F5B72E}
+.ciq-sub-unlocked{padding:6px 10px;border-radius:999px;background:#DDF6E8;color:#1D8C57;font-size:10px;font-weight:800}
+.ciq-sub-home h1{margin:0 0 22px;color:#0F2A55;font-family:"Avenir Next",Avenir,sans-serif;font-size:38px;line-height:.98;letter-spacing:-.05em;font-weight:850}
+.ciq-sub-best-action{display:flex;align-items:center;gap:14px;padding:18px 17px;border-radius:22px;background:linear-gradient(135deg,#173768,#0F2A55);color:#fff;text-decoration:none;box-shadow:0 18px 38px rgba(15,42,85,.12)}
+.ciq-sub-best-action>div{flex:1}.ciq-sub-best-action small{display:block;color:#D8E3F4;font-size:11px}.ciq-sub-best-action strong{display:block;margin-top:6px;font-size:20px;line-height:1.12;letter-spacing:-.02em}.ciq-sub-best-action p{margin:7px 0 0;color:#C9D8ED;font-size:11.5px;line-height:1.4}
+.ciq-sub-best-action>span{width:48px;height:48px;flex:0 0 48px;border-radius:15px;background:#F6C44C;color:#0F2A55;display:grid;place-items:center}
+.ciq-sub-stat-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:16px}
+.ciq-sub-stat-grid>div{padding:18px 16px;border:1px solid #E1D9CB;border-radius:20px;background:#FFFDF9;box-shadow:0 8px 18px rgba(15,42,85,.035)}
+.ciq-sub-stat-grid small{display:block;color:#8490A0;font-size:11px}.ciq-sub-stat-grid strong{display:block;margin-top:7px;color:#0F2A55;font-size:26px;letter-spacing:-.035em}
+.ciq-sub-section-head{display:flex;align-items:center;justify-content:space-between;margin:24px 2px 10px}.ciq-sub-section-head strong{font-size:18px}.ciq-sub-section-head a{color:#6E83FF;font-size:11px;text-decoration:none}
+.ciq-sub-action-row{display:flex;align-items:center;gap:13px;padding:16px;border:1px solid #E1D9CB;border-radius:18px;background:#FFFDF9;color:#0F2A55;text-decoration:none;box-shadow:0 8px 18px rgba(15,42,85,.04)}
+.ciq-sub-alert-icon{width:37px;height:37px;border-radius:12px;background:#FFF5D7;color:#E1A81C;display:grid;place-items:center;flex:0 0 37px}
+.ciq-sub-action-row>div{flex:1}.ciq-sub-action-row strong{display:block;font-size:14.5px;line-height:1.3}.ciq-sub-action-row small{display:block;margin-top:3px;color:#738096;font-size:10.5px;line-height:1.4}
+.ciq-sub-proof{display:flex;gap:7px;flex-wrap:wrap;margin-top:18px}.ciq-sub-proof span{padding:6px 9px;border-radius:999px;background:#EEF2F7;color:#66758A;font-size:9.5px}
+@media(min-width:900px){.ciq-sub-home{width:min(100%,680px);padding-top:46px}.ciq-sub-home h1{font-size:46px}}
+@media(max-width:430px){.ciq-sub-home{padding:28px 18px 104px}.ciq-sub-home h1{font-size:36px}}
