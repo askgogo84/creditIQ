@@ -297,3 +297,8 @@
   .ciq-cockpit .cq-work{gap:16px}
   .ciq-cockpit .cq-lower{margin-top:28px}
 }
+
+.ciq-cockpit .cq-logo{width:34px;height:34px;border-radius:8px;margin-bottom:16px}
+.ciq-cockpit .cq-nav span{display:none}
+.ciq-cockpit .cq-nav a{width:48px;min-height:48px;height:48px;align-self:center;padding:0}
+.ciq-cockpit .cq-avatar{width:32px;height:32px;background:#2A3042;color:#fff}
