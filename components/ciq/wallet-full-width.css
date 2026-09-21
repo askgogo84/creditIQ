@@ -268,3 +268,36 @@
 @media (prefers-reduced-motion: reduce) {
   .wallet-primary, .wallet-secondary, .wallet-card-art { transition: none; }
 }
+
+
+/* Newer Claude subscription-experience Cards */
+.ciq-sub-cards{
+  width:min(100%,430px);
+  margin:0 auto;
+  min-height:calc(100vh - 82px);
+  padding:28px 18px 108px;
+  background:#F8F5EE;
+  color:#0F2A55;
+  font-family:"Avenir Next",Avenir,"Helvetica Neue",Arial,sans-serif;
+}
+.ciq-sub-cards *{box-sizing:border-box;min-width:0}
+.ciq-sub-cards-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px}
+.ciq-sub-cards-head h1{margin:0;color:#0F2A55;font-size:38px;line-height:1;font-weight:850;letter-spacing:-.05em}
+.ciq-sub-cards-head button{width:46px;height:46px;border:0;border-radius:50%;background:#0F2A55;color:#fff;display:grid;place-items:center}
+.ciq-sub-portfolio{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:18px;border-radius:20px;background:linear-gradient(135deg,#173768,#0F2A55);color:#fff}
+.ciq-sub-portfolio small{display:block;color:#C5D2E7;font-size:11px}.ciq-sub-portfolio strong{display:block;margin-top:4px;font-size:36px;line-height:1;letter-spacing:-.04em}.ciq-sub-portfolio span{display:block;margin-top:6px;color:#D4DDEE;font-size:11px}
+.ciq-sub-portfolio-icon{width:52px;height:52px;flex:0 0 52px;border-radius:50%;background:#E5A817;color:#0F2A55;display:grid!important;place-items:center;margin:0!important}
+.ciq-sub-card-art{margin-top:22px;border-radius:22px;overflow:hidden;min-height:190px}
+.ciq-sub-card-art>div{width:100%!important}
+.ciq-sub-card-fallback{height:190px;padding:24px;color:#fff;border-radius:22px;display:flex;flex-direction:column;justify-content:space-between}.ciq-sub-card-fallback b{font-size:18px}.ciq-sub-card-fallback span{font-size:15px}
+.ciq-sub-card-picker{display:flex;gap:8px;overflow-x:auto;padding:10px 1px 2px;scrollbar-width:none}.ciq-sub-card-picker::-webkit-scrollbar{display:none}.ciq-sub-card-picker button{flex:0 0 auto;border:1px solid #D9D1C3;border-radius:999px;background:#FFFDF9;color:#68758A;padding:7px 10px;font-size:10px}.ciq-sub-card-picker button span{margin-left:6px;font-weight:750}.ciq-sub-card-picker button.active{background:#0F2A55;color:#fff;border-color:#0F2A55}
+.ciq-sub-card-actions{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-top:16px}
+.ciq-sub-card-actions a{min-height:90px;border:1px solid #E1D9CB;border-radius:18px;background:#FFFDF9;color:#0F2A55;text-decoration:none;display:flex;flex-direction:column;align-items:flex-start;justify-content:center;padding:13px;gap:4px}
+.ciq-sub-card-actions svg{color:#7C8DA5}.ciq-sub-card-actions span{font-size:12px;font-weight:750}.ciq-sub-card-actions small{color:#98A0AD;font-size:8.5px}
+.ciq-sub-health{margin-top:14px;display:flex;align-items:center;gap:12px;padding:16px;border:1px solid #E1D9CB;border-radius:18px;background:#FFFDF9;color:#0F2A55;text-decoration:none}
+.ciq-sub-health>div{flex:1}.ciq-sub-health strong{display:block;font-size:14px}.ciq-sub-health span{display:block;margin-top:3px;color:#97A0AE;font-size:10px}
+.ciq-sub-balance-card{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px}.ciq-sub-balance-card>div{padding:14px;border-radius:16px;background:#F1EEE7}.ciq-sub-balance-card small{display:block;color:#7B8798;font-size:9.5px}.ciq-sub-balance-card strong{display:block;margin-top:4px;font-size:14px}
+.ciq-sub-card-utility{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}.ciq-sub-card-utility button{border:1px solid #D9D1C3;border-radius:999px;background:#FFFDF9;color:#0F2A55;padding:8px 11px;font-size:10px}.ciq-sub-card-utility button.danger{color:#A64232}
+.ciq-sub-empty-card{width:100%;margin-top:20px;padding:28px 20px;border:1.5px dashed #C9BFAE;border-radius:20px;background:#FFFDF9;color:#0F2A55;display:flex;flex-direction:column;align-items:center;gap:7px}.ciq-sub-empty-card span{color:#7C8796;font-size:11px;text-align:center}
+.ciq-sub-card-footnote{text-align:center;margin-top:18px;color:#98A0AD;font-size:9.5px}
+@media(min-width:900px){.ciq-sub-cards{width:min(100%,680px);padding-top:46px}}
