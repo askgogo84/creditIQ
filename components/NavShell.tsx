@@ -271,7 +271,13 @@ export function NavShell({ children }: { children: React.ReactNode }) {
     )
   }
 
-  // Signed in -> one shared app shell for every app route, including Dashboard.
+  // Claude Cockpit owns its rail, command surface and responsive mobile navigation.
+  // Keep the global app shell off /dashboard so the approved artifact is not restyled.
+  if (pathname === '/dashboard') {
+    return <div className="ciq-cockpit-route">{children}</div>
+  }
+
+  // Signed in -> shared app shell for the remaining app routes.
   return (
     <>
       <style>{SHELL_CSS}</style>
