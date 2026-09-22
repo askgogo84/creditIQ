@@ -8,7 +8,11 @@ export default defineConfig({
   esbuild: { jsx: 'automatic' },
   resolve: {
     // mirror tsconfig "@/*": ["./*"] so components using the alias resolve under test
-    alias: { '@': fileURLToPath(new URL('.', import.meta.url)) },
+    alias: {
+      '@': fileURLToPath(new URL('.', import.meta.url)),
+      // next/font/google is a build-time transform, not runnable under vitest.
+      'next/font/google': fileURLToPath(new URL('./test/next-font-google.stub.ts', import.meta.url)),
+    },
   },
   test: {
     environment: 'jsdom',
