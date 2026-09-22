@@ -293,7 +293,7 @@ export function DashboardHome({
           </section>
 
           <Link className="cq-cirabar" href="/cira">
-            <Sparkles size={15} />
+            <Sparkles size={15} color="#C9A86A" />
             <span>Ask CIRA anything…</span>
             <b>Open</b>
           </Link>
