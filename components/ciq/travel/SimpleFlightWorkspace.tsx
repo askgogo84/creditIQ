@@ -45,6 +45,16 @@ type Row = {
   redemption?: RedemptionOption[]
   bestOption?: RedemptionOption | null
   decision?: TravelDecisionContract
+  jevDecision?: {
+    action: 'USE_POINTS' | 'POINTS_PLUS_CASH' | 'PAY_CASH' | 'VERIFY_AWARD_FIRST' | 'VERIFY_REDEMPTION' | 'WAIT' | 'NO_SAFE_ACTION'
+    confidence: number | null
+    verificationRequired: boolean
+    transferRisk: 'LOW' | 'MEDIUM' | 'HIGH'
+    source: 'jev' | 'deterministic-fallback'
+    reason: string
+    latencyMs: number
+    error?: string | null
+  }
 }
 
 type ExecutionPlan = {
@@ -85,6 +95,15 @@ function cashPrice(row: Row) {
 }
 
 function friendlyAction(row: Row) {
+  const jev = row.jevDecision?.action
+  if (jev === 'USE_POINTS') return { label: 'Use points', tone: '#166534' }
+  if (jev === 'POINTS_PLUS_CASH') return { label: 'Use points + cash', tone: '#166534' }
+  if (jev === 'VERIFY_AWARD_FIRST') return { label: 'Check award first', tone: '#9A6700' }
+  if (jev === 'VERIFY_REDEMPTION') return { label: 'Check redemption first', tone: '#9A6700' }
+  if (jev === 'PAY_CASH') return { label: 'Pay cash', tone: '#142335' }
+  if (jev === 'WAIT') return { label: 'Wait · evidence not strong enough', tone: '#9A6700' }
+  if (jev === 'NO_SAFE_ACTION') return { label: 'No safe action yet', tone: '#9A6700' }
+
   const verdict = row.decision?.searchSummary?.verdict
   switch (verdict) {
     case 'USE_POINTS': return { label: 'Use points', tone: '#166534' }
@@ -252,6 +271,16 @@ function FlightCard({ row }: { row: Row }) {
           {live && 'Live award evidence returned. Re-check the final programme checkout immediately before transferring points.'}
           {discovery && 'This is a possible redemption, not a confirmed seat. Check the airline programme first; do not transfer points yet.'}
           {!live && !discovery && summary?.blockedReasons?.[0]}
+        </div>
+      )}
+
+      {row.jevDecision && (
+        <div style={{ padding: '10px 16px', borderTop: '1px solid var(--line)', background: '#f8f6ef', display: 'flex', flexWrap: 'wrap', gap: 8, alignItems: 'center', fontSize: 10.5, color: 'var(--ink-2)' }}>
+          <b style={{ color: 'var(--ink)' }}>{row.jevDecision.source === 'jev' ? 'Jev decision' : 'CreditIQ safe fallback'}</b>
+          {row.jevDecision.confidence != null && <span>Confidence {Math.round(row.jevDecision.confidence * 100)}%</span>}
+          <span>Transfer risk {row.jevDecision.transferRisk.toLowerCase()}</span>
+          {row.jevDecision.verificationRequired && <span style={{ color: '#9A6700', fontWeight: 750 }}>Verification required</span>}
+          <span style={{ flexBasis: '100%' }}>{row.jevDecision.reason}</span>
         </div>
       )}
 

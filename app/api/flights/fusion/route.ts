@@ -25,6 +25,7 @@ import { buildWalletRailMatrix, type WalletRailCardInput } from '@/lib/redemptio
 import { programmeIdForFlightCarrier, programmeIdForFlightSource } from '@/lib/redemption-rails/programme-resolver';
 import { findAirIndiaMaharajaGuide } from '@/lib/data/air-india-maharaja-guide';
 import { buildTravelDecisionContract, type TravelDecisionAwardStatus } from '@/lib/travel/decision-contract';
+import { deterministicTravelDecision, runJevTravelDecision } from '@/lib/typesafe/creditiq-travel-decision';
 
 export const runtime = 'nodejs';
 export const maxDuration = 60;
@@ -428,6 +429,38 @@ export async function POST(req: NextRequest) {
 
     const results = [...cashResults, ...awardOnly];
 
+    // Jev is a bounded semantic decision layer on top of the canonical
+    // CreditIQ travel-decision-v1 contract. The deterministic contract remains
+    // authoritative for safety: Jev can confirm or downgrade, never promote
+    // discovery-only/unverified evidence into an irreversible transfer.
+    const jevPriority = (row: any) => {
+      const verdict = row.decision?.searchSummary?.verdict;
+      if (verdict === 'USE_POINTS' || verdict === 'POINTS_PLUS_CASH') return 0;
+      if (verdict === 'VERIFY_AWARD' || verdict === 'VERIFY_REDEMPTION') return 1;
+      if (verdict === 'PAY_CASH') return 2;
+      return 3;
+    };
+    const jevCap = 6;
+    const jevIndexes = new Set(
+      results
+        .map((row: any, index: number) => ({ index, priority: jevPriority(row), price: row.price || Number.MAX_SAFE_INTEGER }))
+        .sort((a, b) => a.priority - b.priority || a.price - b.price)
+        .slice(0, jevCap)
+        .map((item) => item.index),
+    );
+
+    const decisions = await Promise.all(
+      results.map((row: any, index: number) =>
+        jevIndexes.has(index)
+          ? runJevTravelDecision(row.decision, { timeoutMs: 900 })
+          : Promise.resolve(deterministicTravelDecision(row.decision)),
+      ),
+    );
+    const jevResults = results.map((row: any, index: number) => ({
+      ...row,
+      jevDecision: decisions[index],
+    }));
+
     return NextResponse.json({
       route: { from, to, date_from: dateFrom, date_to: dateTo, cash_reference_date: cashReferenceDate, cabin },
       counts: {
@@ -448,7 +481,13 @@ export async function POST(req: NextRequest) {
       awardReason: awardFetch.reason,
       verifiedPolicy: 'all-estimates',
       decisionContract: 'travel-decision-v1',
-      flights: results,
+      decisionEngine: 'creditiq-jev-travel-v1',
+      jev: {
+        configured: Boolean(String(process.env.TYPESAFE_API_KEY || process.env.JEV_API_KEY || '').trim()),
+        evaluated: jevIndexes.size,
+        fallback: decisions.filter((item) => item.source === 'deterministic-fallback').length,
+      },
+      flights: jevResults,
     });
   } catch (err: any) {
     console.error('fusion error:', err?.message || err);
