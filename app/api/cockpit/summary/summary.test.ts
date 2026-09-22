@@ -77,4 +77,41 @@ describe('cockpit summary', () => {
     })
     expect(body.cards[0].partners.length).toBeGreaterThan(0)
   })
+
+  // Hypothesis C invariant: a card that does NOT resolve against the SEED_CARDS
+  // catalogue must still be KEPT — its points count toward the total and the
+  // cardCount. A catalogue miss may drop partners/best-use, never the card itself.
+  it('keeps a card that does not match the catalogue, points and count intact', async () => {
+    portfolio.mockReset().mockResolvedValue([
+      {
+        source: 'manual',
+        bank: 'Slice',
+        cardName: 'Slice Super Card',
+        last4: '5599',
+        points: 8000,
+        pointsCurrency: 'Points',
+        verified: false,
+        selfEntered: true,
+        observedAt: '2026-09-20T00:00:00Z',
+        linkedBalanceMerged: false,
+      },
+    ])
+
+    const { GET } = await import('./route')
+    const res = await GET(new Request('http://localhost/api/cockpit/summary', {
+      headers: { Authorization: 'Bearer tokenA' },
+    }) as any)
+
+    expect(res.status).toBe(200)
+    const body = await res.json()
+    expect(body.summary.cardCount).toBe(1)
+    expect(body.summary.total).toBe(8000)
+    expect(body.cards).toHaveLength(1)
+    expect(body.cards[0]).toMatchObject({
+      bank: 'Slice',
+      cardName: 'Slice Super Card',
+      points: 8000,
+      catalogueId: null,
+    })
+  })
 })
