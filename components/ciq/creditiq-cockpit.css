@@ -50,7 +50,10 @@
 .cq-section-head{display:flex;justify-content:space-between;align-items:baseline;gap:12px;padding:0 4px 8px;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--cq-muted)}
 .cq-section-head a,.cq-section-head button{font-size:13px;color:var(--cq-gold);text-transform:none;letter-spacing:0;background:transparent;border:0;text-decoration:none;cursor:pointer}
 .cq-deck{position:relative;height:300px}
-.cq-card{position:absolute;left:0;width:min(420px,calc(100% - 100px));height:250px;border-radius:18px;color:#fff;padding:22px 24px;text-align:left;border:1px solid rgba(255,255,255,.08);cursor:pointer;transition:transform .35s cubic-bezier(.2,.8,.2,1),box-shadow .35s;font:inherit}
+/* display:flex + flex-start pins the header to the card top. Without it, the
+   <button> UA-centres its only in-flow child (the header) vertically, dropping the
+   bank/name text onto the chip graphic (top:40/44%) at every width. */
+.cq-card{position:absolute;left:0;width:min(420px,calc(100% - 100px));height:250px;border-radius:18px;color:#fff;padding:22px 24px;text-align:left;border:1px solid rgba(255,255,255,.08);cursor:pointer;transition:transform .35s cubic-bezier(.2,.8,.2,1),box-shadow .35s;font:inherit;display:flex;flex-direction:column;align-items:flex-start}
 .cq-card.selected{left:70px;top:12px;z-index:3;transform:scale(1);box-shadow:0 30px 60px rgba(18,21,31,.24);border-color:rgba(201,168,106,.6)}
 .cq-card.stack1{top:26px;z-index:2;transform:translateX(30px) rotate(-4deg) scale(.97)}
 .cq-card.stack2{top:40px;z-index:1;transform:translateX(-10px) rotate(-8deg) scale(.97)}
@@ -235,8 +238,9 @@
      deck scrolls internally instead of clipping its siblings. */
   .ciq-cockpit .cq-lower>div,
   .ciq-cockpit .cq-work>*{min-width:0}
-  .ciq-cockpit .cq-wallet-chips{overflow-x:auto;flex-wrap:nowrap;padding-bottom:3px;scrollbar-width:none}
-  .ciq-cockpit .cq-wallet-chips::-webkit-scrollbar{display:none}
+  /* Wrap (as the design does) rather than nowrap+scroll — otherwise the dark total
+     pill ("N pts / X% verified") is pushed off the right edge on a 360/390 phone. */
+  .ciq-cockpit .cq-wallet-chips{flex-wrap:wrap;gap:6px}
   .ciq-cockpit .cq-wallet-chip{flex:0 0 auto}
   .ciq-cockpit .cq-panel-dark{min-height:0}
   .ciq-cockpit .cq-trip-grid{gap:12px}
@@ -248,7 +252,9 @@
   .ciq-cockpit .cq-card{scroll-snap-align:start}
   .ciq-cockpit .cq-card h3{font-size:15px;line-height:1.2;margin:4px 0 0;max-width:85%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
   .ciq-cockpit .cq-card-bottom{left:16px;right:16px}
-  .ciq-cockpit .cq-card-chip{left:16px}
+  /* Card is only 156px tall on mobile, so the two-line header (bank + name) reaches
+     ~69px. Drop the chip into the clear band below it, above the bottom row. */
+  .ciq-cockpit .cq-card-chip{left:16px;top:auto;bottom:48px}
 
   /* The Claude artifact scales a 520x440 orbit to ~66% on phones. Our live
      component has no orbit wrapper, so scale the geometry itself. */
