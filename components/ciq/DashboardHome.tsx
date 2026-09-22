@@ -145,7 +145,7 @@ export function DashboardHome({
   const selfEntered = summary.selfEntered || 0
   const transferCount = summary.transferPathCount || 0
   const total = summary.total || propTotal || 0
-  const firstName = (displayName || 'Goverdhan').trim().split(/\s+/)[0]
+  const firstName = (displayName || '').trim().split(/\s+/)[0] || 'there'
 
   const suggestedTitle = useMemo(
     () => total ? `Your ${fmt(total)} points could fund part of a Singapore trip.` : 'Find the smartest way to use your points.',
