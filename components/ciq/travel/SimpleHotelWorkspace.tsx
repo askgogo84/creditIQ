@@ -17,6 +17,16 @@ type CashOffer = {
   source: string
 }
 
+type HotelVerdict = {
+  action: 'BOOK_CASH' | 'USE_HOTEL_POINTS' | 'VERIFY_LOYALTY_AVAILABILITY' | 'COMPARE_LIVE_OPTIONS' | 'WAIT'
+  confidence: number | null
+  source: 'jev' | 'deterministic-fallback'
+  verificationRequired: boolean
+  reason: string
+  latencyMs: number
+  error?: string | null
+}
+
 type LoyaltyProperty = {
   providerPropertyId: string
   programmeId: string
@@ -81,6 +91,54 @@ export function SimpleHotelWorkspace() {
   const [error, setError] = useState('')
   const [verifyId, setVerifyId] = useState<string | null>(null)
   const [verifyMessage, setVerifyMessage] = useState<Record<string, string>>({})
+  const [hotelVerdict, setHotelVerdict] = useState<HotelVerdict | null>(null)
+
+  function cheapestCash(rows: CashOffer[]) {
+    return [...rows].filter(row => Number.isFinite(row.totalPrice) && row.totalPrice >= 0).sort((a, b) => a.totalPrice - b.totalPrice)[0] || null
+  }
+
+  async function requestHotelVerdict(
+    cashRows: CashOffer[],
+    loyaltyProperty: LoyaltyProperty | null,
+    liveResult?: any,
+  ) {
+    const bestCash = cheapestCash(cashRows)
+    const liveRate = Array.isArray(liveResult?.rates) ? liveResult.rates[0] : null
+    const pricingAuthority = liveResult?.pricingAuthority
+      || (loyaltyProperty ? 'DISCOVERY_ONLY' : 'NONE')
+
+    try {
+      const res = await authedFetch('/api/hotels/verdict', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          destination: destination.trim(),
+          cash: {
+            amountMinor: bestCash ? Math.round(bestCash.totalPrice * 100) : null,
+            currency: bestCash?.currency || null,
+            source: bestCash?.source || cashSource || null,
+            live: Boolean(bestCash),
+          },
+          loyalty: {
+            programmeId: liveResult?.programmeId || loyaltyProperty?.programmeId || null,
+            propertyName: liveRate?.hotelName || loyaltyProperty?.name || null,
+            pointsRequired: liveRate?.totalPoints
+              ?? loyaltyProperty?.observedPointsMedian
+              ?? loyaltyProperty?.observedPointsMin
+              ?? null,
+            cashComponentMinor: liveRate?.totalCashMinor ?? null,
+            cashCurrency: liveRate?.cashCurrency ?? null,
+            status: liveResult?.status || (loyaltyProperty ? 'DISCOVERY' : null),
+            pricingAuthority,
+          },
+        }),
+      })
+      const data = await res.json().catch(() => ({}))
+      if (res.ok && data.verdict) setHotelVerdict(data.verdict)
+    } catch {
+      // Search remains usable even when the decision service is unavailable.
+    }
+  }
 
   async function search() {
     if (!destination.trim() || !checkin || !checkout || checkout <= checkin) return
@@ -90,6 +148,7 @@ export function SimpleHotelWorkspace() {
     setLoyalty([])
     setCashOffers([])
     setCashSource('')
+    setHotelVerdict(null)
 
     const payload = { destination: destination.trim(), checkin, checkout, adults: 2, rooms: 1, limit: 30 }
     const loyaltyPayload = { destination: destination.trim(), checkInDate: checkin, checkOutDate: checkout, adults: 2 }
@@ -107,17 +166,30 @@ export function SimpleHotelWorkspace() {
       }).then(async res => ({ res, data: await res.json().catch(() => ({})) })),
     ])
 
+    let loyaltyRows: LoyaltyProperty[] = []
+    let cashRows: CashOffer[] = []
+    let resolvedCashSource = ''
+
     if (loyaltyResult.status === 'fulfilled') {
       const { res, data } = loyaltyResult.value
-      if (res.ok || res.status === 503) setLoyalty(Array.isArray(data.properties) ? data.properties : [])
+      if (res.ok || res.status === 503) {
+        loyaltyRows = Array.isArray(data.properties) ? data.properties : []
+        setLoyalty(loyaltyRows)
+      }
     }
 
     if (cashResult.status === 'fulfilled') {
       const { res, data } = cashResult.value
       if (res.ok) {
-        setCashOffers(Array.isArray(data.offers) ? data.offers : Array.isArray(data.hotels) ? data.hotels : [])
-        setCashSource(data.coverage?.provider || '')
+        cashRows = Array.isArray(data.offers) ? data.offers : Array.isArray(data.hotels) ? data.hotels : []
+        resolvedCashSource = data.coverage?.provider || ''
+        setCashOffers(cashRows)
+        setCashSource(resolvedCashSource)
       }
+    }
+
+    if (cashRows.length || loyaltyRows.length) {
+      await requestHotelVerdict(cashRows, loyaltyRows[0] || null)
     }
 
     const loyaltyFailed = loyaltyResult.status === 'rejected' || (loyaltyResult.status === 'fulfilled' && !loyaltyResult.value.res.ok && loyaltyResult.value.res.status !== 503)
@@ -153,6 +225,7 @@ export function SimpleHotelWorkspace() {
             : 'Direct programme verification is required for these dates.'
       )
       setVerifyMessage(current => ({ ...current, [key]: message }))
+      await requestHotelVerdict(cashOffers, property, data)
     } catch {
       setVerifyMessage(current => ({ ...current, [key]: 'Live programme verification is unavailable right now. Keep your points until you can check directly.' }))
     } finally {
@@ -184,6 +257,26 @@ export function SimpleHotelWorkspace() {
         <ShieldCheck size={17} />
         <span><b>No test inventory:</b> HBX evaluation data is now excluded from customer results. If no production cash provider responds, CreditIQ will say so instead of showing unrelated hotels.</span>
       </div>
+
+      {hotelVerdict && (
+        <div style={{ marginTop: 12, padding: 14, borderRadius: 14, border: '1px solid var(--line)', background: '#f8f6ef' }}>
+          <small style={{ color: 'var(--copper)', fontWeight: 850, letterSpacing: '.06em' }}>
+            {hotelVerdict.source === 'jev' ? 'JEV HOTEL VERDICT' : 'CREDITIQ SAFE FALLBACK'}
+          </small>
+          <strong style={{ display: 'block', marginTop: 5, fontSize: 16 }}>
+            {hotelVerdict.action === 'BOOK_CASH' ? 'Book cash'
+              : hotelVerdict.action === 'USE_HOTEL_POINTS' ? 'Use hotel points'
+              : hotelVerdict.action === 'VERIFY_LOYALTY_AVAILABILITY' ? 'Verify loyalty availability first'
+              : hotelVerdict.action === 'COMPARE_LIVE_OPTIONS' ? 'Compare live cash vs points'
+              : 'Wait · evidence incomplete'}
+          </strong>
+          <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', marginTop: 5, fontSize: 10.5, color: 'var(--ink-3)' }}>
+            {hotelVerdict.confidence != null && <span>Confidence {Math.round(hotelVerdict.confidence * 100)}%</span>}
+            {hotelVerdict.verificationRequired && <span style={{ color: '#9A6700', fontWeight: 750 }}>Verification required</span>}
+          </div>
+          <p style={{ margin: '7px 0 0', fontSize: 11.5, lineHeight: 1.5, color: 'var(--ink-2)' }}>{hotelVerdict.reason}</p>
+        </div>
+      )}
 
       {error && <div style={{ marginTop: 16, padding: 14, borderRadius: 12, background: '#fff1ee', color: '#8a2e1d' }}>{error}</div>}
       {loading && <div style={{ padding: 42, textAlign: 'center', color: 'var(--ink-3)' }}><BedDouble size={26} style={{ marginBottom: 8 }} /><div>Finding real properties and redemption options…</div></div>}
