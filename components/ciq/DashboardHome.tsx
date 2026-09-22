@@ -176,7 +176,7 @@ export function DashboardHome({
                   <Link href="/wallet" className="cq-wallet-chip" key={card.id}>
                     <span className="cq-chip-swatch" style={{ background: cardTone(card, i) }} />
                     <b>{compact(card.points)}</b>
-                    <span className="cq-dot" style={{ background: card.verified ? '#2E7D4F' : '#B08D57' }} />
+                    <span className="cq-dot" style={{ background: card.verified ? '#2E7D4F' : '#B9BCC6' }} />
                   </Link>
                 ))}
                 <Link href="/wallet" className="cq-wallet-chip cq-wallet-total">
