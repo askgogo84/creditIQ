@@ -252,23 +252,35 @@ export function DashboardHome({
           <section className="cq-lower">
             <div>
               <div className="cq-section-head"><span>Your wallet · tap a card</span><Link href="/wallet">Open wallet</Link></div>
-              <div className="cq-deck">
-                {cards.slice(0, 3).map((card, i) => (
-                  <Link
-                    href="/wallet"
-                    key={card.id}
-                    className={'cq-card ' + (i === 0 ? 'selected' : i === 1 ? 'stack1' : 'stack2')}
-                    style={{ background: `linear-gradient(140deg,${cardTone(card, i)},#111722)` }}
-                  >
-                    <div><small>{card.bank}</small><h3>{card.cardName}</h3></div>
-                    <div className="cq-card-chip" />
-                    <div className="cq-card-bottom">
-                      <span>{card.last4 ? '•••• ' + card.last4 : 'Reward card'}</span>
-                      <strong>{fmt(card.points)}</strong>
-                    </div>
-                  </Link>
-                ))}
-              </div>
+              {cards.length === 0 ? (
+                <div className="cq-empty">
+                  <div className="cq-empty-art" />
+                  <div className="cq-empty-title">No cards yet</div>
+                  <p>Add a card or upload a statement and CIRA starts working immediately.</p>
+                  <div className="cq-empty-actions">
+                    <Link className="cq-btn dark" href="/wallet">Add a card</Link>
+                    <Link className="cq-btn" href="/upload-statement">Upload statement</Link>
+                  </div>
+                </div>
+              ) : (
+                <div className="cq-deck">
+                  {cards.slice(0, 3).map((card, i) => (
+                    <Link
+                      href="/wallet"
+                      key={card.id}
+                      className={'cq-card ' + (i === 0 ? 'selected' : i === 1 ? 'stack1' : 'stack2')}
+                      style={{ background: `linear-gradient(140deg,${cardTone(card, i)},#111722)` }}
+                    >
+                      <div><small>{card.bank}</small><h3>{card.cardName}</h3></div>
+                      <div className="cq-card-chip" />
+                      <div className="cq-card-bottom">
+                        <span>{card.last4 ? '•••• ' + card.last4 : 'Reward card'}</span>
+                        <strong>{fmt(card.points)}</strong>
+                      </div>
+                    </Link>
+                  ))}
+                </div>
+              )}
             </div>
 
             <div>
