@@ -129,7 +129,7 @@ function parseChoice(value: any) {
 function guardAction(raw: string | null, decision: TravelDecisionContract): CreditIQJevAction {
   const base = fallbackAction(decision)
   const candidate = raw as CreditIQJevAction | null
-  const valid = candidate && candidate in ACTION_CRITERIA ? candidate : base
+  const valid = candidate && Object.prototype.hasOwnProperty.call(ACTION_CRITERIA, candidate) ? candidate : base
 
   // Deterministic safety remains authoritative. Jev can confirm or downgrade,
   // never promote incomplete evidence into an irreversible points instruction.
@@ -219,7 +219,7 @@ export async function runJevTravelDecision(
     const action = guardAction(actionAnswer.choice, decision)
     const baseRisk = deterministicRisk(decision)
     const rawRisk = riskAnswer.choice as CreditIQTransferRisk
-    const risk = rawRisk in RISK_CRITERIA ? rawRisk : baseRisk
+    const risk = Object.prototype.hasOwnProperty.call(RISK_CRITERIA, rawRisk) ? rawRisk : baseRisk
     const protectedRisk: CreditIQTransferRisk =
       decision.awardState.status === 'DISCOVERY_ONLY' ? 'HIGH'
       : decision.conciergeAction.requiresLiveReverification && risk === 'LOW' ? 'MEDIUM'
