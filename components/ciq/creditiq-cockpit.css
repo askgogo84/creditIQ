@@ -224,6 +224,12 @@
   .ciq-cockpit .cq-main{overflow:visible}
   .ciq-cockpit .cq-top,
   .ciq-cockpit .cq-lower{width:100%;min-width:0}
+  /* Grid ITEMS default to min-width:auto, so the card carousel (3x250px) and the
+     orbit refuse to shrink and blow the single mobile column out to ~778px, which
+     .ciq-cockpit{overflow-x:hidden} then clips. min-width:0 lets them shrink so the
+     deck scrolls internally instead of clipping its siblings. */
+  .ciq-cockpit .cq-lower>div,
+  .ciq-cockpit .cq-work>*{min-width:0}
   .ciq-cockpit .cq-wallet-chips{overflow-x:auto;flex-wrap:nowrap;padding-bottom:3px;scrollbar-width:none}
   .ciq-cockpit .cq-wallet-chips::-webkit-scrollbar{display:none}
   .ciq-cockpit .cq-wallet-chip{flex:0 0 auto}
