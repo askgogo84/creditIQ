@@ -374,3 +374,90 @@
   .ciq-cockpit .cq-orbit{height:286px}
   .ciq-cockpit .cq-lower{gap:22px}
 }
+
+
+/* Desktop density repair — preserve Claude design, add laptop breathing room only. */
+@media(min-width:901px){
+  .ciq-cockpit .cq-main{
+    padding:40px 64px 150px;
+  }
+  .ciq-cockpit .cq-top,
+  .ciq-cockpit .cq-work,
+  .ciq-cockpit .cq-lower{
+    max-width:1200px;
+  }
+  .cq-greeting-row{
+    margin-bottom:10px;
+  }
+  .ciq-cockpit .cq-eyebrow{
+    margin-top:58px;
+  }
+  .ciq-cockpit .cq-hero h1{
+    font-size:44px;
+    max-width:760px;
+    margin:14px auto 28px;
+    line-height:1.08;
+  }
+  .ciq-cockpit .cq-cmd{
+    max-width:780px;
+    min-height:58px;
+    padding:8px 8px 8px 20px;
+  }
+  .ciq-cockpit .cq-suggest{
+    max-width:900px;
+    margin-top:16px;
+    gap:10px;
+  }
+  .ciq-cockpit .cq-work{
+    grid-template-columns:minmax(0,1.45fr) minmax(330px,.85fr);
+    gap:28px;
+    margin-top:48px;
+  }
+  .ciq-cockpit .cq-panel-dark{
+    padding:32px 34px;
+  }
+  .ciq-cockpit .cq-panel-dark .cq-title{
+    font-size:27px;
+    line-height:1.24;
+    margin-bottom:20px;
+  }
+  .ciq-cockpit .cq-trip-grid{
+    gap:22px;
+  }
+  .ciq-cockpit .cq-live{
+    gap:14px;
+  }
+  .ciq-cockpit .cq-live>small{
+    padding-bottom:2px;
+  }
+  .ciq-cockpit .cq-insight{
+    min-height:76px;
+    padding:18px 20px;
+  }
+  .ciq-cockpit .cq-actions{
+    margin-top:24px;
+    padding-top:18px;
+  }
+  .ciq-cockpit .cq-lower{
+    gap:32px;
+    margin-top:66px;
+  }
+  .ciq-cockpit .cq-section-head{
+    padding-bottom:12px;
+  }
+}
+
+@media(min-width:901px) and (max-width:1440px){
+  .ciq-cockpit .cq-main{
+    padding-left:44px;
+    padding-right:44px;
+  }
+  .ciq-cockpit .cq-top,
+  .ciq-cockpit .cq-work,
+  .ciq-cockpit .cq-lower{
+    max-width:1120px;
+  }
+  .ciq-cockpit .cq-hero h1{
+    font-size:42px;
+  }
+}
