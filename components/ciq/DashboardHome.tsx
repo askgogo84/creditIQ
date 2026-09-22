@@ -288,7 +288,12 @@ export function DashboardHome({
               <div className="cq-orbit">
                 <div className="cq-orbit-ring2" />
                 <div className="cq-orbit-ring1" />
-                <div className="cq-orbit-center"><small>Your wallet</small><strong>{compact(total)}</strong><span>points</span></div>
+                <div className="cq-orbit-center">
+                  <strong>{fmt(total)}</strong>
+                  <span className="cq-orbit-unit">reward points</span>
+                  <div className="cq-orbit-bar"><span style={{ width: `${summary.verifiedPercent}%` }} /></div>
+                  <span className="cq-orbit-verified">{summary.verifiedPercent}% verified</span>
+                </div>
                 {cards.slice(0, 3).map((card, i) => (
                   <Link href="/wallet" className={'cq-node ' + (i === 0 ? 'selected' : '')} key={card.id}>
                     <CreditCard size={16} /><span>{card.bank}<br /><b>{compact(card.points)}</b></span>
