@@ -75,7 +75,7 @@ function parseChoice(value: any) {
 function guard(raw: string | null, input: HotelVerdictInput): HotelVerdictAction {
   const base = fallback(input)
   const candidate = raw as HotelVerdictAction | null
-  const valid = candidate && candidate in ACTIONS ? candidate : base
+  const valid = candidate && Object.prototype.hasOwnProperty.call(ACTIONS, candidate) ? candidate : base
 
   if (input.loyalty.pricingAuthority === 'DISCOVERY_ONLY' || input.loyalty.pricingAuthority === 'DIRECT_ONLY') {
     return ['VERIFY_LOYALTY_AVAILABILITY', 'BOOK_CASH', 'WAIT'].includes(valid) ? valid : 'VERIFY_LOYALTY_AVAILABILITY'
