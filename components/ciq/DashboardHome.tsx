@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { ArrowRight, CreditCard, Home, Plane, Sparkles, WalletCards, Zap } from 'lucide-react'
 import { authedFetch } from '@/lib/authed-fetch'
+import { cockpitDisplay, cockpitBody } from './cockpit-fonts'
 import './creditiq-cockpit.css'
 
 type Card = {
@@ -153,7 +154,7 @@ export function DashboardHome({
   )
 
   return (
-    <div className="ciq-cockpit">
+    <div className={`ciq-cockpit ${cockpitDisplay.variable} ${cockpitBody.variable}`}>
       <div className="cq-shell">
         <nav className="cq-rail" aria-label="CreditIQ">
           <Link className="cq-logo" href="/dashboard" aria-label="CreditIQ">IQ</Link>

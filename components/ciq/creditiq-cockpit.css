@@ -1,8 +1,8 @@
 
-.ciq-cockpit{--cq-bg:#F6F2EA;--cq-shell:#E9E4DA;--cq-ink:#12151F;--cq-muted:#6B6F7B;--cq-line:#E3DDD1;--cq-gold:#B08D57;--cq-gold2:#C9A86A;--cq-green:#2E7D4F;min-height:100vh;background:var(--cq-shell);color:var(--cq-ink);font-family:"Avenir Next",Avenir,"Helvetica Neue",Arial,sans-serif}
+.ciq-cockpit{--cq-bg:#F6F2EA;--cq-shell:#E9E4DA;--cq-ink:#12151F;--cq-muted:#6B6F7B;--cq-line:#E3DDD1;--cq-gold:#B08D57;--cq-gold2:#C9A86A;--cq-green:#2E7D4F;min-height:100vh;background:var(--cq-shell);color:var(--cq-ink);font-family:var(--cq-font-body),"Avenir Next",Avenir,"Helvetica Neue",Arial,sans-serif}
 .cq-shell{display:flex;min-height:100vh;background:var(--cq-bg);max-width:1600px;margin:0 auto;box-shadow:0 0 0 1px rgba(18,21,31,.04)}
 .cq-rail{width:76px;flex:0 0 76px;background:#0F1420;color:#fff;display:flex;flex-direction:column;align-items:center;padding:16px 8px;gap:10px;border-right:1px solid rgba(255,255,255,.06);position:sticky;top:0;height:100vh;z-index:8}
-.cq-logo{width:38px;height:38px;border-radius:10px;background:var(--cq-gold);display:grid;place-items:center;color:#0F1420;font-family:Georgia,serif;font-weight:700;margin-bottom:8px;text-decoration:none}
+.cq-logo{width:38px;height:38px;border-radius:10px;background:var(--cq-gold);display:grid;place-items:center;color:#0F1420;font-family:var(--cq-font-display),Georgia,serif;font-weight:700;margin-bottom:8px;text-decoration:none}
 .cq-nav{display:flex;flex-direction:column;gap:5px;width:100%;flex:1}
 .cq-nav a,.cq-nav button{width:100%;min-height:52px;border:0;background:transparent;color:#9EA2AE;text-decoration:none;border-radius:10px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;font-size:10px;cursor:pointer}
 .cq-nav a:hover,.cq-nav button:hover,.cq-nav .active{background:rgba(201,168,106,.11);color:#F6F2EA}
@@ -15,7 +15,7 @@
 .cq-dot{width:6px;height:6px;border-radius:50%;display:inline-block}
 .cq-hero{text-align:center;padding:4px 0 26px}
 .cq-eyebrow{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--cq-gold);font-weight:600}
-.cq-hero h1{font-family:Georgia,"Times New Roman",serif;font-size:42px;line-height:1.06;font-weight:500;max-width:720px;margin:10px auto 18px;text-wrap:balance}
+.cq-hero h1{font-family:var(--cq-font-display),Georgia,"Times New Roman",serif;font-size:42px;line-height:1.06;font-weight:500;max-width:720px;margin:10px auto 18px;text-wrap:balance}
 .cq-cmd{width:min(760px,100%);margin:0 auto;background:#fff;border:1px solid var(--cq-line);border-radius:999px;padding:7px 8px 7px 18px;display:flex;gap:10px;align-items:center;box-shadow:0 14px 38px rgba(18,21,31,.05)}
 .cq-cmd input{flex:1;min-width:0;border:0;outline:0;background:transparent;font:inherit;font-size:16px;color:var(--cq-ink);min-height:44px}
 .cq-cmd button{border:0;border-radius:999px;background:var(--cq-ink);color:#F6F2EA;padding:11px 18px;min-height:44px;font-weight:600;cursor:pointer}
@@ -28,7 +28,7 @@
 .cq-panel-dark:before{content:"";position:absolute;right:-80px;top:-90px;width:280px;height:280px;border-radius:50%;border:1px solid rgba(201,168,106,.14)}
 .cq-kicker{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--cq-gold);font-weight:600}
 .cq-panel-dark .cq-kicker{color:var(--cq-gold2)}
-.cq-title{font-family:Georgia,"Times New Roman",serif;font-size:28px;line-height:1.2;margin:10px 0 18px;font-weight:500}
+.cq-title{font-family:var(--cq-font-display),Georgia,"Times New Roman",serif;font-size:28px;line-height:1.2;margin:10px 0 18px;font-weight:500}
 .cq-trip-grid,.cq-spend-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
 .cq-mini-label{font-size:12px;color:#9EA2AE}
 .cq-mini-value{font-size:19px;margin-top:4px}
@@ -57,12 +57,12 @@
 .cq-card-chip{position:absolute;top:44%;left:24px;width:36px;height:26px;border-radius:5px;background:linear-gradient(135deg,#E8D2A0,#B08D57);opacity:.9}
 .cq-card-bottom{position:absolute;bottom:20px;left:24px;right:24px;display:flex;justify-content:space-between;align-items:end}
 .cq-card-detail{background:#fff;border:1px solid var(--cq-line);border-radius:16px;padding:20px 22px;margin-top:8px}
-.cq-card-detail h3{font-family:Georgia,"Times New Roman",serif;font-size:24px;margin:0}
+.cq-card-detail h3{font-family:var(--cq-font-display),Georgia,"Times New Roman",serif;font-size:24px;margin:0}
 .cq-tags{display:flex;flex-wrap:wrap;gap:6px;margin-top:12px}
 .cq-tag{border:1px solid var(--cq-line);border-radius:999px;padding:6px 11px;font-size:12px}
 .cq-orbit{position:relative;height:460px;background:#fff;border:1px solid var(--cq-line);border-radius:18px;overflow:hidden}
 .cq-orbit-center{position:absolute;left:50%;top:50%;width:176px;height:160px;margin:-80px 0 0 -88px;border-radius:50%;background:#F6F2EA;border:1px solid var(--cq-line);display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;box-shadow:0 20px 50px rgba(18,21,31,.08);z-index:2}
-.cq-orbit-center strong{font-family:Georgia,"Times New Roman",serif;font-size:34px;font-weight:500}
+.cq-orbit-center strong{font-family:var(--cq-font-display),Georgia,"Times New Roman",serif;font-size:34px;font-weight:500}
 .cq-orbit-ring1,.cq-orbit-ring2{position:absolute;left:50%;top:50%;border:1px dashed #D9D2C4;border-radius:50%}
 .cq-orbit-ring1{width:192px;height:192px;margin:-96px}
 .cq-orbit-ring2{width:340px;height:340px;margin:-170px;border-color:#EBE6DB}
@@ -78,7 +78,7 @@
 .cq-amount input{width:110px;border:0;outline:0;font:inherit;font-size:16px}
 .cq-spend-card{border:1px solid var(--cq-line);background:#fff;border-radius:12px;padding:14px 16px}
 .cq-spend-card.best{border-color:var(--cq-gold);background:#FBF6EC}
-.cq-spend-card strong{font-family:Georgia,"Times New Roman",serif;font-size:30px;line-height:1.1;display:block;margin-top:10px;font-weight:500}
+.cq-spend-card strong{font-family:var(--cq-font-display),Georgia,"Times New Roman",serif;font-size:30px;line-height:1.1;display:block;margin-top:10px;font-weight:500}
 .cq-redeem-row,.cq-hotel-row{display:flex;gap:14px;align-items:center;text-align:left;border:1px solid var(--cq-line);background:#fff;border-radius:12px;padding:14px 16px;color:var(--cq-ink);width:100%}
 .cq-redeem-row:hover{border-color:var(--cq-gold)}
 .cq-statement{text-align:center;border-style:dashed}
@@ -116,7 +116,7 @@
 .ciq-cockpit .cq-hero{padding:0}
 .ciq-cockpit .cq-eyebrow{margin-top:44px;text-align:center}
 .ciq-cockpit .cq-hero h1{
-  font-family:'Newsreader',Georgia,'Times New Roman',serif;
+  font-family:var(--cq-font-display),'Newsreader',Georgia,'Times New Roman',serif;
   font-weight:400;
   font-size:48px;
   line-height:1.06;
