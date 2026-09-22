@@ -1,13 +1,27 @@
-// Claude subscription UI contract
-import { describe, it, expect, vi } from 'vitest';
-import { render, screen, fireEvent } from '@testing-library/react';
+import { describe, it, expect, vi, beforeAll, beforeEach } from 'vitest';
+import { render, screen, fireEvent, within } from '@testing-library/react';
 
+// WalletView renders PageHeader → SectionTabs, which calls useRouter() (throws outside
+// the app-router context) and usePathname(). Stub both; a null pathname makes SectionTabs
+// render nothing here, keeping this suite focused on the wallet itself.
 vi.mock('next/navigation', () => ({
-  usePathname: () => '/wallet',
+  usePathname: () => null,
   useRouter: () => ({ push: vi.fn() }),
 }));
 
 import { WalletView } from './WalletView';
+
+// jsdom has no matchMedia; stub it so HeroGauge's count-up takes the
+// reduced-motion path and lands on final values synchronously.
+beforeAll(() => {
+  window.matchMedia = ((query: string) => ({
+    matches: true, media: query, onchange: null,
+    addEventListener: () => {}, removeEventListener: () => {},
+    addListener: () => {}, removeListener: () => {}, dispatchEvent: () => false,
+  })) as unknown as typeof window.matchMedia;
+});
+
+beforeEach(() => { localStorage.clear(); });
 
 type C = React.ComponentProps<typeof WalletView>['cards'];
 const CARDS: C = [
@@ -15,72 +29,90 @@ const CARDS: C = [
   { id: '2', bank: 'Axis', card_name: 'Magnus', card_last4: '2222', points_balance: 300, points_currency: 'EDGE', source: 'statement' },
   { id: '3', bank: 'SBI', card_name: 'Cashback', card_last4: '3333', points_balance: 40, points_currency: 'Points', source: 'manual' },
 ];
+// verified = 900 + 300 = 1200 · estimated = 40 · total = 1240
 
-function renderWallet(opts: { cards?: C; totalPoints?: number } = {}) {
+function renderWallet(opts: { cards?: C; totalPoints?: number; openTour?: boolean } = {}) {
   const cards = opts.cards ?? CARDS;
   const totalPoints = opts.totalPoints ?? cards.reduce((s, c) => s + (c.points_balance || 0), 0);
   const onAddCard = vi.fn();
   const onRefresh = vi.fn();
-  const onEditPoints = vi.fn(async () => true);
-  const onDeleteCard = vi.fn();
   render(
     <WalletView displayName="Gogo" email="g@x.com" cards={cards} totalPoints={totalPoints}
-      primaryBank="HDFC" onAddCard={onAddCard} onRefresh={onRefresh}
-      onEditPoints={onEditPoints} onDeleteCard={onDeleteCard} />,
+      primaryBank="HDFC" onAddCard={onAddCard} onRefresh={onRefresh} />,
   );
-  return { onAddCard, onRefresh, onEditPoints, onDeleteCard };
+  // The walkthrough is opt-in now (it no longer auto-opens). Tests that want it open
+  // it via the "Take a tour" affordance, exactly the way a user does.
+  if (opts.openTour) fireEvent.click(screen.getByRole('button', { name: /take a tour/i }));
+  return { onAddCard, onRefresh };
 }
 
-describe('WalletView — newer Claude Cards experience', () => {
-  it('shows Cards, portfolio value and total reward points', () => {
+describe('WalletView — holdings ledger', () => {
+  it('shows the total and the verified/estimated split in points', () => {
     renderWallet();
-    expect(screen.getByRole('heading', { name: 'Cards' })).toBeInTheDocument();
-    expect(screen.getByText('Portfolio value')).toBeInTheDocument();
-    expect(screen.getByText(/1,240/)).toBeInTheDocument();
+    const gauge = within(document.getElementById('wallet-gauge')!);
+    expect(gauge.getByText('1,240')).toBeInTheDocument();       // total (scoped to the gauge)
+    expect(gauge.getByText('1,200')).toBeInTheDocument();       // verified (statement)
+    expect(gauge.getAllByText('40').length).toBeGreaterThan(0); // estimated (manual; summary and held-card row)
   });
 
-  it('shows the selected held card with catalogue artwork', () => {
+  it('lists every held card', () => {
     renderWallet();
-    expect(screen.getByAltText('HDFC Infinia Metal Edition')).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /HDFC900/ })).toHaveClass('active');
+    expect(screen.getByText('Infinia')).toBeInTheDocument();
+    expect(screen.getByText('Magnus')).toBeInTheDocument();
+    expect(screen.getByText('Cashback')).toBeInTheDocument();
   });
 
-  it('lets the user switch between held cards', () => {
+  it('uses matching catalogue artwork for a held card', () => {
     renderWallet();
-    fireEvent.click(screen.getByRole('button', { name: /Axis300/ }));
-    expect(screen.getAllByText('Axis').length).toBeGreaterThan(0);
+    expect(screen.getAllByAltText('HDFC Infinia Metal Edition').some((image) =>
+      image.getAttribute('src')?.includes('hdfc-infinia.webp'))).toBe(true);
   });
 
-  it('exposes the three primary card actions', () => {
+  it('hides every displayed balance without changing the wallet data', () => {
     renderWallet();
-    expect(screen.getByRole('link', { name: /Offers294 offers/i })).toHaveAttribute('href', '/intelligence');
-    expect(screen.getByRole('link', { name: /Earn moreOptimize spend/i })).toHaveAttribute('href', '/spend-optimizer');
-    expect(screen.getByRole('link', { name: /StatementVerify rewards/i })).toHaveAttribute('href', '/statement-truth');
+    fireEvent.click(screen.getByRole('button', { name: 'Hide balances' }));
+    expect(screen.queryByText('1,240')).not.toBeInTheDocument();
+    expect(screen.queryByText('1,200')).not.toBeInTheDocument();
+    expect(screen.queryByText('900')).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Show balances' })).toHaveAttribute('aria-pressed', 'true');
   });
 
-  it('shows card health and balance provenance', () => {
+  it('shows every rupee value ONLY as a badged EstimateRange (never a bare ₹)', () => {
     renderWallet();
-    expect(screen.getByText(/Card health:/)).toBeInTheDocument();
-    expect(screen.getByText('Points balance')).toBeInTheDocument();
-    expect(screen.getByText('Source')).toBeInTheDocument();
-    expect(screen.getByText('Verified')).toBeInTheDocument();
+    const ranges = screen.getAllByText(/≈ ₹[\d,]+–₹[\d,]+/);
+    const badges = screen.getAllByText('estimate');
+    expect(ranges.length).toBeGreaterThan(0);
+    // one "estimate" badge per rupee range — no rupee escapes the sanctioned format
+    expect(badges.length).toBe(ranges.length);
   });
 
-  it('empty state opens Add Card', () => {
-    const { onAddCard } = renderWallet({ cards: [], totalPoints: 0 });
-    fireEvent.click(screen.getByRole('button', { name: /Add your first card/i }));
+  it('empty state (0 cards): both primary actions, no Best Move', () => {
+    renderWallet({ cards: [], totalPoints: 0 });
+    expect(screen.getByRole('button', { name: /Add a card/ })).toBeInTheDocument();
+    expect(screen.getByText(/Upload a statement/)).toBeInTheDocument();
+    expect(screen.queryByText('Your best move')).not.toBeInTheDocument();
+  });
+
+  it('all-self-entered wallet nudges to verify', () => {
+    renderWallet({ cards: [CARDS[2]], totalPoints: 40 }); // manual only
+    expect(screen.getByText(/All self-entered/)).toBeInTheDocument();
+    expect(screen.getByText('Get your verified points')).toBeInTheDocument();
+  });
+
+  it('first-run tour is 2 steps and its final button opens Add Card', () => {
+    const { onAddCard } = renderWallet({ openTour: true });
+    expect(screen.getByText('WALLET · STEP 1 OF 2')).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: 'Continue' }));
+    expect(screen.getByText('WALLET · STEP 2 OF 2')).toBeInTheDocument();
+    const dialog = screen.getByRole('dialog');
+    const finalBtn = within(dialog).getByRole('button', { name: 'Add a card' });
+    fireEvent.click(finalBtn);
     expect(onAddCard).toHaveBeenCalledTimes(1);
   });
 
-  it('header add button opens Add Card', () => {
-    const { onAddCard } = renderWallet();
-    fireEvent.click(screen.getByRole('button', { name: 'Add card' }));
-    expect(onAddCard).toHaveBeenCalledTimes(1);
-  });
-
-  it('refresh remains available on the selected card', () => {
-    const { onRefresh } = renderWallet();
-    fireEvent.click(screen.getByRole('button', { name: 'Refresh cards' }));
-    expect(onRefresh).toHaveBeenCalledTimes(1);
+  it('skipping the tour does NOT open Add Card', () => {
+    const { onAddCard } = renderWallet({ openTour: true });
+    fireEvent.click(screen.getByRole('button', { name: 'Skip' }));
+    expect(onAddCard).not.toHaveBeenCalled();
   });
 });
