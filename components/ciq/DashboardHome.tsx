@@ -17,6 +17,7 @@ type Card = {
   verified: boolean
   selfEntered: boolean
   color: string
+  partners: string[]
 }
 type Summary = {
   cards: Card[]
@@ -63,6 +64,7 @@ export function DashboardHome({
   const [trip, setTrip] = useState<any>(null)
   const [tripLoading, setTripLoading] = useState(true)
   const [ask, setAsk] = useState('')
+  const [selectedId, setSelectedId] = useState<string | null>(null)
 
   useEffect(() => {
     authedFetch('/api/cockpit/summary')
@@ -83,6 +85,7 @@ export function DashboardHome({
             verified: c.source === 'statement' && !c.self_entered,
             selfEntered: c.source !== 'statement' || !!c.self_entered,
             color: c.catalogue?.color || c.color || '',
+            partners: [],
           })),
           summary: { total, verified: 0, selfEntered: total, verifiedPercent: 0, cardCount: propCards?.length || 0, transferPathCount: 0 },
         })
@@ -117,6 +120,14 @@ export function DashboardHome({
     transferPathCount: 0,
   }
   const cards = data?.cards ?? []
+  const selectedCard = cards.find(c => c.id === selectedId) ?? cards[0] ?? null
+  // Partner slots per the design's orbit (4 positioned pills). Overflow collapses
+  // into a trailing "+N" so it still occupies exactly one slot.
+  const PILL_SLOTS = 4
+  const selectedPartners = selectedCard?.partners ?? []
+  const partnerPills = selectedPartners.length > PILL_SLOTS
+    ? [...selectedPartners.slice(0, PILL_SLOTS - 1), `+${selectedPartners.length - (PILL_SLOTS - 1)}`]
+    : selectedPartners
   const bestPath = trip?.decision?.searchSummary?.bestPath
   const cash = trip?.price > 0 ? '₹' + fmt(trip.price) : 'Live fare'
   const pathPoints = bestPath?.bankPointsRequired ?? trip?.award?.mileageCost
@@ -294,16 +305,20 @@ export function DashboardHome({
                   <div className="cq-orbit-bar"><span style={{ width: `${summary.verifiedPercent}%` }} /></div>
                   <span className="cq-orbit-verified">{summary.verifiedPercent}% verified</span>
                 </div>
-                {cards.slice(0, 3).map((card, i) => (
-                  <Link href="/wallet" className={'cq-node ' + (i === 0 ? 'selected' : '')} key={card.id}>
+                {cards.slice(0, 3).map((card) => (
+                  <button
+                    type="button"
+                    onClick={() => setSelectedId(card.id)}
+                    className={'cq-node ' + (selectedCard?.id === card.id ? 'selected' : '')}
+                    key={card.id}
+                  >
                     <CreditCard size={16} /><span>{card.bank}<br /><b>{compact(card.points)}</b></span>
-                  </Link>
+                  </button>
                 ))}
                 <div className="cq-programmes">
-                  <span className="cq-programme">KrisFlyer</span>
-                  <span className="cq-programme">Maharaja</span>
-                  <span className="cq-programme">Accor ALL</span>
-                  <span className="cq-programme">Marriott</span>
+                  {partnerPills.map((p, i) => (
+                    <span className="cq-programme" key={p + i}>{p}</span>
+                  ))}
                 </div>
                 <div className="cq-orbit-note">Explore transfer routes only after checking live award availability.</div>
               </div>

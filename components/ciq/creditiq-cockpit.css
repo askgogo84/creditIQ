@@ -75,7 +75,7 @@
 .cq-orbit-ring1,.cq-orbit-ring2{position:absolute;left:50%;top:50%;border:1px dashed #D9D2C4;border-radius:50%}
 .cq-orbit-ring1{width:192px;height:192px;margin:-96px}
 .cq-orbit-ring2{width:340px;height:340px;margin:-170px;border-color:#EBE6DB}
-.cq-node{position:absolute;display:flex;gap:8px;align-items:center;background:#fff;border:1px solid var(--cq-line);border-radius:12px;padding:9px 12px;cursor:pointer;box-shadow:0 6px 16px rgba(18,21,31,.06);min-height:44px;z-index:3}
+.cq-node{position:absolute;display:flex;gap:8px;align-items:center;background:#fff;border:1px solid var(--cq-line);border-radius:12px;padding:9px 12px;cursor:pointer;box-shadow:0 6px 16px rgba(18,21,31,.06);min-height:44px;z-index:3;font:inherit;color:var(--cq-ink);text-align:left}
 .cq-node.selected{border-color:var(--cq-gold);box-shadow:0 10px 24px rgba(176,141,87,.2);transform:scale(1.04)}
 .cq-node:nth-of-type(1){left:7%;top:18%}.cq-node:nth-of-type(2){right:6%;top:28%}.cq-node:nth-of-type(3){left:33%;bottom:12%}
 .cq-programmes{position:absolute;inset:0;pointer-events:none}
