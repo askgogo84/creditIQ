@@ -302,3 +302,75 @@
 .ciq-cockpit .cq-nav span{display:none}
 .ciq-cockpit .cq-nav a{width:48px;min-height:48px;height:48px;align-self:center;padding:0}
 .ciq-cockpit .cq-avatar{width:32px;height:32px;background:#2A3042;color:#fff}
+
+
+/* Mobile repair pass: preserve Claude Cockpit, fix narrow-width rendering only. */
+.ciq-cockpit .cq-panel-dark .cq-title,
+.ciq-cockpit .cq-panel-dark .cq-mini-value,
+.ciq-cockpit .cq-panel-dark .cq-trip-sub,
+.ciq-cockpit .cq-panel-dark .cq-actions,
+.ciq-cockpit .cq-panel-dark .cq-action-buttons { color:#F2EFE8; }
+.ciq-cockpit .cq-panel-dark .cq-mini-label { color:#9EA2AE; }
+.ciq-cockpit .cq-card h3,
+.ciq-cockpit .cq-card strong,
+.ciq-cockpit .cq-card span { color:#fff; }
+.ciq-cockpit .cq-card small { color:rgba(255,255,255,.72); }
+
+@media(max-width:900px){
+  .ciq-cockpit{overflow-x:hidden}
+  .ciq-cockpit .cq-main{overflow:visible}
+  .ciq-cockpit .cq-top,
+  .ciq-cockpit .cq-lower{width:100%;min-width:0}
+  .ciq-cockpit .cq-wallet-chips{overflow-x:auto;flex-wrap:nowrap;padding-bottom:3px;scrollbar-width:none}
+  .ciq-cockpit .cq-wallet-chips::-webkit-scrollbar{display:none}
+  .ciq-cockpit .cq-wallet-chip{flex:0 0 auto}
+  .ciq-cockpit .cq-panel-dark{min-height:0}
+  .ciq-cockpit .cq-trip-grid{gap:12px}
+  .ciq-cockpit .cq-mini-value{font-size:17px;line-height:1.35;overflow-wrap:anywhere}
+  .ciq-cockpit .cq-actions{align-items:flex-start}
+  .ciq-cockpit .cq-action-buttons{width:100%;display:grid;grid-template-columns:1fr 1.35fr}
+  .ciq-cockpit .cq-action-buttons .cq-btn{width:100%}
+  .ciq-cockpit .cq-deck{scroll-snap-type:x mandatory}
+  .ciq-cockpit .cq-card{scroll-snap-align:start}
+  .ciq-cockpit .cq-card h3{font-size:15px;line-height:1.2;margin:4px 0 0;max-width:85%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .ciq-cockpit .cq-card-bottom{left:16px;right:16px}
+  .ciq-cockpit .cq-card-chip{left:16px}
+
+  /* The Claude artifact scales a 520x440 orbit to ~66% on phones. Our live
+     component has no orbit wrapper, so scale the geometry itself. */
+  .ciq-cockpit .cq-orbit{height:300px}
+  .ciq-cockpit .cq-orbit-ring2{width:238px;height:238px;margin:-119px}
+  .ciq-cockpit .cq-orbit-ring1{width:136px;height:136px;margin:-68px}
+  .ciq-cockpit .cq-orbit-center{
+    width:124px;height:112px;margin:-56px 0 0 -62px;
+  }
+  .ciq-cockpit .cq-orbit-center strong{font-size:24px}
+  .ciq-cockpit .cq-node{font-size:10.5px;min-height:36px;padding:6px 8px;gap:5px}
+  .ciq-cockpit .cq-node:nth-of-type(1){left:5%;top:18%}
+  .ciq-cockpit .cq-node:nth-of-type(2){right:4%;top:27%}
+  .ciq-cockpit .cq-node:nth-of-type(3){left:29%;bottom:13%}
+  .ciq-cockpit .cq-programme{font-size:9px;padding:4px 7px}
+  .ciq-cockpit .cq-programme:nth-child(1){left:6%;top:6%}
+  .ciq-cockpit .cq-programme:nth-child(2){right:4%;top:7%}
+  .ciq-cockpit .cq-programme:nth-child(3){right:3%;bottom:12%}
+  .ciq-cockpit .cq-programme:nth-child(4){left:5%;bottom:10%}
+  .ciq-cockpit .cq-orbit-note{font-size:10.5px;line-height:1.35;bottom:10px}
+
+  /* Prevent the sticky CIRA bar from reserving a large flow area on phones. */
+  .ciq-cockpit .cq-cirabar{
+    position:fixed;left:12px;right:12px;bottom:72px;
+    width:auto;margin:0;transform:none;z-index:35;
+  }
+}
+@media(max-width:520px){
+  .ciq-cockpit .cq-hero h1{font-size:31px;line-height:1.05}
+  .ciq-cockpit .cq-cmd{border-radius:14px}
+  .ciq-cockpit .cq-cmd button{padding-inline:14px}
+  .ciq-cockpit .cq-work{margin-top:24px}
+  .ciq-cockpit .cq-panel-dark{padding:18px}
+  .ciq-cockpit .cq-title{font-size:23px;line-height:1.18}
+  .ciq-cockpit .cq-live{gap:8px}
+  .ciq-cockpit .cq-insight{padding:14px;min-height:60px}
+  .ciq-cockpit .cq-orbit{height:286px}
+  .ciq-cockpit .cq-lower{gap:22px}
+}
