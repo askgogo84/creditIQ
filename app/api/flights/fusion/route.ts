@@ -237,7 +237,12 @@ export async function POST(req: NextRequest) {
       status: awardFetch.status,
       pricingAuthority: awardFetch.pricingAuthority,
       awards: awards.length,
-      attempts: awardFetch.attempts.map((attempt) => ({ source: attempt.source, state: attempt.state, freshness: attempt.freshness })),
+      attempts: awardFetch.attempts.map((attempt) => ({
+        source: attempt.source,
+        state: attempt.state,
+        freshness: attempt.freshness,
+        ...(attempt.state === 'ERROR' ? { reason: attempt.reason } : {}),
+      })),
     });
 
     const matchedKeys = new Set<string>();
