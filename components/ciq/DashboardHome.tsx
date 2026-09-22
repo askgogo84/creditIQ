@@ -18,6 +18,8 @@ type Card = {
   selfEntered: boolean
   color: string
   partners: string[]
+  pointsCurrency?: string
+  bestUse?: string
 }
 type Summary = {
   cards: Card[]
@@ -86,6 +88,7 @@ export function DashboardHome({
             selfEntered: c.source !== 'statement' || !!c.self_entered,
             color: c.catalogue?.color || c.color || '',
             partners: [],
+            pointsCurrency: c.points_currency || c.pointsCurrency || '',
           })),
           summary: { total, verified: 0, selfEntered: total, verifiedPercent: 0, cardCount: propCards?.length || 0, transferPathCount: 0 },
         })
@@ -274,23 +277,57 @@ export function DashboardHome({
                   </div>
                 </div>
               ) : (
+                <>
                 <div className="cq-deck">
-                  {cards.slice(0, 3).map((card, i) => (
-                    <Link
-                      href="/wallet"
-                      key={card.id}
-                      className={'cq-card ' + (i === 0 ? 'selected' : i === 1 ? 'stack1' : 'stack2')}
-                      style={{ background: `linear-gradient(140deg,${cardTone(card, i)},#111722)` }}
-                    >
-                      <div><small>{card.bank}</small><h3>{card.cardName}</h3></div>
-                      <div className="cq-card-chip" />
-                      <div className="cq-card-bottom">
-                        <span>{card.last4 ? '•••• ' + card.last4 : 'Reward card'}</span>
-                        <strong>{fmt(card.points)}</strong>
-                      </div>
-                    </Link>
-                  ))}
+                  {cards.slice(0, 3).map((card, i) => {
+                    const others = cards.slice(0, 3).filter(c => c.id !== selectedCard?.id)
+                    const cls = selectedCard?.id === card.id
+                      ? 'selected'
+                      : others.findIndex(c => c.id === card.id) === 0 ? 'stack1' : 'stack2'
+                    return (
+                      <button
+                        type="button"
+                        onClick={() => setSelectedId(card.id)}
+                        key={card.id}
+                        className={'cq-card ' + cls}
+                        style={{ background: `linear-gradient(140deg,${cardTone(card, i)},#111722)` }}
+                      >
+                        <div><small>{card.bank}</small><h3>{card.cardName}</h3></div>
+                        <div className="cq-card-chip" />
+                        <div className="cq-card-bottom">
+                          <span>{card.last4 ? '•••• ' + card.last4 : 'Reward card'}</span>
+                          <strong>{fmt(card.points)}</strong>
+                        </div>
+                      </button>
+                    )
+                  })}
                 </div>
+                {selectedCard && (
+                  <div className="cq-card-detail">
+                    <div className="cq-detail-head">
+                      <h3>{selectedCard.cardName}</h3>
+                      <span className="cq-detail-prov" style={{ color: selectedCard.verified ? '#2E7D4F' : '#8A857B' }}>
+                        <span style={{ background: selectedCard.verified ? '#2E7D4F' : '#B9BCC6' }} />
+                        {selectedCard.verified ? 'Verified' : 'Self-entered'}
+                      </span>
+                    </div>
+                    <div className="cq-detail-pts">
+                      {fmt(selectedCard.points)}
+                      {selectedCard.pointsCurrency ? <span> {selectedCard.pointsCurrency}</span> : null}
+                    </div>
+                    {selectedCard.bestUse ? <div className="cq-detail-use">Best use: {selectedCard.bestUse}</div> : null}
+                    {partnerPills.length > 0 && (
+                      <div className="cq-tags">
+                        {partnerPills.map((p, i) => <span className="cq-tag" key={p + i}>{p}</span>)}
+                      </div>
+                    )}
+                    <div className="cq-detail-actions">
+                      <Link className="cq-btn dark" href="/spend-optimizer">Use this card</Link>
+                      <Link className="cq-btn" href="/cira">Ask CIRA about it</Link>
+                    </div>
+                  </div>
+                )}
+                </>
               )}
             </div>
 
