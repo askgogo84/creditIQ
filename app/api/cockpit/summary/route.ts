@@ -94,6 +94,9 @@ export async function GET(req: NextRequest) {
         cardCount: cards.length,
         transferPathCount,
       },
+      // Single source of truth for the catalogue size shown on Home ("Catalogue · N
+      // cards"). SEED_CARDS is canonical; this is a count, not a second card query.
+      catalogueCount: SEED_CARDS.length,
       insights: cards.length ? [
         {
           kicker: selfEntered > 0 ? selfEntered.toLocaleString('en-IN') + ' points are self-entered' : 'Your tracked balances are verified',
