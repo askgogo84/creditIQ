@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { ArrowRight, CreditCard, Home, Plane, Sparkles, WalletCards, Zap } from 'lucide-react'
 import { authedFetch } from '@/lib/authed-fetch'
+import { cockpitDisplay, cockpitBody } from './cockpit-fonts'
 import './creditiq-cockpit.css'
 
 type Card = {
@@ -16,6 +17,9 @@ type Card = {
   verified: boolean
   selfEntered: boolean
   color: string
+  partners: string[]
+  pointsCurrency?: string
+  bestUse?: string
 }
 type Summary = {
   cards: Card[]
@@ -62,6 +66,7 @@ export function DashboardHome({
   const [trip, setTrip] = useState<any>(null)
   const [tripLoading, setTripLoading] = useState(true)
   const [ask, setAsk] = useState('')
+  const [selectedId, setSelectedId] = useState<string | null>(null)
 
   useEffect(() => {
     authedFetch('/api/cockpit/summary')
@@ -82,6 +87,8 @@ export function DashboardHome({
             verified: c.source === 'statement' && !c.self_entered,
             selfEntered: c.source !== 'statement' || !!c.self_entered,
             color: c.catalogue?.color || c.color || '',
+            partners: [],
+            pointsCurrency: c.points_currency || c.pointsCurrency || '',
           })),
           summary: { total, verified: 0, selfEntered: total, verifiedPercent: 0, cardCount: propCards?.length || 0, transferPathCount: 0 },
         })
@@ -116,6 +123,14 @@ export function DashboardHome({
     transferPathCount: 0,
   }
   const cards = data?.cards ?? []
+  const selectedCard = cards.find(c => c.id === selectedId) ?? cards[0] ?? null
+  // Partner slots per the design's orbit (4 positioned pills). Overflow collapses
+  // into a trailing "+N" so it still occupies exactly one slot.
+  const PILL_SLOTS = 4
+  const selectedPartners = selectedCard?.partners ?? []
+  const partnerPills = selectedPartners.length > PILL_SLOTS
+    ? [...selectedPartners.slice(0, PILL_SLOTS - 1), `+${selectedPartners.length - (PILL_SLOTS - 1)}`]
+    : selectedPartners
   const bestPath = trip?.decision?.searchSummary?.bestPath
   const cash = trip?.price > 0 ? '₹' + fmt(trip.price) : 'Live fare'
   const pathPoints = bestPath?.bankPointsRequired ?? trip?.award?.mileageCost
@@ -153,7 +168,7 @@ export function DashboardHome({
   )
 
   return (
-    <div className="ciq-cockpit">
+    <div className={`ciq-cockpit ${cockpitDisplay.variable} ${cockpitBody.variable}`}>
       <div className="cq-shell">
         <nav className="cq-rail" aria-label="CreditIQ">
           <Link className="cq-logo" href="/dashboard" aria-label="CreditIQ">IQ</Link>
@@ -176,7 +191,7 @@ export function DashboardHome({
                   <Link href="/wallet" className="cq-wallet-chip" key={card.id}>
                     <span className="cq-chip-swatch" style={{ background: cardTone(card, i) }} />
                     <b>{compact(card.points)}</b>
-                    <span className="cq-dot" style={{ background: card.verified ? '#2E7D4F' : '#B08D57' }} />
+                    <span className="cq-dot" style={{ background: card.verified ? '#2E7D4F' : '#B9BCC6' }} />
                   </Link>
                 ))}
                 <Link href="/wallet" className="cq-wallet-chip cq-wallet-total">
@@ -251,23 +266,69 @@ export function DashboardHome({
           <section className="cq-lower">
             <div>
               <div className="cq-section-head"><span>Your wallet · tap a card</span><Link href="/wallet">Open wallet</Link></div>
-              <div className="cq-deck">
-                {cards.slice(0, 3).map((card, i) => (
-                  <Link
-                    href="/wallet"
-                    key={card.id}
-                    className={'cq-card ' + (i === 0 ? 'selected' : i === 1 ? 'stack1' : 'stack2')}
-                    style={{ background: `linear-gradient(140deg,${cardTone(card, i)},#111722)` }}
-                  >
-                    <div><small>{card.bank}</small><h3>{card.cardName}</h3></div>
-                    <div className="cq-card-chip" />
-                    <div className="cq-card-bottom">
-                      <span>{card.last4 ? '•••• ' + card.last4 : 'Reward card'}</span>
-                      <strong>{fmt(card.points)}</strong>
+              {cards.length === 0 ? (
+                <div className="cq-empty">
+                  <div className="cq-empty-art" />
+                  <div className="cq-empty-title">No cards yet</div>
+                  <p>Add a card or upload a statement and CIRA starts working immediately.</p>
+                  <div className="cq-empty-actions">
+                    <Link className="cq-btn dark" href="/wallet">Add a card</Link>
+                    <Link className="cq-btn" href="/upload-statement">Upload statement</Link>
+                  </div>
+                </div>
+              ) : (
+                <>
+                <div className="cq-deck">
+                  {cards.slice(0, 3).map((card, i) => {
+                    const others = cards.slice(0, 3).filter(c => c.id !== selectedCard?.id)
+                    const cls = selectedCard?.id === card.id
+                      ? 'selected'
+                      : others.findIndex(c => c.id === card.id) === 0 ? 'stack1' : 'stack2'
+                    return (
+                      <button
+                        type="button"
+                        onClick={() => setSelectedId(card.id)}
+                        key={card.id}
+                        className={'cq-card ' + cls}
+                        style={{ background: `linear-gradient(140deg,${cardTone(card, i)},#111722)` }}
+                      >
+                        <div><small>{card.bank}</small><h3>{card.cardName}</h3></div>
+                        <div className="cq-card-chip" />
+                        <div className="cq-card-bottom">
+                          <span>{card.last4 ? '•••• ' + card.last4 : 'Reward card'}</span>
+                          <strong>{fmt(card.points)}</strong>
+                        </div>
+                      </button>
+                    )
+                  })}
+                </div>
+                {selectedCard && (
+                  <div className="cq-card-detail">
+                    <div className="cq-detail-head">
+                      <h3>{selectedCard.cardName}</h3>
+                      <span className="cq-detail-prov" style={{ color: selectedCard.verified ? '#2E7D4F' : '#8A857B' }}>
+                        <span style={{ background: selectedCard.verified ? '#2E7D4F' : '#B9BCC6' }} />
+                        {selectedCard.verified ? 'Verified' : 'Self-entered'}
+                      </span>
                     </div>
-                  </Link>
-                ))}
-              </div>
+                    <div className="cq-detail-pts">
+                      {fmt(selectedCard.points)}
+                      {selectedCard.pointsCurrency ? <span> {selectedCard.pointsCurrency}</span> : null}
+                    </div>
+                    {selectedCard.bestUse ? <div className="cq-detail-use">Best use: {selectedCard.bestUse}</div> : null}
+                    {partnerPills.length > 0 && (
+                      <div className="cq-tags">
+                        {partnerPills.map((p, i) => <span className="cq-tag" key={p + i}>{p}</span>)}
+                      </div>
+                    )}
+                    <div className="cq-detail-actions">
+                      <Link className="cq-btn dark" href="/spend-optimizer">Use this card</Link>
+                      <Link className="cq-btn" href="/cira">Ask CIRA about it</Link>
+                    </div>
+                  </div>
+                )}
+                </>
+              )}
             </div>
 
             <div>
@@ -275,17 +336,26 @@ export function DashboardHome({
               <div className="cq-orbit">
                 <div className="cq-orbit-ring2" />
                 <div className="cq-orbit-ring1" />
-                <div className="cq-orbit-center"><small>Your wallet</small><strong>{compact(total)}</strong><span>points</span></div>
-                {cards.slice(0, 3).map((card, i) => (
-                  <Link href="/wallet" className={'cq-node ' + (i === 0 ? 'selected' : '')} key={card.id}>
+                <div className="cq-orbit-center">
+                  <strong>{fmt(total)}</strong>
+                  <span className="cq-orbit-unit">reward points</span>
+                  <div className="cq-orbit-bar"><span style={{ width: `${summary.verifiedPercent}%` }} /></div>
+                  <span className="cq-orbit-verified">{summary.verifiedPercent}% verified</span>
+                </div>
+                {cards.slice(0, 3).map((card) => (
+                  <button
+                    type="button"
+                    onClick={() => setSelectedId(card.id)}
+                    className={'cq-node ' + (selectedCard?.id === card.id ? 'selected' : '')}
+                    key={card.id}
+                  >
                     <CreditCard size={16} /><span>{card.bank}<br /><b>{compact(card.points)}</b></span>
-                  </Link>
+                  </button>
                 ))}
                 <div className="cq-programmes">
-                  <span className="cq-programme">KrisFlyer</span>
-                  <span className="cq-programme">Maharaja</span>
-                  <span className="cq-programme">Accor ALL</span>
-                  <span className="cq-programme">Marriott</span>
+                  {partnerPills.map((p, i) => (
+                    <span className="cq-programme" key={p + i}>{p}</span>
+                  ))}
                 </div>
                 <div className="cq-orbit-note">Explore transfer routes only after checking live award availability.</div>
               </div>
@@ -293,7 +363,7 @@ export function DashboardHome({
           </section>
 
           <Link className="cq-cirabar" href="/cira">
-            <Sparkles size={15} />
+            <Sparkles size={15} color="#C9A86A" />
             <span>Ask CIRA anything…</span>
             <b>Open</b>
           </Link>

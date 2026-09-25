@@ -1,0 +1,470 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;1,6..72,400&family=Instrument+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+html,body{margin:0;padding:0;background:#E9E4DA}
+*{box-sizing:border-box}
+a{color:#B08D57}a:hover{color:#8F6F3E}
+input::placeholder{color:#8A8F9E}
+button{font:inherit}
+@keyframes cq-in{from{transform:translateX(24px);opacity:0}to{transform:none;opacity:1}}
+@keyframes cq-fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+@keyframes cq-dash{to{stroke-dashoffset:-40}}
+[data-anim]{animation:cq-fade .35s ease both}
+[data-route]{animation:cq-dash 3s linear infinite}
+@container cq (max-width: 1240px){ [data-orbitwrap]{transform:scale(.68) !important} }
+@container cq (max-width: 900px){
+  [data-lower]>*,[data-work]>*{min-width:0 !important}
+  [data-deck]{max-width:100% !important}
+  [data-shell]{flex-direction:column !important}
+  [data-rail]{order:2 !important;position:sticky !important;bottom:0 !important;top:auto !important;width:100% !important;height:auto !important;flex-direction:row !important;justify-content:space-around !important;padding:8px 8px 12px !important;border-right:0 !important;border-top:1px solid rgba(255,255,255,.08) !important;z-index:5}
+  [data-rail-logo],[data-rail-avatar]{display:none !important}
+  [data-navitem]{flex-direction:column !important;gap:3px !important;height:auto !important;min-height:48px !important;width:auto !important;padding:6px 10px !important}
+  [data-navlabel]{display:block !important}
+  [data-main]{padding:24px 18px 110px !important}
+  [data-greet]{display:none !important}
+  [data-chipsrow]{gap:6px !important}
+  [data-h1]{font-size:32px !important;text-align:left !important;max-width:100% !important}
+  [data-eyebrow],[data-cmdwrap]{text-align:left !important;align-self:stretch !important}
+  [data-cmd]{width:100% !important;padding:6px 6px 6px 14px !important}
+  [data-cmdtext]{font-size:14px !important}
+  [data-suggest]{flex-wrap:nowrap !important;overflow-x:auto !important;justify-content:flex-start !important;width:100% !important;padding-bottom:4px !important;scrollbar-width:none}
+  [data-work],[data-lower],[data-spendcols],[data-tripcols]{grid-template-columns:1fr !important}
+  [data-work]{width:100% !important}
+  [data-deck]{display:flex !important;overflow-x:auto !important;height:auto !important;gap:12px !important;padding:4px 2px 12px !important;scrollbar-width:none}
+  [data-deck] [data-deckcard]{position:relative !important;transform:none !important;translate:0 !important;rotate:0deg !important;scale:1 !important;transition:none !important;flex:0 0 250px !important;width:250px !important;height:156px !important;left:auto !important;top:auto !important;z-index:auto !important}
+  [data-orbit]{height:340px !important}
+  [data-orbitwrap]{transform:scale(.66) !important}
+  [data-cirabar]{width:calc(100% - 24px) !important;bottom:84px !important;transform:none !important;margin-top:-64px !important}
+  [data-cirapanel]{width:100% !important}
+  [data-hide-m]{display:none !important}
+}
+</style>
+</helmet>
+<template id="__bundler_thumbnail"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect width="100" height="100" fill="#0F1420"/><text x="50" y="62" font-family="Georgia,serif" font-size="34" fill="#B08D57" text-anchor="middle">IQ</text></svg></template>
+
+<div style="height:100vh;display:flex;justify-content:center;background:#E9E4DA">
+<div data-frame style="container:cq / inline-size;position:relative;width:100%;max-width:{{ frameMax }};height:100vh;overflow:auto;background:#F6F2EA;color:#12151F;font-family:'Instrument Sans',system-ui,sans-serif;font-size:15px;line-height:1.5;-webkit-font-smoothing:antialiased">
+<div data-shell style="display:flex;min-height:calc(100% - 84px)">
+
+  <nav data-rail style="width:76px;flex:0 0 auto;background:#0F1420;display:flex;flex-direction:column;align-items:center;padding:22px 0;gap:4px;color:#9AA0B0;position:sticky;top:0;height:100vh">
+    <div data-rail-logo style="width:34px;height:34px;border-radius:10px;background:#B08D57;color:#0F1420;display:flex;align-items:center;justify-content:center;font-family:'Newsreader',serif;font-weight:500;margin-bottom:20px">IQ</div>
+    <button type="button" data-navitem title="Home" style="width:48px;height:48px;border-radius:12px;display:flex;align-items:center;justify-content:center;background:rgba(255,255,255,.1);color:#fff;border:0;cursor:pointer;gap:0"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M3 11l9-7 9 7v9a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"></path></svg><span data-navlabel style="display:none;font-size:10px">Home</span></button>
+    <button type="button" data-navitem title="Wallet" onClick="{{ goWallet }}" style="width:48px;height:48px;border-radius:12px;display:flex;align-items:center;justify-content:center;background:transparent;color:inherit;border:0;cursor:pointer" style-hover="background:rgba(255,255,255,.06);color:#fff"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="3" y="6" width="18" height="13" rx="2"></rect><path d="M3 10h18"></path></svg><span data-navlabel style="display:none;font-size:10px">Wallet</span></button>
+    <button type="button" data-navitem title="Spend" onClick="{{ modeCard }}" style="width:48px;height:48px;border-radius:12px;display:flex;align-items:center;justify-content:center;background:transparent;color:inherit;border:0;cursor:pointer" style-hover="background:rgba(255,255,255,.06);color:#fff"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"><path d="M13 2 4 14h7l-1 8 9-12h-7l1-8z"></path></svg><span data-navlabel style="display:none;font-size:10px">Spend</span></button>
+    <button type="button" data-navitem title="Travel" onClick="{{ modeTrip }}" style="width:48px;height:48px;border-radius:12px;display:flex;align-items:center;justify-content:center;background:transparent;color:inherit;border:0;cursor:pointer" style-hover="background:rgba(255,255,255,.06);color:#fff"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"><path d="M2 16l20-6-3-3-6 2-6-6-2 1 4 6-5 2-2-1-1 1 3 3z"></path></svg><span data-navlabel style="display:none;font-size:10px">Travel</span></button>
+    <button type="button" data-navitem title="CIRA" onClick="{{ openCira }}" style="width:48px;height:48px;border-radius:12px;display:flex;align-items:center;justify-content:center;background:transparent;color:#C9A86A;border:0;cursor:pointer" style-hover="background:rgba(201,168,106,.12)"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"><path d="M12 4l1.8 4.2L18 10l-4.2 1.8L12 16l-1.8-4.2L6 10l4.2-1.8z"></path></svg><span data-navlabel style="display:none;font-size:10px">CIRA</span></button>
+    <div data-rail-avatar style="margin-top:auto;width:32px;height:32px;border-radius:50%;background:#2A3042;color:#fff;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600">G</div>
+  </nav>
+
+  <main data-main style="flex:1;min-width:0;padding:28px 48px 120px;display:flex;flex-direction:column;align-items:center">
+
+    <div style="width:100%;max-width:1120px;display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap">
+      <div data-greet style="font-size:13px;color:#6B6F7B">Good evening, Goverdhan</div>
+      <div data-chipsrow style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+        <sc-for list="{{ cards }}" as="c" hint-placeholder-count="3">
+          <button type="button" onClick="{{ c.select }}" title="{{ c.provTip }}" style="display:flex;gap:7px;align-items:center;border:1px solid #E3DDD1;background:#fff;border-radius:999px;padding:7px 12px;font-size:13px;color:#12151F;cursor:pointer;min-height:36px" style-hover="border-color:#B08D57"><span style="width:14px;height:10px;border-radius:2px;background:{{ c.grad }}"></span>{{ c.shortPts }}<span style="width:6px;height:6px;border-radius:50%;background:{{ c.dot }}"></span></button>
+        </sc-for>
+        <button type="button" onClick="{{ toggleVerifiedView }}" title="Toggle verified / all points" style="display:flex;gap:8px;align-items:center;background:#12151F;color:#F6F2EA;border-radius:999px;padding:7px 14px;font-size:13px;font-weight:500;border:0;cursor:pointer;min-height:36px">{{ headlinePts }} pts<span style="font-size:11px;color:#C9A86A">{{ headlineTag }}</span></button>
+      </div>
+    </div>
+
+    <div data-eyebrow style="font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:#B08D57;font-weight:600;margin-top:44px;text-align:center">CreditIQ Intelligence</div>
+    <h1 data-h1 style="font-family:'Newsreader',serif;font-weight:400;font-size:48px;line-height:1.06;letter-spacing:-.012em;margin:12px 0 24px;text-align:center;max-width:720px;text-wrap:pretty">What do you want to do with your money or points today?</h1>
+
+    <div data-cmdwrap style="width:100%;display:flex;flex-direction:column;align-items:center">
+      <form data-cmd onSubmit="{{ submitCmd }}" style="display:flex;align-items:center;gap:10px;width:100%;max-width:760px;background:#fff;border:1px solid #E3DDD1;border-radius:18px;padding:8px 8px 8px 20px;box-shadow:0 18px 50px rgba(18,21,31,.08);transition:border-color .2s" style-focus="border-color:#B08D57">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#B08D57" stroke-width="1.8" stroke-linejoin="round"><path d="M12 4l1.8 4.2L18 10l-4.2 1.8L12 16l-1.8-4.2L6 10l4.2-1.8z"></path></svg>
+        <input data-cmdtext value="{{ cmd }}" onChange="{{ onCmd }}" placeholder="Ask CIRA anything… “Can I fly business class with my points?”" style="flex:1;min-width:0;border:0;outline:0;background:transparent;font:inherit;font-size:16px;color:#12151F;min-height:44px">
+        <button type="submit" style="background:#12151F;color:#F6F2EA;padding:12px 18px;border-radius:12px;font-size:14px;font-weight:500;border:0;cursor:pointer;min-height:44px;white-space:nowrap" style-hover="background:#242938">Ask CIRA</button>
+      </form>
+      <div data-suggest style="display:flex;flex-wrap:wrap;justify-content:center;gap:8px;margin-top:14px;max-width:820px">
+        <button type="button" onClick="{{ modeTrip }}" style="{{ chipTrip }}">✈ Plan a trip with my points</button>
+        <button type="button" onClick="{{ modeCard }}" style="{{ chipCard }}">Which card should I use?</button>
+        <button type="button" onClick="{{ modeRedeem }}" style="{{ chipRedeem }}">Find my best redemption</button>
+        <button type="button" onClick="{{ modeStatement }}" style="{{ chipStatement }}">Analyse my statement</button>
+        <button type="button" onClick="{{ modeHotel }}" style="{{ chipHotel }}">Book a hotel with points</button>
+      </div>
+    </div>
+
+    <section data-work style="display:grid;grid-template-columns:minmax(0,1.35fr) minmax(0,1fr);gap:16px;width:100%;max-width:1120px;margin-top:36px;align-items:start">
+
+      <sc-if value="{{ isTrip }}" hint-placeholder-val="{{ true }}">
+        <div data-anim style="background:#12151F;color:#F2EFE8;border-radius:18px;padding:26px 28px;position:relative;overflow:hidden">
+          <svg width="460" height="170" viewBox="0 0 460 170" style="position:absolute;right:-30px;top:10px;opacity:.55;pointer-events:none" fill="none"><path data-route d="M20 150 C 130 20, 330 20, 440 150" stroke="#C9A86A" stroke-dasharray="4 6"></path><circle cx="20" cy="150" r="3" fill="#C9A86A"></circle><circle cx="440" cy="150" r="3" fill="#C9A86A"></circle></svg>
+          <div style="font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:#C9A86A;font-weight:600">Your smartest move right now</div>
+          <div style="font-family:'Newsreader',serif;font-size:28px;line-height:1.2;margin:10px 0 6px;max-width:420px;text-wrap:pretty">{{ tripHeadline }}</div>
+          <div style="color:#A9ADB8;font-size:14px;margin-bottom:22px">Suggested trip · Bengaluru → Singapore</div>
+          <div data-tripcols style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px">
+            <div><div style="font-size:12px;color:#9EA2AE">Cash</div><div style="font-size:20px;font-variant-numeric:tabular-nums">₹26,400</div></div>
+            <div><div style="font-size:12px;color:#9EA2AE">Points path</div><div style="font-size:20px">43,000 KrisFlyer miles + taxes</div></div>
+            <div><div style="font-size:12px;color:#9EA2AE">From wallet</div><div style="font-size:20px">{{ tripSource }}</div></div>
+          </div>
+          <sc-if value="{{ tripOpen }}" hint-placeholder-val="{{ false }}">
+            <div data-anim style="margin-top:22px;border:1px solid rgba(255,255,255,.12);border-radius:12px;padding:16px 18px;background:rgba(255,255,255,.04)">
+              <div style="font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:#C9A86A;font-weight:600;margin-bottom:10px">Redemption path</div>
+              <div style="display:grid;gap:10px">
+                <div style="display:flex;gap:12px;align-items:flex-start"><span style="width:22px;height:22px;border-radius:50%;border:1px solid #C9A86A;color:#C9A86A;font-size:11px;display:flex;align-items:center;justify-content:center;flex:0 0 auto">1</span><div><div style="font-weight:500">Check KrisFlyer award availability on BLR → SIN</div><div style="font-size:13px;color:#A9ADB8">Award seats move; confirm before you transfer anything.</div></div></div>
+                <div style="display:flex;gap:12px;align-items:flex-start"><span style="width:22px;height:22px;border-radius:50%;border:1px solid #C9A86A;color:#C9A86A;font-size:11px;display:flex;align-items:center;justify-content:center;flex:0 0 auto">2</span><div><div style="font-weight:500">Transfer {{ tripTransfer }} from HDFC Infinia to KrisFlyer</div><div style="font-size:13px;color:#A9ADB8">{{ tripGap }}</div></div></div>
+                <div style="display:flex;gap:12px;align-items:flex-start"><span style="width:22px;height:22px;border-radius:50%;border:1px solid #C9A86A;color:#C9A86A;font-size:11px;display:flex;align-items:center;justify-content:center;flex:0 0 auto">3</span><div><div style="font-weight:500">Book the award and pay taxes on Infinia</div><div style="font-size:13px;color:#A9ADB8">Compare against ₹26,400 cash before confirming.</div></div></div>
+              </div>
+            </div>
+          </sc-if>
+          <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;margin-top:22px;border-top:1px solid rgba(255,255,255,.1);padding-top:16px;flex-wrap:wrap">
+            <span style="font-size:13px;color:#C9A86A;display:flex;align-items:center;gap:8px"><span style="width:6px;height:6px;border-radius:50%;background:#C9A86A"></span>CreditIQ verdict · Check award first</span>
+            <div style="display:flex;gap:8px">
+              <button type="button" onClick="{{ askTrip }}" style="background:transparent;color:#F2EFE8;border:1px solid rgba(255,255,255,.2);padding:10px 16px;border-radius:9px;font-size:14px;font-weight:500;cursor:pointer;min-height:44px" style-hover="border-color:#C9A86A">Ask CIRA</button>
+              <button type="button" onClick="{{ toggleTrip }}" style="background:#C9A86A;color:#12151F;padding:10px 16px;border-radius:9px;font-size:14px;font-weight:600;border:0;cursor:pointer;min-height:44px" style-hover="background:#D9BC82">{{ tripCta }}</button>
+            </div>
+          </div>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ isCard }}" hint-placeholder-val="{{ false }}">
+        <div data-anim style="background:#fff;border:1px solid #E3DDD1;border-radius:18px;padding:26px 28px">
+          <div style="font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:#B08D57;font-weight:600">Spend Smart</div>
+          <div style="font-family:'Newsreader',serif;font-size:28px;line-height:1.2;margin:10px 0 18px">You're spending <span style="border-bottom:1px solid #B08D57">{{ amountLabel }}</span> at {{ merchant }}.</div>
+          <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:20px">
+            <label style="display:flex;align-items:center;gap:6px;border:1px solid #E3DDD1;border-radius:10px;padding:0 12px;min-height:44px"><span style="color:#6B6F7B">₹</span><input type="number" value="{{ amount }}" onChange="{{ onAmount }}" style="width:110px;border:0;outline:0;font:inherit;font-size:16px;font-variant-numeric:tabular-nums;color:#12151F"></label>
+            <sc-for list="{{ merchants }}" as="m" hint-placeholder-count="4">
+              <button type="button" onClick="{{ m.pick }}" style="{{ m.style }}">{{ m.name }}</button>
+            </sc-for>
+          </div>
+          <div data-spendcols style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px">
+            <sc-for list="{{ spendRows }}" as="r" hint-placeholder-count="3">
+              <div style="{{ r.style }}">
+                <div style="display:flex;justify-content:space-between;align-items:center"><span style="font-size:13px;color:#6B6F7B">{{ r.name }}</span><span style="width:20px;height:14px;border-radius:3px;background:{{ r.grad }}"></span></div>
+                <div style="font-family:'Newsreader',serif;font-size:30px;line-height:1.1;margin-top:10px;font-variant-numeric:tabular-nums">{{ r.value }}</div>
+                <div style="font-size:12px;color:{{ r.noteColor }};font-weight:500;margin-top:4px">{{ r.note }}</div>
+              </div>
+            </sc-for>
+          </div>
+          <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;margin-top:20px;flex-wrap:wrap">
+            <span style="font-size:13px;color:#6B6F7B">Estimated reward value from your wallet's earn rates. Excludes merchant exclusions.</span>
+            <button type="button" onClick="{{ resetSpend }}" style="border:1px solid #E3DDD1;background:#fff;padding:10px 16px;border-radius:9px;font-size:14px;font-weight:500;cursor:pointer;min-height:44px" style-hover="border-color:#B08D57">Try another purchase</button>
+          </div>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ isRedeem }}" hint-placeholder-val="{{ false }}">
+        <div data-anim style="background:#fff;border:1px solid #E3DDD1;border-radius:18px;padding:26px 28px">
+          <div style="font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:#B08D57;font-weight:600">Best redemption</div>
+          <div style="font-family:'Newsreader',serif;font-size:28px;line-height:1.2;margin:10px 0 18px">{{ redeemHeadline }}</div>
+          <div style="display:grid;gap:10px">
+            <sc-for list="{{ cards }}" as="c" hint-placeholder-count="3">
+              <button type="button" onClick="{{ c.select }}" style="display:flex;gap:14px;align-items:center;text-align:left;border:1px solid #E3DDD1;background:#fff;border-radius:12px;padding:14px 16px;cursor:pointer;color:#12151F" style-hover="border-color:#B08D57">
+                <span style="width:34px;height:24px;border-radius:5px;background:{{ c.grad }};flex:0 0 auto"></span>
+                <span style="flex:1;min-width:0"><span style="display:block;font-weight:500">{{ c.short }} → {{ c.partnersLine }}</span><span style="display:block;font-size:13px;color:#6B6F7B">{{ c.bestUse }}</span></span>
+                <span style="color:#B08D57">→</span>
+              </button>
+            </sc-for>
+          </div>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ isStatement }}" hint-placeholder-val="{{ false }}">
+        <div data-anim style="background:#fff;border:1px dashed #C9C2B4;border-radius:18px;padding:26px 28px;text-align:center">
+          <div style="font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:#B08D57;font-weight:600">Statement Truth</div>
+          <div style="font-family:'Newsreader',serif;font-size:28px;line-height:1.2;margin:10px auto 8px;max-width:420px">Drop a statement PDF to replace estimates with verified balances.</div>
+          <div style="color:#6B6F7B;max-width:420px;margin:0 auto 20px">{{ statementNote }}</div>
+          <div style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap">
+            <button type="button" style="background:#12151F;color:#F6F2EA;padding:12px 18px;border-radius:9px;font-size:14px;font-weight:500;border:0;cursor:pointer;min-height:44px">Upload statement</button>
+            <button type="button" onClick="{{ askStatement }}" style="border:1px solid #E3DDD1;background:#fff;padding:12px 18px;border-radius:9px;font-size:14px;font-weight:500;cursor:pointer;min-height:44px" style-hover="border-color:#B08D57">What does CIRA read from it?</button>
+          </div>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ isHotel }}" hint-placeholder-val="{{ false }}">
+        <div data-anim style="background:#fff;border:1px solid #E3DDD1;border-radius:18px;padding:26px 28px">
+          <div style="font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:#B08D57;font-weight:600">Hotel with points</div>
+          <div style="font-family:'Newsreader',serif;font-size:28px;line-height:1.2;margin:10px 0 18px">Singapore, 3 nights — cash or points?</div>
+          <div style="display:grid;gap:10px">
+            <div style="display:flex;gap:14px;align-items:center;border:1px solid #B08D57;background:#FBF6EC;border-radius:12px;padding:14px 16px"><span style="width:34px;height:24px;border-radius:5px;background:linear-gradient(135deg,#1C2B4B,#0B1326)"></span><span style="flex:1"><span style="display:block;font-weight:500">HDFC Infinia → Marriott Bonvoy</span><span style="display:block;font-size:13px;color:#6B6F7B">Transfer path available. CIRA checks live award nights before you move points.</span></span><span style="font-size:12px;color:#B08D57;font-weight:600">Recommended</span></div>
+            <div style="display:flex;gap:14px;align-items:center;border:1px solid #E3DDD1;border-radius:12px;padding:14px 16px"><span style="width:34px;height:24px;border-radius:5px;background:linear-gradient(135deg,#9AA3B3,#6B7383)"></span><span style="flex:1"><span style="display:block;font-weight:500">Amex Platinum Travel → Marriott Bonvoy</span><span style="display:block;font-size:13px;color:#6B6F7B">Balance is self-entered — verify before relying on it.</span></span></div>
+          </div>
+          <button type="button" onClick="{{ askHotel }}" style="margin-top:18px;background:#12151F;color:#F6F2EA;padding:12px 18px;border-radius:9px;font-size:14px;font-weight:500;border:0;cursor:pointer;min-height:44px">Compare with CIRA →</button>
+        </div>
+      </sc-if>
+
+      <div style="display:flex;flex-direction:column;gap:10px">
+        <div style="font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:#6B6F7B;padding:0 4px">Live from your wallet</div>
+        <sc-for list="{{ insights }}" as="i" hint-placeholder-count="3">
+          <button type="button" onClick="{{ i.go }}" style="display:flex;justify-content:space-between;align-items:center;gap:12px;text-align:left;background:#fff;border:1px solid #E3DDD1;border-radius:14px;padding:16px 18px;cursor:pointer;color:#12151F;min-height:44px;transition:transform .15s,border-color .15s" style-hover="border-color:#B08D57;transform:translateX(2px)">
+            <span><span style="display:block;font-size:12px;color:#6B6F7B">{{ i.kicker }}</span><span style="display:block;font-weight:500">{{ i.action }}</span></span>
+            <span style="color:#B08D57;font-size:18px">→</span>
+          </button>
+        </sc-for>
+      </div>
+    </section>
+
+    <section data-lower style="display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);gap:24px;width:100%;max-width:1120px;margin-top:48px;align-items:start">
+      <div data-walletanchor>
+        <div style="display:flex;justify-content:space-between;align-items:baseline;gap:12px;padding:0 4px 8px">
+          <div style="font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:#6B6F7B">Your wallet · tap a card</div>
+          <a href="#" style="text-decoration:none;font-size:13px;font-weight:500;padding:10px 0">View wallet →</a>
+        </div>
+        <sc-if value="{{ hasCards }}" hint-placeholder-val="{{ true }}">
+          <div data-deck style="position:relative;height:300px">
+            <sc-for list="{{ deck }}" as="d" hint-placeholder-count="3">
+              <button type="button" data-deckcard onClick="{{ d.select }}" style="{{ d.style }}">
+                <span style="display:flex;justify-content:space-between;font-size:12px;letter-spacing:.1em;color:rgba(255,255,255,.85)">{{ d.bank }}<span style="color:{{ d.accent }}">{{ d.name }}</span></span>
+                <span style="position:absolute;top:44%;left:24px;width:36px;height:26px;border-radius:5px;background:linear-gradient(135deg,#E8D2A0,#B08D57);opacity:.9"></span>
+                <span style="position:absolute;bottom:22px;left:24px;font-size:14px;letter-spacing:.14em;color:rgba(255,255,255,.85)">•••• {{ d.last4 }}</span>
+                <span style="position:absolute;bottom:18px;right:24px;font-family:'Newsreader',serif;font-size:24px;color:#fff">{{ d.ptsLabel }}</span>
+              </button>
+            </sc-for>
+          </div>
+          <div data-anim style="background:#fff;border:1px solid #E3DDD1;border-radius:16px;padding:20px 22px;margin-top:8px">
+            <div style="display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;align-items:baseline">
+              <div style="font-family:'Newsreader',serif;font-size:24px">{{ sel.full }}</div>
+              <div style="display:flex;align-items:center;gap:6px;font-size:13px;font-weight:500;color:{{ sel.dot }}"><span style="width:7px;height:7px;border-radius:50%;background:{{ sel.dot }}"></span>{{ sel.prov }}</div>
+            </div>
+            <div style="font-size:30px;font-family:'Newsreader',serif;margin-top:4px;font-variant-numeric:tabular-nums">{{ sel.ptsFull }} <span style="font-size:14px;font-family:'Instrument Sans',sans-serif;color:#6B6F7B">{{ sel.unit }}</span></div>
+            <div style="color:#6B6F7B;margin:8px 0 12px">Best use: {{ sel.bestUse }}</div>
+            <div style="display:flex;flex-wrap:wrap;gap:6px">
+              <sc-for list="{{ sel.partners }}" as="p" hint-placeholder-count="4"><span style="border:1px solid #E3DDD1;border-radius:999px;padding:6px 11px;font-size:12px">{{ p }}</span></sc-for>
+            </div>
+            <div style="display:flex;gap:8px;margin-top:16px;flex-wrap:wrap">
+              <button type="button" onClick="{{ useSelected }}" style="background:#12151F;color:#F6F2EA;padding:11px 18px;border-radius:9px;font-size:14px;font-weight:500;border:0;cursor:pointer;min-height:44px">Use this card</button>
+              <button type="button" onClick="{{ askSelected }}" style="border:1px solid #E3DDD1;background:#fff;padding:11px 18px;border-radius:9px;font-size:14px;font-weight:500;cursor:pointer;min-height:44px" style-hover="border-color:#B08D57">Ask CIRA about it</button>
+            </div>
+          </div>
+        </sc-if>
+        <sc-if value="{{ noCards }}" hint-placeholder-val="{{ false }}">
+          <div style="border:1px dashed #C9C2B4;border-radius:18px;padding:40px 24px;text-align:center;background:#fff">
+            <div style="width:120px;height:76px;border-radius:12px;border:1px dashed #C9C2B4;margin:0 auto 16px;background:#F6F2EA"></div>
+            <div style="font-family:'Newsreader',serif;font-size:24px">No cards yet</div>
+            <div style="color:#6B6F7B;max-width:340px;margin:6px auto 18px">Add a card or upload a statement and CIRA starts working immediately.</div>
+            <div style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap">
+              <button type="button" style="background:#12151F;color:#F6F2EA;padding:11px 18px;border-radius:9px;font-size:14px;font-weight:500;border:0;cursor:pointer;min-height:44px">Add a card</button>
+              <button type="button" onClick="{{ modeStatement }}" style="border:1px solid #E3DDD1;background:#fff;padding:11px 18px;border-radius:9px;font-size:14px;font-weight:500;cursor:pointer;min-height:44px">Upload statement</button>
+            </div>
+          </div>
+        </sc-if>
+      </div>
+
+      <div>
+        <div style="display:flex;justify-content:space-between;align-items:baseline;gap:12px;padding:0 4px 8px">
+          <div style="font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:#6B6F7B">Rewards orbit · where your points can go</div>
+          <button type="button" onClick="{{ resetOrbit }}" style="border:0;background:transparent;font-size:13px;color:#B08D57;font-weight:500;cursor:pointer;padding:10px 0">Reset</button>
+        </div>
+        <div data-orbit style="position:relative;height:460px;background:#fff;border:1px solid #E3DDD1;border-radius:18px;overflow:hidden">
+          <div data-orbitwrap style="position:absolute;left:50%;top:50%;width:520px;height:440px;margin:-220px 0 0 -260px;transform-origin:center">
+            <svg width="520" height="440" viewBox="0 0 520 440" fill="none" style="position:absolute;inset:0">
+              <circle cx="260" cy="220" r="96" stroke="#D9D2C4" stroke-dasharray="3 5"></circle>
+              <circle cx="260" cy="220" r="170" stroke="#EBE6DB" stroke-dasharray="2 6"></circle>
+              <path d="M260 220 L150 130" stroke="#B08D57" stroke-width="1.2" opacity="{{ lineA }}"></path>
+              <path d="M260 220 L390 150" stroke="#B08D57" stroke-width="1.2" opacity="{{ lineB }}"></path>
+              <path d="M260 220 L250 350" stroke="#A9ADB8" stroke-width="1.2" stroke-dasharray="4 4" opacity="{{ lineC }}"></path>
+              <g opacity="{{ progA }}"><path d="M150 130 L70 60" stroke="#D9D2C4"></path><path d="M150 130 L40 150" stroke="#D9D2C4"></path><path d="M150 130 L170 30" stroke="#D9D2C4"></path><path d="M150 130 L60 230" stroke="#D9D2C4"></path></g>
+              <g opacity="{{ progB }}"><path d="M390 150 L470 80" stroke="#D9D2C4"></path><path d="M390 150 L490 170" stroke="#D9D2C4"></path><path d="M390 150 L430 260" stroke="#D9D2C4"></path></g>
+              <g opacity="{{ progC }}"><path d="M250 350 L150 400" stroke="#D9D2C4"></path><path d="M250 350 L360 400" stroke="#D9D2C4"></path><path d="M250 350 L420 330" stroke="#D9D2C4"></path></g>
+            </svg>
+            <div style="position:absolute;left:172px;top:140px;width:176px;height:160px;border-radius:50%;background:#F6F2EA;border:1px solid #E3DDD1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;box-shadow:0 20px 50px rgba(18,21,31,.08)">
+              <div style="font-family:'Newsreader',serif;font-size:36px;line-height:1;font-variant-numeric:tabular-nums">{{ totalPts }}</div>
+              <div style="font-size:11px;color:#6B6F7B;margin-top:5px;letter-spacing:.06em;text-transform:uppercase">reward points</div>
+              <div style="margin-top:8px;height:3px;width:90px;background:#EBE6DB;border-radius:2px;overflow:hidden"><div style="width:{{ verifiedPct }}%;height:100%;background:#B08D57;transition:width .4s"></div></div>
+              <div style="font-size:11px;color:#6B6F7B;margin-top:5px">{{ verifiedPct }}% verified</div>
+            </div>
+            <sc-for list="{{ nodes }}" as="n" hint-placeholder-count="3">
+              <button type="button" onClick="{{ n.select }}" style="{{ n.style }}">
+                <span style="width:26px;height:18px;border-radius:4px;background:{{ n.grad }};flex:0 0 auto"></span>
+                <span style="text-align:left"><span style="display:block;font-size:13px;font-weight:600;line-height:1.2">{{ n.short }}</span><span style="display:block;font-size:12px;color:#6B6F7B;display:flex;align-items:center;gap:5px">{{ n.ptsLabel }}<span style="width:6px;height:6px;border-radius:50%;background:{{ n.dot }};display:inline-block"></span></span></span>
+              </button>
+            </sc-for>
+            <sc-for list="{{ programmes }}" as="p" hint-placeholder-count="4">
+              <span data-anim style="{{ p.style }}">{{ p.name }}</span>
+            </sc-for>
+          </div>
+          <div style="position:absolute;left:16px;bottom:14px;right:16px;font-size:13px;color:#6B6F7B;display:flex;justify-content:space-between;gap:12px"><span>{{ orbitHint }}</span><span data-hide-m style="display:flex;gap:10px"><span><span style="display:inline-block;width:6px;height:6px;border-radius:50%;background:#2E7D4F;margin-right:4px"></span>Verified</span><span><span style="display:inline-block;width:6px;height:6px;border-radius:50%;background:#B9BCC6;margin-right:4px"></span>Self-entered</span></span></div>
+        </div>
+      </div>
+    </section>
+  </main>
+</div>
+
+<button type="button" data-cirabar onClick="{{ openCira }}" style="position:sticky;bottom:24px;margin:0 auto;left:0;right:0;width:min(560px,calc(100% - 140px));display:flex;align-items:center;gap:10px;background:#12151F;color:#F2EFE8;border:1px solid rgba(255,255,255,.1);border-radius:999px;padding:8px 8px 8px 18px;box-shadow:0 18px 50px rgba(18,21,31,.25);cursor:pointer;text-align:left;z-index:6;transform:translateX(38px)">
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#C9A86A" stroke-width="1.8" stroke-linejoin="round"><path d="M12 4l1.8 4.2L18 10l-4.2 1.8L12 16l-1.8-4.2L6 10l4.2-1.8z"></path></svg>
+  <span style="flex:1;color:#A9ADB8;font-size:14px">Ask CIRA anything…</span>
+  <span style="background:#C9A86A;color:#12151F;padding:9px 14px;border-radius:999px;font-size:13px;font-weight:600;min-height:36px;display:inline-flex;align-items:center">Open</span>
+</button>
+
+<sc-if value="{{ ciraOpen }}" hint-placeholder-val="{{ false }}">
+  <div onClick="{{ closeCira }}" style="position:absolute;inset:0;background:rgba(18,21,31,.28);z-index:20"></div>
+  <aside data-cirapanel style="position:fixed;top:0;right:0;bottom:0;width:440px;max-width:100%;background:#12151F;color:#F2EFE8;z-index:21;display:flex;flex-direction:column;box-shadow:-20px 0 60px rgba(0,0,0,.3);animation:cq-in .28s ease both">
+    <div style="display:flex;justify-content:space-between;align-items:center;padding:22px 24px;border-bottom:1px solid rgba(255,255,255,.08)">
+      <div style="display:flex;align-items:center;gap:10px"><span style="width:28px;height:28px;border-radius:8px;background:#C9A86A;color:#12151F;display:flex;align-items:center;justify-content:center"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M12 4l1.8 4.2L18 10l-4.2 1.8L12 16l-1.8-4.2L6 10l4.2-1.8z"></path></svg></span><span style="font-family:'Newsreader',serif;font-size:22px">CIRA</span><span style="font-size:12px;color:#9EA2AE">rewards concierge</span></div>
+      <button type="button" onClick="{{ closeCira }}" aria-label="Close" style="width:44px;height:44px;border-radius:50%;border:1px solid rgba(255,255,255,.12);background:transparent;color:#F2EFE8;cursor:pointer;font-size:18px">×</button>
+    </div>
+    <div style="flex:1;overflow:auto;padding:22px 24px;display:flex;flex-direction:column;gap:14px">
+      <sc-if value="{{ noThread }}" hint-placeholder-val="{{ true }}">
+        <div style="color:#A9ADB8;font-size:14px">I know your wallet: {{ totalPts }} points across {{ cardCount }}, {{ verifiedPct }}% verified. Ask about a purchase, a route or a programme.</div>
+        <div style="font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:#C9A86A;font-weight:600;margin-top:6px">Try</div>
+        <div style="display:flex;flex-direction:column;gap:8px">
+          <sc-for list="{{ prompts }}" as="p" hint-placeholder-count="3">
+            <button type="button" onClick="{{ p.pick }}" style="text-align:left;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.12);color:#E6E3DB;border-radius:12px;padding:12px 14px;font-size:14px;cursor:pointer;min-height:44px" style-hover="border-color:#C9A86A;background:rgba(201,168,106,.12)">{{ p.text }}</button>
+          </sc-for>
+        </div>
+      </sc-if>
+      <sc-for list="{{ thread }}" as="t" hint-placeholder-count="0">
+        <div data-anim style="{{ t.style }}">{{ t.text }}</div>
+      </sc-for>
+      <sc-if value="{{ hasThread }}" hint-placeholder-val="{{ false }}">
+        <div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:4px">
+          <sc-for list="{{ prompts }}" as="p" hint-placeholder-count="3">
+            <button type="button" onClick="{{ p.pick }}" style="background:transparent;border:1px solid rgba(255,255,255,.14);color:#C9CBD3;border-radius:999px;padding:8px 12px;font-size:12px;cursor:pointer" style-hover="border-color:#C9A86A">{{ p.text }}</button>
+          </sc-for>
+        </div>
+      </sc-if>
+    </div>
+    <form onSubmit="{{ submitCira }}" style="display:flex;gap:8px;align-items:center;margin:16px 24px 24px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.14);border-radius:14px;padding:6px 6px 6px 14px">
+      <input value="{{ ciraDraft }}" onChange="{{ onCiraDraft }}" placeholder="Ask CIRA anything…" style="flex:1;min-width:0;background:transparent;border:0;outline:0;font:inherit;font-size:14px;color:#F2EFE8;min-height:40px">
+      <button type="submit" style="background:#C9A86A;color:#12151F;padding:10px 16px;border-radius:10px;font-size:14px;font-weight:600;border:0;cursor:pointer;min-height:44px">Ask</button>
+    </form>
+  </aside>
+</sc-if>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;wallet&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;populated&quot;,&quot;empty&quot;],&quot;default&quot;:&quot;populated&quot;,&quot;tsType&quot;:&quot;'populated'|'empty'&quot;,&quot;section&quot;:&quot;State&quot;},&quot;verification&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;high&quot;,&quot;low&quot;],&quot;default&quot;:&quot;high&quot;,&quot;tsType&quot;:&quot;'high'|'low'&quot;,&quot;section&quot;:&quot;State&quot;},&quot;viewport&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;desktop&quot;,&quot;mobile&quot;],&quot;default&quot;:&quot;desktop&quot;,&quot;tsType&quot;:&quot;'desktop'|'mobile'&quot;,&quot;section&quot;:&quot;Preview&quot;}}">
+class Component extends DCLogic {
+  state = { mode: 'trip', tripOpen: false, sel: 'hdfc', orbitSel: null, verifiedView: false, cmd: '', amount: 25000, merchant: 'Apple', disp: null, ciraOpen: false, ciraDraft: '', thread: [] };
+
+  tweenTo(target) {
+    const from = this.state.disp || target;
+    const start = performance.now();
+    cancelAnimationFrame(this._raf);
+    const step = now => {
+      const t = Math.min(1, (now - start) / 380), e = 1 - Math.pow(1 - t, 3);
+      const disp = {}; for (const k in target) disp[k] = from[k] + (target[k] - from[k]) * e;
+      this.setState({ disp });
+      if (t < 1) this._raf = requestAnimationFrame(step);
+    };
+    this._raf = requestAnimationFrame(step);
+  }
+  setAmount(amount, merchant) {
+    const prev = this.spendTargets(this.state.amount);
+    this.setState({ amount, merchant: merchant ?? this.state.merchant, disp: this.state.disp || prev }, () => this.tweenTo(this.spendTargets(amount)));
+  }
+  spendTargets(a) { return { hdfc: a * 0.033, axis: a * 0.02, amex: a * 0.015 }; }
+
+  reply(q) {
+    const s = q.toLowerCase();
+    if (s.includes('singapore') || s.includes('cover')) return 'Partly. A BLR → SIN economy award needs about 43,000 KrisFlyer miles. Your 38,000 Infinia points transfer to KrisFlyer, so you are 5,000 short — top up with Axis EDGE Miles via an airline partner, or pay ₹26,400 cash. My verdict: check award availability before you transfer.';
+    if (s.includes('business')) return 'Not comfortably. Business-class awards on this route need far more miles than any single programme in your wallet holds, and HDFC, Axis and Amex points cannot be pooled. Best move today: an economy KrisFlyer award, and keep earning on Infinia.';
+    if (s.includes('tax')) return 'Most cards exclude or cap rewards on tax payments, so points should not drive this choice. I will compare fees and earn rules across Infinia, Atlas and Platinum Travel before you pay — want the full comparison?';
+    if (s.includes('transfer') || s.includes('hdfc')) return 'Your 38,000 Infinia points move to KrisFlyer, Marriott Bonvoy and Accor. Keep them in HDFC until you have a specific award to book — points are most flexible before transfer. I have flagged the Singapore award as the strongest use right now.';
+    if (s.includes('75,000') || s.includes('travel') || s.includes('card should')) return 'For ₹75,000 of travel spend, Infinia gives the highest estimated reward value (~₹2,475) against Atlas (~₹1,500) and Platinum Travel (~₹1,125). Use Infinia unless you are chasing an Atlas milestone.';
+    if (s.includes('statement')) return 'From a statement I read card, closing balance, reward points earned and current points balance. Uploading your Amex statement would verify the 16,500 self-entered points and raise your wallet to 100% verified.';
+    return `I have checked your wallet: ${this.totals().totalFmt} points across 3 cards, ${this.totals().pct}% verified. Ask about a purchase, a route or a programme and I will compare the paths.`;
+  }
+  ask(q) {
+    if (!q.trim()) return;
+    this.setState(s => ({ ciraOpen: true, ciraDraft: '', cmd: '', thread: [...s.thread, { role: 'u', text: q }, { role: 'a', text: this.reply(q) }] }));
+  }
+  baseCards() {
+    const low = (this.props.verification ?? 'high') === 'low';
+    return [
+      { id: 'hdfc', bank: 'HDFC BANK', name: 'Infinia Metal', short: 'HDFC Infinia', full: 'HDFC Infinia Metal', last4: '4412', pts: 38000, unit: 'Reward points', verified: !low, grad: 'linear-gradient(135deg,#1C2B4B,#0B1326)', accent: '#C9A86A', partners: ['KrisFlyer', 'Marriott Bonvoy', 'Accor', 'SmartBuy'], bestUse: 'transfer to KrisFlyer for Bengaluru → Singapore.', nx: 92, ny: 104, prog: [[30, 40], [4, 140], [130, 8], [14, 220]] },
+      { id: 'axis', bank: 'AXIS BANK', name: 'Atlas', short: 'Axis Atlas', full: 'Axis Atlas', last4: '9027', pts: 14000, unit: 'EDGE Miles', verified: true, grad: 'linear-gradient(135deg,#8E2A4C,#3D0F1F)', accent: '#F2C4D0', partners: ['Air Vistara', 'Singapore Airlines', 'ITC Hotels'], bestUse: 'top up an airline award or keep for a short-haul flight.', nx: 340, ny: 124, prog: [[430, 60], [448, 160], [392, 250]] },
+      { id: 'amex', bank: 'AMERICAN EXPRESS', name: 'Platinum Travel', short: 'Amex Platinum Travel', full: 'American Express Platinum Travel', last4: '1008', pts: 16500, unit: 'Membership Rewards', verified: false, grad: 'linear-gradient(135deg,#9AA3B3,#6B7383)', accent: '#E9EDF3', partners: ['Marriott Bonvoy', 'Hilton Honors', 'Taj InnerCircle'], bestUse: 'verify the balance first, then pool with a hotel programme.', nx: 178, ny: 330, prog: [[90, 392], [320, 392], [400, 318]] },
+    ];
+  }
+  totals() {
+    const cards = (this.props.wallet ?? 'populated') === 'empty' ? [] : this.baseCards();
+    const total = cards.reduce((s, c) => s + c.pts, 0), ver = cards.filter(c => c.verified).reduce((s, c) => s + c.pts, 0);
+    return { cards, total, ver, pct: total ? Math.round(ver / total * 100) : 0, totalFmt: total.toLocaleString('en-IN') };
+  }
+
+  renderVals() {
+    const fmt = n => Math.round(n).toLocaleString('en-IN');
+    const st = this.state, { cards: base, total, ver, pct } = this.totals();
+    const hasCards = base.length > 0;
+    const viewport = this.props.viewport ?? 'desktop';
+    const chip = on => on ? 'background:#12151F;color:#F6F2EA;border:1px solid #12151F;border-radius:999px;padding:9px 16px;font-size:13px;font-weight:500;cursor:pointer;min-height:40px;white-space:nowrap' : 'background:#fff;color:#12151F;border:1px solid #E3DDD1;border-radius:999px;padding:9px 16px;font-size:13px;font-weight:500;cursor:pointer;min-height:40px;white-space:nowrap';
+    const css = s => Object.fromEntries(s.split(';').filter(Boolean).map(d => { const i = d.indexOf(':'); const k = d.slice(0, i).trim().replace(/-([a-z])/g, (_, c) => c.toUpperCase()); return [k, d.slice(i + 1).trim()]; }));
+    const setMode = m => () => this.setState({ mode: m, tripOpen: false });
+    const cards = base.map(c => ({
+      ...c, ptsFmt: fmt(c.pts), shortPts: (c.pts / 1000).toLocaleString('en-IN', { maximumFractionDigits: 1 }) + 'K',
+      ptsLabel: (c.pts / 1000).toLocaleString('en-IN', { maximumFractionDigits: 1 }) + 'K ' + (c.unit === 'EDGE Miles' ? 'miles' : 'pts'),
+      ptsFull: fmt(c.pts), prov: c.verified ? 'Verified' : 'Self-entered', dot: c.verified ? '#2E7D4F' : '#B9BCC6',
+      provTip: c.verified ? 'Balance confirmed from an uploaded statement' : 'Entered manually — upload a statement to verify',
+      partnersLine: c.partners.slice(0, 2).join(' / '),
+      select: () => this.setState({ sel: c.id, orbitSel: c.id }),
+    }));
+    const sel = cards.find(c => c.id === st.sel) || cards[0] || { partners: [] };
+    const inactive = cards.filter(c => c.id !== st.sel);
+    const deck = cards.map((c, i) => {
+      const active = c.id === st.sel, rank = inactive.indexOf(c), order = active ? 3 : 2 - rank;
+      const offs = [[30, 14, -4], [-10, 28, -8]];
+      const [dx, dy, rot] = active ? [70, 0, 0] : offs[rank] || offs[1];
+      return { ...c, style: css(`position:absolute;left:0;top:${dy + 12}px;width:min(420px,calc(100% - 100px));height:250px;border-radius:18px;background:${c.grad};color:#fff;padding:22px 24px;text-align:left;border:1px solid ${active ? 'rgba(201,168,106,.6)' : 'rgba(255,255,255,.08)'};box-shadow:${active ? '0 30px 60px rgba(18,21,31,.24)' : '0 16px 40px rgba(18,21,31,.12)'};cursor:pointer;transform:translate(${dx}px,0) rotate(${rot}deg) scale(${active ? 1 : .97});z-index:${order};transition:transform .35s cubic-bezier(.2,.8,.2,1),box-shadow .35s;font:inherit`) };
+    });
+    const nodes = cards.map(c => {
+      const on = st.orbitSel === c.id;
+      return { ...c, style: css(`position:absolute;left:${c.nx}px;top:${c.ny}px;display:flex;gap:10px;align-items:center;background:#fff;border:1px solid ${on ? '#B08D57' : '#E3DDD1'};border-radius:12px;padding:9px 12px;cursor:pointer;box-shadow:${on ? '0 10px 24px rgba(176,141,87,.2)' : '0 6px 16px rgba(18,21,31,.06)'};transform:scale(${on ? 1.06 : 1});transition:transform .25s,border-color .25s,box-shadow .25s;font:inherit;color:#12151F;min-height:44px`) };
+    });
+    const orbitCard = cards.find(c => c.id === st.orbitSel);
+    const programmes = orbitCard ? orbitCard.partners.map((name, i) => { const [x, y] = orbitCard.prog[i] || [0, 0]; return { name, style: css(`position:absolute;left:${x}px;top:${y}px;font-size:12px;background:#F6F2EA;border:1px solid #D9D2C4;border-radius:999px;padding:5px 10px;white-space:nowrap`) }; }) : [];
+    const lineOp = id => st.orbitSel ? (st.orbitSel === id ? 1 : .25) : .8;
+    const merchants = ['Apple', 'MakeMyTrip', 'Amazon', 'Tax payment'].map(name => ({ name, pick: () => this.setAmount(st.amount, name), style: css(chip(st.merchant === name)) }));
+    const tg = this.spendTargets(st.amount), disp = st.disp || tg;
+    const best = Object.keys(tg).reduce((a, b) => tg[a] >= tg[b] ? a : b);
+    const spendRows = cards.map(c => { const on = c.id === best; return { name: c.short, grad: c.grad, value: '₹' + fmt(disp[c.id]), note: on ? 'Recommended' : 'estimated reward value', noteColor: on ? '#B08D57' : '#6B6F7B', style: css(`border:1px solid ${on ? '#B08D57' : '#E3DDD1'};background:${on ? '#FBF6EC' : '#fff'};border-radius:12px;padding:14px 16px;transition:border-color .3s,background .3s`) }; });
+    const selfPts = total - ver;
+    const insights = hasCards ? [
+      { kicker: 'Paying ₹75,000 soon?', action: 'Find the best card', go: () => { this.setAmount(75000, 'MakeMyTrip'); this.setState({ mode: 'card' }); } },
+      { kicker: `${fmt(selfPts)} points are self-entered`, action: 'Verify balance', go: setMode('statement') },
+      { kicker: `${cards.reduce((s, c) => s + c.partners.length, 0)} transfer paths available`, action: 'Explore', go: setMode('redeem') },
+    ] : [
+      { kicker: 'Nothing in your wallet yet', action: 'Add your first card', go: () => this.scrollWallet() },
+      { kicker: 'Fastest way to start', action: 'Upload a statement', go: setMode('statement') },
+      { kicker: 'Curious what CIRA can do?', action: 'Ask a question', go: () => this.setState({ ciraOpen: true }) },
+    ];
+    const prompts = ['Can I fly business class with my points?', 'Best card for my next tax payment?', 'Should I transfer my HDFC points?'].map(text => ({ text, pick: () => this.ask(text) }));
+    const thread = st.thread.map(t => ({ text: t.text, style: css(t.role === 'u' ? 'align-self:flex-end;max-width:85%;background:#C9A86A;color:#12151F;border-radius:14px 14px 4px 14px;padding:10px 14px;font-size:14px' : 'align-self:flex-start;max-width:92%;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:14px 14px 14px 4px;padding:12px 14px;font-size:14px;line-height:1.5') }));
+    const hdfc = cards.find(c => c.id === 'hdfc');
+    return {
+      frameMax: viewport === 'mobile' ? '375px' : '100%',
+      cards, hasCards, noCards: !hasCards, cardCount: cards.length === 1 ? '1 card' : `${cards.length} cards`,
+      totalPts: fmt(total), verifiedPct: pct,
+      headlinePts: st.verifiedView ? fmt(ver) : fmt(total), headlineTag: st.verifiedView ? 'verified only' : `${pct}% verified`,
+      toggleVerifiedView: () => this.setState(s => ({ verifiedView: !s.verifiedView })),
+      cmd: st.cmd, onCmd: e => this.setState({ cmd: e.target.value }), submitCmd: e => { e.preventDefault(); this.ask(st.cmd || 'Can my points cover Singapore?'); },
+      chipTrip: css(chip(st.mode === 'trip')), chipCard: css(chip(st.mode === 'card')), chipRedeem: css(chip(st.mode === 'redeem')), chipStatement: css(chip(st.mode === 'statement')), chipHotel: css(chip(st.mode === 'hotel')),
+      modeTrip: setMode('trip'), modeCard: setMode('card'), modeRedeem: setMode('redeem'), modeStatement: setMode('statement'), modeHotel: setMode('hotel'),
+      isTrip: st.mode === 'trip', isCard: st.mode === 'card', isRedeem: st.mode === 'redeem', isStatement: st.mode === 'statement', isHotel: st.mode === 'hotel',
+      tripHeadline: hasCards ? `Your ${fmt(total)} points could fund part of a Singapore trip.` : 'Add a card and CIRA will price this trip with your points.',
+      tripSource: hdfc ? 'HDFC Infinia → KrisFlyer' : 'No cards yet',
+      tripTransfer: hdfc ? `${fmt(hdfc.pts)} points` : 'points', tripGap: hdfc ? `${fmt(Math.max(0, 43000 - hdfc.pts))} miles short — top up via Axis or pay the difference in cash.` : 'Add HDFC Infinia to see the gap.',
+      tripOpen: st.tripOpen, tripCta: st.tripOpen ? 'Hide path' : 'See redemption path →', toggleTrip: () => this.setState(s => ({ tripOpen: !s.tripOpen })),
+      askTrip: () => this.ask('Can my points cover Singapore?'),
+      amount: st.amount, amountLabel: '₹' + fmt(st.amount), merchant: st.merchant, onAmount: e => this.setAmount(Math.max(0, Number(e.target.value) || 0)), merchants, spendRows,
+      resetSpend: () => this.setAmount(25000, 'Apple'),
+      redeemHeadline: hasCards ? 'Infinia → KrisFlyer is your strongest path this month.' : 'No points to redeem yet.',
+      statementNote: hasCards ? `${fmt(selfPts)} of your ${fmt(total)} points are self-entered. One PDF moves them to verified.` : 'CIRA reads balances and reward points straight from the PDF.',
+      askStatement: () => this.ask('What do you read from a statement?'), askHotel: () => this.ask('Can my points cover a Singapore hotel?'),
+      insights, deck, sel, useSelected: () => { this.setState({ mode: 'card' }); }, askSelected: () => this.ask(`Should I transfer my ${sel.short} points?`),
+      goWallet: () => this.scrollWallet(),
+      nodes, programmes, lineA: lineOp('hdfc'), lineB: lineOp('axis'), lineC: lineOp('amex'), progA: st.orbitSel === 'hdfc' ? 1 : 0, progB: st.orbitSel === 'axis' ? 1 : 0, progC: st.orbitSel === 'amex' ? 1 : 0,
+      orbitHint: orbitCard ? `${orbitCard.short} → ${orbitCard.partners.join(' · ')}` : (hasCards ? 'Tap a card to see its transfer partners.' : 'Add a card to build your orbit.'),
+      resetOrbit: () => this.setState({ orbitSel: null }),
+      ciraOpen: st.ciraOpen, openCira: () => this.setState({ ciraOpen: true }), closeCira: () => this.setState({ ciraOpen: false }),
+      prompts, thread, noThread: thread.length === 0, hasThread: thread.length > 0,
+      ciraDraft: st.ciraDraft, onCiraDraft: e => this.setState({ ciraDraft: e.target.value }), submitCira: e => { e.preventDefault(); this.ask(st.ciraDraft); },
+    };
+  }
+  scrollWallet() { const el = document.querySelector('[data-walletanchor]'), f = document.querySelector('[data-frame]'); if (el && f) f.scrollTo({ top: el.offsetTop - 24, behavior: 'smooth' }); }
+  componentWillUnmount() { cancelAnimationFrame(this._raf); }
+}
+</script>
+</body>
+</html>
