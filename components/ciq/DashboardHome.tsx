@@ -1,29 +1,33 @@
 'use client'
 
-// Home · 2a Wheel — the signed-in /dashboard.
+// Home · 2a Wheel — the signed-in /dashboard, now INSIDE the shared light shell.
 //
-// Chrome: NavShell carves /dashboard out of the shared AppRail, so this component
-// owns its own chrome — a 76px left rail at >=1100px and a 60px header + fixed
-// bottom nav below it. The nav ITEMS come from the shared IA (appNav.tsx), only
-// the RAIL'S LOOK is the design's; the design's own 4-item set is not used (it
-// dropped Travel and mislabelled /wallet vs /cards).
+// Chrome: NavShell renders the shared AppRail + AppTopbar + TabBar + .ciq-shell-main
+// for /dashboard exactly like every other signed-in route, so this component owns NO
+// chrome of its own any more (its old 76px rail, 60px mobile header and fixed bottom
+// nav were deleted — search, notifications, Ask CIRA, the account footer and sign-out
+// all live in the shell). This is the "Home into the light shell" Option B layout:
+// a points header, a full-width wheel band, then a 2-column WORTH + IN FOCUS grid and
+// the CIRA bar. The (wallet) route layout already wraps this route in .ciq-approved-stage
+// (WalletRouteLayout), so every block here is width:100% of that stage — the header,
+// band and grid share the SAME left edge as /wallet's content (no double gutter, no
+// negative-margin break-out, no shell/globals CSS change). The band reads as full-width
+// because its gradient spans the whole stage.
 //
 // Data: GET /api/cockpit/summary (loadDecisionPortfolio). No second card query and
 // no second card-matching path — the route already resolves catalogue + partners.
 //
-// Responsive: authored as two fixed frames (375 / 1440) with NO @media in the
-// source. Written here as a JS breakpoint (matchMedia) — the desktop and mobile
-// wheels use different transform formulas, which CSS media queries cannot swap.
-// SSR-safe: mobile-first default, corrected on mount. Desktop root is fluid width.
+// Responsive: authored as two frames (mobile / desktop) chosen with a JS breakpoint
+// (matchMedia) — desktop and mobile wheels use different transform formulas, which CSS
+// media queries cannot swap. SSR-safe: mobile-first default, corrected on mount.
 //
-// Motion: wheel = transform only, focal flip = transform + opacity only. Width and
-// height are never animated. prefers-reduced-motion drops the transitions.
+// Motion: wheel = transform + opacity only, focal flip = transform + opacity only.
+// Width and height are never animated. prefers-reduced-motion drops the transitions.
 
 import { FormEvent, useEffect, useMemo, useRef, useState } from 'react'
 import Link from 'next/link'
-import { usePathname, useRouter } from 'next/navigation'
+import { useRouter } from 'next/navigation'
 import { authedFetch } from '@/lib/authed-fetch'
-import { APP_NAV, appActive } from '@/components/ciq/appNav'
 import { cockpitDisplay, cockpitBody } from './cockpit-fonts'
 import './home-2a-wheel.css'
 
@@ -95,14 +99,6 @@ function useBreakpoints() {
   return bp
 }
 
-// Short labels for the narrow rail / bottom bar. Keyed by the shared IA href, so
-// destinations and active-state stay the appNav single source of truth.
-const RAIL_SHORT: Record<string, string> = {
-  '/dashboard': 'Home', '/wallet': 'Wallet', '/spend-optimizer': 'Spend',
-  '/trip-planner': 'Travel', '/cards': 'Cards', '/cira': 'CIRA', '/profile': 'You',
-}
-const railLabel = (href: string, fallback: string) => RAIL_SHORT[href] ?? fallback
-
 export function DashboardHome({
   cards: propCards,
   totalPoints: propTotal,
@@ -113,13 +109,28 @@ export function DashboardHome({
   primaryBank: string
 }) {
   const router = useRouter()
-  const pathname = usePathname()
   const { desk, wide } = useBreakpoints()
 
   const [data, setData] = useState<SummaryResponse | null>(null)
   const [widx, setWidx] = useState(0)
   const [flip, setFlip] = useState(false)
   const [ask, setAsk] = useState('')
+
+  // The wheel band is full-bleed, so its width is unknown at render. Measure it (and
+  // track resize) so the desktop fan spread scales with it — this is what keeps every
+  // card inside the band's left/right edges at 1440 / 1600 / 1920.
+  const bandRef = useRef<HTMLDivElement>(null)
+  const [bandW, setBandW] = useState(1000)
+  useEffect(() => {
+    const el = bandRef.current
+    if (!el) return
+    setBandW(el.clientWidth)
+    const ro = new ResizeObserver(entries => {
+      for (const e of entries) setBandW(e.contentRect.width)
+    })
+    ro.observe(el)
+    return () => ro.disconnect()
+  }, [desk])
 
   useEffect(() => {
     authedFetch('/api/cockpit/summary')
@@ -189,7 +200,6 @@ export function DashboardHome({
     g.current.sx = null
   }
   const dragStart = (e: React.PointerEvent) => { g.current.sx = e.clientX; g.current.sy = e.clientY }
-  const dragEndV = (e: React.PointerEvent) => end((g.current.sy ?? 0) - e.clientY)
   const dragEndH = (e: React.PointerEvent) => end((g.current.sx ?? 0) - e.clientX)
   const onWheel = (e: React.WheelEvent) => {
     const t = Date.now()
@@ -203,11 +213,21 @@ export function DashboardHome({
     else { setWidx(i); setFlip(false) }
   }
 
+  // Desktop fan spread scales with the measured band width so the fan is always
+  // centred and never spills past the band edges. Neighbours cull beyond ±2.
+  const deskSpread = Math.min(260, Math.max(120, bandW * 0.16))
+
   const wheel = slots.map((sl: any, i) => {
     const off = i - wi, focal = off === 0, ghost = sl.kind === 'ghost'
     const self = !ghost && !sl.verified
     const art = !ghost && !!sl.catalogueId && ART.has(sl.catalogueId)
     const partners = (sl.partners || []).map((p: string) => ({ name: p, kind: KIND[p] || '' }))
+    // Desktop: symmetric horizontal fan around the band centre (focal dead-centre).
+    const aOff = Math.abs(off), sOff = Math.sign(off)
+    const dx = aOff === 0 ? 0 : sOff * (deskSpread + (aOff - 1) * deskSpread * 0.55)
+    const drot = sOff * Math.min(aOff, 3) * 7
+    const dscale = focal ? 1.06 : Math.max(0.82, 1 - aOff * 0.08)
+    const ddy = aOff * 14
     return {
       key: sl.id, i, focal, isCard: !ghost, isGhost: ghost,
       isSelf: self, isVerified: !ghost && !!sl.verified,
@@ -226,7 +246,9 @@ export function DashboardHome({
       shadow: ghost ? 'none' : focal ? '0 30px 60px rgba(18,21,31,.32)' : '0 14px 30px rgba(18,21,31,.18)',
       flipT: focal && flip ? 'rotateY(180deg)' : 'rotateY(0deg)',
       backO: focal && flip ? 1 : 0, frontO: focal && flip ? 0 : 1,
-      dT: 'rotate(' + (off * 26) + 'deg) translateX(-500px) scale(' + (focal ? 1.08 : 0.94) + ')',
+      // Desktop: centre the card box on the band (translate -50%,-50%) then fan.
+      dT: 'translate(-50%,-50%) translateX(' + dx + 'px) translateY(' + ddy + 'px) rotate(' + drot + 'deg) scale(' + dscale + ')',
+      dOpacity: aOff > 2 ? 0 : 1,
       mT: 'rotate(' + (off * 24) + 'deg) translateY(390px) scale(' + (focal ? 1.05 : 0.92) + ')',
     }
   })
@@ -261,58 +283,6 @@ export function DashboardHome({
     e.preventDefault()
     const q = ask.trim()
     router.push(q ? '/cira?seed=' + encodeURIComponent(q) : '/cira')
-  }
-
-  const primaryNav = APP_NAV.filter(item => item.key !== 'you')
-  const profileNav = APP_NAV.filter(item => item.key === 'you')
-
-  // ---- rail item (desktop 76px rail) ----
-  const railItem = (item: (typeof APP_NAV)[number]) => {
-    const active = appActive(item.href, pathname)
-    const Icon = item.Icon
-    return (
-      <Link
-        key={item.href}
-        href={item.href}
-        aria-label={item.label}
-        aria-current={active ? 'page' : undefined}
-        style={{
-          width: 56, minHeight: 52, borderRadius: 8,
-          background: active ? '#262A36' : 'transparent',
-          color: active ? '#F6F2EA' : '#B9BBC2',
-          display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
-          gap: 4, padding: '4px 2px', fontFamily: BODY, fontSize: 9,
-          fontWeight: active ? 600 : 500, textAlign: 'center',
-        }}
-      >
-        <Icon size={18} strokeWidth={1.8} aria-hidden />
-        <span>{railLabel(item.href, item.label)}</span>
-      </Link>
-    )
-  }
-
-  // ---- bottom nav item (mobile) ----
-  const barItem = (item: (typeof APP_NAV)[number]) => {
-    const active = appActive(item.href, pathname)
-    const Icon = item.Icon
-    return (
-      <Link
-        key={item.href}
-        href={item.href}
-        aria-label={item.label}
-        aria-current={active ? 'page' : undefined}
-        style={{
-          flex: 1, minWidth: 0, minHeight: 48, borderRadius: 8,
-          color: active ? '#F6F2EA' : '#9A9CA3',
-          display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
-          gap: 3, padding: '2px', fontFamily: BODY, fontSize: 9,
-          fontWeight: active ? 600 : 500, textAlign: 'center',
-        }}
-      >
-        <Icon size={19} strokeWidth={1.8} aria-hidden />
-        <span>{railLabel(item.href, item.label)}</span>
-      </Link>
-    )
   }
 
   // ---- one card face (shared by both layouts, sized per layout) ----
@@ -416,7 +386,7 @@ export function DashboardHome({
     )
   }
 
-  // ---- desktop wheel card ----
+  // ---- desktop wheel card (centred fan; transform + opacity only) ----
   const deskCard = (c: (typeof wheel)[number]) => (
     <div
       key={c.key}
@@ -425,9 +395,11 @@ export function DashboardHome({
       aria-label={c.aria}
       onClick={() => pick(c.i, c.focal, c.isGhost)}
       style={{
-        position: 'absolute', left: -180, top: -113, width: 360, height: 227, zIndex: c.z,
-        transform: c.dT, transition: 'transform .9s cubic-bezier(.2,.75,.15,1)', cursor: 'pointer',
-        perspective: 1200, borderRadius: 16, touchAction: 'none',
+        position: 'absolute', left: '50%', top: '50%', width: 360, height: 227, zIndex: c.z,
+        transform: c.dT, opacity: c.dOpacity,
+        transition: 'transform .8s cubic-bezier(.2,.75,.15,1), opacity .4s ease',
+        cursor: 'pointer', perspective: 1200, borderRadius: 16, touchAction: 'none',
+        pointerEvents: c.dOpacity === 0 ? 'none' : 'auto',
       }}
     >
       {cardFace(c, 'desk')}
@@ -492,209 +464,179 @@ export function DashboardHome({
     )
   )
 
-  const rootClass = `h2a-root ${cockpitDisplay.variable} ${cockpitBody.variable}`
+  const rootClass = `h2a-root h2a-in-shell ${cockpitDisplay.variable} ${cockpitBody.variable}`
 
   // ================= DESKTOP =================
   if (desk) {
     return (
       <div className={rootClass}>
-        <div style={{ width: '100%', minHeight: '100vh', background: '#FFFFFF', display: 'flex', overflow: 'hidden', position: 'relative' }}>
-          <nav aria-label="CreditIQ" style={{
-            width: 76, flex: 'none', background: '#12151F', display: 'flex', flexDirection: 'column',
-            alignItems: 'center', padding: '24px 0', gap: 20, position: 'relative', zIndex: 30,
-          }}>
-            <Link href="/dashboard" aria-label="CreditIQ home" style={{
-              width: 40, height: 40, borderRadius: '50%', border: '1.5px solid #C9A86A', color: '#C9A86A',
-              display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: DISPLAY, fontWeight: 600, fontSize: 15,
-            }}>IQ</Link>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 6, alignItems: 'center', flex: 1 }}>
-              {primaryNav.map(railItem)}
+        {/* points header — full stage width (aligned with /wallet's content) */}
+        <div style={{ width: '100%', padding: 'clamp(24px,3vw,40px) 0 20px', display: 'flex', flexDirection: 'column', gap: 10 }}>
+          <div style={{ fontWeight: 600, fontSize: 11, letterSpacing: '.14em', color: '#4A4D57' }}>HOME · ALL CARDS</div>
+          <div style={{ display: 'flex', alignItems: 'baseline', gap: 12, flexWrap: 'wrap' }}>
+            <span style={{ fontFamily: DISPLAY, fontWeight: 500, fontSize: 88, lineHeight: 1, fontVariantNumeric: 'tabular-nums' }}>{totalLabel}</span>
+            <span style={{ fontWeight: 500, fontSize: 17, color: '#3A3D47' }}>reward points</span>
+          </div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 8, maxWidth: 520 }}>
+            <div style={{ display: 'flex', height: 10, borderRadius: 5, overflow: 'hidden', border: '1px solid #DADAD6' }}>
+              <div style={{ width: verifiedW, background: '#2E7D4F' }} />
+              <div className="h2a-hatch" style={{ flex: 1 }} />
             </div>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 6, alignItems: 'center' }}>
-              {profileNav.map(railItem)}
+            <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12, fontWeight: 500, fontSize: 13, lineHeight: 1.3 }}>
+              <span style={{ color: '#1F5E3A' }}>{verifiedLine}</span>
+              <span>{selfLine}</span>
             </div>
-          </nav>
+          </div>
+        </div>
 
-          <main style={{ flex: 1, minWidth: 0, position: 'relative', overflow: 'hidden' }}>
-            {/* orbit guide */}
-            <div style={{ position: 'absolute', left: 'calc(100% - 400px)', top: '50%', width: 1040, height: 1040, marginTop: -520, borderRadius: '50%', border: '1px dashed #DADAD6', pointerEvents: 'none' }} />
-            {/* wheel hub */}
-            <div
-              onPointerDown={dragStart}
-              onPointerUp={dragEndV}
-              onWheel={onWheel}
-              style={{ position: 'absolute', left: 'calc(100% + 120px)', top: '50%', width: 0, height: 0 }}
-            >
-              {wheel.map(deskCard)}
-            </div>
-            {/* prev / next */}
-            <div style={{ position: 'absolute', right: 300, bottom: 40, display: 'flex', alignItems: 'center', gap: 12, zIndex: 25 }}>
-              <button onClick={() => go(-1)} aria-label="Previous card" style={ctrlBtn(false, 48)}>‹</button>
-              <span style={{ minWidth: 120, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 5 }}>
-                <span style={{ fontWeight: 600, fontSize: 13 }}>{ws.counter}</span>
-                <span style={{ fontSize: 11, color: '#4A4D57' }}>{ws.hint}</span>
-              </span>
-              <button onClick={() => go(1)} aria-label="Next card" style={ctrlBtn(true, 48)}>›</button>
-            </div>
+        {/* full-bleed wheel band — spans the whole shell content width */}
+        <div
+          ref={bandRef}
+          onPointerDown={dragStart}
+          onPointerUp={dragEndH}
+          onWheel={onWheel}
+          style={{
+            position: 'relative', width: '100%', minHeight: 'clamp(370px, 26vw, 440px)', overflow: 'hidden',
+            background: 'linear-gradient(180deg,#EFECE4,#E7E3DA)',
+            borderTop: '1px solid #DADAD6', borderBottom: '1px solid #DADAD6',
+            touchAction: 'pan-y', userSelect: 'none',
+          }}
+        >
+          {/* orbit guide — centred, decorative, clipped by the band */}
+          <div style={{ position: 'absolute', left: '50%', top: '46%', width: 940, height: 940, transform: 'translate(-50%,-50%)', borderRadius: '50%', border: '1px dashed #DADAD6', pointerEvents: 'none' }} />
+          {wheel.map(deskCard)}
+          {/* prev / next */}
+          <div style={{ position: 'absolute', left: 0, right: 0, bottom: 16, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 12, zIndex: 25 }}>
+            <button onClick={() => go(-1)} aria-label="Previous card" style={ctrlBtn(false, 48)}>‹</button>
+            <span style={{ minWidth: 120, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 5 }}>
+              <span style={{ fontWeight: 600, fontSize: 13 }}>{ws.counter}</span>
+              <span style={{ fontSize: 11, color: '#4A4D57' }}>{ws.hint}</span>
+            </span>
+            <button onClick={() => go(1)} aria-label="Next card" style={ctrlBtn(true, 48)}>›</button>
+          </div>
+        </div>
 
-            {/* content column */}
-            <div style={{
-              position: 'relative', zIndex: 24, width: 'min(calc(100% - 600px), 880px)', minHeight: '100%',
-              padding: '40px 0 40px 48px', display: 'flex', flexDirection: 'column', gap: 24,
-            }}>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-                <div style={{ fontWeight: 600, fontSize: 11, letterSpacing: '.14em', color: '#4A4D57' }}>HOME · ALL CARDS</div>
-                <div style={{ display: 'flex', alignItems: 'baseline', gap: 12, flexWrap: 'wrap' }}>
-                  <span style={{ fontFamily: DISPLAY, fontWeight: 500, fontSize: 88, lineHeight: 1, fontVariantNumeric: 'tabular-nums' }}>{totalLabel}</span>
-                  <span style={{ fontWeight: 500, fontSize: 17, color: '#3A3D47' }}>reward points</span>
+        {/* WORTH + IN FOCUS grid, then CIRA — full stage width */}
+        <div style={{ width: '100%', padding: '22px 0 40px', display: 'flex', flexDirection: 'column', gap: 16 }}>
+          <div style={{ display: 'grid', gridTemplateColumns: wide ? 'minmax(0,1fr) minmax(0,1fr)' : 'minmax(0,1fr)', gap: 16, alignItems: 'start' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+              <div style={{ background: '#12151F', color: '#F6F2EA', borderRadius: 12, padding: 20, display: 'flex', flexDirection: 'column', gap: 12 }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 8 }}>
+                  <span style={{ fontWeight: 600, fontSize: 11, letterSpacing: '.1em', color: '#C8C9CE' }}>WORTH, DEPENDING ON THE PATH</span>
+                  <span style={estimateChipDark}>ESTIMATE</span>
                 </div>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 8, maxWidth: 520 }}>
-                  <div style={{ display: 'flex', height: 10, borderRadius: 5, overflow: 'hidden', border: '1px solid #DADAD6' }}>
-                    <div style={{ width: verifiedW, background: '#2E7D4F' }} />
-                    <div className="h2a-hatch" style={{ flex: 1 }} />
-                  </div>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12, fontWeight: 500, fontSize: 13, lineHeight: 1.3 }}>
-                    <span style={{ color: '#1F5E3A' }}>{verifiedLine}</span>
-                    <span>{selfLine}</span>
-                  </div>
-                </div>
-              </div>
-
-              <div style={{ display: 'grid', gridTemplateColumns: wide ? 'minmax(0,1fr) minmax(0,1fr)' : 'minmax(0,1fr)', gap: 16, flex: 1, minHeight: 0 }}>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-                  <div style={{ background: '#12151F', color: '#F6F2EA', borderRadius: 12, padding: 20, display: 'flex', flexDirection: 'column', gap: 12 }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 8 }}>
-                      <span style={{ fontWeight: 600, fontSize: 11, letterSpacing: '.1em', color: '#C8C9CE' }}>WORTH, DEPENDING ON THE PATH</span>
-                      <span style={estimateChipDark}>ESTIMATE</span>
+                {hasPoints ? (
+                  <>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 6, fontVariantNumeric: 'tabular-nums' }}>
+                      <span style={{ fontFamily: DISPLAY, fontWeight: 500, fontSize: 34, lineHeight: 1 }}>₹{floorLabel}</span>
+                      <span style={{ fontFamily: DISPLAY, fontWeight: 400, fontSize: 16, lineHeight: 1, color: '#C9A86A' }}>to</span>
+                      <span style={{ fontFamily: DISPLAY, fontWeight: 500, fontSize: 44, lineHeight: 1, color: '#C9A86A' }}>₹{ceilLabel}</span>
                     </div>
-                    {hasPoints ? (
-                      <>
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: 6, fontVariantNumeric: 'tabular-nums' }}>
-                          <span style={{ fontFamily: DISPLAY, fontWeight: 500, fontSize: 34, lineHeight: 1 }}>₹{floorLabel}</span>
-                          <span style={{ fontFamily: DISPLAY, fontWeight: 400, fontSize: 16, lineHeight: 1, color: '#C9A86A' }}>to</span>
-                          <span style={{ fontFamily: DISPLAY, fontWeight: 500, fontSize: 44, lineHeight: 1, color: '#C9A86A' }}>₹{ceilLabel}</span>
-                        </div>
-                        <div style={{ fontSize: 13, lineHeight: 1.4, color: '#C8C9CE' }}>{rateLine}</div>
-                      </>
-                    ) : (
-                      <div style={{ fontSize: 14, lineHeight: 1.45, color: '#C8C9CE' }}>Add a card to see what your points could be worth.</div>
-                    )}
-                  </div>
-                  <Link href="/cards" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', minHeight: 56, padding: '0 18px', border: '1px solid #DADAD6', borderRadius: 12 }}>
-                    <span style={{ fontWeight: 600, fontSize: 14 }}>{catalogueLabel}</span>
-                    <span style={{ fontWeight: 600, fontSize: 14 }}>Browse →</span>
-                  </Link>
-                </div>
-
-                <div style={{ background: '#F7F7F5', border: '1px solid #E8E8E5', borderRadius: 12, padding: 20, display: 'flex', flexDirection: 'column', gap: 12 }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 8 }}>
-                    <span style={{ fontWeight: 600, fontSize: 11, letterSpacing: '.1em', color: '#4A4D57' }}>IN FOCUS</span>
-                    {ws.isCard && <span style={estimateChip}>PARTNERS · ESTIMATE</span>}
-                  </div>
-                  {focusPanel(false)}
-                </div>
+                    <div style={{ fontSize: 13, lineHeight: 1.4, color: '#C8C9CE' }}>{rateLine}</div>
+                  </>
+                ) : (
+                  <div style={{ fontSize: 14, lineHeight: 1.45, color: '#C8C9CE' }}>Add a card to see what your points could be worth.</div>
+                )}
               </div>
-
-              <form onSubmit={askCira} style={{ display: 'flex', gap: 8, height: 52, background: '#F7F7F5', border: '1px solid #E8E8E5', borderRadius: 10, padding: '4px 4px 4px 16px', alignItems: 'center' }}>
-                <span style={{ fontWeight: 700, fontSize: 12, letterSpacing: '.08em', color: '#8A6B3A' }}>CIRA</span>
-                <input name="q" aria-label="Ask CIRA" value={ask} onChange={e => setAsk(e.target.value)} placeholder="Ask about the card in focus"
-                  style={{ flex: 1, minWidth: 0, border: 0, background: 'transparent', fontFamily: BODY, fontSize: 15, outline: 'none' }} />
-                <button type="submit" style={{ height: 44, padding: '0 20px', border: 0, borderRadius: 8, background: '#12151F', color: '#F6F2EA', fontWeight: 600, fontSize: 14, cursor: 'pointer' }}>Ask</button>
-              </form>
+              <Link href="/cards" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', minHeight: 56, padding: '0 18px', border: '1px solid #DADAD6', borderRadius: 12 }}>
+                <span style={{ fontWeight: 600, fontSize: 14 }}>{catalogueLabel}</span>
+                <span style={{ fontWeight: 600, fontSize: 14 }}>Browse →</span>
+              </Link>
             </div>
-          </main>
+
+            <div style={{ background: '#F7F7F5', border: '1px solid #E8E8E5', borderRadius: 12, padding: 20, display: 'flex', flexDirection: 'column', gap: 12 }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 8 }}>
+                <span style={{ fontWeight: 600, fontSize: 11, letterSpacing: '.1em', color: '#4A4D57' }}>IN FOCUS</span>
+                {ws.isCard && <span style={estimateChip}>PARTNERS · ESTIMATE</span>}
+              </div>
+              {focusPanel(false)}
+            </div>
+          </div>
+
+          <form onSubmit={askCira} style={{ display: 'flex', gap: 8, minHeight: 52, background: '#F7F7F5', border: '1px solid #E8E8E5', borderRadius: 10, padding: '4px 4px 4px 16px', alignItems: 'center' }}>
+            <span style={{ fontWeight: 700, fontSize: 12, letterSpacing: '.08em', color: '#8A6B3A' }}>CIRA</span>
+            <input name="q" aria-label="Ask CIRA" value={ask} onChange={e => setAsk(e.target.value)} placeholder="Ask about the card in focus"
+              style={{ flex: 1, minWidth: 0, border: 0, background: 'transparent', fontFamily: BODY, fontSize: 15, outline: 'none' }} />
+            <button type="submit" style={{ minHeight: 44, padding: '0 20px', border: 0, borderRadius: 8, background: '#12151F', color: '#F6F2EA', fontWeight: 600, fontSize: 14, cursor: 'pointer' }}>Ask</button>
+          </form>
         </div>
       </div>
     )
   }
 
   // ================= MOBILE =================
-  const BAR_H = 'calc(64px + env(safe-area-inset-bottom))'
   return (
     <div className={rootClass}>
-      <div style={{ width: '100%', minHeight: '100dvh', background: '#FFFFFF', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
-        <header style={{ height: 60, flex: 'none', background: '#12151F', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 16px', position: 'relative', zIndex: 30 }}>
-          <Link href="/dashboard" style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-            <span style={{ width: 32, height: 32, borderRadius: '50%', border: '1.5px solid #C9A86A', color: '#C9A86A', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: DISPLAY, fontWeight: 600, fontSize: 12 }}>IQ</span>
-            <span style={{ color: '#F6F2EA', fontWeight: 600, fontSize: 15 }}>Home</span>
-          </Link>
-          <span style={{ color: '#F6F2EA', fontFamily: DISPLAY, fontWeight: 500, fontSize: 14, fontVariantNumeric: 'tabular-nums' }}>{totalLabel} pts</span>
-        </header>
-
-        {/* wheel */}
-        <div
-          onPointerDown={dragStart}
-          onPointerUp={dragEndH}
-          style={{ position: 'relative', height: 310, flex: 'none', overflow: 'hidden', touchAction: 'pan-y' }}
-        >
-          <div style={{ position: 'absolute', left: '50%', top: -190, width: 0, height: 0 }}>
-            {wheel.map(mobCard)}
+      {/* points header */}
+      <div style={{ padding: '14px 16px 4px' }}>
+        <div style={{ fontWeight: 600, fontSize: 10, letterSpacing: '.14em', color: '#4A4D57' }}>HOME · ALL CARDS</div>
+        <div style={{ display: 'flex', alignItems: 'baseline', gap: 8, marginTop: 6, flexWrap: 'wrap' }}>
+          <span style={{ fontFamily: DISPLAY, fontWeight: 500, fontSize: 40, lineHeight: 1, fontVariantNumeric: 'tabular-nums' }}>{totalLabel}</span>
+          <span style={{ fontWeight: 500, fontSize: 13, color: '#3A3D47' }}>reward points</span>
+        </div>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 6, marginTop: 10 }}>
+          <div style={{ display: 'flex', height: 8, borderRadius: 4, overflow: 'hidden', border: '1px solid #DADAD6' }}>
+            <div style={{ width: verifiedW, background: '#2E7D4F' }} />
+            <div className="h2a-hatch" style={{ flex: 1 }} />
           </div>
+          <div style={{ fontWeight: 500, fontSize: 12, lineHeight: 1.3, color: '#1F5E3A' }}>{verifiedLine}</div>
+        </div>
+      </div>
+
+      {/* wheel */}
+      <div
+        onPointerDown={dragStart}
+        onPointerUp={dragEndH}
+        style={{ position: 'relative', height: 310, flex: 'none', overflow: 'hidden', touchAction: 'pan-y' }}
+      >
+        <div style={{ position: 'absolute', left: '50%', top: -190, width: 0, height: 0 }}>
+          {wheel.map(mobCard)}
+        </div>
+      </div>
+
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 12, padding: '0 16px 8px' }}>
+        <button onClick={() => go(-1)} aria-label="Previous card" style={ctrlBtn(false, 44)}>‹</button>
+        <span style={{ minWidth: 120, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 5 }}>
+          <span style={{ fontWeight: 600, fontSize: 13 }}>{ws.counter}</span>
+          <span style={{ fontSize: 11, color: '#4A4D57' }}>{ws.hint}</span>
+        </span>
+        <button onClick={() => go(1)} aria-label="Next card" style={ctrlBtn(true, 44)}>›</button>
+      </div>
+
+      <div style={{ padding: '12px 16px 20px', display: 'flex', flexDirection: 'column', gap: 12, width: '100%', maxWidth: 640, margin: '0 auto' }}>
+        <div style={{ background: '#F7F7F5', border: '1px solid #E8E8E5', borderRadius: 12, padding: 16, display: 'flex', flexDirection: 'column', gap: 10 }}>
+          {focusPanel(true)}
         </div>
 
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 12, padding: '0 16px 8px' }}>
-          <button onClick={() => go(-1)} aria-label="Previous card" style={ctrlBtn(false, 44)}>‹</button>
-          <span style={{ minWidth: 120, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 5 }}>
-            <span style={{ fontWeight: 600, fontSize: 13 }}>{ws.counter}</span>
-            <span style={{ fontSize: 11, color: '#4A4D57' }}>{ws.hint}</span>
-          </span>
-          <button onClick={() => go(1)} aria-label="Next card" style={ctrlBtn(true, 44)}>›</button>
+        <div style={{ background: '#12151F', color: '#F6F2EA', borderRadius: 12, padding: 16, display: 'flex', flexDirection: 'column', gap: 8 }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 8 }}>
+            <span style={{ fontWeight: 600, fontSize: 11, letterSpacing: '.1em', color: '#C8C9CE' }}>ALL {totalLabel} POINTS</span>
+            <span style={estimateChipDark}>ESTIMATE</span>
+          </div>
+          {hasPoints ? (
+            <>
+              <div style={{ display: 'flex', alignItems: 'baseline', gap: 8, flexWrap: 'wrap' }}>
+                <span style={{ fontFamily: DISPLAY, fontWeight: 500, fontSize: 28, lineHeight: 1 }}>₹{floorLabel}</span>
+                <span style={{ fontFamily: DISPLAY, fontWeight: 400, fontSize: 16, lineHeight: 1, color: '#C9A86A' }}>to</span>
+                <span style={{ fontFamily: DISPLAY, fontWeight: 500, fontSize: 28, lineHeight: 1, color: '#C9A86A' }}>₹{ceilLabel}</span>
+              </div>
+              <div style={{ fontSize: 12, lineHeight: 1.4, color: '#C8C9CE' }}>{rateLineShort}</div>
+            </>
+          ) : (
+            <div style={{ fontSize: 13, lineHeight: 1.45, color: '#C8C9CE' }}>Add a card to see an estimate.</div>
+          )}
         </div>
 
-        <div style={{ padding: '12px 16px 20px', display: 'flex', flexDirection: 'column', gap: 12, width: '100%', maxWidth: 640, margin: '0 auto', paddingBottom: BAR_H }}>
-          <div style={{ background: '#F7F7F5', border: '1px solid #E8E8E5', borderRadius: 12, padding: 16, display: 'flex', flexDirection: 'column', gap: 10 }}>
-            {focusPanel(true)}
-          </div>
+        <Link href="/cards" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', minHeight: 52, padding: '0 16px', border: '1px solid #DADAD6', borderRadius: 10 }}>
+          <span style={{ fontWeight: 600, fontSize: 14 }}>{catalogueLabel}</span>
+          <span style={{ fontWeight: 600, fontSize: 14 }}>→</span>
+        </Link>
 
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-            <div style={{ display: 'flex', height: 8, borderRadius: 4, overflow: 'hidden', border: '1px solid #DADAD6' }}>
-              <div style={{ width: verifiedW, background: '#2E7D4F' }} />
-              <div className="h2a-hatch" style={{ flex: 1 }} />
-            </div>
-            <div style={{ fontWeight: 500, fontSize: 12, lineHeight: 1.3, color: '#1F5E3A' }}>{verifiedLine}</div>
-          </div>
-
-          <div style={{ background: '#12151F', color: '#F6F2EA', borderRadius: 12, padding: 16, display: 'flex', flexDirection: 'column', gap: 8 }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 8 }}>
-              <span style={{ fontWeight: 600, fontSize: 11, letterSpacing: '.1em', color: '#C8C9CE' }}>ALL {totalLabel} POINTS</span>
-              <span style={estimateChipDark}>ESTIMATE</span>
-            </div>
-            {hasPoints ? (
-              <>
-                <div style={{ display: 'flex', alignItems: 'baseline', gap: 8, flexWrap: 'wrap' }}>
-                  <span style={{ fontFamily: DISPLAY, fontWeight: 500, fontSize: 28, lineHeight: 1 }}>₹{floorLabel}</span>
-                  <span style={{ fontFamily: DISPLAY, fontWeight: 400, fontSize: 16, lineHeight: 1, color: '#C9A86A' }}>to</span>
-                  <span style={{ fontFamily: DISPLAY, fontWeight: 500, fontSize: 28, lineHeight: 1, color: '#C9A86A' }}>₹{ceilLabel}</span>
-                </div>
-                <div style={{ fontSize: 12, lineHeight: 1.4, color: '#C8C9CE' }}>{rateLineShort}</div>
-              </>
-            ) : (
-              <div style={{ fontSize: 13, lineHeight: 1.45, color: '#C8C9CE' }}>Add a card to see an estimate.</div>
-            )}
-          </div>
-
-          <Link href="/cards" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', minHeight: 52, padding: '0 16px', border: '1px solid #DADAD6', borderRadius: 10 }}>
-            <span style={{ fontWeight: 600, fontSize: 14 }}>{catalogueLabel}</span>
-            <span style={{ fontWeight: 600, fontSize: 14 }}>→</span>
-          </Link>
-
-          <form onSubmit={askCira} style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-            <input name="q" aria-label="Ask CIRA" value={ask} onChange={e => setAsk(e.target.value)} placeholder="Ask CIRA a question"
-              style={{ flex: 1, minWidth: 0, height: 44, border: '1px solid #E8E8E5', borderRadius: 22, padding: '0 16px', background: '#FFFFFF', fontFamily: BODY, fontSize: 15, outline: 'none' }} />
-            <button type="submit" style={{ height: 44, padding: '0 18px', border: 0, borderRadius: 22, background: '#12151F', color: '#F6F2EA', fontWeight: 600, fontSize: 14, cursor: 'pointer' }}>Ask</button>
-          </form>
-        </div>
-
-        {/* fixed bottom nav — the shared IA (appNav), kept so mobile Home is not a
-            navigation dead-end. The design's mobile frame omitted it. */}
-        <nav aria-label="CreditIQ" style={{
-          position: 'fixed', left: 0, right: 0, bottom: 0, zIndex: 40,
-          background: '#12151F', borderTop: '1px solid #262A36',
-          display: 'flex', alignItems: 'stretch', gap: 2, padding: '6px 6px',
-          paddingBottom: 'calc(6px + env(safe-area-inset-bottom))',
-        }}>
-          {APP_NAV.map(barItem)}
-        </nav>
+        <form onSubmit={askCira} style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+          <input name="q" aria-label="Ask CIRA" value={ask} onChange={e => setAsk(e.target.value)} placeholder="Ask CIRA a question"
+            style={{ flex: 1, minWidth: 0, minHeight: 44, border: '1px solid #E8E8E5', borderRadius: 22, padding: '0 16px', background: '#FFFFFF', fontFamily: BODY, fontSize: 15, outline: 'none' }} />
+          <button type="submit" style={{ minHeight: 44, padding: '0 18px', border: 0, borderRadius: 22, background: '#12151F', color: '#F6F2EA', fontWeight: 600, fontSize: 14, cursor: 'pointer' }}>Ask</button>
+        </form>
       </div>
     </div>
   )

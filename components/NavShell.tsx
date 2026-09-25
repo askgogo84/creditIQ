@@ -7,7 +7,6 @@ import { AppRail } from '@/components/ciq/AppRail'
 import { AppTopbar } from '@/components/ciq/AppTopbar'
 import { TabBar } from '@/components/ciq/TabBar'
 import { reassertTheme, useTheme } from '@/lib/store'
-import { usePathname } from 'next/navigation'
 
 // NavShell — the nav chrome for the (shell) route group, gated on AUTH STATE
 // (never on route):
@@ -172,7 +171,6 @@ function hasSupabaseAuthCookie(): boolean {
 }
 
 export function NavShell({ children }: { children: React.ReactNode }) {
-  const pathname = usePathname()
   const setTheme = useTheme((state) => state.setTheme)
   // undefined = auth not resolved yet (matches the server render -> Header).
   const [user, setUser] = useState<any>(undefined)
@@ -237,12 +235,9 @@ export function NavShell({ children }: { children: React.ReactNode }) {
     )
   }
 
-  // Claude Cockpit owns /dashboard chrome. All other signed-in routes use the stable app shell.
-  if (pathname === '/dashboard') {
-    return <div className="ciq-cockpit-route">{children}</div>
-  }
-
-  // Signed in -> shared app shell for remaining routes.
+  // Signed in -> shared app shell for every route, /dashboard included. The Home
+  // wheel now lives inside this shell (same rail, topbar, account footer, sign-out
+  // as Wallet); it no longer paints its own chrome.
   return (
     <>
       <style>{SHELL_CSS}</style>

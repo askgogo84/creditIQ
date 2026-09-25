@@ -27,8 +27,16 @@
   color: var(--h2a-ink);
   font-family: var(--cq-font-body, 'Instrument Sans', system-ui, sans-serif);
   -webkit-font-smoothing: antialiased;
-  min-height: 100vh;
-  min-height: 100dvh;
+}
+
+/* Inside the shared shell the page is ordinary document flow: .ciq-shell-main owns
+ * the 100vh floor and the scroll, so this root must NOT force its own viewport height
+ * (that was the source of the top-packed dead space on the old standalone /dashboard).
+ * It stays a full-width block so the wheel band can span the whole shell content area. */
+.h2a-in-shell {
+  width: 100%;
+  min-height: 0;
+  display: block;
 }
 
 /* No italic anywhere on this route. */
