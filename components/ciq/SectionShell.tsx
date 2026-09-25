@@ -52,7 +52,7 @@ export function SectionShell({
     >
       <div
         style={{
-          maxWidth: fluid ? 1504 : 1100,
+          maxWidth: 1760,
           width: '100%',
           margin: '0 auto',
           padding: '0 20px',

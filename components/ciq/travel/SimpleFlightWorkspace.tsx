@@ -430,7 +430,7 @@ export function SimpleFlightWorkspace() {
   }
 
   return (
-    <div className="ciq-simple-travel-workspace" style={{ maxWidth: 1040, margin: '0 auto', padding: '22px 18px 60px' }}>
+    <div className="ciq-simple-travel-workspace" style={{ maxWidth: 1760, margin: '0 auto', padding: '22px 18px 60px' }}>
       <div className="ciq-simple-travel-intro" style={{ marginBottom: 18 }}>
         <div className="ciq-editorial-kicker">Travel</div>
         <h1 style={{ margin: '5px 0 6px', fontSize: 30 }}>Find the flight. CreditIQ tells you how to book it.</h1>
