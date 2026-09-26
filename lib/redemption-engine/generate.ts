@@ -135,7 +135,8 @@ function legalCashOffsetSet(ctx: EngineContext): number[] {
   const cap = permitted.max_per_booking ?? Number.MAX_SAFE_INTEGER;
   for (let amount = permitted.min; amount <= cap; amount = safeAdd('next permitted redemption amount', amount, permitted.increment)) {
     const offset = offsetPaise(amount, fixedValue.amount_minor, fixedValue.points, ctx.quoteMinorPerBaseUnit, BASE_MINOR_PER_BASE_UNIT);
-    if (offset > programmeEligibleMinor) break;
+    if (offset > programmeEligibleMinor ||
+      (ctx.minBookingValueRule === 'MUST_EXCEED_POINTS_VALUE' && offset >= ctx.booking.grossMinor)) break;
     out.push(amount);
   }
   return out;
@@ -146,7 +147,15 @@ function effectiveBankRequirement(spend: number, held: number, ctx: EngineContex
   const shortfall = Math.max(0, safeSubtract('bank-only shortfall', spend, held));
   if (shortfall === 0) return 0;
   const arithmetic = bankPointsForProgramme(shortfall, ctx.ratio);
-  return transferExactComputable(ctx) ? roundUpTransfer(arithmetic, ctx.minTransfer!, ctx.transferIncrement!) : arithmetic;
+  return knownTransferRequirement(arithmetic, ctx);
+}
+
+// A known minimum constrains feasibility even when the increment is unknown.
+// With no minimum, the increment's anchor is unknown; never assume it is zero.
+function knownTransferRequirement(arithmetic: number, ctx: EngineContext): number {
+  const minimum = ctx.minTransfer === null ? arithmetic : Math.max(arithmetic, ctx.minTransfer);
+  return ctx.minTransfer === null || ctx.transferIncrement === null
+    ? minimum : roundUpTransfer(arithmetic, ctx.minTransfer, ctx.transferIncrement);
 }
 
 function computeBalanceState(legal: number[], affordableAll: Set<number>, affordableBankOnly: Set<number>): BalanceState {
@@ -165,6 +174,10 @@ export function findPermittedRedemptions(ctx: EngineContext): GenerationResult {
   if (portalCandidate) candidates.push(portalCandidate);
   const eliminated: GenerationResult['eliminated'] = [];
   const { rules } = ctx;
+  const blockedRules = rules.requires_direct_booking.state !== 'VERIFIED' ||
+    (rules.pricing === 'FIXED_VALUE' && rules.min_booking_value_rule.state !== 'VERIFIED') ||
+    (rules.pricing === 'PUBLISHED_CHART' && rules.award_chart.state !== 'VERIFIED');
+  if (blockedRules) return { candidates, eliminated: [{ reason: 'RULE_UNKNOWN', wouldHaveSpent: 0 }], balanceState: 'BELOW_MINIMUM', legalSpendSet: [], quoteRequired: false };
   if (rules.pricing === 'NOT_PRICED') return { candidates, eliminated, balanceState: 'BELOW_MINIMUM', legalSpendSet: [], quoteRequired: false };
 
   let legal: number[] = [];
@@ -219,13 +232,15 @@ export function findPermittedRedemptions(ctx: EngineContext): GenerationResult {
     const instructionBlocked: InstructionBlocked = shortfall === 0
       ? (ctx.eligibilityUnknown ? 'PROGRAMME_ELIGIBLE_AMOUNT_UNKNOWN' : null)
       : blockedBase;
-    if (bankRequired > 0 && exactComputable && blockedBase === null) {
-      exact = roundUpTransfer(bankRequired, ctx.minTransfer!, ctx.transferIncrement!);
-      if (exact > ctx.bank.points) { eliminated.push({ reason: 'UNAFFORDABLE_AFTER_INCREMENT', wouldHaveSpent: spend }); continue; }
+    // Feasibility is independent of permission to display an instruction.
+    const effective = bankRequired > 0 ? knownTransferRequirement(bankRequired, ctx) : 0;
+    if (bankRequired > 0) {
+      if (exactComputable && blockedBase === null) exact = effective;
+      if (effective > ctx.bank.points) { eliminated.push({ reason: 'UNAFFORDABLE_AFTER_INCREMENT', wouldHaveSpent: spend }); continue; }
     }
 
     affordableAll.add(spend);
-    const sent = exact ?? bankRequired;
+    const sent = effective;
     const received = sent > 0 ? programmePointsFromBank(sent, ctx.ratio!) : 0;
     const availableProgramme = safeAdd('programme available after transfer', programmeOpening, received);
     const residual = safeSubtract('programme residual', availableProgramme, spend);

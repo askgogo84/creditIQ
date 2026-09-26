@@ -27,6 +27,7 @@
 
 export interface FxSnapshot {
   rate: number;
+  as_of?: string | null;
   fetched_at: string;
   source: string;
 }
@@ -52,8 +53,7 @@ export class LiveFxProvider implements FxProvider {
           signal: controller.signal,
           // Cache for 5 minutes. Short enough that the rate is honest, long
           // enough that a page full of hotels does not hammer the endpoint.
-          // The fetched_at below is always the real fetch time, so a cached
-          // rate never claims to be fresher than it is.
+          // Retrieval time is separate from the provider's market-rate date.
           next: { revalidate: 300 },
         },
       );
@@ -67,6 +67,7 @@ export class LiveFxProvider implements FxProvider {
 
       return {
         rate: value,
+        as_of: typeof data.date === 'string' ? data.date : null,
         fetched_at: new Date().toISOString(),
         source: 'frankfurter.app (ECB)',
       };

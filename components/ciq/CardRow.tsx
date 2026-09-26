@@ -31,7 +31,8 @@ export function CardRow({
   card?: Pick<CreditCard, 'slug' | 'name' | 'bank' | 'color'>;
   balancesHidden?: boolean;
 }) {
-  const verified = source === 'statement' && !selfEntered;
+  const balanceKnown = Number.isSafeInteger(points) && points >= 0;
+  const verified = balanceKnown && source === 'statement' && !selfEntered;
   const mono = monogram || bank.slice(0, 2).toUpperCase();
   const light = variant === 'light';
 
@@ -101,7 +102,7 @@ export function CardRow({
             fontSize: 8.5, fontWeight: 700, letterSpacing: '.04em', padding: '2px 6px', borderRadius: 5,
             color: verified ? t.verified : t.ink2,
             background: verified ? t.verifiedBg : t.line,
-          }}>{verified ? 'Verified' : 'Self-entered'}</span>
+          }}>{!balanceKnown ? 'Balance unknown' : verified ? 'Verified' : 'Self-entered'}</span>
           {last4 ? `·${last4}` : ''} {source === 'statement' ? '/ statement' : '/ manual'}
         </div>
       </div>
@@ -137,7 +138,7 @@ export function CardRow({
         ) : (
           <>
             <div style={{ textAlign: 'right' }}>
-              <div className={t.displayCls} style={{ fontWeight: 600, fontSize: 18, color: t.ink }}>{balancesHidden ? '••••••' : points.toLocaleString('en-IN')}</div>
+              <div className={t.displayCls} style={{ fontWeight: 600, fontSize: 18, color: t.ink }}>{balancesHidden ? '••••••' : balanceKnown ? points.toLocaleString('en-IN') : 'Unknown'}</div>
               <div className={t.monoCls} style={{ fontSize: 9, color: t.ink3, marginTop: 1 }}>{currency || 'Reward Pts'}</div>
             </div>
             {(onSavePoints || onDelete) && (

@@ -5,25 +5,11 @@ import { railsForCard } from '@/lib/redemption-rails/registry'
 import { supplementalRailsForCard } from '@/lib/redemption-rails/supplemental-rails'
 import { amexExactRailsForCard } from '@/lib/redemption-rails/amex-exact-rails'
 import { resolveRailCardId } from '@/lib/redemption-rails/card-resolver'
+import { redemptionReadiness, walletCardKey } from '@/lib/redemption-engine/readiness'
 import { SEED_CARDS } from '@/lib/data/seed-cards'
 
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
-
-function norm(value: unknown) {
-  return String(value || '').toLowerCase().replace(/[^a-z0-9]+/g, '')
-}
-
-function catalogueCard(bank: string, name: string | null | undefined) {
-  const held = norm(String(bank) + ' ' + String(name || ''))
-  const heldName = norm(name)
-  return SEED_CARDS.find(card => {
-    const seed = norm(String(card.bank) + ' ' + String(card.name))
-    const seedName = norm(card.name)
-    return seed === held || seed.includes(held) || held.includes(seed) ||
-      (heldName.length >= 5 && (seedName.includes(heldName) || heldName.includes(seedName)))
-  }) || null
-}
 
 function partnersFor(card: { bank: string; cardName: string | null }) {
   if (!card.cardName) return []
@@ -58,11 +44,13 @@ export async function GET(req: NextRequest) {
 
   try {
     const portfolio = await loadDecisionPortfolio(gate.userId)
-    const cards = portfolio.map((card, index) => {
-      const catalogue = catalogueCard(card.bank, card.cardName)
+    const cards = portfolio.map(card => {
+      const readiness = redemptionReadiness(card)
+      const catalogue = SEED_CARDS.find(c => c.id === readiness.cardId)
       const partners = partnersFor(card)
       return {
-        id: String(card.last4 || (card.bank + ':' + (card.cardName || index))),
+        id: walletCardKey(card),
+        readiness,
         bank: card.bank,
         cardName: card.cardName || ('Unidentified ' + card.bank + ' card'),
         last4: card.last4,
@@ -86,6 +74,8 @@ export async function GET(req: NextRequest) {
 
     return NextResponse.json({
       cards,
+      availability: cards.some(card => card.points === null) ? 'partial' : 'available',
+      walletValuation: { state: 'unavailable', valueInr: null, reason: 'Value depends on the redemption and booking.' },
       summary: {
         total,
         verified,
@@ -99,7 +89,7 @@ export async function GET(req: NextRequest) {
       catalogueCount: SEED_CARDS.length,
       insights: cards.length ? [
         {
-          kicker: selfEntered > 0 ? selfEntered.toLocaleString('en-IN') + ' points are self-entered' : 'Your tracked balances are verified',
+          kicker: cards.some(card => card.points === null) ? 'Some balances are unknown' : selfEntered > 0 ? selfEntered.toLocaleString('en-IN') + ' points are self-entered' : 'Your tracked balances are verified',
           action: selfEntered > 0 ? 'Verify balance' : 'Explore your wallet',
           intent: selfEntered > 0 ? 'statement' : 'wallet',
         },

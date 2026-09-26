@@ -76,7 +76,7 @@ async function fetchCashFlights(
 
 function legacyFusionCards(portfolio: DecisionWalletCard[]): UserCard[] {
   return portfolio
-    .filter((card) => !!card.cardName)
+    .filter((card): card is DecisionWalletCard & { points: number } => !!card.cardName && card.points !== null)
     .map((card) => ({
       bank: card.bank,
       card_name: card.cardName!,
