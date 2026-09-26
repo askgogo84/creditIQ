@@ -1,3 +1,15 @@
+.ciq-approved-wallet :is(button, input, select, a) {
+  min-height: 44px;
+  min-width: 44px;
+}
+.ciq-approved-wallet a:not(.approved-surface) {
+  display: inline-flex;
+  align-items: center;
+}
+.ciq-approved-wallet .approved-view-toggle button {
+  min-height: 44px;
+}
+
 .wallet-dashboard {
   --wallet-paper: var(--surface, #fff);
   --wallet-line: var(--line, #e8e6e0);
