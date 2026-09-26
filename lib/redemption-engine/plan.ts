@@ -227,11 +227,19 @@ export function planRedemption(input: RedemptionInput): RedemptionPlan {
   const transfer = transferInfo(input);
   const conflicts: ConflictReport[] = [];
   const pricingState: PricingState = input.rules.pricing;
+  const blockedFacts: Array<[ConflictReport['fact'], Sourced<unknown>]> = [
+    ['DIRECT_BOOKING', input.rules.requires_direct_booking],
+    ...(input.rules.pricing === 'PUBLISHED_CHART' ? [['AWARD_CHART', input.rules.award_chart] as [ConflictReport['fact'], Sourced<unknown>]] : []),
+    ...(input.rules.pricing === 'FIXED_VALUE' ? [['MIN_BOOKING_VALUE', input.rules.min_booking_value_rule] as [ConflictReport['fact'], Sourced<unknown>]] : []),
+  ];
+  for (const [fact, rule] of blockedFacts) {
+    if (rule.state === 'SOURCE_CONFLICT') conflicts.push({ fact, policy: 'BLOCK', readings: rule.readings ?? [], pathInvariant: null, effect: 'Programme candidates withheld until this rule is resolved.' });
+  }
 
   let permitted: { min: number; increment: number; max_per_booking?: number } | null = null;
   if (input.rules.pricing === 'FIXED_VALUE') {
     const pa = input.rules.permitted_amounts;
-    permitted = { ...pa.value.conservative, max_per_booking: pa.value.max_per_booking };
+    if (pa.state !== 'UNKNOWN') permitted = { ...pa.value.conservative, max_per_booking: pa.value.max_per_booking };
     if (pa.state === 'SOURCE_CONFLICT') {
       conflicts.push({
         fact: 'PERMITTED_AMOUNTS',
@@ -254,7 +262,7 @@ export function planRedemption(input: RedemptionInput): RedemptionPlan {
   }
 
   const baseFixed =
-    input.rules.pricing === 'FIXED_VALUE'
+    input.rules.pricing === 'FIXED_VALUE' && input.rules.fixed_value.state !== 'UNKNOWN'
       ? { points: input.rules.fixed_value.value.points, amount_minor: input.rules.fixed_value.value.amount_minor }
       : null;
   const fixedReadings: Array<{ points: number; amount_minor: number } | null> =
@@ -299,6 +307,10 @@ export function planRedemption(input: RedemptionInput): RedemptionPlan {
         eligibilityUnbounded = true;
         eligibleReadings = [0];
       }
+    } else if (eligible.state === 'SOURCE_CONFLICT') {
+      eligibilityUnknown = true;
+      eligibleReadings = eligible.readings!.map(value => resolveEligible(input.booking, value));
+      conflicts.push({ fact: 'ELIGIBLE_BASIS', policy: 'INVARIANCE_TEST', readings: eligible.readings!, pathInvariant: null, effect: 'Evaluated every published eligibility reading; exact instructions withheld.' });
     } else {
       eligibleReadings = [resolveEligible(input.booking, eligible.value)];
     }
@@ -384,13 +396,14 @@ export function planRedemption(input: RedemptionInput): RedemptionPlan {
   }
 
   let ruleState: RuleState;
-  if (eligibilityUnknown || awardTaxesUnknown) ruleState = 'UNKNOWN';
+  if (provenance.some(fact => fact.state === 'UNKNOWN') || awardTaxesUnknown) ruleState = 'UNKNOWN';
   else if (conflicts.length > 0) ruleState = 'SOURCE_CONFLICT';
   else ruleState = 'VERIFIED';
 
   let conversionValuePerBankPointPaise: RedemptionPlan['conversionValuePerBankPointPaise'] = null;
   if (
     input.rules.pricing === 'FIXED_VALUE' &&
+    input.rules.fixed_value.state === 'VERIFIED' &&
     quoteMinor !== null &&
     transfer.state !== 'UNAVAILABLE' &&
     transfer.state !== 'ENDED' &&

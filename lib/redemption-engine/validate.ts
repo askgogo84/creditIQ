@@ -59,6 +59,21 @@ export function validateRedemptionInput(input: RedemptionInput): void {
     assertSafeInteger('fixed_value.amount_minor', rules.fixed_value.value.amount_minor, { positive: true });
     requireConflictReadings('fixed_value', rules.fixed_value);
 
+    requireConflictReadings('programme_eligible', rules.programme_eligible);
+    for (const reading of rules.fixed_value.readings ?? []) {
+      assertSafeInteger('fixed value reading points', reading.points, { positive: true });
+      assertSafeInteger('fixed value reading amount', reading.amount_minor, { positive: true });
+      if (reading.currency !== 'EUR') throw new Error('Unsupported fixed-value currency');
+    }
+    for (const reading of rules.programme_eligible.readings ?? []) {
+      if (!['TOTAL', 'ROOM_ONLY', 'ROOM_PLUS_TAX'].includes(reading.basis)) throw new Error('Unsupported eligible basis');
+      if (needsRoomPlusTax(reading) && booking.roomPlusTaxMinor === undefined) throw new Error('Eligibility reading requires roomPlusTaxMinor');
+      if (reading.excluded.length) throw new Error('Excluded charges require separately captured eligible amounts');
+    }
+    for (const reading of rules.permitted_amounts.readings ?? []) {
+      assertSafeInteger('permitted reading min', reading.conservative.min, { positive: true });
+      assertSafeInteger('permitted reading increment', reading.conservative.increment, { positive: true });
+    }
     const p = rules.permitted_amounts.value.conservative;
     assertSafeInteger('permitted.min', p.min, { positive: true });
     assertSafeInteger('permitted.increment', p.increment, { positive: true });
@@ -90,13 +105,15 @@ export function validateRedemptionInput(input: RedemptionInput): void {
       throw new Error('PUBLISHED_CHART requires zoneId, cabin, and fareTier selectors');
     }
     requireConflictReadings('award_chart', rules.award_chart);
-    const keys = new Set<string>();
-    for (const entry of rules.award_chart.value.entries) {
-      assertSafeInteger('award points', entry.points, { positive: true });
-      if (entry.taxes_minor !== undefined) assertSafeInteger('award taxes', entry.taxes_minor, { min: 0 });
-      const key = `${entry.zone_id}\u0000${entry.cabin}\u0000${entry.fare_tier}`;
-      if (keys.has(key)) throw new Error(`duplicate award-chart entry for ${entry.zone_id}/${entry.cabin}/${entry.fare_tier}`);
-      keys.add(key);
+    for (const chart of [rules.award_chart.value, ...(rules.award_chart.readings ?? [])]) {
+      const keys = new Set<string>();
+      for (const entry of chart.entries) {
+        assertSafeInteger('award points', entry.points, { positive: true });
+        if (entry.taxes_minor !== undefined) assertSafeInteger('award taxes', entry.taxes_minor, { min: 0 });
+        const key = `${entry.zone_id}\u0000${entry.cabin}\u0000${entry.fare_tier}`;
+        if (keys.has(key)) throw new Error(`duplicate award-chart entry for ${entry.zone_id}/${entry.cabin}/${entry.fare_tier}`);
+        keys.add(key);
+      }
     }
   }
 

@@ -84,6 +84,63 @@ function ratEq(actual: Rational | null | undefined, expected: Rational): boolean
   return actual != null && compareRational(actual, expected) === 0;
 }
 
+describe('founder audit regressions', () => {
+  it.each(['permitted_amounts', 'fixed_value'] as const)('withholds programme economics for UNKNOWN %s', field => {
+    const rules = fixedRules(); rules[field].state = 'UNKNOWN';
+    const plan = planRedemption(baseInput({ rules }));
+    expect(plan.ruleState).toBe('UNKNOWN');
+    expect(plan.candidates.some(c => c.kind === 'PROGRAMME')).toBe(false);
+    expect(plan.candidates.some(c => c.kind === 'CASH')).toBe(true);
+    expect(plan.candidates.some(c => c.kind === 'PORTAL')).toBe(true);
+    if (field === 'fixed_value') expect(plan.conversionValuePerBankPointPaise).toBeNull();
+  });
+  it('evaluates conflicting eligibility readings and withholds exact instructions', () => {
+    const rules = fixedRules({ programme_eligible: S({ basis: 'TOTAL', excluded: [] }, 'SOURCE_CONFLICT', [{ basis: 'TOTAL', excluded: [] }, { basis: 'ROOM_ONLY', excluded: [] }]) });
+    const plan = planRedemption(baseInput({ rules }));
+    expect(plan.ruleState).toBe('SOURCE_CONFLICT');
+    expect(plan.conflicts.find(c => c.fact === 'ELIGIBLE_BASIS')?.policy).toBe('INVARIANCE_TEST');
+    expect(plan.candidates.filter(c => c.kind === 'PROGRAMME').every(c => c.bankPointsToTransferExact === null)).toBe(true);
+  });
+  it.each([-1, 0, 1])('enforces strict booking-value boundary at %+d paise', delta => {
+    const plan = planRedemption(baseInput({ booking: { grossMinor: 442000 + delta, roomOnlyMinor: 442000 + delta }, programmeBalance: { programme_id: 'accor-all', points: 2000, provenance: 'SELF_ENTERED' } }));
+    expect(Boolean(prog(plan, 2000))).toBe(delta > 0);
+  });
+  it('checks known issuer rounding even when eligibility blocks an instruction', () => {
+    const plan = planRedemption(baseInput({ bank: { card_id: 'hdfc-infinia', points: 5800, provenance: 'STATEMENT' }, route: verifiedRoute(1000, 1000), rules: fixedRules({ programme_eligible: S({ basis: 'TOTAL', excluded: [] }, 'UNKNOWN'), programme_eligible_bounds: { minMinor: ROOM, maxMinor: GROSS } }) }));
+    expect(prog(plan, 4000)).toBeUndefined();
+    expect(plan.eliminated).toContainEqual({ reason: 'UNAFFORDABLE_AFTER_INCREMENT', wouldHaveSpent: 4000 });
+  });
+  it('retains the issuer minimum as the increment anchor', () => {
+    const plan = planRedemption(baseInput({ route: verifiedRoute(1500, 1000) }));
+    expect(prog(plan, 4000)?.bankPointsToTransferExact).toBe(6500);
+  });
+  it('applies a known transfer minimum even when increment is absent', () => {
+    const route = verifiedRoute(12000); delete route.transfer_increment;
+    const plan = planRedemption(baseInput({ route }));
+    expect(plan.candidates.some(c => c.kind === 'PROGRAMME')).toBe(false);
+  });
+  it.each(['UNKNOWN', 'SOURCE_CONFLICT'] as const)('blocks programme candidates for %s chart pricing', state => {
+    const rules = chartRules(); rules.award_chart.state = state;
+    rules.award_chart.readings = [rules.award_chart.value, { entries: rules.award_chart.value.entries.map(e => ({ ...e, points: 50000 })) }];
+    const plan = planRedemption(baseInput({ booking: { grossMinor: 1840000, roomOnlyMinor: 1840000, zoneId: 'SE_ASIA', cabin: 'economy', fareTier: 'Value' }, rules, route: { ...verifiedRoute(), programme_id: rules.programme_id }, programmeBalance: null }));
+    expect(plan.ruleState).toBe(state);
+    expect(plan.candidates.some(c => c.kind === 'PROGRAMME')).toBe(false);
+    expect(plan.candidates.some(c => c.kind === 'CASH')).toBe(true);
+    if (state === 'SOURCE_CONFLICT') expect(plan.conflicts.some(c => c.fact === 'AWARD_CHART' && c.policy === 'BLOCK')).toBe(true);
+  });
+  it('rejects invalid fixed-value readings before arithmetic', () => {
+    const rules = fixedRules(); rules.fixed_value.state = 'SOURCE_CONFLICT';
+    rules.fixed_value.readings = [rules.fixed_value.value, { points: 0, amount_minor: 4000, currency: 'EUR' }];
+    expect(() => planRedemption(baseInput({ rules }))).toThrow();
+  });
+  it.each(['requires_direct_booking', 'min_booking_value_rule'] as const)('withholds programme candidates for unknown %s', field => {
+    const rules = fixedRules(); rules[field].state = 'UNKNOWN';
+    const plan = planRedemption(baseInput({ rules }));
+    expect(plan.ruleState).toBe('UNKNOWN');
+    expect(plan.candidates.some(c => c.kind === 'PROGRAMME')).toBe(false);
+  });
+});
+
 function chartRules(taxes: number | null = 285_000): ChartAwardRules {
   return {
     programme_id: 'air-india-maharaja',
