@@ -8,6 +8,7 @@ import { HOTEL_PROGRAMMES, getProgramme } from '@/lib/data/hotel-programmes';
 import { HDFC_INFINIA_SOURCE, HDFC_INFINIA_AS_OF } from '@/lib/data/hdfc-transfer-partners';
 import { SeededRateProvider, rateAgeLabel } from '@/lib/hotels/providers/rates';
 import { LiveFxProvider } from '@/lib/hotels/providers/fx';
+import { INFINIA_PORTAL, SMARTBUY_SOURCE, SMARTBUY_AS_OF } from '@/lib/redemption-engine/portal';
 import { planRedemption } from '@/lib/redemption-engine/plan';
 import {
   ACCOR_RULES,
@@ -27,34 +28,6 @@ export const metadata = {
   title: 'Hotels on points — exact redemption paths | CreditIQ',
   description:
     'Compare bank portal, hotel-programme and cash paths using sourced transfer rules, live FX and explicit execution blockers.',
-};
-
-const SMARTBUY_SOURCE = 'https://offers.smartbuy.hdfcbank.com/';
-const SMARTBUY_AS_OF = '2026-08-31';
-
-// HDFC Infinia SmartBuy, captured 31 Aug 2026:
-// ₹1 / point on hotel/flight redemptions, 70% transaction cap, ₹99 + 18% GST.
-// Engine units are paise / basis points. Programme eligibility is deliberately
-// separate from portal eligibility.
-const INFINIA_PORTAL: PortalTerms = {
-  value_paise_per_point: 100,
-  cap_bp: 7000,
-  fee_minor: 9900,
-  fee_tax_bp: 1800,
-  eligible_basis: { basis: 'TOTAL', excluded: [] },
-  provenance: [
-    {
-      value: {
-        value_paise_per_point: 100,
-        cap_bp: 7000,
-        fee_minor: 9900,
-        fee_tax_bp: 1800,
-      },
-      state: 'VERIFIED',
-      source_url: SMARTBUY_SOURCE,
-      as_of: SMARTBUY_AS_OF,
-    },
-  ],
 };
 
 const NIGHTS = 3;
