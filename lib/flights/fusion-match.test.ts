@@ -39,15 +39,15 @@ describe('flight fusion airline identity', () => {
   })
 
   it('does not bind a carrierless live award to Air India just because the date matches', () => {
-    expect(matchAwardToCashFlight(cash, [award({ dataSource: 'live' })], 'DATE_SPECIFIC_LIVE')).toBeNull()
+    expect(matchAwardToCashFlight(cash, [award({ dataSource: 'seats.aero (live)' })], 'DATE_SPECIFIC_LIVE')).toBeNull()
   })
 
   it('does not bind a different carrier live award to Air India', () => {
-    expect(matchAwardToCashFlight(cash, [award({ airlines: 'AC', dataSource: 'live' })], 'DATE_SPECIFIC_LIVE')).toBeNull()
+    expect(matchAwardToCashFlight(cash, [award({ airlines: 'AC', dataSource: 'seats.aero (live)' })], 'DATE_SPECIFIC_LIVE')).toBeNull()
   })
 
   it('binds date-specific live award evidence when the carrier matches', () => {
-    const matched = matchAwardToCashFlight(cash, [award({ airlines: 'AI', dataSource: 'live' })], 'DATE_SPECIFIC_LIVE')
+    const matched = matchAwardToCashFlight(cash, [award({ airlines: 'AI', dataSource: 'seats.aero (live)' })], 'DATE_SPECIFIC_LIVE')
     expect(matched?.id).toBe('award-1')
   })
 

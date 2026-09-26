@@ -13,13 +13,14 @@ function matrixFor(cardId: string, rail: any): WalletRailMatrix {
       cardName: cardId,
       pointsBalance: 100000,
       balanceVerified: true,
+      status: 'VERIFICATION_REQUIRED',
       rails: [rail],
     }],
     cashRail: {
       id: 'cash-retain-hotel', cardIds: [], issuer: 'CASH', type: 'CASH_RETAIN',
       travelKinds: ['hotel'], executionState: 'EXECUTABLE', evidence: [],
     },
-  } as WalletRailMatrix
+  } satisfies WalletRailMatrix
 }
 
 describe('wallet redemption display economics', () => {
