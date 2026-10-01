@@ -220,10 +220,8 @@ export async function runJevTravelDecision(
     const baseRisk = deterministicRisk(decision)
     const rawRisk = riskAnswer.choice as CreditIQTransferRisk
     const risk = Object.prototype.hasOwnProperty.call(RISK_CRITERIA, rawRisk) ? rawRisk : baseRisk
-    const protectedRisk: CreditIQTransferRisk =
-      decision.awardState.status === 'DISCOVERY_ONLY' ? 'HIGH'
-      : decision.conciergeAction.requiresLiveReverification && risk === 'LOW' ? 'MEDIUM'
-      : risk
+    const severity = { LOW: 0, MEDIUM: 1, HIGH: 2 }
+    const protectedRisk: CreditIQTransferRisk = severity[risk] < severity[baseRisk] ? baseRisk : risk
 
     return {
       version: VERSION,

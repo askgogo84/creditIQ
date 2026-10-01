@@ -45,14 +45,27 @@ const ACTIONS: Record<HotelVerdictAction, string> = {
   WAIT: 'Take no booking action because the current provider evidence is incomplete or conflicting.',
 }
 
+function hasLiveCash(input: HotelVerdictInput) {
+  return input.cash.live && input.cash.amountMinor !== null && Number.isFinite(input.cash.amountMinor)
+    && input.cash.amountMinor > 0 && Boolean(input.cash.currency)
+}
+
+function hasLivePoints(input: HotelVerdictInput) {
+  return input.loyalty.pricingAuthority === 'DATE_SPECIFIC_LIVE'
+    && input.loyalty.pointsRequired !== null && Number.isFinite(input.loyalty.pointsRequired)
+    && input.loyalty.pointsRequired > 0
+    && input.loyalty.cashComponentMinor !== null && Number.isFinite(input.loyalty.cashComponentMinor)
+    && input.loyalty.cashComponentMinor >= 0 && Boolean(input.loyalty.cashCurrency)
+}
+
 function fallback(input: HotelVerdictInput): HotelVerdictAction {
   const authority = input.loyalty.pricingAuthority
   if (authority === 'DISCOVERY_ONLY' || authority === 'DIRECT_ONLY') return 'VERIFY_LOYALTY_AVAILABILITY'
-  if (authority === 'DATE_SPECIFIC_LIVE' && input.loyalty.pointsRequired) {
-    if (input.cash.amountMinor != null && input.cash.live) return 'COMPARE_LIVE_OPTIONS'
+  if (hasLivePoints(input)) {
+    if (hasLiveCash(input)) return 'COMPARE_LIVE_OPTIONS'
     return 'USE_HOTEL_POINTS'
   }
-  if (input.cash.amountMinor != null && input.cash.live) return 'BOOK_CASH'
+  if (hasLiveCash(input)) return 'BOOK_CASH'
   return 'WAIT'
 }
 
@@ -76,6 +89,11 @@ function guard(raw: string | null, input: HotelVerdictInput): HotelVerdictAction
   const base = fallback(input)
   const candidate = raw as HotelVerdictAction | null
   const valid = candidate && Object.prototype.hasOwnProperty.call(ACTIONS, candidate) ? candidate : base
+
+  // Provider facts, not a model choice, authorize a bookable recommendation.
+  if (valid === 'BOOK_CASH' && !hasLiveCash(input)) return base
+  if (valid === 'USE_HOTEL_POINTS' && !hasLivePoints(input)) return base
+  if (valid === 'COMPARE_LIVE_OPTIONS' && (!hasLiveCash(input) || !hasLivePoints(input))) return base
 
   if (input.loyalty.pricingAuthority === 'DISCOVERY_ONLY' || input.loyalty.pricingAuthority === 'DIRECT_ONLY') {
     return ['VERIFY_LOYALTY_AVAILABILITY', 'BOOK_CASH', 'WAIT'].includes(valid) ? valid : 'VERIFY_LOYALTY_AVAILABILITY'
