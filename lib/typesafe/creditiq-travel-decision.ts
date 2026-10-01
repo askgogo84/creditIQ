@@ -131,6 +131,10 @@ function guardAction(raw: string | null, decision: TravelDecisionContract): Cred
   const candidate = raw as CreditIQJevAction | null
   const valid = candidate && Object.prototype.hasOwnProperty.call(ACTION_CRITERIA, candidate) ? candidate : base
 
+  const cash = decision.searchSummary?.cash
+  if (valid === 'PAY_CASH' && base !== 'PAY_CASH'
+    && (!cash || cash.amountMinor == null || !Number.isFinite(cash.amountMinor) || cash.amountMinor <= 0 || !cash.currency)) return base
+
   // Deterministic safety remains authoritative. Jev can confirm or downgrade,
   // never promote incomplete evidence into an irreversible points instruction.
   if (base === 'VERIFY_AWARD_FIRST') {

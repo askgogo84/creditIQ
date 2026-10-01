@@ -74,9 +74,13 @@ export function HotelAwardDiscoveryPanel({ search }: { search: Search | null }) 
   const [sourceSummary, setSourceSummary] = useState<{ firstParty: number; cachedIndex: number }>({ firstParty: 0, cachedIndex: 0 })
   const [programmeFilter, setProgrammeFilter] = useState<string>('all')
   const [selectedId, setSelectedId] = useState<string | null>(null)
+  const destination = search?.destination
+  const checkInDate = search?.checkInDate
+  const checkOutDate = search?.checkOutDate
 
   useEffect(() => {
-    if (!search) {
+    if (!destination || !checkInDate || !checkOutDate) {
+      setLoading(false)
       setProperties([])
       setMessage('')
       setStatus('')
@@ -88,6 +92,9 @@ export function HotelAwardDiscoveryPanel({ search }: { search: Search | null }) 
 
     let cancelled = false
     setLoading(true)
+    setProperties([])
+    setStatus('')
+    setSourceSummary({ firstParty: 0, cachedIndex: 0 })
     setMessage('')
     setSelectedId(null)
     setProgrammeFilter('all')
@@ -95,9 +102,9 @@ export function HotelAwardDiscoveryPanel({ search }: { search: Search | null }) 
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        destination: search.destination,
-        checkInDate: search.checkInDate,
-        checkOutDate: search.checkOutDate,
+        destination,
+        checkInDate,
+        checkOutDate,
       }),
     })
       .then(async response => {
@@ -122,7 +129,7 @@ export function HotelAwardDiscoveryPanel({ search }: { search: Search | null }) 
       })
 
     return () => { cancelled = true }
-  }, [search?.destination, search?.checkInDate, search?.checkOutDate])
+  }, [destination, checkInDate, checkOutDate])
 
   const programmeIds = useMemo(() => [...new Set(properties.map(property => property.programmeId))], [properties])
   const visibleProperties = useMemo(() => programmeFilter === 'all'

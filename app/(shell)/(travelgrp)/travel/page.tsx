@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef, useEffect, Suspense } from 'react';
+import { useState, useRef, useEffect, useCallback, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { authedFetch } from '@/lib/authed-fetch';
 import { PageHeader } from '@/components/ciq/PageHeader';
@@ -52,7 +52,8 @@ function TravelPageInner() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
-  const [autoSent, setAutoSent] = useState(false);
+  const autoSent = useRef<string | null>(null);
+  const sending = useRef(false);
   const bottomRef = useRef<HTMLDivElement>(null);
   const searchParams = useSearchParams();
 
@@ -60,18 +61,10 @@ function TravelPageInner() {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages, loading]);
 
-  // Auto-send ?q= param from CIRA handoff
-  useEffect(() => {
-    const q = searchParams.get('q');
-    if (q && !autoSent && !loading) {
-      setAutoSent(true);
-      send(decodeURIComponent(q));
-    }
-  }, [searchParams, autoSent]);
-
-  const send = async (text?: string) => {
+  const send = useCallback(async (text?: string) => {
     const query = (text ?? input).trim();
-    if (!query || loading) return;
+    if (!query || sending.current) return;
+    sending.current = true;
     setInput('');
     const updated: Message[] = [...messages, { role: 'user', content: query }];
     setMessages(updated);
@@ -91,9 +84,20 @@ function TravelPageInner() {
     } catch {
       setMessages([...updated, { role: 'assistant', content: 'Sorry, I could not connect right now. Please try again.' }]);
     } finally {
+      sending.current = false;
       setLoading(false);
     }
-  };
+  }, [input, messages]);
+
+  // URLSearchParams already decodes the query. Keep literal percent signs intact
+  // and use a ref so Strict Mode effect replay cannot send the same request twice.
+  useEffect(() => {
+    const q = searchParams.get('q');
+    if (q?.trim() && autoSent.current !== q && !loading) {
+      autoSent.current = q;
+      void send(q);
+    }
+  }, [searchParams, loading, send]);
 
   const empty = messages.length === 0;
 

@@ -48,12 +48,16 @@ export default function AdminConciergePage() {
 
   async function load() {
     setError('')
-    const res = await fetch('/api/admin/concierge/cases', { cache: 'no-store' })
-    const json = await res.json().catch(() => ({}))
-    if (!res.ok) return setError(json?.error || 'Could not load Concierge queue')
-    const rows = (json.cases ?? []) as CaseRow[]
-    setCases(rows)
-    setSelectedId(current => current || rows[0]?.id || null)
+    try {
+      const res = await fetch('/api/admin/concierge/cases', { cache: 'no-store' })
+      const json = await res.json().catch(() => ({}))
+      if (!res.ok) return setError(json?.error || 'Could not load Concierge queue')
+      const rows = (json.cases ?? []) as CaseRow[]
+      setCases(rows)
+      setSelectedId(current => current || rows[0]?.id || null)
+    } catch {
+      setError('Could not load Concierge queue. Please retry.')
+    }
   }
 
   useEffect(() => { void load() }, [])
@@ -62,7 +66,7 @@ export default function AdminConciergePage() {
     setVerifiedJson(JSON.stringify(selected.verified_redemption_snapshot ?? selected.redemption_snapshot ?? {}, null, 2))
     setBookingReference(selected.booking_reference ?? '')
     setReconciliationJson(JSON.stringify(selected.reconciliation ?? {}, null, 2))
-  }, [selected?.id])
+  }, [selected])
 
   async function act(action: string) {
     if (!selected) return

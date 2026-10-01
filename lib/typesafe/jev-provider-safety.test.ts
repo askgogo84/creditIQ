@@ -47,3 +47,8 @@ it('does not let Jev downgrade flight risk below unresolved blockers', async () 
   const decision = { travelKind: 'flight', awardState: { status: 'LIVE_OR_PROVIDER_RETURNED' }, conciergeAction: { requiresLiveReverification: false }, blockedReasons: ['Issuer checkout not verified'], inventory: { state: 'AVAILABLE' }, sourceAuthority: {}, searchSummary: { verdict: 'VERIFY_REDEMPTION', cash: { amountMinor: null }, bestPath: null } } as any
   expect(await runJevTravelDecision(decision)).toMatchObject({ source: 'jev', transferRisk: 'MEDIUM' })
 })
+it('does not let Jev replace award verification with an unsupported cash recommendation', async () => {
+  answer('PAY_CASH')
+  const decision = { travelKind: 'flight', awardState: { status: 'DISCOVERY_ONLY' }, conciergeAction: { requiresLiveReverification: true }, blockedReasons: [], inventory: { state: 'AVAILABLE' }, sourceAuthority: {}, searchSummary: { verdict: 'VERIFY_AWARD', cash: { amountMinor: null, currency: null }, bestPath: null } } as any
+  expect(await runJevTravelDecision(decision)).toMatchObject({ source: 'jev', action: 'VERIFY_AWARD_FIRST', verificationRequired: true })
+})
