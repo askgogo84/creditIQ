@@ -5,6 +5,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 import { sanitizeText } from '@/lib/sanitize-text'
 import { rankedWalletIntelligence } from '@/lib/intelligence/wallet-intelligence'
+import { safeSourceUrl } from '@/lib/intelligence/presentation'
 
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
@@ -28,7 +29,7 @@ export async function GET(req: NextRequest) {
     const items = ranked.map(({ row, match }: any) => ({
       id: row.id,
       source: row.source ?? null,
-      source_url: row.source_url ?? null,
+      source_url: safeSourceUrl(row.source_url),
       creator_handle: row.creator_handle ?? null,
       creator_name: sanitizeText(row.creator_name),
       title: sanitizeText(row.title),
@@ -37,6 +38,8 @@ export async function GET(req: NextRequest) {
       card_mentions: Array.isArray(row.card_mentions) ? row.card_mentions : [],
       date: row.published_at ?? row.scraped_at ?? row.created_at ?? null,
       wallet_matches: match.matchedCards,
+      relevant_card_names: match.relevantCardNames,
+      bank_matches: match.matchedBanks,
       programme_matches: match.matchedProgrammes,
       relevance_reason: match.relevanceReason,
       section: match.section,
@@ -45,6 +48,8 @@ export async function GET(req: NextRequest) {
     }))
 
     return NextResponse.json({
+      availability: items.length ? 'available' : 'empty',
+      generated_at: new Date().toISOString(),
       items,
       wallet_cards: wallet.length,
       counts: {
@@ -55,6 +60,6 @@ export async function GET(req: NextRequest) {
     })
   } catch (error) {
     console.error('feed error', error)
-    return NextResponse.json({ items: [], wallet_cards: 0 })
+    return NextResponse.json({ error: 'Card intelligence is temporarily unavailable.', availability: 'unavailable' }, { status: 503 })
   }
 }

@@ -26,6 +26,8 @@
 
 import { FormEvent, useEffect, useMemo, useRef, useState } from 'react'
 import Link from 'next/link'
+import { WalletIntelligencePanel } from './WalletIntelligencePanel'
+import { RedemptionCoverage } from './RedemptionCoverage'
 import { useRouter } from 'next/navigation'
 import type { redemptionReadiness } from '@/lib/redemption-engine/readiness'
 import { authedFetch } from '@/lib/authed-fetch'
@@ -369,7 +371,7 @@ export function DashboardHome({
                 }}>{p.name}</span>
               ))}
             </div>
-            {c.noPartners && <div style={{ fontSize: D ? 14 : 12, lineHeight: 1.4, color: '#3A3D47' }}>No partners mapped to this balance yet.</div>}
+            {c.noPartners && <div style={{ fontSize: D ? 14 : 12, lineHeight: 1.4, color: '#3A3D47' }}>{availability === 'loading' ? 'Loading transfer partners…' : availability === 'unavailable' ? 'Transfer partners temporarily unavailable.' : 'No partners mapped to this balance yet.'}</div>}
             <div style={{ marginTop: 'auto', fontWeight: 500, fontSize: 11, color: '#4A4D57' }}>Tap to flip back</div>
           </div>
         )}
@@ -439,7 +441,7 @@ export function DashboardHome({
         )}
         {ws.noPartners && (
           <div style={{ border: '1px dashed #9A9CA3', borderRadius: 8, padding: 14, fontSize: 14, lineHeight: 1.45, color: '#3A3D47' }}>
-            No partners are mapped to this balance yet. Once we identify the issuer, its transfer paths will show here.
+            {availability === 'loading' ? 'Loading transfer partners…' : availability === 'unavailable' ? 'Transfer partners temporarily unavailable. Your saved card identity is unchanged.' : 'No partners are mapped to this balance yet. Once we identify the issuer, its transfer paths will show here.'}
           </div>
         )}
       </>
@@ -530,6 +532,8 @@ export function DashboardHome({
                 {ws.isCard && <span style={estimateChip}>PARTNERS · ESTIMATE</span>}
               </div>
               {focusPanel(false)}
+              {readiness?.coverage && <RedemptionCoverage routes={readiness.coverage} />}
+              <WalletIntelligencePanel cardName={cards[wi]?.cardName} bank={cards[wi]?.bank} />
             </div>
           </div>
 
@@ -586,6 +590,8 @@ export function DashboardHome({
       <div style={{ padding: '12px 16px 20px', display: 'flex', flexDirection: 'column', gap: 12, width: '100%', maxWidth: 640, margin: '0 auto' }}>
         <div style={{ background: '#F7F7F5', border: '1px solid #E8E8E5', borderRadius: 12, padding: 16, display: 'flex', flexDirection: 'column', gap: 10 }}>
           {focusPanel(true)}
+          {readiness?.coverage && <RedemptionCoverage routes={readiness.coverage} />}
+          <WalletIntelligencePanel cardName={cards[wi]?.cardName} bank={cards[wi]?.bank} />
         </div>
 
         <div style={{ background: '#12151F', color: '#F6F2EA', borderRadius: 12, padding: 16, display: 'flex', flexDirection: 'column', gap: 8 }}>

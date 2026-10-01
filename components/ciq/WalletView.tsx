@@ -5,6 +5,7 @@ import { usePathname } from 'next/navigation'
 import Link from 'next/link'
 import { ArrowRight, Check, Upload } from 'lucide-react'
 import { authedFetch } from '@/lib/authed-fetch'
+import { RedemptionCoverage } from './RedemptionCoverage'
 import type { redemptionReadiness } from '@/lib/redemption-engine/readiness'
 import { SEED_CARDS } from '@/lib/data/seed-cards'
 import { CardRow } from './CardRow'
@@ -149,7 +150,7 @@ export function WalletView({
       <section className="approved-wallet-lower-grid">
         <article className="approved-surface approved-transfer-readiness">
           <div className="approved-section-head"><div><span className="approved-section-kicker">Transfer readiness</span><h2>Where your points can go</h2></div><Link href={`/trip-planner?points=${totalPoints}&bank=${primaryBank}`}>Explore travel</Link></div>
-          <div role="status">{readinessError ? 'Redemption readiness temporarily unavailable.' : readiness === null ? 'Loading redemption readiness…' : readiness.length === 0 ? 'Add a card to check readiness.' : readiness.map(item => <div key={item.id} style={{ padding: '8px 0', overflowWrap: 'anywhere' }}><b>{item.cardName}</b><p>{item.readiness.reason}</p>{item.readiness.ratio && <p>{item.readiness.programme} · {item.readiness.ratio.value.fromUnits}:{item.readiness.ratio.value.toUnits} · Ratio only. <a href={item.readiness.ratio.source_url} target="_blank" rel="noreferrer" style={{ display: 'inline-flex', minHeight: 44, alignItems: 'center' }}>Source · {item.readiness.ratio.as_of}</a></p>}{item.readiness.blockers.map(blocker => <p key={blocker}>{blocker}</p>)}</div>)}</div>
+          <div role="status">{readinessError ? 'Redemption readiness temporarily unavailable.' : readiness === null ? 'Loading redemption readiness…' : readiness.length === 0 ? 'Add a card to check readiness.' : readiness.map(item => <div key={item.id} style={{ padding: '8px 0', overflowWrap: 'anywhere' }}><b>{item.cardName}</b><p>{item.readiness.reason}</p>{item.readiness.ratio && <p>{item.readiness.programme} · {item.readiness.ratio.value.fromUnits}:{item.readiness.ratio.value.toUnits} · Ratio only. <a href={item.readiness.ratio.source_url} target="_blank" rel="noreferrer" style={{ display: 'inline-flex', minHeight: 44, alignItems: 'center' }}>Source · {item.readiness.ratio.as_of}</a></p>}{item.readiness.blockers.map(blocker => <p key={blocker}>{blocker}</p>)}{item.readiness.coverage && <RedemptionCoverage routes={item.readiness.coverage} />}</div>)}</div>
         </article>
         <Link className="approved-surface approved-statement-drop" href="/upload-statement"><span><Upload size={20} /></span><h3>{verifiedPoints === 0 && cards.length > 0 ? 'Get your verified points' : 'Refresh your wallet'}</h3><p>Upload a statement to update balances and unlock personalised recommendations.</p><b>Choose statement</b><small>Your values remain clearly sourced.</small></Link>
       </section>

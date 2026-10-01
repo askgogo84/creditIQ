@@ -1,5 +1,6 @@
 import { resolveRailCardId } from '@/lib/redemption-rails/card-resolver'
 import { ACCOR_RULES, HDFC_ACCOR_ROUTE } from './accor'
+import { cardRedemptionCoverage } from './coverage'
 
 export function walletCardKey(card: { bank: string; last4: string | null; cardName: string | null }) {
   // Same bank/last4 identity policy as the canonical portfolio, not catalogue ID.
@@ -11,6 +12,7 @@ export function redemptionReadiness(card: { bank: string; cardName: string | nul
   const cardId = card.cardName ? resolveRailCardId({ bank: card.bank, cardName: card.cardName }) : null
   const supported = cardId === HDFC_ACCOR_ROUTE.card_id
   return {
+    coverage: cardRedemptionCoverage(card),
     cardId,
     state: card.points === null ? 'BALANCE_UNKNOWN' as const : supported ? 'BOOKING_REQUIRED' as const : 'UNSUPPORTED' as const,
     walletValueInr: null,

@@ -1,4 +1,6 @@
 import { buildWalletRailMatrix } from '@/lib/redemption-rails/matrix'
+import { loadDecisionPortfolio } from '@/lib/wallet/decision-portfolio'
+import { resolveRailCardId } from '@/lib/redemption-rails/card-resolver'
 
 export type WalletIdentity = { cardId: string | null; name: string; bank: string }
 export type WalletInsightMatch = {
@@ -6,6 +8,7 @@ export type WalletInsightMatch = {
   matchedCards: string[]
   matchedBanks: string[]
   matchedProgrammes: string[]
+  relevantCardNames: string[]
   relevanceReason: string | null
   section: 'IMPORTANT_NOW' | 'FOR_YOU' | 'DISCOVER'
   shouldNotify: boolean
@@ -64,7 +67,8 @@ export function matchInsightToWallet(row: any, wallet: WalletIdentity[]): Wallet
   const matchedCards = wallet.filter(card => mentions.some((mention: string) => looseMatch(mention, card.name, 6)) || looseMatch(text, card.name, 7)).map(card => card.name)
   const matchedBanks = wallet.filter(card => bankMentions.some((mention: string) => looseMatch(String(mention).replace(/bank$/i, ''), String(card.bank).replace(/bank$/i, ''), 4))).map(card => card.bank)
   const programmeMatches = new Set<string>()
-  for (const card of wallet) for (const programme of programmesForWalletCard(card)) if (looseMatch(text, programme, 5)) programmeMatches.add(programme)
+  const reachableCards = new Set<string>()
+  for (const card of wallet) for (const programme of programmesForWalletCard(card)) if (looseMatch(text, programme, 5)) { programmeMatches.add(programme); reachableCards.add(card.name) }
 
   const uniqueCards = [...new Set(matchedCards)]
   const uniqueBanks = [...new Set(matchedBanks)]
@@ -76,7 +80,10 @@ export function matchInsightToWallet(row: any, wallet: WalletIdentity[]): Wallet
   const directWalletMatch = uniqueCards.length > 0 || uniqueBanks.length > 0 || matchedProgrammes.length > 0
   const materialType = ['devaluation', 'transfer_hack', 'sweet_spot'].includes(String(row.insight_type || ''))
   const important = directWalletMatch && row.insight_type === 'devaluation'
-  const shouldNotify = directWalletMatch && materialType && score >= 90
+  // Relevance is not proof that an old opportunity still exists. Undated/future
+  // posts remain discoverable, but must not generate a current-action alert.
+  const age = Date.now() - publishedTime(row)
+  const shouldNotify = directWalletMatch && materialType && score >= 90 && publishedTime(row) > 0 && age >= 0 && age <= 30 * 86_400_000
   const relevanceReason = uniqueCards.length
     ? `Why you’re seeing this: you hold ${uniqueCards.slice(0, 2).join(' + ')}`
     : matchedProgrammes.length ? `Why you’re seeing this: a card in your wallet can reach ${matchedProgrammes[0]}`
@@ -84,6 +91,7 @@ export function matchInsightToWallet(row: any, wallet: WalletIdentity[]): Wallet
 
   return {
     score, matchedCards: uniqueCards, matchedBanks: uniqueBanks, matchedProgrammes, relevanceReason,
+    relevantCardNames: [...new Set([...uniqueCards, ...reachableCards, ...wallet.filter(card => uniqueBanks.includes(card.bank)).map(card => card.name)])],
     section: important ? 'IMPORTANT_NOW' : directWalletMatch ? 'FOR_YOU' : 'DISCOVER',
     shouldNotify,
     severity: row.insight_type === 'devaluation' ? 'WARNING' : shouldNotify ? 'OPPORTUNITY' : 'INFO',
@@ -91,23 +99,26 @@ export function matchInsightToWallet(row: any, wallet: WalletIdentity[]): Wallet
 }
 
 export async function loadWalletIdentities(sb: any, userId: string): Promise<WalletIdentity[]> {
-  const [{ data: points }, { data: manual }] = await Promise.all([
+  const [portfolio, pointsResult] = await Promise.all([
+    loadDecisionPortfolio(userId),
     sb.from('user_points').select('card_id').eq('user_id', userId).limit(100),
-    sb.from('manual_cards').select('bank,card_name').eq('user_id', userId).limit(100),
   ])
+  if (pointsResult.error) throw new Error('Wallet intelligence identities unavailable')
+  const points = pointsResult.data
   const ids = [...new Set((points || []).map((row: any) => String(row.card_id || '')).filter(Boolean))]
   let catalogue: any[] = []
   if (ids.length) {
-    const { data } = await sb.from('cards').select('id,name,bank').in('id', ids).limit(100)
+    const { data, error } = await sb.from('cards').select('id,name,bank').in('id', ids).limit(100)
+    if (error) throw new Error('Wallet intelligence catalogue unavailable')
     catalogue = data || []
   }
   const identities: WalletIdentity[] = [
+    ...portfolio.filter(card => card.cardName).map(card => ({ cardId: resolveRailCardId({ bank: card.bank, cardName: card.cardName! }), name: card.cardName!, bank: card.bank })),
     ...catalogue.map((row: any) => ({ cardId: String(row.id || '') || null, name: String(row.name || ''), bank: String(row.bank || '') })),
-    ...(manual || []).map((row: any) => ({ cardId: null, name: String(row.card_name || ''), bank: String(row.bank || '') })),
   ].filter(card => card.name)
   const seen = new Set<string>()
   return identities.filter(card => {
-    const key = `${norm(card.bank)}:${norm(card.name)}`
+    const key = card.cardId || `${norm(card.bank)}:${norm(card.name)}`
     if (!key || seen.has(key)) return false
     seen.add(key); return true
   })
@@ -118,7 +129,7 @@ export async function rankedWalletIntelligence(sb: any, userId: string, limit = 
     loadWalletIdentities(sb, userId),
     sb.from('intelligence_kb').select('id, source, source_url, creator_handle, creator_name, title, content, insight_type, card_mentions, bank_mentions, trust_score, engagement, published_at, scraped_at, created_at').eq('active', true).order('published_at', { ascending: false, nullsFirst: false }).limit(500),
   ])
-  if (intel.error) return { wallet, ranked: [] as any[] }
+  if (intel.error) throw new Error('Intelligence source unavailable')
   const ranked = (intel.data ?? []).map((row: any) => ({ row, match: matchInsightToWallet(row, wallet) })).sort((a: any, b: any) => {
     const sectionWeight = (section: string) => section === 'IMPORTANT_NOW' ? 3 : section === 'FOR_YOU' ? 2 : 1
     return sectionWeight(b.match.section) - sectionWeight(a.match.section) || b.match.score - a.match.score || publishedTime(b.row) - publishedTime(a.row)
