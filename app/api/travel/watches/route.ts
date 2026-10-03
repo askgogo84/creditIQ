@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 import { requireAuth } from '@/lib/api-auth'
+import { filterWatchRows, watchSearchBlocker } from '@/lib/travel/watch-intent'
 
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
@@ -113,6 +114,8 @@ export async function POST(req: NextRequest) {
     const sb = service()
     const { data: watch, error } = await sb.from('travel_watches').select(WATCH_SELECT).eq('id', id).eq('user_id', gate.userId).maybeSingle()
     if (error || !watch) return NextResponse.json({ error: 'watch not found' }, { status: 404 })
+    const blocker = watchSearchBlocker(watch)
+    if (blocker) return NextResponse.json({ error: blocker, code: 'WATCH_SEARCH_UNSUPPORTED' }, { status: 422 })
 
     const flex = Number(watch.flex_days) || 0
     const dateFrom = plusDays(watch.target_date, -flex)
@@ -128,7 +131,7 @@ export async function POST(req: NextRequest) {
         date_from: dateFrom,
         date_to: dateTo,
         cash_date: watch.target_date,
-        cabin: watch.cabin === 'premium_economy' ? 'economy' : watch.cabin,
+        cabin: watch.cabin,
       }),
       cache: 'no-store',
     })
@@ -136,7 +139,7 @@ export async function POST(req: NextRequest) {
     if (!fusion.ok || data.error) return NextResponse.json({ error: data.error || 'watch check failed' }, { status: 502 })
 
     const rows = Array.isArray(data.flights) ? data.flights : []
-    const filtered = watch.nonstop_only ? rows.filter((row: any) => (row?.award?.trip?.stops ?? row?.stops) === 0) : rows
+    const filtered = filterWatchRows(rows, watch)
     const summary = summarizeRows(filtered)
     const patch = {
       last_checked_at: new Date().toISOString(),

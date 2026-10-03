@@ -48,9 +48,9 @@ export function DevaluationAlerts() {
         <div className="w-12 h-12 rounded-full bg-emerald-500/20 flex items-center justify-center mx-auto mb-4">
           <Check className="w-6 h-6 text-emerald-400" />
         </div>
-        <h3 className="font-display text-xl text-ink-50 mb-2">You're on the watchlist</h3>
+        <h3 className="font-display text-xl text-ink-50 mb-2">You&#39;re on the watchlist</h3>
         <p className="text-sm text-ink-300">
-          We'll email you at <span className="text-copper-300">{email}</span> the moment any of your {selectedCards.length} card{selectedCards.length > 1 ? 's' : ''} gets devalued.
+          We&#39;ll email you at <span className="text-copper-300">{email}</span> the moment any of your {selectedCards.length} card{selectedCards.length > 1 ? 's' : ''} gets devalued.
         </p>
       </motion.div>
     );
@@ -69,7 +69,7 @@ export function DevaluationAlerts() {
           </div>
         </div>
         <p className="text-sm text-ink-300 leading-relaxed">
-          Indian banks devalue cards without warning. Get emailed the moment your card's rewards are cut.
+          Indian banks devalue cards without warning. Get emailed the moment your card&#39;s rewards are cut.
         </p>
       </div>
 

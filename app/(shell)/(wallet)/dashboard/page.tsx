@@ -529,11 +529,11 @@ export default function DashboardPage() {
                   onChange={e => setAddForm({ ...addForm, pointsBalance: e.target.value.replace(/\D/g, '') })}
                   style={{ padding: '12px 14px', borderRadius: 12, background: 'var(--surface-2)', border: '1px solid var(--line-strong)', color: 'var(--ink)' }} />
                 <p style={{ fontSize: 11.5, lineHeight: 1.45, color: 'var(--ink-3)', margin: '-4px 2px 0' }}>
-                  Don't know your balance?{' '}
+                  Don&#39;t know your balance?{' '}
                   <Link href="/upload-statement" style={{ color: 'var(--copper)', fontWeight: 600, textDecoration: 'none' }}>
                     Upload a statement
                   </Link>{' '}
-                  and we'll verify it.
+                  and we&#39;ll verify it.
                 </p>
                 <button onClick={handleAddCard} disabled={addLoading}
                   style={{ padding: 13, borderRadius: 12, background: 'var(--copper)', color: 'var(--surface)', fontWeight: 700, border: 'none', cursor: 'pointer', marginTop: 4 }}>

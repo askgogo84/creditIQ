@@ -115,7 +115,7 @@ export default function SmsImportPage() {
               <LogIn className="w-4 h-4 shrink-0 mt-0.5" style={{ color: 'var(--accent)' }} />
               <div>
                 <p className="text-sm font-medium mb-1" style={{ color: 'var(--text)' }}>Sign in to save points to dashboard</p>
-                <p className="text-xs mb-2" style={{ color: 'var(--text-muted)' }}>Extract without signing in, but points won't persist.</p>
+                <p className="text-xs mb-2" style={{ color: 'var(--text-muted)' }}>Extract without signing in, but points won&#39;t persist.</p>
                 <Link href="/login" className="text-xs font-medium" style={{ color: 'var(--accent)' }}>Sign in with Google →</Link>
               </div>
             </div>

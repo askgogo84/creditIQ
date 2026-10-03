@@ -14,7 +14,7 @@ export function Footer() {
               <span className="font-display text-xl" style={{ color: 'var(--text)' }}>CreditIQ</span>
             </div>
             <p className="text-sm font-display leading-relaxed" style={{ color: 'var(--text-muted)' }}>
-              India's first affiliate-bias-free credit card intelligence platform. {' '}
+              India&#39;s first affiliate-bias-free credit card intelligence platform. {' '}
               <span style={{ color: 'var(--text-dim)' }}>{CARD_COUNT} cards tracked.</span>
             </p>
             <div className="text-xs font-mono uppercase tracking-widest mt-4" style={{ color: 'var(--text-dim)' }}>

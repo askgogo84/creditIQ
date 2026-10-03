@@ -201,6 +201,7 @@ export function SectionTabs({ tone = 'light' }: { tone?: Tone }) {
     window.scrollTo(0, 0)
   }, [pathname])
 
+  const touch = useRef<{ x: number; y: number } | null>(null)
   if (!tabs || tabs.length === 0) return null
 
   // Single active tab = the one whose base path (ignoring #hash) is the longest
@@ -242,7 +243,6 @@ export function SectionTabs({ tone = 'light' }: { tone?: Tone }) {
 
   // Swipe: measure the touch delta on release. Horizontal intent only (dx dominates and
   // clears the threshold) so a vertical page scroll is never read as a section change.
-  const touch = useRef<{ x: number; y: number } | null>(null)
   const onTouchStart = (e: React.TouchEvent) => {
     const t = e.touches[0]
     touch.current = { x: t.clientX, y: t.clientY }

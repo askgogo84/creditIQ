@@ -43,7 +43,7 @@ export default function ApplicationStatusPage() {
             Track your card application
           </h1>
           <p className="text-ink-300 text-lg font-display leading-relaxed mb-8">
-            Direct links to every bank's application status page. Know exactly where your application stands.
+            Direct links to every bank&#39;s application status page. Know exactly where your application stands.
           </p>
           <div className="relative max-w-md">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4" style={{ color: 'var(--text-dim)' }} />

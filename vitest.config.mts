@@ -12,6 +12,7 @@ export default defineConfig({
       '@': fileURLToPath(new URL('.', import.meta.url)),
       // next/font/google is a build-time transform, not runnable under vitest.
       'next/font/google': fileURLToPath(new URL('./test/next-font-google.stub.ts', import.meta.url)),
+      'next/font/local': fileURLToPath(new URL('./test/next-font-local.stub.ts', import.meta.url)),
     },
   },
   test: {

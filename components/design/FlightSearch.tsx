@@ -387,7 +387,7 @@ export default function FlightSearch({
           {/* CIRA tip */}
           {pointsBalance > 0 && (
             <div className="bg-amber-50 border border-amber-200 rounded-xl p-3 mb-3">
-              <p className="text-xs font-semibold text-amber-800 mb-1">💡 CIRA's tip for this route</p>
+              <p className="text-xs font-semibold text-amber-800 mb-1">💡 CIRA&#39;s tip for this route</p>
               <p className="text-xs text-amber-700">
                 Pay with your {bank} card on any of these platforms to earn reward points. 
                 For award redemption, use the Points route above — transfers to KrisFlyer or Air India Flying Returns typically give 2-3x more value than cashback.

@@ -131,6 +131,10 @@ function guardAction(raw: string | null, decision: TravelDecisionContract): Cred
   const candidate = raw as CreditIQJevAction | null
   const valid = candidate && Object.prototype.hasOwnProperty.call(ACTION_CRITERIA, candidate) ? candidate : base
 
+  const cash = decision.searchSummary?.cash
+  if (valid === 'PAY_CASH' && base !== 'PAY_CASH'
+    && (!cash || cash.amountMinor == null || !Number.isFinite(cash.amountMinor) || cash.amountMinor <= 0 || !cash.currency)) return base
+
   // Deterministic safety remains authoritative. Jev can confirm or downgrade,
   // never promote incomplete evidence into an irreversible points instruction.
   if (base === 'VERIFY_AWARD_FIRST') {
@@ -220,10 +224,8 @@ export async function runJevTravelDecision(
     const baseRisk = deterministicRisk(decision)
     const rawRisk = riskAnswer.choice as CreditIQTransferRisk
     const risk = Object.prototype.hasOwnProperty.call(RISK_CRITERIA, rawRisk) ? rawRisk : baseRisk
-    const protectedRisk: CreditIQTransferRisk =
-      decision.awardState.status === 'DISCOVERY_ONLY' ? 'HIGH'
-      : decision.conciergeAction.requiresLiveReverification && risk === 'LOW' ? 'MEDIUM'
-      : risk
+    const severity = { LOW: 0, MEDIUM: 1, HIGH: 2 }
+    const protectedRisk: CreditIQTransferRisk = severity[risk] < severity[baseRisk] ? baseRisk : risk
 
     return {
       version: VERSION,

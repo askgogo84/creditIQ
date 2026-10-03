@@ -154,7 +154,7 @@ export default function ApprovalOddsPage() {
             Know before you apply.
           </h1>
           <p style={{ fontSize: 15, color: 'var(--text-muted, #8888AA)', margin: 0, lineHeight: 1.6 }}>
-            Hard inquiries hurt your CIBIL score. Check your approval odds first -- only apply when you're likely to get it.
+            Hard inquiries hurt your CIBIL score. Check your approval odds first -- only apply when you&#39;re likely to get it.
           </p>
         </div>
 

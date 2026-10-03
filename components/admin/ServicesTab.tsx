@@ -140,7 +140,7 @@ export function ServicesTab() {
           <div style={{ textAlign: 'center', padding: '40px 20px', background: C.paper, border: `1px solid ${C.line}`, borderRadius: 16 }}>
             <AlertTriangle style={{ width: 28, height: 28, color: C.amber, margin: '0 auto 12px' }} />
             <div style={{ fontSize: 14, fontWeight: 600, color: C.ink }}>No services tracked yet</div>
-            <div style={{ fontSize: 12, color: C.ink3, marginTop: 4 }}>Hit "Run checks" to probe and populate the table.</div>
+            <div style={{ fontSize: 12, color: C.ink3, marginTop: 4 }}>Hit &quot;Run checks&quot; to probe and populate the table.</div>
           </div>
         ) : (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>

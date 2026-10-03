@@ -7,6 +7,10 @@ const wallet: WalletIdentity[] = [
 ]
 
 describe('wallet intelligence matcher', () => {
+  it.each([null, '2020-01-01', '2099-01-01'])('keeps old or unverified date %s out of notifications', date => {
+    const match = matchInsightToWallet({ title: 'HDFC Infinia devaluation', insight_type: 'devaluation', trust_score: 1, published_at: date }, wallet)
+    expect(match.shouldNotify).toBe(false)
+  })
   it('makes a direct HDFC devaluation important and notification eligible', () => {
     const match = matchInsightToWallet({
       title: 'HDFC Infinia SmartBuy devaluation', content: 'New SmartBuy cap applies',

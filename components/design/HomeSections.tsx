@@ -164,7 +164,7 @@ export function TestimonialStrip() {
                   {Array(t.stars).fill(0).map((_, j) => <span key={j} style={{ color: '#D89B2A', fontSize: 16 }}>★</span>)}
                   {t.stars < 5 && <span style={{ color: '#B5BBCB', fontSize: 16 }}>★</span>}
                 </div>
-                <p style={{ fontFamily: 'var(--font-serif,Georgia,serif)', fontSize: 15, color: '#2A3F6B', lineHeight: 1.7, margin: 0, fontStyle: 'italic', flex: 1 }}>"{t.text}"</p>
+                <p style={{ fontFamily: 'var(--font-serif,Georgia,serif)', fontSize: 15, color: '#2A3F6B', lineHeight: 1.7, margin: 0, fontStyle: 'italic', flex: 1 }}>&quot;{t.text}&quot;</p>
                 <div>
                   <div style={{ fontSize: 14, fontWeight: 700, color: '#142950' }}>{t.name}, {t.location}</div>
                   <div style={{ fontFamily: 'var(--font-mono,monospace)', fontSize: 10, color: '#5A6A8A', marginTop: 3, textTransform: 'uppercase' as const, letterSpacing: '0.08em' }}>{t.role}</div>

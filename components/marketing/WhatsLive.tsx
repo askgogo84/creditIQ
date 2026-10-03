@@ -23,7 +23,7 @@ export function WhatsLive() {
       </h2>
 
       <div style={{ fontSize: 12, fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--prov-verified)', marginBottom: 14 }}>
-        ● Live — usable the moment you're in
+        ● Live — usable the moment you&#39;re in
       </div>
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 14, marginBottom: 32 }}>
         {LIVE.map((t) => (

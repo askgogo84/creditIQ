@@ -36,6 +36,16 @@ function mobile(container: HTMLElement) {
 }
 
 describe('SectionTabs — mobile carousel', () => {
+  it('keeps hook order stable across routes with and without tabs', () => {
+    nav.path = '/nowhere-in-particular'
+    const { container, rerender } = render(<SectionTabs />)
+    nav.path = '/trip-planner'
+    expect(() => rerender(<SectionTabs />)).not.toThrow()
+    expect(container.querySelector('.ciq-sectiontabs-wrap')).toBeInTheDocument()
+    nav.path = '/nowhere-in-particular'
+    expect(() => rerender(<SectionTabs />)).not.toThrow()
+    expect(container.querySelector('.ciq-sectiontabs-wrap')).not.toBeInTheDocument()
+  })
   it('renders nothing on a route that belongs to no destination', () => {
     nav.path = '/nowhere-in-particular'
     const { container } = render(<SectionTabs />)

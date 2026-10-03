@@ -219,7 +219,7 @@ export default function AdminPage() {
             <div style={{ background: 'rgba(184,66,48,0.08)', border: '1px solid rgba(184,66,48,0.25)', borderRadius: 14, padding: '14px 20px', marginBottom: 24, display: 'flex', alignItems: 'center', gap: 12 }}>
               <AlertTriangle style={{ width: 18, height: 18, color: '#B84230', flexShrink: 0 }} />
               <p style={{ margin: 0, fontSize: 14, color: '#B84230', fontWeight: 600 }}>
-                {highDevals} high-impact devaluation{highDevals > 1 ? 's' : ''} detected "” review and publish
+                {highDevals} high-impact devaluation{highDevals > 1 ? 's' : ''} detected &quot;” review and publish
               </p>
               <button onClick={() => setActiveTab('devaluations')} style={{ marginLeft: 'auto', padding: '6px 14px', background: '#B84230', color: '#fff', border: 'none', borderRadius: 8, fontSize: 12, fontWeight: 700, cursor: 'pointer', flexShrink: 0 }}>
                 Review now
@@ -609,7 +609,7 @@ export default function AdminPage() {
                 <div style={{ textAlign: 'center', padding: 40, background: 'var(--paper,#FAF5EB)', borderRadius: 18, border: '1px solid var(--line,rgba(20,41,80,0.08))' }}>
                   <div style={{ fontSize: 32, marginBottom: 12 }}>🧠</div>
                   <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--ink,#142950)', marginBottom: 8 }}>No insights yet</div>
-                  <div style={{ fontSize: 12, color: 'var(--ink-3,#5A6A8A)' }}>Click "Start Scrape" then wait 10 mins and click "Fetch Results"</div>
+                  <div style={{ fontSize: 12, color: 'var(--ink-3,#5A6A8A)' }}>Click &quot;Start Scrape&quot; then wait 10 mins and click &quot;Fetch Results&quot;</div>
                 </div>
               ) : (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
@@ -626,13 +626,13 @@ export default function AdminPage() {
                       </div>
                       <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--ink,#142950)', marginBottom: 6 }}>{insight.title || insight.content?.slice(0, 120)}</div>
                       {insight.content && (
-                        <div style={{ fontSize: 12, color: 'var(--ink-3,#5A6A8A)', marginBottom: 8 }}>'¡ {insight.content?.slice(0,150)}</div>
+                        <div style={{ fontSize: 12, color: 'var(--ink-3,#5A6A8A)', marginBottom: 8 }}>&#39;¡ {insight.content?.slice(0,150)}</div>
                       )}
                       <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
                         <span style={{ fontSize: 11, padding: '2px 8px', borderRadius: 6, background: 'rgba(20,41,80,0.06)', color: 'var(--ink-3,#5A6A8A)' }}>
                            {CIRA_USAGE[insight.insight_type]}
                         </span>
-                        <a href={insight.source_url} target="_blank" rel="noopener noreferrer" onClick={() => fetch('/api/ig-click', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ insight_id: insight.id, query_context: 'admin_view' }) })} style={{ fontSize: 11, color: '#0369a1' }}>View post " "”</a>
+                        <a href={insight.source_url} target="_blank" rel="noopener noreferrer" onClick={() => fetch('/api/ig-click', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ insight_id: insight.id, query_context: 'admin_view' }) })} style={{ fontSize: 11, color: '#0369a1' }}>View post &quot; &quot;”</a>
                       </div>
                       {insight.card_mentions?.length > 0 && (
                         <div style={{ marginTop: 8, display: 'flex', gap: 6, flexWrap: 'wrap' }}>

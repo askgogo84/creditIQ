@@ -27,7 +27,7 @@ export default function SGPage() {
           <div className="text-6xl mb-6">🇸🇬</div>
           <h1 className="font-display text-4xl mb-4" style={{ color: 'var(--text)' }}>Singapore is coming soon</h1>
           <p className="text-lg mb-8 leading-relaxed" style={{ color: 'var(--text-muted)' }}>
-            We're building CreditIQ for Singapore -- DBS, OCBC, UOB, Citi, HSBC and more. Launching Q3 2026. Be the first to know.
+            We&#39;re building CreditIQ for Singapore -- DBS, OCBC, UOB, Citi, HSBC and more. Launching Q3 2026. Be the first to know.
           </p>
           <div className="flex flex-col sm:flex-row gap-3 justify-center mb-8">
             <input type="email" placeholder="your@email.com" style={{ flex: 1, maxWidth: 280, padding: '12px 16px', background: 'var(--bg-input)', border: '1px solid var(--border)', borderRadius: 8, fontSize: 14, color: 'var(--text)', outline: 'none' }} />

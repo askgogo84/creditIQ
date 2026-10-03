@@ -237,7 +237,7 @@ export default function PremiumPage() {
           <p className="mb-8" style={{ color: 'var(--text-muted)' }}>No payment needed. Cancel anytime. All premium features unlocked from day one.</p>
           <Link href="/dashboard" className="btn-primary text-base px-8 inline-flex items-center gap-2">
             <Zap className="w-4 h-4" />
-            Get started -- it's free for 7 days
+            Get started -- it&#39;s free for 7 days
           </Link>
           <div className="mt-4 text-xs" style={{ color: 'var(--text-dim)' }}>Then Rs.{price}/month . Cancel anytime</div>
         </div>
