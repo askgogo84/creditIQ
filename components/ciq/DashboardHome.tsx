@@ -27,6 +27,7 @@
 import { FormEvent, useEffect, useMemo, useRef, useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
+import type { redemptionReadiness } from '@/lib/redemption-engine/readiness'
 import { authedFetch } from '@/lib/authed-fetch'
 import { cockpitDisplay, cockpitBody } from './cockpit-fonts'
 import './home-2a-wheel.css'
@@ -62,7 +63,9 @@ type Card = {
   bank: string
   cardName: string
   last4: string | null
-  points: number
+  points: number | null
+  readiness?: ReturnType<typeof redemptionReadiness>
+  observedAt?: string | null
   verified: boolean
   selfEntered: boolean
   source?: string
@@ -78,7 +81,7 @@ type Summary = {
   cardCount: number
   transferPathCount: number
 }
-type SummaryResponse = { cards: Card[]; summary: Summary; catalogueCount?: number }
+type SummaryResponse = { availability?: 'available' | 'partial'; cards: Card[]; summary: Summary; catalogueCount?: number }
 
 // SSR-safe breakpoints. Both server and first client render see {desk:false,
 // wide:false} (mobile-first), so hydration matches; the real values land on mount.
@@ -112,6 +115,16 @@ export function DashboardHome({
   const { desk, wide } = useBreakpoints()
 
   const [data, setData] = useState<SummaryResponse | null>(null)
+  const [availability, setAvailability] = useState<'loading' | 'available' | 'partial' | 'unavailable'>('loading')
+  const fallbackCards: Card[] = (propCards || []).map((c: any, i: number) => {
+    const raw = c.points_balance !== undefined ? c.points_balance : c.points
+    const points = Number.isSafeInteger(raw) && raw >= 0 ? raw : null
+    const verified = points !== null && (c.source === 'statement' || c.source === 'linked') && !c.self_entered
+    return { id: c.id || String(i), bank: c.bank || '', cardName: c.card_name || c.cardName || c.bank || 'Card', last4: c.card_last4 || c.last4 || null, points, verified, selfEntered: c.source === 'manual' || !!c.self_entered, source: c.source, partners: [], catalogueId: c.catalogue?.id || null, pointsCurrency: c.points_currency, observedAt: c.imported_at ?? c.statement_date ?? null }
+  })
+  const fallbackTotal = fallbackCards.reduce((sum, c) => sum + (c.points ?? 0), 0)
+  const fallbackVerified = fallbackCards.reduce((sum, c) => sum + (c.verified ? c.points ?? 0 : 0), 0)
+  const fallbackSummary: Summary = { total: fallbackTotal, verified: fallbackVerified, selfEntered: fallbackCards.reduce((sum,c) => sum + (c.selfEntered ? c.points ?? 0 : 0), 0), verifiedPercent: fallbackTotal ? Math.round(fallbackVerified / fallbackTotal * 100) : 0, cardCount: fallbackCards.length, transferPathCount: 0 }
   const [widx, setWidx] = useState(0)
   const [flip, setFlip] = useState(false)
   const [ask, setAsk] = useState('')
@@ -133,43 +146,17 @@ export function DashboardHome({
   }, [desk])
 
   useEffect(() => {
+    let active = true
+    setAvailability('loading')
     authedFetch('/api/cockpit/summary')
-      .then(async r => {
-        if (!r.ok) throw new Error('summary failed')
-        return r.json()
-      })
-      .then((json: SummaryResponse) => setData(json))
-      .catch(() => {
-        // Network/API fallback: render immediately from the props WalletView already
-        // has. Partners are unknown here, so the focal panel shows its honest empty
-        // state rather than a guess.
-        const total = Number(propTotal || 0)
-        setData({
-          cards: (propCards || []).map((c: any, i: number) => ({
-            id: c.id || String(i),
-            bank: c.bank || '',
-            cardName: c.card_name || c.cardName || c.bank || 'Card',
-            last4: c.card_last4 || c.last4 || null,
-            points: Number(c.points_balance ?? c.points ?? 0),
-            verified: c.source === 'statement' && !c.self_entered,
-            selfEntered: c.source !== 'statement' || !!c.self_entered,
-            source: c.source || 'manual',
-            partners: [],
-            catalogueId: c.catalogue?.id || null,
-          })),
-          summary: {
-            total, verified: 0, selfEntered: total, verifiedPercent: 0,
-            cardCount: propCards?.length || 0, transferPathCount: 0,
-          },
-        })
-      })
+      .then(async r => { if (!r.ok) throw new Error('summary failed'); return r.json() })
+      .then((json: SummaryResponse) => { if (active) { setData(json); setAvailability(json.availability ?? 'available') } })
+      .catch(() => { if (active) setAvailability('unavailable') })
+    return () => { active = false }
   }, [propCards, propTotal])
 
-  const summary: Summary = data?.summary ?? {
-    total: Number(propTotal || 0), verified: 0, selfEntered: Number(propTotal || 0),
-    verifiedPercent: 0, cardCount: propCards?.length || 0, transferPathCount: 0,
-  }
-  const cards: Card[] = data?.cards ?? []
+  const summary: Summary = data?.summary ?? fallbackSummary
+  const cards: Card[] = data?.cards ?? fallbackCards
   const catalogueCount = data?.catalogueCount
 
   // Slots = real cards + at least one ghost, padded to 8 so a sparse wallet still
@@ -230,15 +217,15 @@ export function DashboardHome({
     const ddy = aOff * 14
     return {
       key: sl.id, i, focal, isCard: !ghost, isGhost: ghost,
-      isSelf: self, isVerified: !ghost && !!sl.verified,
+      isSelf: self, isUnknown: !ghost && sl.points === null, isVerified: !ghost && !!sl.verified,
       hasArt: art, plain: !ghost && !art, artSrc: art ? artUrl(sl.catalogueId) : '',
       cardName: sl.cardName || '', short: ghost ? '' : shortName(sl.cardName),
-      bal: ghost ? '' : f(sl.points),
+      bal: ghost ? '' : sl.points === null ? 'Unknown' : f(sl.points),
       last4Label: ghost ? '' : (sl.last4 ? '•••• ' + sl.last4 : (sl.verified ? 'From statements' : 'Reward card')),
       partnersShown: partners.slice(0, 3), noPartners: !ghost && partners.length === 0,
       hasMore: partners.length > 3, moreLabel: partners.length > 3 ? 'View all ' + partners.length + ' partners' : '',
       aria: ghost ? 'Empty slot, add a card'
-        : (sl.cardName + ', ' + f(sl.points) + ' points, ' + (sl.verified ? 'verified' : 'self-entered')),
+        : (sl.cardName + ', ' + (sl.points === null ? 'unknown balance' : f(sl.points) + ' points') + ', ' + (sl.points === null ? 'balance unknown' : sl.verified ? 'verified' : 'self-entered')),
       z: 20 - Math.abs(off),
       faceBg: ghost ? '#FFFFFF' : art ? '#1C2030' : self ? 'linear-gradient(135deg,#232838,#12151F 65%)' : '#F6F2EA',
       faceFg: self || art ? '#F6F2EA' : '#12151F',
@@ -263,21 +250,25 @@ export function DashboardHome({
   // Derived, honest values.
   const total = summary.total || 0
   const paths = summary.transferPathCount || 0
-  const hasPoints = total > 0
-  // WORTH bounds: ₹0.25 (floor) and ₹1.80 (ceiling) per point. These two constants
-  // live HERE and in WalletView.tsx; they have no sourced origin yet and ship under
-  // the design's ESTIMATE label. Track for separate sourcing.
-  const floorLabel = f(total * 0.25)
-  const ceilLabel = f(total * 1.8)
   const verifiedW = (summary.verifiedPercent || 0) + '%'
   const verifiedLine = summary.verified > 0
-    ? summary.verifiedPercent + '% verified · ' + f(summary.verified) + ' from statements'
-    : (total > 0 ? 'Nothing verified yet · upload a statement' : 'No cards yet')
-  const selfLine = summary.selfEntered > 0 ? 'Rest self-entered' : ''
-  const rateLine = 'At ₹0.25–₹1.80 a point' + (paths ? ', across ' + paths + ' transfer paths' : '')
-  const rateLineShort = '₹0.25–₹1.80 a point' + (paths ? ' · ' + paths + ' transfer paths' : '')
+    ? summary.verifiedPercent + '% verified · ' + f(summary.verified) + ' from sourced balances'
+    : cards.some(c => c.points === null) ? 'Some balances are unknown' : cards.length ? 'No verified balance yet' : availability === 'available' ? 'No cards yet' : 'Wallet data pending'
+  const selfLine = summary.selfEntered > 0 ? 'Self-entered balances labelled separately' : ''
+  const readiness = cards[wi]?.readiness
+  const readinessPanel = <>
+    <div style={{ fontFamily: DISPLAY, fontSize: 24, lineHeight: 1.2 }}>Wallet value unavailable</div>
+    <div role="status" style={{ fontSize: 13, lineHeight: 1.5 }}>
+      {availability === 'loading' ? 'Loading redemption readiness…' : availability === 'unavailable' ? 'Redemption readiness temporarily unavailable. Previously loaded balances retain their source.' : availability === 'partial' ? 'Partial wallet: some balances are unknown.' : readiness?.reason ?? (cards.length ? 'Value depends on the redemption and booking.' : 'Add a card to check redemption readiness.')}
+    </div>
+    {cards[wi] && <div style={{ fontSize: 12 }}>Balance source: {cards[wi].selfEntered ? 'self-entered' : cards[wi].source ?? 'unavailable'} · {cards[wi].observedAt ?? 'date unavailable'}</div>}
+    {readiness?.ratio && <div style={{ fontSize: 13, lineHeight: 1.5 }}>{readiness.programme}: {readiness.ratio.value.fromUnits} bank points → {readiness.ratio.value.toUnits} programme point · Ratio only. <a href={readiness.ratio.source_url} target="_blank" rel="noreferrer" style={{ display: 'inline-flex', alignItems: 'center', minHeight: 44, textDecoration: 'underline' }}>Issuer source · {readiness.ratio.as_of}</a></div>}
+    {readiness?.blockers.map(blocker => <div key={blocker} style={{ fontSize: 12, lineHeight: 1.4 }}>{blocker}</div>)}
+    <div style={{ fontSize: 12 }}>Booking comparisons are separate from whole-wallet valuation.</div>
+  </>
   const catalogueLabel = catalogueCount ? 'Catalogue · ' + catalogueCount + ' cards' : 'Catalogue'
-  const totalLabel = f(total)
+  const unknownBalances = cards.some(card => card.points === null)
+  const totalLabel = cards.length > 0 && cards.every(card => card.points === null) ? 'Unknown' : f(total)
 
   const askCira = (e: FormEvent) => {
     e.preventDefault()
@@ -318,7 +309,7 @@ export function DashboardHome({
                 color: '#F6F2EA', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', pointerEvents: 'none',
               }}>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-                  {c.isSelf && <span style={badgeSelfArt(D)}><span style={dotOutline(D)} />SELF-ENTERED</span>}
+                  {c.isSelf && <span style={badgeSelfArt(D)}><span style={dotOutline(D)} />{c.isUnknown ? 'BALANCE UNKNOWN' : 'SELF-ENTERED'}</span>}
                   {c.isVerified && <span style={badgeVerifiedArt(D)}><span style={dotSolid(D)} />VERIFIED</span>}
                   <span style={{ fontFamily: DISPLAY, fontWeight: 500, fontSize: D ? 32 : 22, lineHeight: 1, fontVariantNumeric: 'tabular-nums' }}>
                     {c.bal}{D && <span style={{ fontFamily: BODY, fontWeight: 600, fontSize: 11, letterSpacing: '.1em' }}> PTS</span>}
@@ -333,7 +324,7 @@ export function DashboardHome({
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: D ? 10 : 6 }}>
                 <span style={{ fontFamily: DISPLAY, fontWeight: 500, fontSize: D ? 19 : 14, lineHeight: 1.2 }}>{D ? c.cardName : c.short}</span>
                 {c.isVerified && <span style={{ ...badgeVerified(D), flex: 'none' }}><span style={dotSolid(D)} />VERIFIED</span>}
-                {c.isSelf && <span style={{ ...badgeSelf(D), flex: 'none' }}><span style={dotOutline(D)} />SELF-ENTERED</span>}
+                {c.isSelf && <span style={{ ...badgeSelf(D), flex: 'none' }}><span style={dotOutline(D)} />{c.isUnknown ? 'BALANCE UNKNOWN' : 'SELF-ENTERED'}</span>}
               </div>
               {D ? (
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
@@ -475,7 +466,7 @@ export function DashboardHome({
           <div style={{ fontWeight: 600, fontSize: 11, letterSpacing: '.14em', color: '#4A4D57' }}>HOME · ALL CARDS</div>
           <div style={{ display: 'flex', alignItems: 'baseline', gap: 12, flexWrap: 'wrap' }}>
             <span style={{ fontFamily: DISPLAY, fontWeight: 500, fontSize: 88, lineHeight: 1, fontVariantNumeric: 'tabular-nums' }}>{totalLabel}</span>
-            <span style={{ fontWeight: 500, fontSize: 17, color: '#3A3D47' }}>reward points</span>
+            <span style={{ fontWeight: 500, fontSize: 17, color: '#3A3D47' }}>{unknownBalances ? 'known reward points' : 'reward points'}</span>
           </div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 8, maxWidth: 520 }}>
             <div style={{ display: 'flex', height: 10, borderRadius: 5, overflow: 'hidden', border: '1px solid #DADAD6' }}>
@@ -522,21 +513,10 @@ export function DashboardHome({
             <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
               <div style={{ background: '#12151F', color: '#F6F2EA', borderRadius: 12, padding: 20, display: 'flex', flexDirection: 'column', gap: 12 }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 8 }}>
-                  <span style={{ fontWeight: 600, fontSize: 11, letterSpacing: '.1em', color: '#C8C9CE' }}>WORTH, DEPENDING ON THE PATH</span>
-                  <span style={estimateChipDark}>ESTIMATE</span>
+                  <span style={{ fontWeight: 600, fontSize: 11, letterSpacing: '.1em', color: '#C8C9CE' }}>REDEMPTION READINESS</span>
+                  <span style={estimateChipDark}>UNAVAILABLE</span>
                 </div>
-                {hasPoints ? (
-                  <>
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: 6, fontVariantNumeric: 'tabular-nums' }}>
-                      <span style={{ fontFamily: DISPLAY, fontWeight: 500, fontSize: 34, lineHeight: 1 }}>₹{floorLabel}</span>
-                      <span style={{ fontFamily: DISPLAY, fontWeight: 400, fontSize: 16, lineHeight: 1, color: '#C9A86A' }}>to</span>
-                      <span style={{ fontFamily: DISPLAY, fontWeight: 500, fontSize: 44, lineHeight: 1, color: '#C9A86A' }}>₹{ceilLabel}</span>
-                    </div>
-                    <div style={{ fontSize: 13, lineHeight: 1.4, color: '#C8C9CE' }}>{rateLine}</div>
-                  </>
-                ) : (
-                  <div style={{ fontSize: 14, lineHeight: 1.45, color: '#C8C9CE' }}>Add a card to see what your points could be worth.</div>
-                )}
+                {readinessPanel}
               </div>
               <Link href="/cards" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', minHeight: 56, padding: '0 18px', border: '1px solid #DADAD6', borderRadius: 12 }}>
                 <span style={{ fontWeight: 600, fontSize: 14 }}>{catalogueLabel}</span>
@@ -556,7 +536,7 @@ export function DashboardHome({
           <form onSubmit={askCira} style={{ display: 'flex', gap: 8, minHeight: 52, background: '#F7F7F5', border: '1px solid #E8E8E5', borderRadius: 10, padding: '4px 4px 4px 16px', alignItems: 'center' }}>
             <span style={{ fontWeight: 700, fontSize: 12, letterSpacing: '.08em', color: '#8A6B3A' }}>CIRA</span>
             <input name="q" aria-label="Ask CIRA" value={ask} onChange={e => setAsk(e.target.value)} placeholder="Ask about the card in focus"
-              style={{ flex: 1, minWidth: 0, border: 0, background: 'transparent', fontFamily: BODY, fontSize: 15, outline: 'none' }} />
+              style={{ flex: 1, minWidth: 0, minHeight: 44, border: 0, background: 'transparent', fontFamily: BODY, fontSize: 15, outline: 'none' }} />
             <button type="submit" style={{ minHeight: 44, padding: '0 20px', border: 0, borderRadius: 8, background: '#12151F', color: '#F6F2EA', fontWeight: 600, fontSize: 14, cursor: 'pointer' }}>Ask</button>
           </form>
         </div>
@@ -572,7 +552,7 @@ export function DashboardHome({
         <div style={{ fontWeight: 600, fontSize: 10, letterSpacing: '.14em', color: '#4A4D57' }}>HOME · ALL CARDS</div>
         <div style={{ display: 'flex', alignItems: 'baseline', gap: 8, marginTop: 6, flexWrap: 'wrap' }}>
           <span style={{ fontFamily: DISPLAY, fontWeight: 500, fontSize: 40, lineHeight: 1, fontVariantNumeric: 'tabular-nums' }}>{totalLabel}</span>
-          <span style={{ fontWeight: 500, fontSize: 13, color: '#3A3D47' }}>reward points</span>
+          <span style={{ fontWeight: 500, fontSize: 13, color: '#3A3D47' }}>{unknownBalances ? 'known reward points' : 'reward points'}</span>
         </div>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 6, marginTop: 10 }}>
           <div style={{ display: 'flex', height: 8, borderRadius: 4, overflow: 'hidden', border: '1px solid #DADAD6' }}>
@@ -611,20 +591,9 @@ export function DashboardHome({
         <div style={{ background: '#12151F', color: '#F6F2EA', borderRadius: 12, padding: 16, display: 'flex', flexDirection: 'column', gap: 8 }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 8 }}>
             <span style={{ fontWeight: 600, fontSize: 11, letterSpacing: '.1em', color: '#C8C9CE' }}>ALL {totalLabel} POINTS</span>
-            <span style={estimateChipDark}>ESTIMATE</span>
+            <span style={estimateChipDark}>UNAVAILABLE</span>
           </div>
-          {hasPoints ? (
-            <>
-              <div style={{ display: 'flex', alignItems: 'baseline', gap: 8, flexWrap: 'wrap' }}>
-                <span style={{ fontFamily: DISPLAY, fontWeight: 500, fontSize: 28, lineHeight: 1 }}>₹{floorLabel}</span>
-                <span style={{ fontFamily: DISPLAY, fontWeight: 400, fontSize: 16, lineHeight: 1, color: '#C9A86A' }}>to</span>
-                <span style={{ fontFamily: DISPLAY, fontWeight: 500, fontSize: 28, lineHeight: 1, color: '#C9A86A' }}>₹{ceilLabel}</span>
-              </div>
-              <div style={{ fontSize: 12, lineHeight: 1.4, color: '#C8C9CE' }}>{rateLineShort}</div>
-            </>
-          ) : (
-            <div style={{ fontSize: 13, lineHeight: 1.45, color: '#C8C9CE' }}>Add a card to see an estimate.</div>
-          )}
+          {readinessPanel}
         </div>
 
         <Link href="/cards" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', minHeight: 52, padding: '0 16px', border: '1px solid #DADAD6', borderRadius: 10 }}>

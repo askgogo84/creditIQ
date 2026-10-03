@@ -77,13 +77,12 @@ describe('WalletView — holdings ledger', () => {
     expect(screen.getByRole('button', { name: 'Show balances' })).toHaveAttribute('aria-pressed', 'true');
   });
 
-  it('shows every rupee value ONLY as a badged EstimateRange (never a bare ₹)', () => {
+  it('withholds unsupported wallet rupee value instead of fabricating a range', () => {
     renderWallet();
-    const ranges = screen.getAllByText(/≈ ₹[\d,]+–₹[\d,]+/);
-    const badges = screen.getAllByText('estimate');
-    expect(ranges.length).toBeGreaterThan(0);
-    // one "estimate" badge per rupee range — no rupee escapes the sanctioned format
-    expect(badges.length).toBe(ranges.length);
+    expect(screen.getByText('Unavailable')).toBeInTheDocument();
+    expect(screen.getByText('Value depends on the redemption and booking.')).toBeInTheDocument();
+    expect(screen.queryByText(/≈ ₹[\d,]+–₹[\d,]+/)).not.toBeInTheDocument();
+    expect(screen.queryByText('estimate')).not.toBeInTheDocument();
   });
 
   it('empty state (0 cards): both primary actions, no Best Move', () => {

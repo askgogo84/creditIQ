@@ -1,65 +1,43 @@
-import { requireAuth } from '@/lib/api-auth';
-import { NextRequest, NextResponse } from 'next/server';
-import { callClaude, MODELS } from '@/lib/ai';
+import { requireAuth } from '@/lib/api-auth'
+import { NextRequest, NextResponse } from 'next/server'
+import { loadDecisionPortfolio } from '@/lib/wallet/decision-portfolio'
+import { redemptionReadiness, walletCardKey } from '@/lib/redemption-engine/readiness'
+import { calculateAdvisor } from '@/lib/redemption-engine/advisor'
+import { SeededRateProvider, type RateResult } from '@/lib/hotels/providers/rates'
+import { LiveFxProvider, type FxSnapshot } from '@/lib/hotels/providers/fx'
 
-export const runtime = 'nodejs';
+export const runtime = 'nodejs'
 
 export async function POST(req: NextRequest) {
-  const gate = await requireAuth(req);
-  if (!gate.ok) return gate.res;
+  const gate = await requireAuth(req)
+  if (!gate.ok) return gate.res
+  let body: Record<string, unknown>
   try {
-    const { cardId, points, recommendations } = await req.json();
-
-    if (!process.env.ANTHROPIC_API_KEY) {
-      return NextResponse.json({ advice: 'Configure ANTHROPIC_API_KEY for AI advice.' });
+    body = await req.json()
+    if (!body || Array.isArray(body) || typeof body !== 'object') throw new Error()
+    // Reject legacy rankings/financial overrides rather than endorsing them.
+    if (Object.keys(body).some(key => !['walletCardId', 'cardId', 'bookingId'].includes(key))) throw new Error()
+    if (typeof (body.walletCardId ?? body.cardId) !== 'string') throw new Error()
+    if (body.bookingId !== undefined && typeof body.bookingId !== 'string') throw new Error()
+  } catch {
+    return NextResponse.json({ error: 'Provide a wallet card identity and optional captured booking ID; financial overrides are not accepted.' }, { status: 400 })
+  }
+  try {
+    const portfolio = await loadDecisionPortfolio(gate.userId)
+    const matches = portfolio.filter(card => body.walletCardId
+      ? walletCardKey(card) === body.walletCardId
+      : redemptionReadiness(card).cardId === body.cardId)
+    if (matches.length !== 1) return NextResponse.json({ error: matches.length ? 'Select one wallet card.' : 'Card not found in your wallet.' }, { status: 422 })
+    let rate: RateResult | null = null
+    let fx: FxSnapshot | null = null
+    if (body.bookingId) {
+      const rates = await new SeededRateProvider().search({ hotel_id: body.bookingId as string, nights: 3 })
+      rate = rates.find(r => r.hotel.programme_id === 'accor-all') ?? null
+      if (!rate) return NextResponse.json({ error: 'Captured booking unavailable.' }, { status: 422 })
+      if (redemptionReadiness(matches[0]).state === 'BOOKING_REQUIRED') fx = await new LiveFxProvider().rate('EUR', 'INR')
     }
-
-    // Build ranked redemption context
-    const rankedPaths = recommendations
-      .slice(0, 5)
-      .map((r: any, i: number) => `${i + 1}. ${r.option.partner || r.option.type}  --  Rs.${r.inr_value.toLocaleString('en-IN')} (Rs.${r.option.value_per_point_inr.toFixed(2)}/pt)`)
-      .join('\n');
-
-    const topOption = recommendations[0];
-    const topPartner = topOption?.option?.partner || topOption?.option?.type || 'unknown';
-    const topValue = topOption?.inr_value || 0;
-    const worstOption = recommendations[recommendations.length - 1];
-    const worstValue = worstOption?.inr_value || 0;
-    const valueDiff = topValue - worstValue;
-
-    const prompt = `You are CreditIQ's points strategy advisor. Give SPECIFIC, ACTIONABLE advice for THIS card and these exact points.
-
-Card: ${cardId}
-Points balance: ${points.toLocaleString('en-IN')} points
-
-Ranked redemption paths (from our data engine  --  these are the actual options available):
-${rankedPaths}
-
-CRITICAL RULES:
-1. The #1 ranked option above IS the mathematically best option. DO NOT contradict this ranking.
-2. If #1 is ${topPartner} at Rs.${topValue.toLocaleString('en-IN')}, your advice must align with this being the top choice.
-3. Give card-SPECIFIC advice  --  different cards have different transfer partners, expiry rules, and sweet spots.
-4. Be specific about this card's ecosystem (e.g. HDFC -> SmartBuy/KrisFlyer, Axis -> EDGE Miles/Air India, SBI -> Air India, IDFC -> no transfer partners, etc.)
-5. Mention the value difference of Rs.${valueDiff.toLocaleString('en-IN')} between best and worst option.
-6. Keep it to 3-4 focused paragraphs. No generic advice. No repeating the ranked list.
-7. End with ONE clear action to take right now.
-
-Write as a sharp, opinionated advisor who knows Indian credit card rewards deeply.`;
-
-    const ai = await callClaude({
-      model: MODELS.sonnet,
-      max_tokens: 600,
-      system: 'You are CreditIQ\'s points strategy advisor. You give sharp, card-specific, actionable advice. You NEVER contradict the ranked redemption data provided. Your top recommendation must always match the #1 ranked option in the data.',
-      messages: [{ role: 'user', content: prompt }],
-    });
-    if (!ai.ok) {
-      return NextResponse.json({ advice: 'AI strategy unavailable. See redemption paths above for best option.' });
-    }
-
-    const advice = ai.text || 'Unable to generate strategy.';
-    return NextResponse.json({ advice });
-  } catch (err) {
-    console.error('Redemption AI error:', err);
-    return NextResponse.json({ advice: 'AI strategy unavailable. See redemption paths above for best option.' });
+    return NextResponse.json(calculateAdvisor(matches[0], rate, fx))
+  } catch {
+    return NextResponse.json({ error: 'Redemption evidence temporarily unavailable.' }, { status: 503 })
   }
 }

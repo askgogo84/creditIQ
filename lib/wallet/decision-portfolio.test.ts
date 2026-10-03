@@ -2,6 +2,16 @@ import { describe, expect, it } from 'vitest'
 import { buildDecisionPortfolio } from './decision-portfolio'
 
 describe('buildDecisionPortfolio', () => {
+  it.each([null, undefined, -1, NaN])('preserves unknown statement balances (%s)', points_balance => {
+    const cards = buildDecisionPortfolio({ manual: [], linked: [], statements: [{ bank: 'HDFC', card_name: 'Infinia', points_balance }] });
+    expect(cards[0].points).toBeNull();
+    expect(cards[0].verified).toBe(false);
+    expect(cards[0].selfEntered).toBe(false);
+  });
+  it('preserves sourced known zero', () => {
+    const cards = buildDecisionPortfolio({ manual: [], linked: [], statements: [{ bank: 'HDFC', card_name: 'Infinia', points_balance: 0 }] });
+    expect(cards[0]).toMatchObject({ points: 0, verified: true });
+  });
   it('prefers a verified statement identity over a manual duplicate', () => {
     const cards = buildDecisionPortfolio({
       manual: [{ bank: 'HDFC Bank', card_name: 'HDFC Infinia', card_last4: '2184', points_balance: 10_000, points_currency: 'Reward Points', imported_at: '2026-08-01T00:00:00Z' }],
@@ -43,6 +53,6 @@ describe('buildDecisionPortfolio', () => {
       manual: [{ bank: 'SBI', card_name: 'SBI Elite', card_last4: '9999', points_balance: -50, imported_at: '2026-09-01T00:00:00Z' }],
       statements: [], linked: [],
     })
-    expect(cards[0].points).toBe(0)
+    expect(cards[0].points).toBeNull()
   })
 })

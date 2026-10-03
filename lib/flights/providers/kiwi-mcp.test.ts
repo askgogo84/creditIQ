@@ -49,7 +49,7 @@ function businessPayload(cabinClass: string = 'Business', currency: string = 'IN
 
 describe('Kiwi MCP cash-flight adapter', () => {
   it('requests and returns an exact-cabin structured live INR result', async () => {
-    const mock = vi.fn(async () => rpcResponse(businessPayload()))
+    const mock = vi.fn<typeof fetch>(async () => rpcResponse(businessPayload()))
     global.fetch = mock as typeof fetch
 
     const result = await searchKiwiMcpFlights({

@@ -1,0 +1,11 @@
+.redemption-advisor :is(button, input, select, a) {
+  min-height: 44px;
+  min-width: 44px;
+}
+.redemption-advisor a {
+  display: inline-flex;
+  align-items: center;
+}
+.redemption-advisor p {
+  overflow-wrap: anywhere;
+}

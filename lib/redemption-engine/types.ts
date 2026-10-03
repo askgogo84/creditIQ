@@ -116,7 +116,7 @@ export type TransferRoute = ActiveTransferRoute | EndedTransferRoute | NoTransfe
 export interface BankBalance {
   card_id: string;
   points: number;
-  provenance: 'STATEMENT' | 'SELF_ENTERED';
+  provenance: 'STATEMENT' | 'SELF_ENTERED' | 'LINKED';
   expires_on?: Sourced<string>;
 }
 
@@ -212,7 +212,10 @@ export interface ConflictReport {
     | 'PORTAL_VALUE'
     | 'PORTAL_CAP'
     | 'FEE'
-    | 'ELIGIBLE_BASIS';
+    | 'ELIGIBLE_BASIS'
+    | 'AWARD_CHART'
+    | 'DIRECT_BOOKING'
+    | 'MIN_BOOKING_VALUE';
   policy: 'INTERSECT' | 'INVARIANCE_TEST' | 'BLOCK';
   readings: unknown[];
   pathInvariant: boolean | null;

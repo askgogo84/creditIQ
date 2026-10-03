@@ -1,9 +1,11 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { usePathname } from 'next/navigation'
 import Link from 'next/link'
 import { ArrowRight, Check, Upload } from 'lucide-react'
+import { authedFetch } from '@/lib/authed-fetch'
+import type { redemptionReadiness } from '@/lib/redemption-engine/readiness'
 import { SEED_CARDS } from '@/lib/data/seed-cards'
 import { CardRow } from './CardRow'
 import { Tour, type TourStep } from './Tour'
@@ -66,11 +68,20 @@ export function WalletView({
   onDeleteCard?: (card: Card) => void
 }) {
   const pathname = usePathname()
-  const isVerified = (card: Card) => card.source === 'statement' && !card.self_entered
+  const [readiness, setReadiness] = useState<Array<{ id: string; cardName: string; readiness: ReturnType<typeof redemptionReadiness> }> | null>(null)
+  const [readinessError, setReadinessError] = useState(false)
+  useEffect(() => {
+    if (pathname === '/dashboard') return
+    let active = true
+    setReadinessError(false)
+    authedFetch('/api/cockpit/summary').then(async res => { if (!res.ok) throw new Error(); return res.json() }).then(data => { if (active) setReadiness(data.cards) }).catch(() => { if (active) setReadinessError(true) })
+    return () => { active = false }
+  }, [pathname, cards])
+  const isVerified = (card: Card) => Number.isSafeInteger(card.points_balance) && card.points_balance >= 0 && card.source === 'statement' && !card.self_entered
   const verifiedPoints = cards.filter(isVerified).reduce((sum, card) => sum + (card.points_balance || 0), 0)
-  const estimatedFloor = Math.round(totalPoints * .25)
-  const estimatedCeiling = Math.round(totalPoints * 1.8)
   const selfEnteredPoints = Math.max(0, totalPoints - verifiedPoints)
+  const unknownBalances = cards.some(card => !Number.isSafeInteger(card.points_balance) || card.points_balance < 0)
+  const allBalancesUnknown = cards.length > 0 && cards.every(card => !Number.isSafeInteger(card.points_balance) || card.points_balance < 0)
   const verification = totalPoints > 0 ? Math.round(verifiedPoints / totalPoints * 100) : 0
   const [tourOpen, setTourOpen] = useState(false)
   const [balancesHidden, setBalancesHidden] = useState(false)
@@ -101,12 +112,12 @@ export function WalletView({
 
       <section className="approved-wallet-summary">
         <div>
-          <small>Estimated wallet value</small>
-          <strong>{balancesHidden ? '••••' : `≈ ₹${estimatedFloor.toLocaleString('en-IN')}–₹${estimatedCeiling.toLocaleString('en-IN')}`}</strong>
-          {!balancesHidden && <em className="approved-estimate-badge">estimate</em>}
-          <span>Across <b>{balancesHidden ? '••••' : totalPoints.toLocaleString('en-IN')}</b> reward points</span>
+          <small>Wallet value</small>
+          <strong>{balancesHidden ? '••••' : 'Unavailable'}</strong>
+          <span>Value depends on the redemption and booking.</span>
+          <span>{allBalancesUnknown ? 'Balances unknown' : <>Across <b>{balancesHidden ? '••••' : totalPoints.toLocaleString('en-IN')}</b> {unknownBalances ? 'known reward points (partial wallet)' : 'reward points'}</>}</span>
           <span className="approved-wallet-point-split">Verified <b>{balancesHidden ? '••••' : verifiedPoints.toLocaleString('en-IN')}</b> · Self-entered <b>{balancesHidden ? '••••' : selfEnteredPoints.toLocaleString('en-IN')}</b></span>
-          {cards.length > 0 && verifiedPoints === 0 && <span className="approved-wallet-verify-note"><b>All self-entered.</b> Upload a statement to verify this wallet.</span>}
+          {cards.length > 0 && cards.every(card => Number.isSafeInteger(card.points_balance) && card.points_balance >= 0) && verifiedPoints === 0 && <span className="approved-wallet-verify-note"><b>All self-entered.</b> Upload a statement to verify this wallet.</span>}
         </div>
         <div className="approved-value-ring"><div style={{ '--value': Math.max(2, verification) } as React.CSSProperties}><span><b>{verification}%</b><small>verified</small></span></div></div>
         <div className="approved-wallet-breakdown">
@@ -128,7 +139,7 @@ export function WalletView({
               variant="light" flat card={catalogueCard(card)} balancesHidden={balancesHidden}
               onSavePoints={onEditPoints ? points => onEditPoints(card, points) : undefined}
               onDelete={onDeleteCard ? () => onDeleteCard(card) : undefined} />
-            <footer><span className={isVerified(card) ? 'good' : 'neutral'}>{isVerified(card) && <Check size={11} />}{isVerified(card) ? 'Statement verified' : 'Self-entered'}</span></footer>
+            <footer><span className={isVerified(card) ? 'good' : 'neutral'}>{isVerified(card) && <Check size={11} />}{!Number.isSafeInteger(card.points_balance) || card.points_balance < 0 ? 'Balance unknown' : isVerified(card) ? 'Statement verified' : 'Self-entered'}</span></footer>
           </article>
         ))}
         {cards.length === 0 && <button id="wallet-add" onClick={onAddCard} className="approved-wallet-empty">＋ Add a card</button>}
@@ -138,7 +149,7 @@ export function WalletView({
       <section className="approved-wallet-lower-grid">
         <article className="approved-surface approved-transfer-readiness">
           <div className="approved-section-head"><div><span className="approved-section-kicker">Transfer readiness</span><h2>Where your points can go</h2></div><Link href={`/trip-planner?points=${totalPoints}&bank=${primaryBank}`}>Explore travel</Link></div>
-          <div className="approved-partner-flow"><div className="approved-flow-bank">{primaryBank}<br /><b>{balancesHidden ? '••••' : `${Math.round(totalPoints / 100) / 10}K`}</b></div><div className="approved-flow-lines"><i /><i /><i /></div><div className="approved-flow-partners"><span>SQ<br /><b>KrisFlyer</b></span><span>AI<br /><b>Maharaja</b></span><span>ALL<br /><b>Accor</b></span></div></div>
+          <div role="status">{readinessError ? 'Redemption readiness temporarily unavailable.' : readiness === null ? 'Loading redemption readiness…' : readiness.length === 0 ? 'Add a card to check readiness.' : readiness.map(item => <div key={item.id} style={{ padding: '8px 0', overflowWrap: 'anywhere' }}><b>{item.cardName}</b><p>{item.readiness.reason}</p>{item.readiness.ratio && <p>{item.readiness.programme} · {item.readiness.ratio.value.fromUnits}:{item.readiness.ratio.value.toUnits} · Ratio only. <a href={item.readiness.ratio.source_url} target="_blank" rel="noreferrer" style={{ display: 'inline-flex', minHeight: 44, alignItems: 'center' }}>Source · {item.readiness.ratio.as_of}</a></p>}{item.readiness.blockers.map(blocker => <p key={blocker}>{blocker}</p>)}</div>)}</div>
         </article>
         <Link className="approved-surface approved-statement-drop" href="/upload-statement"><span><Upload size={20} /></span><h3>{verifiedPoints === 0 && cards.length > 0 ? 'Get your verified points' : 'Refresh your wallet'}</h3><p>Upload a statement to update balances and unlock personalised recommendations.</p><b>Choose statement</b><small>Your values remain clearly sourced.</small></Link>
       </section>

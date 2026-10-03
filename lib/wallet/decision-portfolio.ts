@@ -7,7 +7,7 @@ export type DecisionWalletCard = {
   bank: string
   cardName: string | null
   last4: string | null
-  points: number
+  points: number | null
   pointsCurrency: string
   verified: boolean
   selfEntered: boolean
@@ -58,8 +58,8 @@ function bankKey(bank: string): string {
   return bank.toLowerCase().replace(/[^a-z0-9]+/g, '').replace(/(bank|cards|card|limited|ltd)+$/g, '')
 }
 
-function safePoints(v: unknown): number {
-  return Number.isSafeInteger(v) && Number(v) >= 0 ? Number(v) : 0
+function safePoints(v: unknown): number | null {
+  return Number.isSafeInteger(v) && Number(v) >= 0 ? Number(v) : null
 }
 
 function timeValue(v: string | null | undefined): number {
@@ -132,7 +132,7 @@ export function buildDecisionPortfolio(input: DecisionPortfolioInput): DecisionW
       source: 'statement', bank, cardName, last4,
       points: safePoints(row.points_balance),
       pointsCurrency: clean(row.points_currency) || 'Points',
-      verified: row.self_entered !== true,
+      verified: row.self_entered !== true && safePoints(row.points_balance) !== null,
       selfEntered: row.self_entered === true,
       observedAt: row.imported_at ?? row.statement_date ?? null,
       linkedBalanceMerged: false,
@@ -157,7 +157,7 @@ export function buildDecisionPortfolio(input: DecisionPortfolioInput): DecisionW
           ...current,
           source: 'linked',
           points: safePoints(row.reward_points),
-          verified: true,
+          verified: safePoints(row.reward_points) !== null,
           selfEntered: false,
           observedAt: row.synced_at ?? current.observedAt,
           linkedBalanceMerged: true,
@@ -171,7 +171,7 @@ export function buildDecisionPortfolio(input: DecisionPortfolioInput): DecisionW
       source: 'linked', bank, cardName: null, last4,
       points: safePoints(row.reward_points),
       pointsCurrency: 'Points',
-      verified: true, selfEntered: false,
+      verified: safePoints(row.reward_points) !== null, selfEntered: false,
       observedAt: row.synced_at ?? null,
       linkedBalanceMerged: false,
     })
@@ -207,12 +207,16 @@ export async function loadDecisionPortfolio(userId: string): Promise<DecisionWal
       .eq('status', 'DATA_FETCHED'),
   ])
 
+  // An incomplete read cannot certify an empty or complete wallet. Fail closed;
+  // callers may retain previously loaded cards with an unavailable label.
+  if (stmt.error || manual.error || consents.error) throw new Error('Wallet sources unavailable')
   const handles = (consents.data ?? []).map((r: any) => r.consent_handle).filter(Boolean)
   let linked: LinkedRow[] = []
   if (handles.length) {
     const result = await sb.from('linked_cards')
       .select('bank, masked_number, reward_points, synced_at')
       .in('consent_handle', handles)
+    if (result.error) throw new Error('Linked wallet source unavailable')
     linked = (result.data ?? []) as LinkedRow[]
   }
 

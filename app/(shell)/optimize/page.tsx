@@ -1,95 +1,60 @@
 'use client';
 
 import Link from 'next/link';
-import { useState, useMemo, useEffect, Suspense } from 'react';
-import { useSearchParams } from 'next/navigation';
+import { useState, useEffect, Suspense } from 'react';
 import { DesignFooter } from '@/components/design/Footer';
 import { CreditCard3D } from '@/components/design/CreditCard3D';
-import { SEED_CARDS } from '@/lib/data/seed-cards';
-import { optimizeRedemption } from '@/lib/redemption';
+import type { calculateAdvisor } from '@/lib/redemption-engine/advisor';
+import { usableHotels } from '@/lib/data/hotel-seed';
 import { authedFetch } from '@/lib/authed-fetch';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Sparkles, Loader2, Plane, ShoppingBag, CreditCard, Hotel, Package, ArrowDownRight } from 'lucide-react';
+import { Sparkles } from 'lucide-react';
 import { formatINR } from '@/lib/utils';
 import { SectionTabs } from '@/components/ciq/SectionTabs';
-
-const TYPE_ICONS: Record<string, any> = {
-  flight: Plane, hotel: Hotel, transfer: ArrowDownRight,
-  cashback: CreditCard, voucher: ShoppingBag, product: Package, fuel: Package,
-};
+import './redemption-advisor.css';
 
 function OptimizeContent() {
-  const allCards = SEED_CARDS.filter((c) => c.active).sort((a, b) => a.name.localeCompare(b.name));
+  const [allCards, setAllCards] = useState<Array<{ id: string; cardName: string; bank: string }>>([]);
   const [cardSearch, setCardSearch] = useState('');
-  const filteredCards = cardSearch.trim() ? allCards.filter(c => c.name.toLowerCase().includes(cardSearch.toLowerCase()) || c.bank.toLowerCase().includes(cardSearch.toLowerCase())) : allCards;
-  const defaultCard = allCards.find(c => c.id === 'hdfc-regalia-gold') ?? allCards.find(c => (c as any).bank === 'HDFC') ?? allCards[0];
-  const [selectedCardId, setSelectedCardId] = useState(defaultCard.id);
-  const [points, setPoints] = useState(50000);
-  const [preference, setPreference] = useState<'any' | 'cash' | 'travel' | 'shopping'>('any');
+  const filteredCards = allCards.filter(c => `${c.cardName} ${c.bank}`.toLowerCase().includes(cardSearch.toLowerCase()));
+  const [selectedCardId, setSelectedCardId] = useState('');
+  const [evidence, setEvidence] = useState<ReturnType<typeof calculateAdvisor> | null>(null);
+  const [bookingId, setBookingId] = useState('');
+  const points = evidence?.balance.points ?? null;
+  const capturedHotels = usableHotels().filter(h => h.programme_id === 'accor-all');
   const [aiAdvice, setAiAdvice] = useState<string>('');
   const [aiLoading, setAiLoading] = useState(false);
-  const searchParams = useSearchParams();
 
   useEffect(() => {
-    const urlPoints = searchParams.get('points');
-    const urlBank = searchParams.get('bank');
-    if (urlPoints) {
-      const p = parseInt(urlPoints.replace(/,/g, ''), 10);
-      if (!isNaN(p) && p > 0) setPoints(p);
-    }
-    if (urlBank) {
-      const bankName = urlBank.replace(/-/g, ' ').replace(' Bank', '');
-      const match = allCards.find(c =>
-        c.bank.toLowerCase() === bankName.toLowerCase() ||
-        c.name.toLowerCase().includes(bankName.toLowerCase())
-      );
-      if (match) setSelectedCardId(match.id);
-    }
-  }, [searchParams]);
-
-  const card = allCards.find((c) => c.id === selectedCardId)!;
-  const recommendations = useMemo(
-    () => optimizeRedemption(card, points, preference),
-    [card, points, preference]
-  );
-
-  const bestValue = recommendations[0]?.inr_value ?? 0;
-  const worstValue = recommendations[recommendations.length - 1]?.inr_value ?? 0;
-  const valueRange = bestValue - worstValue;
-
-  const fetchAIAdvice = async () => {
-    setAiLoading(true);
-    setAiAdvice('');
-    try {
-      const res = await authedFetch('/api/claude/redemption', {
-        method: 'POST',
-        body: JSON.stringify({ cardId: card.id, points, recommendations: recommendations.slice(0, 5) }),
-      });
-      if (res.status === 401) {
-        setAiAdvice('Sign in to see your AI strategy.');
-        return;
-      }
-      const data = await res.json();
-      setAiAdvice(data.advice || 'AI strategy unavailable. See redemption paths below.');
-    } catch {
-      setAiAdvice('AI suggestion failed. See redemption paths below.');
-    } finally {
-      setAiLoading(false);
-    }
-  };
+    let active = true;
+    authedFetch('/api/cockpit/summary').then(async res => { if (!res.ok) throw new Error(); return res.json(); })
+      .then(data => { if (active) { setAllCards(data.cards); setSelectedCardId(data.cards[0]?.id ?? ''); if (!data.cards.length) setAiAdvice('No wallet cards yet. Add a card to check redemption readiness.'); } })
+      .catch(() => { if (active) setAiAdvice('Wallet temporarily unavailable.'); });
+    return () => { active = false; };
+  }, []);
+  useEffect(() => {
+    if (!selectedCardId) return;
+    let active = true;
+    setAiLoading(true); setAiAdvice(''); setEvidence(null);
+    authedFetch('/api/claude/redemption', { method: 'POST', body: JSON.stringify({ walletCardId: selectedCardId, ...(bookingId ? { bookingId } : {}) }) })
+      .then(async res => { const data = await res.json(); if (!res.ok) throw new Error(data.error || 'Redemption evidence unavailable.'); return data; })
+      .then(data => { if (active) { setEvidence(data); setAiAdvice(data.advice); } })
+      .catch(error => { if (active) setAiAdvice(error.message); })
+      .finally(() => { if (active) setAiLoading(false); });
+    return () => { active = false; };
+  }, [selectedCardId, bookingId]);
 
   return (
-    <main className="min-h-screen" style={{ overflowX: 'hidden' }}>
+    <main className="min-h-screen redemption-advisor" style={{ overflowX: 'hidden' }}>
       {/* Hero */}
       <section className="pt-20 pb-6 px-4 grain relative" style={{ overflow: 'hidden' }}>
         <div className="divider-rule mb-4 max-w-xs">Points optimizer</div>
         <h1 className="font-display text-3xl sm:text-4xl md:text-5xl leading-[1.05] text-ink-50 mb-3">
-          {"Don't let your points "}
-          <em className="text-copper-400 not-italic display-italic">rot</em>
-          {" as statement credit."}
+          {"Explore your points with "}
+          <span className="text-copper-400">sourced evidence.</span>
         </h1>
         <p className="text-sm sm:text-base text-ink-300 font-display leading-relaxed max-w-2xl">
-          Pick your card. Enter your balance. We rank every redemption path by rupee value.
+          Select a card held in your wallet. Server evidence supplies your balance and booking comparisons.
         </p>
       </section>
 
@@ -112,13 +77,14 @@ function OptimizeContent() {
                     value={cardSearch}
                     onChange={e => setCardSearch(e.target.value)}
                     placeholder="Search card or bank..."
-                    style={{ width: '100%', padding: '8px 12px', marginBottom: 6, background: 'var(--bg-input)', border: '1px solid var(--border)', borderRadius: 8, fontSize: 13, color: 'var(--text)', outline: 'none' }}
+                    style={{ width: '100%', minHeight: 44, padding: '8px 12px', marginBottom: 6, background: 'var(--bg-input)', border: '1px solid var(--border)', borderRadius: 8, fontSize: 13, color: 'var(--text)', outline: 'none' }}
                   />
                   <select
                     value={selectedCardId}
                     onChange={(e) => { setSelectedCardId(e.target.value); setAiAdvice(''); }}
                     style={{
                       width: '100%',
+                      minHeight: 44,
                       background: '#0a0a0b',
                       border: '1px solid rgba(255,255,255,0.1)',
                       borderRadius: 6,
@@ -137,101 +103,20 @@ function OptimizeContent() {
                     }}
                   >
                     {filteredCards.map((c) => (
-                      <option key={c.id} value={c.id}>{c.name}</option>
+                      <option key={c.id} value={c.id}>{c.cardName}</option>
                     ))}
                   </select>
                 </div>
 
-                {/* Points */}
-                <div>
-                  <div className="flex justify-between items-baseline mb-2">
-                    <label className="text-[10px] font-mono uppercase tracking-widest text-ink-400">
-                      Points balance
-                    </label>
-                    <span className="font-display text-xl text-copper-300 tabular">
-                      {points.toLocaleString('en-IN')}
-                    </span>
-                  </div>
-                  <input
-                    type="range"
-                    min={1000}
-                    max={500000}
-                    step={1000}
-                    value={points}
-                    onChange={(e) => setPoints(parseInt(e.target.value))}
-                    style={{ width: '100%' }}
-                  />
-                  <div className="flex justify-between mt-1 text-[10px] font-mono text-ink-500">
-                    <span>1K</span><span>5L</span>
-                  </div>
-                  <input
-                    type="text"
-                    value={points.toLocaleString('en-IN')}
-                    onChange={(e) => { const v = parseInt(e.target.value.replace(/,/g, '')) || 0; setPoints(v); }}
-                    style={{
-                      width: '100%',
-                      marginTop: 8,
-                      background: '#0a0a0b',
-                      border: '1px solid rgba(255,255,255,0.1)',
-                      borderRadius: 6,
-                      padding: '8px 12px',
-                      fontSize: 14,
-                      color: '#f5f5f6',
-                      outline: 'none',
-                    }}
-                    placeholder="Or type exact points"
-                  />
-                </div>
-
-                {/* Preference */}
-                <div>
-                  <label className="text-[10px] font-mono uppercase tracking-widest text-ink-400 mb-2 block">
-                    Redemption preference
-                  </label>
-                  <div className="grid grid-cols-2 gap-2">
-                    {(['any', 'travel', 'cash', 'shopping'] as const).map((p) => (
-                      <button
-                        key={p}
-                        onClick={() => setPreference(p)}
-                        style={{
-                          padding: '10px',
-                          borderRadius: 6,
-                          border: preference === p ? '1px solid rgba(212,163,115,0.5)' : '1px solid rgba(255,255,255,0.1)',
-                          background: preference === p ? 'rgba(212,163,115,0.12)' : 'transparent',
-                          color: preference === p ? '#d4a373' : '#9b9ba2',
-                          fontSize: 13,
-                          fontWeight: preference === p ? 600 : 400,
-                          textTransform: 'capitalize',
-                          cursor: 'pointer',
-                          minHeight: 44,
-                          touchAction: 'manipulation',
-                          WebkitTapHighlightColor: 'transparent',
-                        }}
-                      >
-                        {p}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
-                {/* AI button */}
-                <button
-                  onClick={fetchAIAdvice}
-                  disabled={aiLoading}
-                  className="w-full btn-primary"
-                  style={{ opacity: aiLoading ? 0.6 : 1 }}
-                >
-                  {aiLoading
-                    ? <><Loader2 className="w-4 h-4 animate-spin" /> Strategizing...</>
-                    : <><Sparkles className="w-4 h-4" /> Get AI strategy</>
-                  }
-                </button>
+                <div><label className="text-[10px] font-mono uppercase tracking-widest text-ink-400">Owned wallet balance</label><p className="font-display text-xl text-copper-300">{aiLoading ? 'Loading…' : points === null ? 'Unknown / unavailable' : points.toLocaleString('en-IN')}</p><p className="text-xs text-ink-400">{evidence ? `${evidence.balance.currency} · ${evidence.balance.source} · ${evidence.balance.observedAt ?? 'date unknown'}` : 'A matching owned wallet card is required.'}</p></div>
+                <div><label htmlFor="booking" className="text-[10px] font-mono uppercase tracking-widest text-ink-400">Captured booking comparison (optional)</label><select id="booking" value={bookingId} onChange={e => setBookingId(e.target.value)} style={{ width: '100%', minHeight: 44, background: '#0a0a0b', color: '#f5f5f6', padding: 10, borderRadius: 6 }}><option value="">No booking — readiness only</option>{capturedHotels.map(h => <option key={h.id} value={h.id}>{h.name} · captured stay</option>)}</select><p className="text-xs text-ink-400 mt-2">Captured starting-from member rates for 12 Oct 2026, 3 nights, 2 adults, 1 room. Not live offers.</p></div>
+                <div role="status" className="w-full btn-primary" style={{ minHeight: 44 }}>{aiLoading ? 'Loading server evidence…' : 'Server-calculated evidence'}</div>
               </div>
 
               {/* Card preview - hidden on mobile */}
               <div className="hidden sm:flex justify-center">
                 <div style={{ width: '80%', maxWidth: 280 }}>
-                  <CreditCard3D variant='obsidian' name='CARD' bank='BANK' tagline='' network='VISA' />
+                  <CreditCard3D variant='obsidian' name={allCards.find(c => c.id === selectedCardId)?.cardName ?? 'Your card'} bank={allCards.find(c => c.id === selectedCardId)?.bank ?? ''} tagline='' />
                 </div>
               </div>
             </aside>
@@ -239,35 +124,7 @@ function OptimizeContent() {
             {/* RESULTS */}
             <div className="space-y-4 min-w-0">
 
-              {/* Value spread */}
-              <div className="bg-ink-900/40 border border-white/10 rounded-xl p-4">
-                <div className="flex flex-col sm:flex-row sm:justify-between sm:items-end gap-3 mb-4">
-                  <div>
-                    <div className="text-[10px] font-mono uppercase tracking-widest text-ink-400">
-                      Best redemption
-                    </div>
-                    <div className="font-display text-3xl sm:text-4xl text-emerald-300 tabular glow-emerald">
-                      {formatINR(bestValue)}
-                    </div>
-                    <div className="text-xs text-ink-400 mt-0.5 truncate max-w-[200px]">
-                      {recommendations[0]?.option.partner ?? recommendations[0]?.option.type}
-                    </div>
-                  </div>
-                  <div className="sm:text-right">
-                    <div className="text-[10px] font-mono uppercase tracking-widest text-ink-400">Worst case</div>
-                    <div className="font-display text-xl text-crimson-400 tabular">{formatINR(worstValue)}</div>
-                    <div className="text-[10px] text-ink-400">
-                      Gap: <span className="text-copper-300">{formatINR(valueRange)}</span>
-                    </div>
-                  </div>
-                </div>
-                <div className="h-1.5 bg-white/5 rounded overflow-hidden">
-                  <div className="h-full bg-gradient-to-r from-crimson-500 via-copper-400 to-emerald-400 w-full" />
-                </div>
-                <div className="mt-1.5 text-[10px] font-mono uppercase tracking-widest text-ink-500">
-                  Your potential leverage by picking right
-                </div>
-              </div>
+              <div className="bg-ink-900/40 border border-white/10 rounded-xl p-4"><div className="text-[10px] font-mono uppercase tracking-widest text-ink-400">Wallet value unavailable</div><p className="font-display text-xl mt-2">Value depends on the redemption and booking.</p><p className="text-sm mt-2">{evidence?.readiness.reason ?? 'Select an owned card to load sourced readiness.'}</p></div>
 
               {/* AI advice */}
               <AnimatePresence>
@@ -280,72 +137,18 @@ function OptimizeContent() {
                   >
                     <div className="flex items-center gap-2 mb-3">
                       <Sparkles className="w-4 h-4 text-copper-400 shrink-0" />
-                      <span className="text-[10px] font-mono uppercase tracking-widest text-copper-300">AI strategy</span>
+                      <span className="text-[10px] font-mono uppercase tracking-widest text-copper-300">Server evidence</span>
                     </div>
                     <p className="text-sm text-ink-100 font-display leading-relaxed whitespace-pre-wrap">{aiAdvice}</p>
                   </motion.div>
                 )}
               </AnimatePresence>
 
-              {/* Redemption paths */}
-              <div>
-                <div className="text-[10px] font-mono uppercase tracking-widest text-ink-400 mb-3">
-                  All redemption paths &middot; ranked by value
-                </div>
-                <div className="space-y-2">
-                  {recommendations.map((r, i) => {
-                    const Icon = TYPE_ICONS[r.option.type] ?? Package;
-                    const percent = bestValue > 0 ? (r.inr_value / bestValue) * 100 : 0;
-                    return (
-                      <motion.div
-                        key={i}
-                        initial={{ opacity: 0, y: 10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: i * 0.04 }}
-                        className="bg-ink-900/40 border border-white/10 rounded-lg overflow-hidden"
-                        style={{ position: 'relative' }}
-                      >
-                        <div
-                          style={{
-                            position: 'absolute',
-                            inset: 0,
-                            width: `${percent}%`,
-                            background: 'linear-gradient(to right, rgba(212,163,115,0.08), transparent)',
-                            pointerEvents: 'none',
-                          }}
-                        />
-                        <div className="relative flex items-center gap-3 p-3">
-                          <div className="font-display text-lg text-ink-500 tabular w-6 shrink-0 text-center">
-                            {i + 1}
-                          </div>
-                          <div className="w-8 h-8 rounded bg-white/5 border border-white/10 flex items-center justify-center text-copper-400 shrink-0">
-                            <Icon className="w-3.5 h-3.5" />
-                          </div>
-                          <div className="flex-1 min-w-0">
-                            <div className="text-sm font-medium text-ink-100 truncate">
-                              {r.option.partner || r.option.type}
-                            </div>
-                            <div className="text-[11px] text-ink-400 truncate">
-                              {r.option.best_for ?? r.option.notes ?? `${r.option.type} redemption`}
-                              {' . '}
-                              <span className="font-mono">Rs.{r.option.value_per_point_inr.toFixed(2)}/pt</span>
-                            </div>
-                          </div>
-                          <div className="text-right shrink-0 ml-1">
-                            <div className="font-display text-base sm:text-lg text-ink-50 tabular">
-                              {formatINR(r.inr_value)}
-                            </div>
-                            {i === 0 ? (
-                              <div className="text-[9px] font-mono uppercase text-emerald-400">best</div>
-                            ) : (
-                              <div className="text-[9px] font-mono text-ink-500">-{formatINR(bestValue - r.inr_value)}</div>
-                            )}
-                          </div>
-                        </div>
-                      </motion.div>
-                    );
-                  })}
-                </div>
+              <div><div className="text-[10px] font-mono uppercase tracking-widest text-ink-400 mb-3">Booking-specific results</div>
+                {evidence?.booking && <p className="text-sm mb-3">{evidence.booking.basis} Captured {evidence.booking.capturedAt} · {evidence.booking.source}</p>}
+                {evidence?.fx && <p className="text-xs mb-3">FX: {evidence.fx.source} · rate date {evidence.fx.as_of ?? 'unavailable'} · retrieved {evidence.fx.fetched_at}</p>}
+                <div className="space-y-2">{evidence?.plan?.candidates.map((candidate, i) => <div key={i} className="bg-ink-900/40 border border-white/10 rounded-lg p-3"><b>{candidate.kind === 'PROGRAMME' ? 'Programme scenario — conditional' : candidate.kind}</b><p className="text-sm">{candidate.kind === 'PROGRAMME' && candidate.instructionBlocked ? 'Exact programme payable amount and transfer instruction withheld.' : candidate.cashPayableMinor === null ? 'Payable amount unavailable.' : `Booking cash payable: ${formatINR(candidate.cashPayableMinor / 100)}`}</p>{candidate.instructionBlocked && <p className="text-xs">{candidate.instructionBlocked.replaceAll('_', ' ')}</p>}</div>) ?? <p className="text-sm">Select a supported card and captured booking for a server-calculated comparison.</p>}</div>
+                {evidence?.readiness.ratio && <a href={evidence.readiness.ratio.source_url} target="_blank" rel="noreferrer" style={{ display: 'inline-flex', alignItems: 'center', minHeight: 44 }} className="text-sm">Issuer ratio source · {evidence.readiness.ratio.as_of}</a>}
               </div>
             </div>
           </div>
@@ -353,113 +156,7 @@ function OptimizeContent() {
       </section>
 
 
-          {/* Trip Planner CTA */}
-          {bestValue > 0 && (
-            <div className="mt-6 rounded-2xl p-5 border" style={{ borderColor: 'rgba(201,151,46,0.3)', background: 'rgba(201,151,46,0.06)' }}>
-              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-                <div>
-                  <div className="text-xs font-mono uppercase tracking-widest mb-1" style={{ color: '#C9972E' }}>
-                    Next step
-                  </div>
-                  <div className="font-semibold text-base" style={{ color: 'var(--text, #0f172a)' }}>
-                    Plan a trip with your {points.toLocaleString('en-IN')} points
-                  </div>
-                  <div className="text-sm mt-0.5" style={{ color: 'var(--text-muted, #64748b)' }}>
-                    Best value: {formatINR(bestValue)} via travel redemption
-                  </div>
-                </div>
-                <Link
-                  href={`/trip-planner?points=${points}&bank=${card?.bank || ''}`}
-                  className="shrink-0 px-5 py-2.5 rounded-xl font-semibold text-sm transition-all"
-                  style={{ background: '#C9972E', color: '#fff', whiteSpace: 'nowrap' }}
-                >
-                  Plan my trip →
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-                </Link>
-              </div>
-            </div>
-          )}
-
-          {/* Trip Planner CTA */}
-          {bestValue > 0 && (
-            <div className="mt-6 rounded-2xl p-5 border" style={{ borderColor: 'rgba(201,151,46,0.3)', background: 'rgba(201,151,46,0.06)' }}>
-              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-                <div>
-                  <div className="text-xs font-mono uppercase tracking-widest mb-1" style={{ color: '#C9972E' }}>
-                    Next step
-                  </div>
-                  <div className="font-semibold text-base" style={{ color: 'var(--text, #0f172a)' }}>
-                    Plan a trip with your {points.toLocaleString('en-IN')} points
-                  </div>
-                  <div className="text-sm mt-0.5" style={{ color: 'var(--text-muted, #64748b)' }}>
-                    Best value: {formatINR(bestValue)} via travel redemption
-                  </div>
-                </div>
-                <Link
-                  href={`/trip-planner?points=${points}&bank=${card?.bank || ''}`}
-                  className="shrink-0 px-5 py-2.5 rounded-xl font-semibold text-sm transition-all"
-                  style={{ background: '#C9972E', color: '#fff', whiteSpace: 'nowrap' }}
-                >
-                  Plan my trip →
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-                </Link>
-              </div>
-            </div>
-          )}
+          <div className="mt-6 rounded-2xl p-5 border"><Link href="/trip-planner" className="inline-flex items-center px-5 rounded-xl" style={{ minHeight: 44 }}>Plan a trip →</Link></div>
       <DesignFooter />
       
     </main>
