@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest'
 import { render, screen } from '@testing-library/react'
 import InvestorHotelWorkspace from './InvestorHotelWorkspace'
 import type { StayCard } from '@/components/ciq/stay-points/StayOnPointsView'
+import { SeededRateProvider } from '@/lib/hotels/providers/rates'
 
 const card: StayCard = {
   id: 'hotel-1',
@@ -45,14 +46,14 @@ const card: StayCard = {
   booking_url: 'https://example.com/hotel',
 }
 
-function renderView() {
+function renderView(selectedCard: StayCard = card) {
   return render(
     <InvestorHotelWorkspace
       city="Bangkok"
       mode="city"
       nights={3}
       balance={11_400}
-      cards={[card]}
+      cards={[selectedCard]}
       fx={{ rate: 110.5, fetched_at: '2026-09-02T00:00:00Z', source: 'live-fx' }}
       programmeConversionValueInr={1.105}
       portalPerPoint={1}
@@ -68,6 +69,39 @@ function renderView() {
 }
 
 describe('InvestorHotelWorkspace', () => {
+  // Independently checked against official Accor property pages on 2026-10-05.
+  // See docs/qa/redemption-verification-2026-10-05.md for sources and scope.
+  it.each([
+    ['sofitel-bangkok-sukhumvit', '5213'],
+    ['so-bangkok', '6835'],
+    ['vie-hotel-bangkok-mgallery', '6469'],
+    ['movenpick-bdms-wellness-bangkok', 'B4U9'],
+    ['novotel-bangkok-siam-square', '1031'],
+    ['mercure-bangkok-siam', '8015'],
+    ['movenpick-sukhumvit-15-bangkok', 'B4K2'],
+    ['novotel-bangkok-platinum', '7272'],
+    ['grand-mercure-bangkok-asoke', '6162'],
+    ['pullman-bangkok-king-power', '6323'],
+    ['mercure-bangkok-sukhumvit-11', 'A247'],
+    ['pullman-bangkok-hotel-g', '3616'],
+    ['novotel-bangkok-sukhumvit-4', 'A246'],
+    ['ibis-bangkok-siam', '8016'],
+    ['mercure-bangkok-makkasan', '8422'],
+    ['mercure-bangkok-surawong', 'C0Q6'],
+    ['ibis-styles-bangkok-silom', 'B6N1'],
+    ['ibis-styles-bangkok-sukhumvit-4', 'A237'],
+    ['ibis-bangkok-sathorn', '6537'],
+    ['ibis-bangkok-sukhumvit-4', '7295'],
+  ])('hands %s off to its verified Accor property', async (hotelId, accorId) => {
+    const [rate] = await new SeededRateProvider().search({ hotel_id: hotelId, nights: 3 })
+    expect(rate.hotel.city).toBe('Bangkok')
+    expect(rate.hotel.country).toBe('Thailand')
+    renderView({ ...card, id: rate.hotel.id, name: rate.hotel.name, booking_url: rate.hotel.booking_url })
+    expect(screen.getByRole('link', { name: /check direct/i })).toHaveAttribute(
+      'href', `https://all.accor.com/hotel/${accorId}/index.en.shtml`,
+    )
+  })
+
   it('keeps an unverified transfer ranked but explicitly non-executable', () => {
     renderView()
     // The same guarded wording intentionally appears in the compact result row,

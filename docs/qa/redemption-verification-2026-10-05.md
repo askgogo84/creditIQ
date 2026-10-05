@@ -51,3 +51,44 @@ These checks concern the already-deployed release, not the new fixes. They do no
 | Concierge lifecycle | Approved test environment/account: create request, operator review, approval, audit trail and failure/retry; suppress actual sends | Pending controlled operational test |
 
 Production auth was exercised, but a provider link or concierge case is not a confirmed reservation. The existing hotel search/handoff flow does not implement a complete in-app reservation lifecycle. Do not describe the product as fully tested or unlock source gates using mock data. This patch introduces no live booking, transfer, payment, notification, schema change or deployment.
+
+## Real booking-link verification — follow-up on 5 October
+
+The deployed Stay on Points page selected ibis Bangkok Sukhumvit 4 but its Check direct link opened hotel 9524, **ibis budget Surabaya Diponegoro, Indonesia**. A second checked old link, 9522, opened **Pullman Sydney Airport, Australia** instead of Novotel Bangkok Sukhumvit 4. This is a high-severity property-identity defect: a customer can leave a Bangkok comparison and start booking a different property/country. Reproduce by selecting the named property and following Check direct on the deployed release. It predates this patch.
+
+Checked the official Accor pages for all 20 currently priced Accor rows. Replaced 18 URLs with the identity-matched official URLs below; SO/ Bangkok and Novotel Siam Square already matched. Some old URLs were not retrievable by the research tool, so those are not asserted to be confirmed 404s. The corrected ibis 7295 page was also opened in Chrome and displayed the correct Bangkok hotel. These are property-page links; they do not preserve dates, room, guests or a quoted price. Rates and checkout must be selected again on Accor.
+
+| Hotel | Previous Accor ID | Verified official property |
+| --- | --- | --- |
+| Sofitel Bangkok Sukhumvit | 3829 | [5213](https://all.accor.com/hotel/5213/index.en.shtml) |
+| SO/ Bangkok | 6835 (unchanged) | [6835](https://all.accor.com/hotel/6835/index.en.shtml) |
+| VIE Hotel Bangkok | 6929 | [6469](https://all.accor.com/hotel/6469/index.en.shtml) |
+| Movenpick BDMS Wellness Bangkok | 9748 | [B4U9](https://all.accor.com/hotel/B4U9/index.en.shtml) |
+| Novotel Bangkok Siam Square | 1031 (unchanged) | [1031](https://all.accor.com/hotel/1031/index.en.shtml) |
+| Mercure Bangkok Siam | 7017 | [8015](https://all.accor.com/hotel/8015/index.en.shtml) |
+| Movenpick Sukhumvit 15 | 8355 | [B4K2](https://all.accor.com/hotel/B4K2/index.en.shtml) |
+| Novotel Platinum Pratunam | 6404 | [7272](https://all.accor.com/hotel/7272/index.en.shtml) |
+| Grand Mercure Asoke | 8422 | [6162](https://all.accor.com/hotel/6162/index.en.shtml) |
+| Pullman King Power | 5834 | [6323](https://all.accor.com/hotel/6323/index.en.shtml) |
+| Mercure Sukhumvit 11 | 8123 | [A247](https://all.accor.com/hotel/A247/index.en.shtml) |
+| Pullman Hotel G | 6753 | [3616](https://all.accor.com/hotel/3616/index.en.shtml) |
+| Novotel Sukhumvit 4 | 9522 | [A246](https://all.accor.com/hotel/A246/index.en.shtml) |
+| ibis Bangkok Siam | 7148 | [8016](https://all.accor.com/hotel/8016/index.en.shtml) |
+| Mercure Makkasan | 9011 | [8422](https://all.accor.com/hotel/8422/index.en.shtml) |
+| Mercure Surawong | 7178 | [C0Q6](https://all.accor.com/hotel/C0Q6/index.en.shtml) |
+| ibis Styles Silom | 9184 | [B6N1](https://all.accor.com/hotel/B6N1/index.en.shtml) |
+| ibis Styles Sukhumvit 4 | 9523 | [A237](https://all.accor.com/hotel/A237/index.en.shtml) |
+| ibis Sathorn | 7175 | [6537](https://all.accor.com/hotel/6537/index.en.shtml) |
+| ibis Sukhumvit 4 | 9524 | [7295](https://all.accor.com/hotel/7295/index.en.shtml) |
+
+The existing captured cash amounts were not independently recaptured or verified against current availability. No cash figures were changed. The two unpriced Marriott/Hyatt rows are outside this Accor link check. Correcting a URL is not proof of the old price capture or a bookable award.
+
+Added 20 property-identity regressions through SeededRateProvider to the rendered Check direct link. Targeted run: **24/24 tests passed** in InvestorHotelWorkspace.test.tsx; no paid provider/network access. TypeScript also passed with zero diagnostics and incremental output disabled. The earlier 537-test full-suite result is before this follow-up, not a rerun of the updated tree. Logs: `work/gap-checks/october5-booking-links.log` and `october5-booking-types.log`; browser evidence: `october5-wrong-hotel.png` and `october5-correct-hotel.png` in the same external directory.
+
+The public partnership terms were rechecked: Infinia, Diners Black and Regalia Gold each list 2 bank points to 1 ALL point; 2,000 ALL points have EUR 40 face value. This does not establish a transfer minimum, permitted increment, available balance, final rupee offset or checkout eligibility. HDFC again stopped at cardholder sign-in; exact issuer instructions remain gated pending authenticated programme-form evidence.
+
+### Live Accor pre-payment check
+
+Using the sample availability link exposed by the corrected ibis 7295 property page, opened 25–26 October 2026, one adult, one room. Accor displayed Superior Room 1 Queen Bed, advance saver/member rate: INR 2,941.38 room + INR 520.62 taxes = INR 3,462.00, equivalent to THB 1,207.60. This is an observed sample quote, not a guaranteed current offer and not the seeded three-night stay. Continued past optional extras without selecting any, reaching Complete your booking in the existing signed-in Accor session.
+
+Stopped at required guest contact/billing details before Confirm. No personal details were entered, no terms accepted, no points applied and no reservation/payment completed. The point selector and checkout-eligible amount were not reached. The page explicitly states that only the hotel-currency amount is guaranteed; INR conversion is indicative and conversion/bank charges are the customer's responsibility. Consequently, this observation cannot lift either Accor gate or establish a guaranteed rupee redemption value. The HDFC login and checkout-data requirements remain real verification blockers.
