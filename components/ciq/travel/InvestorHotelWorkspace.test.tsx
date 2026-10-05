@@ -91,4 +91,10 @@ describe('InvestorHotelWorkspace', () => {
     renderView()
     expect(screen.getByText(/current engine has sourced HDFC→Accor logic/i)).toBeInTheDocument()
   })
+  it('requires current checkout verification for captured-rate comparisons', () => {
+    renderView()
+    expect(screen.getByText(/Captured rate only. Confirm the current price/)).toBeInTheDocument()
+    expect(screen.getByText(/Checkout verification required/)).toBeInTheDocument()
+    expect(screen.queryByText(/\d+ executable/)).not.toBeInTheDocument()
+  })
 })
