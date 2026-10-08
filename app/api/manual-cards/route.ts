@@ -24,18 +24,20 @@ function svcClient() {
 }
 
 export async function GET(req: NextRequest) {
-  const userId = await callerId(req);
-  if (!userId) return NextResponse.json({ error: 'unauthorized', cards: [] }, { status: 401 });
   try {
-    const { data } = await svcClient()
+    if (!URL_ENV() || !ANON() || !SVC()) return NextResponse.json({ error: 'Card service unavailable' }, { status: 503 });
+    const userId = await callerId(req);
+    if (!userId) return NextResponse.json({ error: 'unauthorized', cards: [] }, { status: 401 });
+    const { data, error } = await svcClient()
       .from('manual_cards')
       .select('*')
       .eq('user_id', userId)
       .order('imported_at', { ascending: false });
-    return NextResponse.json({ cards: data || [] });
+    if (error || !data) return NextResponse.json({ error: 'Could not load saved cards' }, { status: 503 });
+    return NextResponse.json({ cards: data });
   } catch (e: any) {
     console.error('manual-cards GET error:', e.message);
-    return NextResponse.json({ cards: [] });
+    return NextResponse.json({ error: 'Could not load saved cards' }, { status: 503 });
   }
 }
 

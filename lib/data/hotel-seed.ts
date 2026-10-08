@@ -77,7 +77,7 @@ export const SEEDED_HOTELS: SeededHotel[] = [
     cash_taxes_inr: 20036, cash_captured_at: CAPTURED,
     cash_source: BASIS + ' — 3-night total Rs.1,13,196 member / Rs.1,19,154 public',
     points_per_night: null, points_source: 'programme-published',
-    booking_url: 'https://all.accor.com/hotel/3829/index.en.shtml', photo_ref: null,
+    booking_url: 'https://all.accor.com/hotel/5213/index.en.shtml', photo_ref: null,
   },
   {
     id: 'so-bangkok',
@@ -101,7 +101,7 @@ export const SEEDED_HOTELS: SeededHotel[] = [
     cash_taxes_inr: 7921, cash_captured_at: CAPTURED,
     cash_source: BASIS + ' — 3-night total Rs.44,748 member / Rs.47,103 public',
     points_per_night: null, points_source: 'programme-published',
-    booking_url: 'https://all.accor.com/hotel/6929/index.en.shtml', photo_ref: null,
+    booking_url: 'https://all.accor.com/hotel/6469/index.en.shtml', photo_ref: null,
   },
   {
     id: 'movenpick-bdms-wellness-bangkok',
@@ -113,7 +113,7 @@ export const SEEDED_HOTELS: SeededHotel[] = [
     cash_taxes_inr: 6663, cash_captured_at: CAPTURED,
     cash_source: BASIS + ' — 3-night total Rs.37,639; no separate member rate shown',
     points_per_night: null, points_source: 'programme-published',
-    booking_url: 'https://all.accor.com/hotel/9748/index.en.shtml', photo_ref: null,
+    booking_url: 'https://all.accor.com/hotel/B4U9/index.en.shtml', photo_ref: null,
   },
   {
     id: 'novotel-bangkok-siam-square',
@@ -137,7 +137,7 @@ export const SEEDED_HOTELS: SeededHotel[] = [
     cash_taxes_inr: 5930, cash_captured_at: CAPTURED,
     cash_source: BASIS + ' — 3-night total Rs.33,499 member / Rs.35,263 public',
     points_per_night: null, points_source: 'programme-published',
-    booking_url: 'https://all.accor.com/hotel/7017/index.en.shtml', photo_ref: null,
+    booking_url: 'https://all.accor.com/hotel/8015/index.en.shtml', photo_ref: null,
   },
   {
     id: 'movenpick-sukhumvit-15-bangkok',
@@ -149,7 +149,7 @@ export const SEEDED_HOTELS: SeededHotel[] = [
     cash_taxes_inr: 5799, cash_captured_at: CAPTURED,
     cash_source: BASIS + ' — 3-night total Rs.32,761 member / Rs.34,485 public',
     points_per_night: null, points_source: 'programme-published',
-    booking_url: 'https://all.accor.com/hotel/8355/index.en.shtml', photo_ref: null,
+    booking_url: 'https://all.accor.com/hotel/B4K2/index.en.shtml', photo_ref: null,
   },
   {
     id: 'novotel-bangkok-platinum',
@@ -161,7 +161,7 @@ export const SEEDED_HOTELS: SeededHotel[] = [
     cash_taxes_inr: 5477, cash_captured_at: CAPTURED,
     cash_source: BASIS + ' — 3-night total Rs.30,941 member / Rs.32,569 public',
     points_per_night: null, points_source: 'programme-published',
-    booking_url: 'https://all.accor.com/hotel/6404/index.en.shtml', photo_ref: null,
+    booking_url: 'https://all.accor.com/hotel/7272/index.en.shtml', photo_ref: null,
   },
   {
     id: 'grand-mercure-bangkok-asoke',
@@ -173,7 +173,7 @@ export const SEEDED_HOTELS: SeededHotel[] = [
     cash_taxes_inr: 4958, cash_captured_at: CAPTURED,
     cash_source: BASIS + ' — 3-night total Rs.28,009 member / Rs.29,483 public',
     points_per_night: null, points_source: 'programme-published',
-    booking_url: 'https://all.accor.com/hotel/8422/index.en.shtml', photo_ref: null,
+    booking_url: 'https://all.accor.com/hotel/6162/index.en.shtml', photo_ref: null,
   },
   {
     id: 'pullman-bangkok-king-power',
@@ -185,7 +185,7 @@ export const SEEDED_HOTELS: SeededHotel[] = [
     cash_taxes_inr: 4946, cash_captured_at: CAPTURED,
     cash_source: BASIS + ' — 3-night total Rs.27,941 member / Rs.29,411 public',
     points_per_night: null, points_source: 'programme-published',
-    booking_url: 'https://all.accor.com/hotel/5834/index.en.shtml', photo_ref: null,
+    booking_url: 'https://all.accor.com/hotel/6323/index.en.shtml', photo_ref: null,
   },
   {
     id: 'mercure-bangkok-sukhumvit-11',
@@ -197,7 +197,7 @@ export const SEEDED_HOTELS: SeededHotel[] = [
     cash_taxes_inr: 4564, cash_captured_at: CAPTURED,
     cash_source: BASIS + ' — 3-night total Rs.25,782 member / Rs.27,138 public',
     points_per_night: null, points_source: 'programme-published',
-    booking_url: 'https://all.accor.com/hotel/8123/index.en.shtml', photo_ref: null,
+    booking_url: 'https://all.accor.com/hotel/A247/index.en.shtml', photo_ref: null,
   },
   {
     id: 'pullman-bangkok-hotel-g',
@@ -209,7 +209,7 @@ export const SEEDED_HOTELS: SeededHotel[] = [
     cash_taxes_inr: 4509, cash_captured_at: CAPTURED,
     cash_source: BASIS + ' — 3-night total Rs.25,474 member / Rs.26,814 public',
     points_per_night: null, points_source: 'programme-published',
-    booking_url: 'https://all.accor.com/hotel/6753/index.en.shtml', photo_ref: null,
+    booking_url: 'https://all.accor.com/hotel/3616/index.en.shtml', photo_ref: null,
   },
   {
     id: 'novotel-bangkok-sukhumvit-4',
@@ -221,7 +221,7 @@ export const SEEDED_HOTELS: SeededHotel[] = [
     cash_taxes_inr: 4299, cash_captured_at: CAPTURED,
     cash_source: BASIS + ' — 3-night total Rs.24,285 member / Rs.25,563 public',
     points_per_night: null, points_source: 'programme-published',
-    booking_url: 'https://all.accor.com/hotel/9522/index.en.shtml', photo_ref: null,
+    booking_url: 'https://all.accor.com/hotel/A246/index.en.shtml', photo_ref: null,
   },
   {
     id: 'ibis-bangkok-siam',
@@ -233,7 +233,7 @@ export const SEEDED_HOTELS: SeededHotel[] = [
     cash_taxes_inr: 4108, cash_captured_at: CAPTURED,
     cash_source: BASIS + ' — 3-night total Rs.23,209 member / Rs.24,430 public',
     points_per_night: null, points_source: 'programme-published',
-    booking_url: 'https://all.accor.com/hotel/7148/index.en.shtml', photo_ref: null,
+    booking_url: 'https://all.accor.com/hotel/8016/index.en.shtml', photo_ref: null,
   },
   {
     id: 'mercure-bangkok-makkasan',
@@ -245,7 +245,7 @@ export const SEEDED_HOTELS: SeededHotel[] = [
     cash_taxes_inr: 3926, cash_captured_at: CAPTURED,
     cash_source: BASIS + ' — 3-night total Rs.22,177 member / Rs.23,344 public',
     points_per_night: null, points_source: 'programme-published',
-    booking_url: 'https://all.accor.com/hotel/9011/index.en.shtml', photo_ref: null,
+    booking_url: 'https://all.accor.com/hotel/8422/index.en.shtml', photo_ref: null,
   },
   {
     id: 'mercure-bangkok-surawong',
@@ -257,7 +257,7 @@ export const SEEDED_HOTELS: SeededHotel[] = [
     cash_taxes_inr: 3442, cash_captured_at: CAPTURED,
     cash_source: BASIS + ' — 3-night total Rs.19,446; no separate member rate shown',
     points_per_night: null, points_source: 'programme-published',
-    booking_url: 'https://all.accor.com/hotel/7178/index.en.shtml', photo_ref: null,
+    booking_url: 'https://all.accor.com/hotel/C0Q6/index.en.shtml', photo_ref: null,
   },
   {
     id: 'ibis-styles-bangkok-silom',
@@ -269,7 +269,7 @@ export const SEEDED_HOTELS: SeededHotel[] = [
     cash_taxes_inr: 3213, cash_captured_at: CAPTURED,
     cash_source: BASIS + ' — 3-night total Rs.18,150; no separate member rate shown',
     points_per_night: null, points_source: 'programme-published',
-    booking_url: 'https://all.accor.com/hotel/9184/index.en.shtml', photo_ref: null,
+    booking_url: 'https://all.accor.com/hotel/B6N1/index.en.shtml', photo_ref: null,
   },
   {
     id: 'ibis-styles-bangkok-sukhumvit-4',
@@ -281,7 +281,7 @@ export const SEEDED_HOTELS: SeededHotel[] = [
     cash_taxes_inr: 2677, cash_captured_at: CAPTURED,
     cash_source: BASIS + ' — 3-night total Rs.15,120 member / Rs.15,916 public',
     points_per_night: null, points_source: 'programme-published',
-    booking_url: 'https://all.accor.com/hotel/9523/index.en.shtml', photo_ref: null,
+    booking_url: 'https://all.accor.com/hotel/A237/index.en.shtml', photo_ref: null,
   },
   {
     id: 'ibis-bangkok-sathorn',
@@ -293,7 +293,7 @@ export const SEEDED_HOTELS: SeededHotel[] = [
     cash_taxes_inr: 2041, cash_captured_at: CAPTURED,
     cash_source: BASIS + ' — 3-night total Rs.11,531 member / Rs.12,137 public',
     points_per_night: null, points_source: 'programme-published',
-    booking_url: 'https://all.accor.com/hotel/7175/index.en.shtml', photo_ref: null,
+    booking_url: 'https://all.accor.com/hotel/6537/index.en.shtml', photo_ref: null,
   },
   {
     id: 'ibis-bangkok-sukhumvit-4',
@@ -305,7 +305,7 @@ export const SEEDED_HOTELS: SeededHotel[] = [
     cash_taxes_inr: 1849, cash_captured_at: CAPTURED,
     cash_source: BASIS + ' — 3-night total Rs.10,444 member / Rs.10,994 public',
     points_per_night: null, points_source: 'programme-published',
-    booking_url: 'https://all.accor.com/hotel/9524/index.en.shtml', photo_ref: null,
+    booking_url: 'https://all.accor.com/hotel/7295/index.en.shtml', photo_ref: null,
   },
 
   // ─── Dynamic programmes · rates not yet captured ──────────────────────
