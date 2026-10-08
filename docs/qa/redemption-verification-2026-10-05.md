@@ -1,5 +1,15 @@
 # Redemption fixes and remaining acceptance checks — 5 October 2026
 
+## Wallet loading follow-up — 8 October 2026
+
+The founder reported an existing wallet showing zero active cards on mobile. Confirmed code defects: statement/manual card GET handlers converted database errors into successful empty responses; the dashboard ignored HTTP status and swallowed load failures. Initial card loading could also display the empty wallet before requests completed.
+
+Fixed both read endpoints to return generic 503 errors for configuration/database failures while retaining authenticated owner scoping. Added a shared loader that requires successful, well-formed responses from both card sources. The wallet now distinguishes loading, error and successfully empty states, offers retry/sign-in recovery, and does not overwrite its stored cards when a refresh fails. No database records, permissions, credentials or account ownership were changed.
+
+Validation: 12 new mocked API/page regression tests passed; TypeScript passed with no incremental output. Tests cover database/configuration failure, successful empty owner-scoped reads, expired sessions, one-source failure, retry recovery and failed refresh. External logs: `work/gap-checks/october8-wallet.log` and `october8-wallet-types.log`. Full suite/build were not rerun for this follow-up. Main remained e85554954a80a35a60068ad3eeb34ed9e56c09bb at inspection.
+
+Limit: the affected phone's authenticated requests and underlying saved rows were not inspected. This confirms and fixes the false-empty failure path, not the cause of that particular request failure or restoration on the phone. After release, verify the same account on the affected device, successful statement/manual reads and expected cards. The separate wallet rupee-value label and Hotels mobile overflow are not changed by this patch.
+
 ## Scope and baseline
 
 GitHub main checked at e85554954a80a35a60068ad3eeb34ed9e56c09bb. The implementation checkout starts at 091efe1f9b7f217132ad8dfc3b47e67eb8c998d1, whose tree matches that release. Before edits: 527 tests across 97 files passed; TypeScript had zero diagnostics. External network was blocked during automated tests and synthetic service credentials were used. The first sandbox test attempt could not launch esbuild; the permitted retry passed.

@@ -6,10 +6,11 @@ import { createClient } from '@supabase/supabase-js';
 export const runtime = 'nodejs';
 
 export async function GET(req: NextRequest) {
+  try {
   const sUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
   const svcKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
-  if (!sUrl || !anonKey || !svcKey) return NextResponse.json({ cards: [] });
+  if (!sUrl || !anonKey || !svcKey) return NextResponse.json({ error: 'Card service unavailable' }, { status: 503 });
 
   // verify caller from their bearer token
   const auth = req.headers.get('authorization') ?? '';
@@ -23,13 +24,14 @@ export async function GET(req: NextRequest) {
 
   // query that user's own rows (service role for the read; scoped by the verified id)
   const sb = createClient(sUrl, svcKey, { auth: { persistSession: false } });
-  const { data } = await sb
+  const { data, error } = await sb
     .from('statement_imports')
     .select('*')
     .eq('user_id', userId)
     .order('imported_at', { ascending: false });
 
-  if (!data || data.length === 0) return NextResponse.json({ cards: [] });
+  if (error || !data) return NextResponse.json({ error: 'Could not load saved cards' }, { status: 503 });
+  if (data.length === 0) return NextResponse.json({ cards: [] });
 
   const seen = new Set<string>();
   const cards = data.filter(row => {
@@ -39,4 +41,7 @@ export async function GET(req: NextRequest) {
     return true;
   });
   return NextResponse.json({ cards });
+  } catch {
+    return NextResponse.json({ error: 'Could not load saved cards' }, { status: 503 });
+  }
 }
