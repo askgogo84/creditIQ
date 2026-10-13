@@ -23,3 +23,8 @@ it('suppresses converted programme value when FX is unavailable', async () => {
   expect(page.props.fx).toBeNull()
   expect(page.props.programmeConversionValueInr).toBeNull()
 })
+it.each(['9007199254740992', '9'.repeat(400), '-1', '1.5'])('rejects an invalid balance without crashing the page: %s', async points => {
+  const page = await Page({ searchParams: { city: 'Bangkok', points } })
+  expect(page.props.balance).toBeNull()
+  expect(page.props.cards.every((c: any) => c.bank_points_exact === null)).toBe(true)
+})

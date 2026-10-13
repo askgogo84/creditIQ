@@ -3,6 +3,7 @@ export const dynamic = 'force-dynamic';
 import { useState, useEffect, useLayoutEffect } from 'react';
 import { createBrowserClient } from '@supabase/ssr';
 import { authedFetch } from '@/lib/authed-fetch';
+import { loadWalletCards } from '@/lib/load-wallet-cards';
 import { useRouter } from 'next/navigation';
 import { DesignFooter } from '@/components/design/Footer';
 import { Plus, TrendingUp, ArrowRight, Zap, RefreshCw, FileText, MessageSquare, LogOut, CreditCard, Upload, Trash2, X, Check, Building2, ChevronDown, AlertTriangle } from 'lucide-react';
@@ -105,7 +106,8 @@ export default function DashboardPage() {
   const [user, setUser] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [cards, setCards] = useState<SavedCard[]>([]);
-  const [cardsLoading, setCardsLoading] = useState(false);
+  const [cardsLoading, setCardsLoading] = useState(true);
+  const [cardsError, setCardsError] = useState<string | null>(null);
   const [refreshing, setRefreshing] = useState(false);
   const [showAddModal, setShowAddModal] = useState(false);
   const [addForm, setAddForm] = useState<AddCardForm>({
@@ -141,16 +143,9 @@ export default function DashboardPage() {
   }, []);
   const loadCards = async (userId: string) => {
     setCardsLoading(true);
+    setCardsError(null);
     try {
-      const [stmtRes, manualRes] = await Promise.all([
-        authedFetch('/api/user-cards'),
-        authedFetch('/api/manual-cards')
-      ]);
-      const stmtData = await stmtRes.json();
-      const manualData = await manualRes.json();
-      const stmtCards = (stmtData.cards || []).map((c: SavedCard) => ({ ...c, source: 'statement' as const }));
-      const manualCards = (manualData.cards || []).map((c: SavedCard) => ({ ...c, source: 'manual' as const }));
-      const combined = [...stmtCards, ...manualCards];
+      const combined = await loadWalletCards<SavedCard>();
       setCards(combined);
 
       if (combined.length === 0) {
@@ -170,8 +165,11 @@ export default function DashboardPage() {
           }
         } catch {}
       }
-    } catch {}
-    setCardsLoading(false);
+    } catch (error) {
+      setCardsError(error instanceof Error ? error.message : 'Your saved cards could not be loaded. Please retry.');
+    } finally {
+      setCardsLoading(false);
+    }
   };
 
   const getToken = async (): Promise<string | null> => {
@@ -369,11 +367,23 @@ export default function DashboardPage() {
   const cardMatches = (q ? SEED_CARDS.filter(c => `${c.bank} ${c.name}`.toLowerCase().includes(q)) : SEED_CARDS).slice(0, 60);
   const selectedCard = selectedCardId ? SEED_CARDS.find(c => c.id === selectedCardId) ?? null : null;
 
-  if (loading) return (
+  if (loading || cardsLoading) return (
     <main className="min-h-screen flex items-center justify-center">
       <div className="text-center space-y-3">
         <div className="w-8 h-8 border-2 border-t-transparent rounded-full animate-spin mx-auto" style={{ borderColor: 'var(--accent)', borderTopColor: 'transparent' }} />
         <p className="text-sm" style={{ color: 'var(--text-dim)' }}>Loading your portfolio...</p>
+      </div>
+    </main>
+  );
+
+  if (cardsError) return (
+    <main style={{ padding: 24 }}>
+      <div role="alert">
+        <h1>We couldn’t load your wallet</h1>
+        <p>{cardsError}</p>
+        <p>Your card count and balances are unknown until loading succeeds.</p>
+        <button style={{ minHeight: 44 }} onClick={() => void loadCards(user.id)}>Retry loading cards</button>
+        <Link href="/login" style={{ display: 'inline-flex', alignItems: 'center', minHeight: 44, marginLeft: 16 }}>Sign in again</Link>
       </div>
     </main>
   );

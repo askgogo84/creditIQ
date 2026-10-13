@@ -1,15 +1,17 @@
 // lib/redemption-engine/accor.ts
-// Sourced Accor ALL + HDFC facts for the v3.1 engine. Not wired to production yet.
+// Sourced Accor ALL + HDFC facts for the production v3.1 engine.
 // Unknowns stay unknown; issuer/programme facts are never filled from inference.
 
 import type { FixedValueRules, ActiveTransferRoute, PermittedAmounts, Booking } from './types';
 import { HDFC_INFINIA_SOURCE, HDFC_INFINIA_AS_OF } from '@/lib/data/hdfc-transfer-partners';
 
-const ACCOR_TERMS = 'https://all.accor.com/';
+const ACCOR_TERMS = 'https://all.accor.com/a/en/loyalty-program/legal/terms-and-conditions.html';
+const ACCOR_AS_OF = '2026-10-04';
 
 export const ACCOR_PERMITTED: PermittedAmounts = {
   conservative: { min: 2000, increment: 2000 },
   disputed: [1000],
+  max_per_booking: 1_000_000,
 };
 
 export const ACCOR_RULES: FixedValueRules = {
@@ -21,7 +23,7 @@ export const ACCOR_RULES: FixedValueRules = {
     source_url: ACCOR_TERMS,
     as_of: '2026-08-28',
   },
-  booking_url: ACCOR_TERMS,
+  booking_url: 'https://all.accor.com/',
   pricing: 'FIXED_VALUE',
   mechanic: 'CASH_OFFSET',
   fixed_value: {
@@ -34,20 +36,20 @@ export const ACCOR_RULES: FixedValueRules = {
     value: ACCOR_PERMITTED,
     state: 'SOURCE_CONFLICT',
     source_url: ACCOR_TERMS,
-    as_of: '2026-08-28',
+    as_of: ACCOR_AS_OF,
     conflict_note:
-      'The 1,000-point floor is disputed across published readings; only 2,000 and its multiples are common to all. Settle from the logged-in checkout amount field.',
+      'Section 10 allows an online 1,000-point exception followed by 2,000-point multiples, but also says online redemptions are multiples of 2,000. The same section caps an online booking at 1,000,000 points. Verify the 1,000-point exception in the selected checkout; do not infer 3,000 or 5,000-point amounts.',
     readings: [
-      { conservative: { min: 2000, increment: 2000 }, disputed: [] },
-      { conservative: { min: 1000, increment: 2000 }, disputed: [1000] },
+      { conservative: { min: 2000, increment: 2000 }, disputed: [], max_per_booking: 1_000_000 },
+      { conservative: { min: 2000, increment: 2000 }, disputed: [1000], max_per_booking: 1_000_000 },
     ],
   },
   programme_eligible: {
     value: { basis: 'TOTAL', excluded: [] },
     state: 'UNKNOWN',
     source_url: ACCOR_TERMS,
-    as_of: '2026-08-28',
-    conflict_note: 'Whether points offset the full bill or room-only is not directly sourced.',
+    as_of: ACCOR_AS_OF,
+    conflict_note: 'Section 10 includes booked expenses but excludes some taxes online. The selected property, rate and checkout must supply the excluded amounts; at-hotel tax rules cannot be substituted.',
   },
   min_booking_value_rule: {
     value: 'MUST_EXCEED_POINTS_VALUE',

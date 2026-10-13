@@ -9,7 +9,7 @@ import { usableHotels } from '@/lib/data/hotel-seed';
 import { authedFetch } from '@/lib/authed-fetch';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Sparkles } from 'lucide-react';
-import { formatINR } from '@/lib/utils';
+import { RedemptionCandidateResults } from '@/components/ciq/RedemptionCandidateResults';
 import { SectionTabs } from '@/components/ciq/SectionTabs';
 import './redemption-advisor.css';
 
@@ -147,7 +147,7 @@ function OptimizeContent() {
               <div><div className="text-[10px] font-mono uppercase tracking-widest text-ink-400 mb-3">Booking-specific results</div>
                 {evidence?.booking && <p className="text-sm mb-3">{evidence.booking.basis} Captured {evidence.booking.capturedAt} · {evidence.booking.source}</p>}
                 {evidence?.fx && <p className="text-xs mb-3">FX: {evidence.fx.source} · rate date {evidence.fx.as_of ?? 'unavailable'} · retrieved {evidence.fx.fetched_at}</p>}
-                <div className="space-y-2">{evidence?.plan?.candidates.map((candidate, i) => <div key={i} className="bg-ink-900/40 border border-white/10 rounded-lg p-3"><b>{candidate.kind === 'PROGRAMME' ? 'Programme scenario — conditional' : candidate.kind}</b><p className="text-sm">{candidate.kind === 'PROGRAMME' && candidate.instructionBlocked ? 'Exact programme payable amount and transfer instruction withheld.' : candidate.cashPayableMinor === null ? 'Payable amount unavailable.' : `Booking cash payable: ${formatINR(candidate.cashPayableMinor / 100)}`}</p>{candidate.instructionBlocked && <p className="text-xs">{candidate.instructionBlocked.replaceAll('_', ' ')}</p>}</div>) ?? <p className="text-sm">Select a supported card and captured booking for a server-calculated comparison.</p>}</div>
+                <RedemptionCandidateResults candidates={evidence?.plan?.candidates} />
                 {evidence?.readiness.ratio && <a href={evidence.readiness.ratio.source_url} target="_blank" rel="noreferrer" style={{ display: 'inline-flex', alignItems: 'center', minHeight: 44 }} className="text-sm">Issuer ratio source · {evidence.readiness.ratio.as_of}</a>}
               </div>
             </div>

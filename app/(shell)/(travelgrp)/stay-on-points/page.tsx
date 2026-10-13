@@ -43,8 +43,8 @@ export default async function StayOnPointsPage({
   // Wallet cut-over is still pending. Until then a query balance is explicit
   // user input; absence means "not known", never an invented balance.
   const balanceRaw = searchParams?.points;
-  const balance =
-    balanceRaw && /^\d+$/.test(balanceRaw) ? parseInt(balanceRaw, 10) : null;
+  const parsedBalance = balanceRaw && /^\d+$/.test(balanceRaw) ? Number(balanceRaw) : NaN;
+  const balance = Number.isSafeInteger(parsedBalance) ? parsedBalance : null;
 
   const rates = new SeededRateProvider();
   const fxProvider = new LiveFxProvider();

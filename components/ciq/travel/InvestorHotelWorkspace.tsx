@@ -109,7 +109,7 @@ export default function InvestorHotelWorkspace(p: Props) {
     return () => { cancelled = true }
   }, [p.balance])
 
-  const executable = p.cards.filter((card) => card.recommended_path !== 'NO_RECOMMENDATION' && !transferExecutionBlocked(card)).length
+  const comparable = p.cards.filter((card) => card.recommended_path !== 'NO_RECOMMENDATION' && !transferExecutionBlocked(card)).length
   const guarded = p.cards.filter(transferExecutionBlocked).length
 
   return (
@@ -140,7 +140,7 @@ export default function InvestorHotelWorkspace(p: Props) {
 
       <div className="ihw-meta-row">
         <div><b>{p.city}</b> · {p.nights} nights · {p.cards.length} captured properties</div>
-        <div>{executable} executable · {guarded} guarded transfer path{guarded === 1 ? '' : 's'}</div>
+        <div>{comparable} comparison{comparable === 1 ? '' : 's'} · {guarded} guarded transfer path{guarded === 1 ? '' : 's'} · Checkout verification required</div>
       </div>
 
       <div className="ihw-workspace">
@@ -219,7 +219,8 @@ function HotelDecisionPanel({ card, props: p }: { card: StayCard | null; props: 
       </div>
 
       <div className="ihw-steps">
-        <div className="ihw-label">Execution path</div>
+        <div className="ihw-label">Steps after checkout verification</div>
+        {!card.rate_is_live && <p>Captured rate only. Confirm the current price, availability and eligible charges before paying or moving points.</p>}
         {card.recommended_path === 'TRANSFER_THEN_BOOK' ? (
           <>
             <Step n="1" title="Reconfirm the exact room/rate" text={`Open ${card.programme_name} direct before moving points.`} />

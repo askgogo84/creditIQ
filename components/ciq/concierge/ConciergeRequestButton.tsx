@@ -96,7 +96,7 @@ export function ConciergeRequestButton({
         >
           {label}
         </button>
-        <CorporateTravelHandoffButton request={request} label="Corporate account · Send to Business Travel Desk" />
+        <CorporateTravelHandoffButton request={request} disabled={disabled} disabledReason={disabledReason} label="Corporate account · Send to Business Travel Desk" />
       </div>
 
       {open && (
