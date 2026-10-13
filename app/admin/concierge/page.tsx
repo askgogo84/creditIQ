@@ -39,6 +39,9 @@ export default function AdminConciergePage() {
   const [sandboxLastName, setSandboxLastName] = useState('Traveller')
   const [sandboxParticipants, setSandboxParticipants] = useState(1)
   const [sandboxSimulation, setSandboxSimulation] = useState<'SUCCESS' | 'PAYMENT_DECLINED' | 'SUPPLIER_TIMEOUT'>('SUCCESS')
+  const [sandboxSupplier, setSandboxSupplier] = useState<'INTERNAL' | 'DUFFEL_TEST' | 'HBX_TEST'>('INTERNAL')
+  const [hbxRateKey, setHbxRateKey] = useState('')
+  const [hbxRateType, setHbxRateType] = useState<'BOOKABLE' | 'RECHECK'>('BOOKABLE')
   const [sandboxMessage, setSandboxMessage] = useState('')
 
   const selected = useMemo(() => cases.find(c => c.id === selectedId) ?? cases[0] ?? null, [cases, selectedId])
@@ -105,14 +108,18 @@ export default function AdminConciergePage() {
         body: JSON.stringify({
           holder: { firstName: sandboxFirstName, lastName: sandboxLastName },
           participantCount: sandboxParticipants,
-          simulation: sandboxSimulation,
+          simulation: sandboxSupplier === 'INTERNAL' ? sandboxSimulation : 'SUCCESS',
+          supplier: sandboxSupplier,
+          hbxRateKey: sandboxSupplier === 'HBX_TEST' ? hbxRateKey : undefined,
+          hbxRateType: sandboxSupplier === 'HBX_TEST' ? hbxRateType : undefined,
         }),
       })
       const json = await res.json().catch(() => ({}))
       if (!res.ok) throw new Error(json?.error || 'Sandbox booking failed')
       const ref = json?.sandbox?.bookingReference
       const status = json?.case?.status || json?.sandbox?.status || 'updated'
-      setSandboxMessage(ref ? `Sandbox booking ${status}: ${ref}` : `Sandbox booking ${status}`)
+      const supplier = json?.sandbox?.supplier || sandboxSupplier
+      setSandboxMessage(ref ? `${supplier} booking ${status}: ${ref}` : `${supplier} booking ${status}`)
       await load()
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Sandbox booking failed')
@@ -155,19 +162,31 @@ export default function AdminConciergePage() {
 
           {['TRANSFER_APPROVED','BOOKING_IN_PROGRESS','BOOKED'].includes(selected.status) && <details style={{ marginTop: 18, padding: 14, border: '1px dashed var(--line)', borderRadius: 12, background: 'var(--surface-2)' }}>
             <summary style={{ fontWeight: 800, cursor: 'pointer' }}>Transaction sandbox · preview/test only</summary>
-            <p style={{ fontSize: 10, lineHeight: 1.5, color: 'var(--ink-2)' }}>Runs this approved case through the same booking state machine without charging a card or calling a paid supplier. Production is disabled unless explicitly enabled. Traveller/guest names are validated for the simulation but are not persisted in reconciliation.</p>
+            <p style={{ fontSize: 10, lineHeight: 1.5, color: 'var(--ink-2)' }}>INTERNAL simulates the full state machine only. DUFFEL_TEST and HBX_TEST call the suppliers' non-production environments and store the returned test booking reference through the same BOOKED → RECONCILED lifecycle. Production is disabled by default.</p>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2,minmax(0,1fr))', gap: 8 }}>
-              <input aria-label="Sandbox first name" value={sandboxFirstName} onChange={e => setSandboxFirstName(e.target.value)} placeholder="First name" style={{ minHeight: 40, padding: '0 10px' }} />
-              <input aria-label="Sandbox last name" value={sandboxLastName} onChange={e => setSandboxLastName(e.target.value)} placeholder="Last name" style={{ minHeight: 40, padding: '0 10px' }} />
-              <input aria-label="Sandbox participant count" type="number" min={1} max={9} value={sandboxParticipants} onChange={e => setSandboxParticipants(Math.max(1, Math.min(9, Number(e.target.value) || 1)))} style={{ minHeight: 40, padding: '0 10px' }} />
-              <select aria-label="Sandbox simulation" value={sandboxSimulation} onChange={e => setSandboxSimulation(e.target.value as typeof sandboxSimulation)} style={{ minHeight: 40, padding: '0 10px' }}>
+              <select aria-label="Sandbox supplier" value={sandboxSupplier} onChange={e => {
+                const value = e.target.value as typeof sandboxSupplier
+                setSandboxSupplier(value)
+                if (value !== 'INTERNAL') setSandboxSimulation('SUCCESS')
+              }} style={{ minHeight: 40, padding: '0 10px' }}>
+                <option value="INTERNAL">Internal simulation</option>
+                {selected.source_type === 'FLIGHT' && <option value="DUFFEL_TEST">Duffel TEST · supplier order</option>}
+                {selected.source_type === 'HOTEL' && <option value="HBX_TEST">HBX TEST · supplier reservation</option>}
+              </select>
+              <select aria-label="Sandbox simulation" disabled={sandboxSupplier !== 'INTERNAL'} value={sandboxSimulation} onChange={e => setSandboxSimulation(e.target.value as typeof sandboxSimulation)} style={{ minHeight: 40, padding: '0 10px' }}>
                 <option value="SUCCESS">Success</option>
                 <option value="PAYMENT_DECLINED">Payment declined</option>
                 <option value="SUPPLIER_TIMEOUT">Supplier timeout</option>
               </select>
+              <input aria-label="Sandbox first name" value={sandboxFirstName} onChange={e => setSandboxFirstName(e.target.value)} placeholder="First name" style={{ minHeight: 40, padding: '0 10px' }} />
+              <input aria-label="Sandbox last name" value={sandboxLastName} onChange={e => setSandboxLastName(e.target.value)} placeholder="Last name" style={{ minHeight: 40, padding: '0 10px' }} />
+              <input aria-label="Sandbox participant count" type="number" min={1} max={9} value={sandboxParticipants} onChange={e => setSandboxParticipants(Math.max(1, Math.min(9, Number(e.target.value) || 1)))} style={{ minHeight: 40, padding: '0 10px' }} />
+              {sandboxSupplier === 'HBX_TEST' && <select aria-label="HBX rate type" value={hbxRateType} onChange={e => setHbxRateType(e.target.value as typeof hbxRateType)} style={{ minHeight: 40, padding: '0 10px' }}><option value="BOOKABLE">BOOKABLE</option><option value="RECHECK">RECHECK</option></select>}
             </div>
-            <button disabled={busy || !executionPlan?.canStartBooking || !sandboxFirstName.trim() || !sandboxLastName.trim()} onClick={() => void runSandboxBooking()} style={{ marginTop: 9, minHeight: 42, padding: '0 15px' }}>
-              {busy ? 'Running…' : 'Run booking sandbox end to end'}
+            {sandboxSupplier === 'HBX_TEST' && <input aria-label="HBX rate key" value={hbxRateKey} onChange={e => setHbxRateKey(e.target.value)} placeholder="Exact HBX rateKey from live TEST availability" style={{ width: '100%', minHeight: 40, marginTop: 8, padding: '0 10px' }} />}
+            {sandboxSupplier !== 'INTERNAL' && selected.status !== 'TRANSFER_APPROVED' && <div style={{ marginTop: 8, fontSize: 10, color: '#9A6700' }}>Supplier TEST can start only once from TRANSFER_APPROVED to prevent duplicate supplier orders.</div>}
+            <button disabled={busy || !executionPlan?.canStartBooking || !sandboxFirstName.trim() || !sandboxLastName.trim() || (sandboxSupplier !== 'INTERNAL' && selected.status !== 'TRANSFER_APPROVED') || (sandboxSupplier === 'HBX_TEST' && !hbxRateKey.trim())} onClick={() => void runSandboxBooking()} style={{ marginTop: 9, minHeight: 42, padding: '0 15px' }}>
+              {busy ? 'Running…' : sandboxSupplier === 'INTERNAL' ? 'Run booking sandbox end to end' : sandboxSupplier === 'DUFFEL_TEST' ? 'Create Duffel TEST order end to end' : 'Create HBX TEST reservation end to end'}
             </button>
           </details>}
 
