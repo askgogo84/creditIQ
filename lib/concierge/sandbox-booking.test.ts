@@ -29,6 +29,26 @@ describe('transaction sandbox', () => {
     expect(JSON.stringify(a.reconciliation)).not.toContain('Traveller')
   })
 
+  it('accepts an exact dated live hotel selection', () => {
+    const result = buildSandboxBooking({
+      caseId: '33333333-3333-4333-8333-333333333333',
+      sourceType: 'HOTEL',
+      selection: {
+        hotel_name: 'Live Hotel',
+        destination: 'Bangkok',
+        checkin: '2026-11-10',
+        checkout: '2026-11-12',
+      },
+      verifiedRedemptionSnapshot: { provider: 'booking-demand' },
+      expectedCashMinor: 10125,
+      currency: 'EUR',
+      holder: { firstName: 'Test', lastName: 'Guest' },
+      participantCount: 2,
+    })
+    expect(result.bookingReference).toMatch(/^CIQ-HTL-/)
+    expect(result.currency).toBe('EUR')
+  })
+
   it('creates a deterministic hotel reservation reference', () => {
     const result = buildSandboxBooking({
       caseId: '22222222-2222-4222-8222-222222222222',
