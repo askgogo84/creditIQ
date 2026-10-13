@@ -25,6 +25,20 @@ type CreatedCase = {
   title: string
 }
 
+function formatMinor(minor: number | null, currency: string | undefined) {
+  if (minor === null) return 'Needs verification'
+  const code = (currency || 'INR').toUpperCase()
+  try {
+    return new Intl.NumberFormat('en-IN', {
+      style: 'currency',
+      currency: code,
+      maximumFractionDigits: 2,
+    }).format(minor / 100)
+  } catch {
+    return `${code} ${(minor / 100).toLocaleString('en-IN', { maximumFractionDigits: 2 })}`
+  }
+}
+
 export function ConciergeRequestButton({
   request,
   disabled = false,
@@ -141,7 +155,7 @@ export function ConciergeRequestButton({
             <div style={{ padding: 20, display: 'grid', gap: 12 }}>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
                 <Summary label="Request type" value={request.sourceType === 'FLIGHT' ? 'Flight booking' : 'Hotel booking'} />
-                <Summary label="Expected cash" value={request.expectedCashMinor === null ? 'Needs verification' : `₹${(request.expectedCashMinor / 100).toLocaleString('en-IN', { maximumFractionDigits: 2 })}`} />
+                <Summary label="Expected cash" value={formatMinor(request.expectedCashMinor, request.currency)} />
                 <Summary label="Contact" value={request.contactChannel === 'APP' ? 'CreditIQ app' : 'App + WhatsApp'} />
                 <Summary label="Initial state" value="REVIEWING" />
               </div>

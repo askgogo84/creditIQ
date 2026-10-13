@@ -3,18 +3,26 @@
 import { useState } from 'react'
 import { ArrowRight, BedDouble, CheckCircle2, ShieldCheck } from 'lucide-react'
 import { authedFetch } from '@/lib/authed-fetch'
+import { ConciergeRequestButton } from '@/components/ciq/concierge/ConciergeRequestButton'
+import { buildCashHotelConciergeRequest } from '@/components/ciq/concierge/travel-requests'
 
 type CashOffer = {
   id: string
+  hotelId?: string | null
   hotelName: string
   chainName?: string | null
   stars?: number | null
   roomName?: string | null
   roomType?: string | null
+  cancellationPolicy?: string | null
+  mealPlan?: string | null
+  paymentType?: string | null
   currency: string
   totalPrice: number
   deeplink?: string | null
   source: string
+  rateKey?: string | null
+  rateType?: string | null
 }
 
 type HotelVerdict = {
@@ -82,6 +90,7 @@ export function SimpleHotelWorkspace() {
   const [destination, setDestination] = useState('Goa')
   const [checkin, setCheckin] = useState(plusDays(7))
   const [checkout, setCheckout] = useState(plusDays(10))
+  const [adults, setAdults] = useState(2)
   const [mode, setMode] = useState<'points' | 'cash'>('points')
   const [loyalty, setLoyalty] = useState<LoyaltyProperty[]>([])
   const [cashOffers, setCashOffers] = useState<CashOffer[]>([])
@@ -150,8 +159,8 @@ export function SimpleHotelWorkspace() {
     setCashSource('')
     setHotelVerdict(null)
 
-    const payload = { destination: destination.trim(), checkin, checkout, adults: 2, rooms: 1, limit: 30 }
-    const loyaltyPayload = { destination: destination.trim(), checkInDate: checkin, checkOutDate: checkout, adults: 2 }
+    const payload = { destination: destination.trim(), checkin, checkout, adults, rooms: 1, limit: 30 }
+    const loyaltyPayload = { destination: destination.trim(), checkInDate: checkin, checkOutDate: checkout, adults }
 
     const [cashResult, loyaltyResult] = await Promise.allSettled([
       authedFetch('/api/hotels/search', {
@@ -212,7 +221,7 @@ export function SimpleHotelWorkspace() {
           checkInDate: checkin,
           checkOutDate: checkout,
           numberOfRooms: 1,
-          numberOfAdults: 2,
+          numberOfAdults: adults,
           numberOfKids: 0,
         }),
       })
@@ -241,10 +250,11 @@ export function SimpleHotelWorkspace() {
         <p style={{ margin: 0, color: 'var(--ink-2)', maxWidth: 760 }}>CreditIQ keeps loyalty hotels and live cash prices separate so a test provider or missing cash feed can never create a fake redemption answer.</p>
       </div>
 
-      <section style={{ display: 'grid', gridTemplateColumns: '1.2fr 160px 160px auto', gap: 9, alignItems: 'end', padding: 14, border: '1px solid var(--line)', borderRadius: 18, background: 'var(--surface)' }}>
+      <section style={{ display: 'grid', gridTemplateColumns: '1.2fr 160px 160px 110px auto', gap: 9, alignItems: 'end', padding: 14, border: '1px solid var(--line)', borderRadius: 18, background: 'var(--surface)' }}>
         <label><small>Destination</small><input value={destination} onChange={e => setDestination(e.target.value)} placeholder="Goa, Dubai, Singapore…" style={{ width: '100%', height: 42, border: '1px solid var(--line)', borderRadius: 10, padding: '0 11px', background: 'var(--surface)' }} /></label>
         <label><small>Check-in</small><input type="date" value={checkin} onChange={e => setCheckin(e.target.value)} style={{ width: '100%', height: 42, border: '1px solid var(--line)', borderRadius: 10, padding: '0 9px', background: 'var(--surface)' }} /></label>
         <label><small>Check-out</small><input type="date" value={checkout} onChange={e => setCheckout(e.target.value)} style={{ width: '100%', height: 42, border: '1px solid var(--line)', borderRadius: 10, padding: '0 9px', background: 'var(--surface)' }} /></label>
+        <label><small>Guests</small><input type="number" min={1} max={9} value={adults} onChange={e => setAdults(Math.max(1, Math.min(9, Number(e.target.value) || 1)))} style={{ width: '100%', height: 42, border: '1px solid var(--line)', borderRadius: 10, padding: '0 9px', background: 'var(--surface)' }} /></label>
         <button onClick={search} disabled={loading} style={{ height: 42, border: 0, borderRadius: 10, padding: '0 18px', background: 'var(--copper)', color: '#fff', fontWeight: 800 }}>{loading ? 'Searching…' : 'Search hotels'}</button>
       </section>
 
@@ -322,13 +332,29 @@ export function SimpleHotelWorkspace() {
           <div style={{ marginBottom: 10 }}><strong style={{ fontSize: 18 }}>Live cash hotels</strong><span style={{ display: 'block', color: 'var(--ink-3)', fontSize: 11, marginTop: 2 }}>{cashSource ? `Source: ${cashSource}` : 'No production cash provider returned inventory.'}</span></div>
           {cashOffers.length ? (
             <div style={{ display: 'grid', gap: 8 }}>
-              {cashOffers.slice(0, 18).map(offer => (
-                <article key={offer.id} style={{ border: '1px solid var(--line)', borderRadius: 14, background: 'var(--surface)', padding: 13, display: 'grid', gridTemplateColumns: 'minmax(0,1fr) 150px auto', gap: 14, alignItems: 'center' }}>
-                  <div><strong style={{ display: 'block', fontSize: 14 }}>{offer.hotelName}</strong><span style={{ display: 'block', marginTop: 3, fontSize: 11, color: 'var(--ink-2)' }}>{[offer.chainName, offer.stars ? `${offer.stars} star` : null, offer.roomName || offer.roomType].filter(Boolean).join(' · ')}</span></div>
-                  <div><small style={{ color: 'var(--ink-3)' }}>Total</small><b style={{ display: 'block', fontSize: 17, marginTop: 2 }}>{cash(offer.totalPrice, offer.currency)}</b></div>
-                  {offer.deeplink ? <a href={offer.deeplink} target="_blank" rel="noopener noreferrer" style={{ padding: '9px 12px', borderRadius: 9, background: 'var(--ink)', color: 'var(--surface)', textDecoration: 'none', fontWeight: 800, fontSize: 11.5 }}>Open offer</a> : <CheckCircle2 size={18} color="#166534" />}
-                </article>
-              ))}
+              {cashOffers.slice(0, 18).map(offer => {
+                const conciergeRequest = buildCashHotelConciergeRequest(offer, {
+                  destination: destination.trim(),
+                  checkin,
+                  checkout,
+                  adults,
+                  rooms: 1,
+                })
+                return (
+                  <article key={offer.id} style={{ border: '1px solid var(--line)', borderRadius: 14, background: 'var(--surface)', padding: 13, display: 'grid', gridTemplateColumns: 'minmax(0,1fr) 150px minmax(190px,240px)', gap: 14, alignItems: 'center' }}>
+                    <div>
+                      <strong style={{ display: 'block', fontSize: 14 }}>{offer.hotelName}</strong>
+                      <span style={{ display: 'block', marginTop: 3, fontSize: 11, color: 'var(--ink-2)' }}>{[offer.chainName, offer.stars ? `${offer.stars} star` : null, offer.roomName || offer.roomType].filter(Boolean).join(' · ')}</span>
+                      <small style={{ display: 'block', marginTop: 4, color: 'var(--ink-3)' }}>{checkin} → {checkout} · {adults} guest{adults === 1 ? '' : 's'} · {offer.source}</small>
+                    </div>
+                    <div><small style={{ color: 'var(--ink-3)' }}>Total</small><b style={{ display: 'block', fontSize: 17, marginTop: 2 }}>{cash(offer.totalPrice, offer.currency)}</b></div>
+                    <div style={{ display: 'grid', gap: 7 }}>
+                      {offer.deeplink ? <a href={offer.deeplink} target="_blank" rel="noopener noreferrer" style={{ padding: '9px 12px', borderRadius: 9, background: 'var(--ink)', color: 'var(--surface)', textDecoration: 'none', fontWeight: 800, fontSize: 11.5, textAlign: 'center' }}>Open provider offer</a> : <span style={{ display: 'flex', gap: 6, alignItems: 'center', fontSize: 11, color: '#166534' }}><CheckCircle2 size={16} /> Exact provider result captured</span>}
+                      <ConciergeRequestButton request={conciergeRequest} label="Have Concierge book this" />
+                    </div>
+                  </article>
+                )
+              })}
             </div>
           ) : <div style={{ padding: 22, border: '1px solid var(--line)', borderRadius: 14, background: 'var(--surface)' }}>No production cash inventory is available right now. The points tab remains usable.</div>}
         </section>

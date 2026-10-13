@@ -28,7 +28,12 @@ export type AmadeusCashFlight = {
 let tokenCache: { token: string; expiresAt: number; base: string } | null = null
 
 function configured() {
-  return Boolean(process.env.AMADEUS_CLIENT_ID && process.env.AMADEUS_CLIENT_SECRET)
+  // Amadeus retired the Self-Service APIs on 17 July 2026. The adapter below is
+  // retained only as a migration reference and is fail-closed by default. Do
+  // not silently treat Enterprise access as schema-compatible with this legacy
+  // self-service implementation.
+  return process.env.AMADEUS_LEGACY_SELF_SERVICE_OVERRIDE === 'true'
+    && Boolean(process.env.AMADEUS_CLIENT_ID && process.env.AMADEUS_CLIENT_SECRET)
 }
 
 function baseUrl() {

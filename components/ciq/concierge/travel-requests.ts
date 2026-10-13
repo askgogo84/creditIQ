@@ -238,3 +238,91 @@ export function buildHotelConciergeRequest(
     contactChannel: 'BOTH',
   }
 }
+
+export function buildCashHotelConciergeRequest(
+  offer: {
+    id: string
+    hotelId?: string | null
+    hotelName: string
+    chainName?: string | null
+    stars?: number | null
+    roomName?: string | null
+    roomType?: string | null
+    cancellationPolicy?: string | null
+    mealPlan?: string | null
+    paymentType?: string | null
+    currency: string
+    totalPrice: number
+    deeplink?: string | null
+    source: string
+    rateKey?: string | null
+    rateType?: string | null
+  },
+  search: {
+    destination: string
+    checkin: string
+    checkout: string
+    adults: number
+    rooms?: number
+  },
+): ConciergeRequest {
+  const total = Number(offer.totalPrice)
+  const expectedCashMinor = Number.isFinite(total) && total >= 0
+    ? Math.round(total * 100)
+    : null
+  const currency = (offer.currency || '').trim().toUpperCase() || 'INR'
+
+  return {
+    context: 'HNI',
+    sourceType: 'HOTEL',
+    sourceRef: `${offer.source}:${offer.id}`,
+    title: `${offer.hotelName} · ${search.destination}`,
+    selection: {
+      hotel_name: offer.hotelName,
+      hotel_id: offer.hotelId ?? null,
+      chain_name: offer.chainName ?? null,
+      destination: search.destination,
+      checkin: search.checkin,
+      checkout: search.checkout,
+      adults: search.adults,
+      rooms: search.rooms ?? 1,
+      stars: offer.stars ?? null,
+      room_name: offer.roomName ?? null,
+      room_type: offer.roomType ?? null,
+      cancellation_policy: offer.cancellationPolicy ?? null,
+      meal_plan: offer.mealPlan ?? null,
+      payment_type: offer.paymentType ?? null,
+      total_price: Number.isFinite(total) ? total : null,
+      currency,
+      provider: offer.source,
+      booking_link: offer.deeplink ?? null,
+      hbx_rate_key: offer.rateKey ?? null,
+      hbx_rate_type: offer.rateType ?? null,
+    },
+    redemptionSnapshot: {
+      recommended_path: 'CASH_PROVIDER',
+      instruction_state: 'LIVE_CASH_OPTION_REQUIRES_OPERATOR_REVERIFICATION',
+    },
+    sourceSnapshot: {
+      cash_rate: {
+        state: 'LIVE_PROVIDER_RETURNED',
+        source: offer.source,
+        booking_link_present: Boolean(offer.deeplink),
+        hbx_rate_key_present: Boolean(offer.rateKey),
+        hbx_rate_type: offer.rateType ?? null,
+      },
+      booking_identity: {
+        destination: search.destination,
+        checkin: search.checkin,
+        checkout: search.checkout,
+        hotel_id: offer.hotelId ?? null,
+        room_name: offer.roomName ?? null,
+        room_type: offer.roomType ?? null,
+      },
+    },
+    expectedCashMinor,
+    currency,
+    contactChannel: 'BOTH',
+    notes: 'Exact live cash-hotel selection. Concierge must re-price/re-check the same dates, occupancy, property and rate terms before requesting approval.',
+  }
+}

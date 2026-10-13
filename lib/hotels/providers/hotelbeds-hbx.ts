@@ -23,6 +23,8 @@ export type HbxHotelOffer = {
   agentName: string | null
   deeplink: string | null
   source: 'hotelbeds-hbx'
+  rateKey: string
+  rateType: 'BOOKABLE' | 'RECHECK' | string | null
 }
 
 export type HbxHotelPage = {
@@ -117,7 +119,9 @@ function normalizeDestination(destination: string) {
   return DESTINATION_CODES[key] || null
 }
 
-function requestJson(url: string, body: unknown): Promise<{ status: number; headers: IncomingHttpHeaders; data: any }> {
+type HbxTransport = (url: string, body: unknown, timeoutMs?: number) => Promise<{ status: number; headers: IncomingHttpHeaders; data: any }>
+
+function requestJson(url: string, body: unknown, timeoutMs = 18_000): Promise<{ status: number; headers: IncomingHttpHeaders; data: any }> {
   return new Promise((resolve, reject) => {
     const timestamp = Math.floor(Date.now() / 1000)
     const parsed = new URL(url)
@@ -151,7 +155,7 @@ function requestJson(url: string, body: unknown): Promise<{ status: number; head
         resolve({ status: res.statusCode || 0, headers: res.headers, data })
       })
     })
-    req.setTimeout(18_000, () => req.destroy(new Error('HBX Hotelbeds request timed out')))
+    req.setTimeout(timeoutMs, () => req.destroy(new Error('HBX Hotelbeds request timed out')))
     req.on('error', reject)
     req.write(payload)
     req.end()
@@ -206,6 +210,8 @@ function normalizeHotel(hotel: any, checkin: string, checkout: string): HbxHotel
     agentName: `HBX Hotelbeds ${environment() === 'test' ? 'evaluation' : 'live'}`,
     deeplink: null,
     source: 'hotelbeds-hbx',
+    rateKey: String(rate?.rateKey || ''),
+    rateType: rate?.rateType ? String(rate.rateType).toUpperCase() : null,
   }]
 }
 
@@ -251,4 +257,121 @@ export async function searchHotelbedsHotels(input: {
   const requestId = String(result.headers['x-request-id'] || result.data?.auditData?.processTime || '') || null
 
   return { offers, total, destinationCode, environment: environment(), requestId }
+}
+
+
+export type HbxTestBookingResult = {
+  provider: 'hotelbeds-hbx'
+  testMode: true
+  bookingReference: string
+  status: string | null
+  rateKey: string
+  rateType: string | null
+  totalNet: number | null
+  currency: string | null
+}
+
+function firstRate(data: any): any | null {
+  const hotels = Array.isArray(data?.hotels?.hotels) ? data.hotels.hotels : []
+  for (const hotel of hotels) {
+    const rooms = Array.isArray(hotel?.rooms) ? hotel.rooms : []
+    for (const room of rooms) {
+      const rates = Array.isArray(room?.rates) ? room.rates : []
+      if (rates[0]) return rates[0]
+    }
+  }
+  return null
+}
+
+export async function checkHotelbedsRate(
+  rateKey: string,
+  transport: HbxTransport = requestJson,
+): Promise<{ rateKey: string; rateType: string | null; net: number | null; currency: string | null }> {
+  if (!rateKey.trim()) throw new Error('HBX CheckRate requires rateKey')
+  const result = await transport(`${baseUrl()}/hotel-api/1.0/checkrates`, {
+    rooms: [{ rateKey }],
+  })
+  if (result.status < 200 || result.status >= 300) {
+    const message = result.data?.error?.message || result.data?.error || result.data?.message || `HTTP ${result.status}`
+    throw new Error(`HBX CheckRate failed: ${String(message).slice(0, 260)}`)
+  }
+  const rate = firstRate(result.data)
+  if (!rate?.rateKey) throw new Error('HBX CheckRate returned no bookable rateKey')
+  return {
+    rateKey: String(rate.rateKey),
+    rateType: rate?.rateType ? String(rate.rateType).toUpperCase() : null,
+    net: Number.isFinite(Number(rate?.net)) ? Number(rate.net) : null,
+    currency: rate?.currency ? String(rate.currency) : null,
+  }
+}
+
+export async function bookHotelbedsTestRate(
+  input: {
+    rateKey: string
+    rateType?: string | null
+    holder: { firstName: string; lastName: string }
+    adults?: number
+    clientReference: string
+    tolerance?: number
+  },
+  transport: HbxTransport = requestJson,
+): Promise<HbxTestBookingResult> {
+  if (environment() !== 'test') throw new Error('HBX TEST booking adapter refuses production environment')
+  if (!input.rateKey.trim()) throw new Error('HBX TEST booking requires rateKey')
+  if (!input.holder.firstName.trim() || !input.holder.lastName.trim()) throw new Error('HBX TEST booking requires holder name')
+
+  let rateKey = input.rateKey
+  let rateType = input.rateType ? input.rateType.toUpperCase() : null
+  let checkedNet: number | null = null
+  let checkedCurrency: string | null = null
+
+  if (rateType === 'RECHECK') {
+    const checked = await checkHotelbedsRate(rateKey, transport)
+    rateKey = checked.rateKey
+    rateType = checked.rateType
+    checkedNet = checked.net
+    checkedCurrency = checked.currency
+  }
+
+  if (rateType === 'RECHECK') throw new Error('HBX CheckRate did not return a BOOKABLE rate')
+
+  const adults = Math.max(1, Math.min(9, Number.isSafeInteger(input.adults) ? input.adults! : 1))
+  const paxes = Array.from({ length: adults }, (_, index) => ({
+    roomId: 1,
+    type: 'AD',
+    name: index === 0 ? input.holder.firstName.trim() : `Test${index + 1}`,
+    surname: input.holder.lastName.trim(),
+  }))
+
+  // HBX recommends allowing at least 60 seconds for booking confirmation.
+  const result = await transport(`${baseUrl()}/hotel-api/1.0/bookings`, {
+    holder: {
+      name: input.holder.firstName.trim(),
+      surname: input.holder.lastName.trim(),
+    },
+    rooms: [{ rateKey, paxes }],
+    clientReference: input.clientReference.slice(0, 20),
+    remark: 'CreditIQ provider acceptance test',
+    tolerance: input.tolerance ?? 2,
+  }, 65_000)
+
+  if (result.status < 200 || result.status >= 300) {
+    const message = result.data?.error?.message || result.data?.error || result.data?.message || `HTTP ${result.status}`
+    throw new Error(`HBX TEST booking failed: ${String(message).slice(0, 260)}`)
+  }
+
+  const booking = result.data?.booking
+  const reference = booking?.reference
+  if (!reference) throw new Error('HBX TEST booking response did not include booking reference')
+
+  return {
+    provider: 'hotelbeds-hbx',
+    testMode: true,
+    bookingReference: String(reference),
+    status: booking?.status ? String(booking.status) : null,
+    rateKey,
+    rateType,
+    totalNet: Number.isFinite(Number(booking?.totalNet)) ? Number(booking.totalNet) : checkedNet,
+    currency: booking?.currency ? String(booking.currency) : checkedCurrency,
+  }
 }

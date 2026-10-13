@@ -35,6 +35,14 @@ export default function AdminConciergePage() {
   const [verifiedJson, setVerifiedJson] = useState('{}')
   const [bookingReference, setBookingReference] = useState('')
   const [reconciliationJson, setReconciliationJson] = useState('{}')
+  const [sandboxFirstName, setSandboxFirstName] = useState('Test')
+  const [sandboxLastName, setSandboxLastName] = useState('Traveller')
+  const [sandboxParticipants, setSandboxParticipants] = useState(1)
+  const [sandboxSimulation, setSandboxSimulation] = useState<'SUCCESS' | 'PAYMENT_DECLINED' | 'SUPPLIER_TIMEOUT'>('SUCCESS')
+  const [sandboxSupplier, setSandboxSupplier] = useState<'INTERNAL' | 'DUFFEL_TEST' | 'HBX_TEST'>('INTERNAL')
+  const [hbxRateKey, setHbxRateKey] = useState('')
+  const [hbxRateType, setHbxRateType] = useState<'BOOKABLE' | 'RECHECK'>('BOOKABLE')
+  const [sandboxMessage, setSandboxMessage] = useState('')
 
   const selected = useMemo(() => cases.find(c => c.id === selectedId) ?? cases[0] ?? null, [cases, selectedId])
   const executionPlan = useMemo(() => selected ? buildBookingExecutionPlan({
@@ -90,6 +98,34 @@ export default function AdminConciergePage() {
     } finally { setBusy(false) }
   }
 
+  async function runSandboxBooking() {
+    if (!selected) return
+    setBusy(true); setError(''); setSandboxMessage('')
+    try {
+      const res = await fetch(`/api/admin/concierge/cases/${encodeURIComponent(selected.id)}/sandbox-book`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          holder: { firstName: sandboxFirstName, lastName: sandboxLastName },
+          participantCount: sandboxParticipants,
+          simulation: sandboxSupplier === 'INTERNAL' ? sandboxSimulation : 'SUCCESS',
+          supplier: sandboxSupplier,
+          hbxRateKey: sandboxSupplier === 'HBX_TEST' ? hbxRateKey : undefined,
+          hbxRateType: sandboxSupplier === 'HBX_TEST' ? hbxRateType : undefined,
+        }),
+      })
+      const json = await res.json().catch(() => ({}))
+      if (!res.ok) throw new Error(json?.error || 'Sandbox booking failed')
+      const ref = json?.sandbox?.bookingReference
+      const status = json?.case?.status || json?.sandbox?.status || 'updated'
+      const supplier = json?.sandbox?.supplier || sandboxSupplier
+      setSandboxMessage(ref ? `${supplier} booking ${status}: ${ref}` : `${supplier} booking ${status}`)
+      await load()
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'Sandbox booking failed')
+    } finally { setBusy(false) }
+  }
+
   return (
     <main style={{ maxWidth: 1320, margin: '0 auto', padding: '28px 22px 60px', color: 'var(--ink)' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'end', gap: 20, marginBottom: 20 }}>
@@ -97,6 +133,7 @@ export default function AdminConciergePage() {
         <button onClick={() => void load()} style={{ minHeight: 40, padding: '0 14px' }}>Refresh</button>
       </div>
       {error && <div style={{ marginBottom: 14, padding: 12, border: '1px solid #c33', borderRadius: 10, color: '#c33' }}>{error}</div>}
+      {sandboxMessage && <div role="status" style={{ marginBottom: 14, padding: 12, border: '1px solid var(--line)', borderRadius: 10, color: 'var(--prov-verified)', background: 'var(--surface-2)' }}>{sandboxMessage}</div>}
       <div style={{ display: 'grid', gridTemplateColumns: '340px minmax(0,1fr)', gap: 16 }}>
         <aside style={{ border: '1px solid var(--line)', borderRadius: 14, overflow: 'hidden', background: 'var(--surface)' }}>
           {cases.map(c => <button key={c.id} onClick={() => setSelectedId(c.id)} style={{ display: 'block', width: '100%', textAlign: 'left', padding: 13, border: 0, borderBottom: '1px solid var(--line-soft)', background: selected?.id === c.id ? 'var(--surface-2)' : 'transparent', color: 'var(--ink)' }}><b style={{ display: 'block', fontSize: 12 }}>{c.title}</b><span style={{ fontSize: 10, color: 'var(--ink-3)' }}>{c.source_type} · {c.status} · {money(c.expected_cash_minor, c.currency)}</span></button>)}
@@ -122,6 +159,36 @@ export default function AdminConciergePage() {
           {selected.status === 'TRANSFER_APPROVED' && <button disabled={busy || !executionPlan?.canStartBooking} onClick={() => void act('START_BOOKING')} style={{ minHeight: 42, padding: '0 15px' }}>{executionPlan?.canStartBooking ? 'Start booking' : 'Booking blocked — resolve execution path'}</button>}
           {selected.status === 'BOOKING_IN_PROGRESS' && <div style={{ marginTop: 16 }}><label style={{ display: 'block', fontWeight: 800, fontSize: 12, marginBottom: 6 }}>Real PNR / reservation reference</label><input value={bookingReference} onChange={e => setBookingReference(e.target.value)} style={{ width: '100%', minHeight: 42, padding: '0 10px' }} /><button disabled={busy || !bookingReference.trim()} onClick={() => void act('MARK_BOOKED')} style={{ marginTop: 8, minHeight: 42, padding: '0 15px' }}>Mark booked</button></div>}
           {selected.status === 'BOOKED' && <div style={{ marginTop: 16 }}><label style={{ display: 'block', fontWeight: 800, fontSize: 12, marginBottom: 6 }}>Reconciliation</label><textarea value={reconciliationJson} onChange={e => setReconciliationJson(e.target.value)} rows={10} style={{ width: '100%', fontFamily: 'monospace', fontSize: 11, padding: 10 }} /><button disabled={busy} onClick={() => void act('RECONCILE')} style={{ marginTop: 8, minHeight: 42, padding: '0 15px' }}>Reconcile case</button></div>}
+
+          {['TRANSFER_APPROVED','BOOKING_IN_PROGRESS','BOOKED'].includes(selected.status) && <details style={{ marginTop: 18, padding: 14, border: '1px dashed var(--line)', borderRadius: 12, background: 'var(--surface-2)' }}>
+            <summary style={{ fontWeight: 800, cursor: 'pointer' }}>Transaction sandbox · preview/test only</summary>
+            <p style={{ fontSize: 10, lineHeight: 1.5, color: 'var(--ink-2)' }}>INTERNAL simulates the full state machine only. DUFFEL_TEST and HBX_TEST call the suppliers&apos; non-production environments and store the returned test booking reference through the same BOOKED → RECONCILED lifecycle. Production is disabled by default.</p>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2,minmax(0,1fr))', gap: 8 }}>
+              <select aria-label="Sandbox supplier" value={sandboxSupplier} onChange={e => {
+                const value = e.target.value as typeof sandboxSupplier
+                setSandboxSupplier(value)
+                if (value !== 'INTERNAL') setSandboxSimulation('SUCCESS')
+              }} style={{ minHeight: 40, padding: '0 10px' }}>
+                <option value="INTERNAL">Internal simulation</option>
+                {selected.source_type === 'FLIGHT' && <option value="DUFFEL_TEST">Duffel TEST · supplier order</option>}
+                {selected.source_type === 'HOTEL' && <option value="HBX_TEST">HBX TEST · supplier reservation</option>}
+              </select>
+              <select aria-label="Sandbox simulation" disabled={sandboxSupplier !== 'INTERNAL'} value={sandboxSimulation} onChange={e => setSandboxSimulation(e.target.value as typeof sandboxSimulation)} style={{ minHeight: 40, padding: '0 10px' }}>
+                <option value="SUCCESS">Success</option>
+                <option value="PAYMENT_DECLINED">Payment declined</option>
+                <option value="SUPPLIER_TIMEOUT">Supplier timeout</option>
+              </select>
+              <input aria-label="Sandbox first name" value={sandboxFirstName} onChange={e => setSandboxFirstName(e.target.value)} placeholder="First name" style={{ minHeight: 40, padding: '0 10px' }} />
+              <input aria-label="Sandbox last name" value={sandboxLastName} onChange={e => setSandboxLastName(e.target.value)} placeholder="Last name" style={{ minHeight: 40, padding: '0 10px' }} />
+              <input aria-label="Sandbox participant count" type="number" min={1} max={9} value={sandboxParticipants} onChange={e => setSandboxParticipants(Math.max(1, Math.min(9, Number(e.target.value) || 1)))} style={{ minHeight: 40, padding: '0 10px' }} />
+              {sandboxSupplier === 'HBX_TEST' && <select aria-label="HBX rate type" value={hbxRateType} onChange={e => setHbxRateType(e.target.value as typeof hbxRateType)} style={{ minHeight: 40, padding: '0 10px' }}><option value="BOOKABLE">BOOKABLE</option><option value="RECHECK">RECHECK</option></select>}
+            </div>
+            {sandboxSupplier === 'HBX_TEST' && <input aria-label="HBX rate key" value={hbxRateKey} onChange={e => setHbxRateKey(e.target.value)} placeholder="Exact HBX rateKey from live TEST availability" style={{ width: '100%', minHeight: 40, marginTop: 8, padding: '0 10px' }} />}
+            {sandboxSupplier !== 'INTERNAL' && selected.status !== 'TRANSFER_APPROVED' && <div style={{ marginTop: 8, fontSize: 10, color: '#9A6700' }}>Supplier TEST can start only once from TRANSFER_APPROVED to prevent duplicate supplier orders.</div>}
+            <button disabled={busy || !executionPlan?.canStartBooking || !sandboxFirstName.trim() || !sandboxLastName.trim() || (sandboxSupplier !== 'INTERNAL' && selected.status !== 'TRANSFER_APPROVED') || (sandboxSupplier === 'HBX_TEST' && !hbxRateKey.trim())} onClick={() => void runSandboxBooking()} style={{ marginTop: 9, minHeight: 42, padding: '0 15px' }}>
+              {busy ? 'Running…' : sandboxSupplier === 'INTERNAL' ? 'Run booking sandbox end to end' : sandboxSupplier === 'DUFFEL_TEST' ? 'Create Duffel TEST order end to end' : 'Create HBX TEST reservation end to end'}
+            </button>
+          </details>}
 
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginTop: 20, paddingTop: 14, borderTop: '1px solid var(--line)' }}>
             {['NEEDS_INFORMATION','PRICE_CHANGED','AWARD_UNAVAILABLE','FAIL'].map(action => <button key={action} disabled={busy} onClick={() => void act(action)} style={{ minHeight: 36, padding: '0 10px', fontSize: 10 }}>{action.replaceAll('_',' ')}</button>)}
