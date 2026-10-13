@@ -126,6 +126,7 @@ export default function AdminConciergePage() {
         <button onClick={() => void load()} style={{ minHeight: 40, padding: '0 14px' }}>Refresh</button>
       </div>
       {error && <div style={{ marginBottom: 14, padding: 12, border: '1px solid #c33', borderRadius: 10, color: '#c33' }}>{error}</div>}
+      {sandboxMessage && <div role="status" style={{ marginBottom: 14, padding: 12, border: '1px solid var(--line)', borderRadius: 10, color: 'var(--prov-verified)', background: 'var(--surface-2)' }}>{sandboxMessage}</div>}
       <div style={{ display: 'grid', gridTemplateColumns: '340px minmax(0,1fr)', gap: 16 }}>
         <aside style={{ border: '1px solid var(--line)', borderRadius: 14, overflow: 'hidden', background: 'var(--surface)' }}>
           {cases.map(c => <button key={c.id} onClick={() => setSelectedId(c.id)} style={{ display: 'block', width: '100%', textAlign: 'left', padding: 13, border: 0, borderBottom: '1px solid var(--line-soft)', background: selected?.id === c.id ? 'var(--surface-2)' : 'transparent', color: 'var(--ink)' }}><b style={{ display: 'block', fontSize: 12 }}>{c.title}</b><span style={{ fontSize: 10, color: 'var(--ink-3)' }}>{c.source_type} · {c.status} · {money(c.expected_cash_minor, c.currency)}</span></button>)}
@@ -168,7 +169,6 @@ export default function AdminConciergePage() {
             <button disabled={busy || !executionPlan?.canStartBooking || !sandboxFirstName.trim() || !sandboxLastName.trim()} onClick={() => void runSandboxBooking()} style={{ marginTop: 9, minHeight: 42, padding: '0 15px' }}>
               {busy ? 'Running…' : 'Run booking sandbox end to end'}
             </button>
-            {sandboxMessage && <div role="status" style={{ marginTop: 8, fontSize: 10, color: 'var(--prov-verified)' }}>{sandboxMessage}</div>}
           </details>}
 
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginTop: 20, paddingTop: 14, borderTop: '1px solid var(--line)' }}>
