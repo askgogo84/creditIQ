@@ -204,7 +204,7 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
 
     let bookingReference = outcome.bookingReference
     let reconciliation: Record<string, unknown> = outcome.reconciliation
-    let provider = outcome.provider
+    let provider: string = outcome.provider
     let supplierEvidence: Record<string, unknown> | null = null
 
     if (supplier === 'DUFFEL_TEST') {
