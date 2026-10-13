@@ -5,7 +5,8 @@ This document records commercial-access state only. It does not store credential
 ## Cash flights
 
 - Skyscanner Flights Live Prices — application submitted; adapter wired; waiting for API access.
-- Amadeus Flight Offers — Travel Sellers / Web Services enquiry submitted; adapter wired; waiting for credentials/product provisioning.
+- Amadeus — Self-Service APIs were decommissioned on 17 July 2026. The legacy self-service adapter is fail-closed; only separately contracted Enterprise access with confirmed schema should be considered.
+- Duffel — selected on 13 Oct 2026 as the flight transaction TEST provider. Test mode supports risk-free offer/order creation and supplier booking references; CreditIQ's TEST adapter accepts only `DUFFEL_TEST_TOKEN`.
 - Kiwi Tequila — legacy invited-partner source; use only if a valid commercial partnership key is configured.
 - Travelpayouts / Aviasales — working fallback; cached fare discovery only, not complete live cabin-verifiable inventory.
 
@@ -40,3 +41,12 @@ This document records commercial-access state only. It does not store credential
 4. Cabin-specific value comparisons require a cabin-verifiable cash fare.
 5. Before any irreversible points transfer, the final programme/booking path must be re-verified.
 6. No provider trial or evaluation state may auto-convert into a paid commitment without explicit business approval.
+
+
+## Transaction update — 13 Oct 2026
+
+- Internal Concierge transaction sandbox is implemented on draft PR #83 and exercises approval → booking → booked → reconciliation without live money/points.
+- Duffel TEST order adapter is implemented but a real provider TEST reference must still be proven with a securely configured `DUFFEL_TEST_TOKEN`.
+- HBX TEST CheckRate/Booking adapter is implemented and refuses `HOTELBEDS_ENV=production`; a real provider TEST reservation reference must still be proven with configured evaluation credentials.
+- Customer production search continues to hide HBX evaluation/test inventory.
+- Do not describe CreditIQ as fully transactional until both supplier TEST proofs succeed and their returned references pass through the same Concierge lifecycle.
