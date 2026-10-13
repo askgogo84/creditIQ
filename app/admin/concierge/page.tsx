@@ -35,6 +35,11 @@ export default function AdminConciergePage() {
   const [verifiedJson, setVerifiedJson] = useState('{}')
   const [bookingReference, setBookingReference] = useState('')
   const [reconciliationJson, setReconciliationJson] = useState('{}')
+  const [sandboxFirstName, setSandboxFirstName] = useState('Test')
+  const [sandboxLastName, setSandboxLastName] = useState('Traveller')
+  const [sandboxParticipants, setSandboxParticipants] = useState(1)
+  const [sandboxSimulation, setSandboxSimulation] = useState<'SUCCESS' | 'PAYMENT_DECLINED' | 'SUPPLIER_TIMEOUT'>('SUCCESS')
+  const [sandboxMessage, setSandboxMessage] = useState('')
 
   const selected = useMemo(() => cases.find(c => c.id === selectedId) ?? cases[0] ?? null, [cases, selectedId])
   const executionPlan = useMemo(() => selected ? buildBookingExecutionPlan({
@@ -90,6 +95,30 @@ export default function AdminConciergePage() {
     } finally { setBusy(false) }
   }
 
+  async function runSandboxBooking() {
+    if (!selected) return
+    setBusy(true); setError(''); setSandboxMessage('')
+    try {
+      const res = await fetch(`/api/admin/concierge/cases/${encodeURIComponent(selected.id)}/sandbox-book`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          holder: { firstName: sandboxFirstName, lastName: sandboxLastName },
+          participantCount: sandboxParticipants,
+          simulation: sandboxSimulation,
+        }),
+      })
+      const json = await res.json().catch(() => ({}))
+      if (!res.ok) throw new Error(json?.error || 'Sandbox booking failed')
+      const ref = json?.sandbox?.bookingReference
+      const status = json?.case?.status || json?.sandbox?.status || 'updated'
+      setSandboxMessage(ref ? `Sandbox booking ${status}: ${ref}` : `Sandbox booking ${status}`)
+      await load()
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'Sandbox booking failed')
+    } finally { setBusy(false) }
+  }
+
   return (
     <main style={{ maxWidth: 1320, margin: '0 auto', padding: '28px 22px 60px', color: 'var(--ink)' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'end', gap: 20, marginBottom: 20 }}>
@@ -122,6 +151,25 @@ export default function AdminConciergePage() {
           {selected.status === 'TRANSFER_APPROVED' && <button disabled={busy || !executionPlan?.canStartBooking} onClick={() => void act('START_BOOKING')} style={{ minHeight: 42, padding: '0 15px' }}>{executionPlan?.canStartBooking ? 'Start booking' : 'Booking blocked — resolve execution path'}</button>}
           {selected.status === 'BOOKING_IN_PROGRESS' && <div style={{ marginTop: 16 }}><label style={{ display: 'block', fontWeight: 800, fontSize: 12, marginBottom: 6 }}>Real PNR / reservation reference</label><input value={bookingReference} onChange={e => setBookingReference(e.target.value)} style={{ width: '100%', minHeight: 42, padding: '0 10px' }} /><button disabled={busy || !bookingReference.trim()} onClick={() => void act('MARK_BOOKED')} style={{ marginTop: 8, minHeight: 42, padding: '0 15px' }}>Mark booked</button></div>}
           {selected.status === 'BOOKED' && <div style={{ marginTop: 16 }}><label style={{ display: 'block', fontWeight: 800, fontSize: 12, marginBottom: 6 }}>Reconciliation</label><textarea value={reconciliationJson} onChange={e => setReconciliationJson(e.target.value)} rows={10} style={{ width: '100%', fontFamily: 'monospace', fontSize: 11, padding: 10 }} /><button disabled={busy} onClick={() => void act('RECONCILE')} style={{ marginTop: 8, minHeight: 42, padding: '0 15px' }}>Reconcile case</button></div>}
+
+          {['TRANSFER_APPROVED','BOOKING_IN_PROGRESS','BOOKED'].includes(selected.status) && <details style={{ marginTop: 18, padding: 14, border: '1px dashed var(--line)', borderRadius: 12, background: 'var(--surface-2)' }}>
+            <summary style={{ fontWeight: 800, cursor: 'pointer' }}>Transaction sandbox · preview/test only</summary>
+            <p style={{ fontSize: 10, lineHeight: 1.5, color: 'var(--ink-2)' }}>Runs this approved case through the same booking state machine without charging a card or calling a paid supplier. Production is disabled unless explicitly enabled. Traveller/guest names are validated for the simulation but are not persisted in reconciliation.</p>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2,minmax(0,1fr))', gap: 8 }}>
+              <input aria-label="Sandbox first name" value={sandboxFirstName} onChange={e => setSandboxFirstName(e.target.value)} placeholder="First name" style={{ minHeight: 40, padding: '0 10px' }} />
+              <input aria-label="Sandbox last name" value={sandboxLastName} onChange={e => setSandboxLastName(e.target.value)} placeholder="Last name" style={{ minHeight: 40, padding: '0 10px' }} />
+              <input aria-label="Sandbox participant count" type="number" min={1} max={9} value={sandboxParticipants} onChange={e => setSandboxParticipants(Math.max(1, Math.min(9, Number(e.target.value) || 1)))} style={{ minHeight: 40, padding: '0 10px' }} />
+              <select aria-label="Sandbox simulation" value={sandboxSimulation} onChange={e => setSandboxSimulation(e.target.value as typeof sandboxSimulation)} style={{ minHeight: 40, padding: '0 10px' }}>
+                <option value="SUCCESS">Success</option>
+                <option value="PAYMENT_DECLINED">Payment declined</option>
+                <option value="SUPPLIER_TIMEOUT">Supplier timeout</option>
+              </select>
+            </div>
+            <button disabled={busy || !executionPlan?.canStartBooking || !sandboxFirstName.trim() || !sandboxLastName.trim()} onClick={() => void runSandboxBooking()} style={{ marginTop: 9, minHeight: 42, padding: '0 15px' }}>
+              {busy ? 'Running…' : 'Run booking sandbox end to end'}
+            </button>
+            {sandboxMessage && <div role="status" style={{ marginTop: 8, fontSize: 10, color: 'var(--prov-verified)' }}>{sandboxMessage}</div>}
+          </details>}
 
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginTop: 20, paddingTop: 14, borderTop: '1px solid var(--line)' }}>
             {['NEEDS_INFORMATION','PRICE_CHANGED','AWARD_UNAVAILABLE','FAIL'].map(action => <button key={action} disabled={busy} onClick={() => void act(action)} style={{ minHeight: 36, padding: '0 10px', fontSize: 10 }}>{action.replaceAll('_',' ')}</button>)}
