@@ -53,8 +53,8 @@ function referenceFor(input: SandboxBookingInput): string {
       clean(input.selection.from) || '',
       clean(input.selection.to) || '',
       clean(input.selection.hotel_name) || '',
-      clean(input.selection.departs_at) || clean(input.selection.award_date) || '',
-      clean(input.selection.city) || '',
+      clean(input.selection.departs_at) || clean(input.selection.award_date) || clean(input.selection.checkin) || '',
+      clean(input.selection.city) || clean(input.selection.destination) || '',
     ].join('|'))
     .digest('hex')
     .slice(0, 10)
@@ -70,9 +70,16 @@ function validateSelection(sourceType: ConciergeSourceType, selection: Record<st
   }
 
   if (!clean(selection.hotel_name)) throw new Error('sandbox hotel requires a hotel name')
-  if (!clean(selection.city)) throw new Error('sandbox hotel requires a city')
+  const dated = Boolean(clean(selection.destination) && clean(selection.checkin) && clean(selection.checkout))
+  const legacyCity = clean(selection.city)
   const nights = typeof selection.nights === 'number' ? selection.nights : Number(selection.nights)
-  if (!Number.isSafeInteger(nights) || nights <= 0) throw new Error('sandbox hotel requires a positive night count')
+  const captured = Boolean(legacyCity && Number.isSafeInteger(nights) && nights > 0)
+  if (!dated && !captured) {
+    throw new Error('sandbox hotel requires exact check-in/check-out dates or a legacy city/night selection')
+  }
+  if (dated && clean(selection.checkout)! <= clean(selection.checkin)!) {
+    throw new Error('sandbox hotel checkout must be after check-in')
+  }
 }
 
 export function bookingSandboxEnabled(env: NodeJS.ProcessEnv = process.env): boolean {
