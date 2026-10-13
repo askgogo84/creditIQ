@@ -3,6 +3,8 @@ import { NextRequest } from 'next/server'
 
 const state = vi.hoisted(() => ({
   status: 'TRANSFER_APPROVED',
+  sourceType: 'FLIGHT' as 'FLIGHT' | 'HOTEL',
+  selection: { from: 'BLR', to: 'SIN', award_date: '2026-11-10', booking_link: 'https://example.invalid/book' } as Record<string, unknown>,
   rpcActions: [] as string[],
 }))
 
@@ -17,8 +19,8 @@ vi.mock('@supabase/supabase-js', () => ({
             data: {
               id: '11111111-1111-4111-8111-111111111111',
               status: state.status,
-              source_type: 'FLIGHT',
-              selection: { from: 'BLR', to: 'SIN', award_date: '2026-11-10', booking_link: 'https://example.invalid/book' },
+              source_type: state.sourceType,
+              selection: state.selection,
               redemption_snapshot: {},
               source_snapshot: {},
               snapshot_trust: 'SERVER_VERIFIED',
@@ -68,6 +70,8 @@ const params = { params: { id: '11111111-1111-4111-8111-111111111111' } }
 
 beforeEach(() => {
   state.status = 'TRANSFER_APPROVED'
+  state.sourceType = 'FLIGHT'
+  state.selection = { from: 'BLR', to: 'SIN', award_date: '2026-11-10', booking_link: 'https://example.invalid/book' }
   state.rpcActions.length = 0
   vi.stubEnv('VERCEL_ENV', 'preview')
 })
@@ -86,6 +90,21 @@ describe('admin transaction sandbox route', () => {
     expect(json.case.status).toBe('RECONCILED')
     expect(json.sandbox.bookingReference).toMatch(/^CIQ-FLT-/)
     expect(json.sandbox.reconciliation.personal_data_persisted).toBe(false)
+  })
+
+  it('runs an approved hotel reservation through the same lifecycle', async () => {
+    state.sourceType = 'HOTEL'
+    state.selection = { hotel_name: 'Synthetic Hotel', city: 'Bangkok', nights: 2, booking_url: 'https://example.invalid/hotel' }
+    const response = await POST(request({
+      holder: { firstName: 'Test', lastName: 'Guest' },
+      participantCount: 2,
+      simulation: 'SUCCESS',
+    }), params)
+    expect(response.status).toBe(200)
+    const json = await response.json()
+    expect(state.rpcActions).toEqual(['START_BOOKING', 'MARK_BOOKED', 'RECONCILE'])
+    expect(json.case.status).toBe('RECONCILED')
+    expect(json.sandbox.bookingReference).toMatch(/^CIQ-HTL-/)
   })
 
   it('records a simulated payment failure through the normal failed state', async () => {
