@@ -80,7 +80,7 @@ describe('transaction sandbox', () => {
 
   it('is enabled in tests and previews but not production by default', () => {
     expect(bookingSandboxEnabled({ NODE_ENV: 'test' } as NodeJS.ProcessEnv)).toBe(true)
-    expect(bookingSandboxEnabled({ VERCEL_ENV: 'preview' } as NodeJS.ProcessEnv)).toBe(true)
-    expect(bookingSandboxEnabled({ VERCEL_ENV: 'production' } as NodeJS.ProcessEnv)).toBe(false)
+    expect(bookingSandboxEnabled({ VERCEL_ENV: 'preview' } as unknown as NodeJS.ProcessEnv)).toBe(true)
+    expect(bookingSandboxEnabled({ VERCEL_ENV: 'production' } as unknown as NodeJS.ProcessEnv)).toBe(false)
   })
 })
