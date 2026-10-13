@@ -80,15 +80,19 @@ Failure simulations start the booking and then use the normal `FAIL` transition,
 
 This branch does not claim a real PNR/reservation. The next provider-backed acceptance gate is:
 
-### Flight — Amadeus TEST
+### Flight — Duffel TEST
 
-Official Amadeus flow:
-1. Flight Offers Search
-2. Flight Offers Price
-3. Flight Create Orders
-4. capture returned flight-order ID / associated-record PNR
+Amadeus Self-Service was decommissioned on 17 July 2026, so it is no longer the transactional sandbox target. The old search adapter is fail-closed by default.
 
-CreditIQ already has Amadeus OAuth + Flight Offers Search. A booking adapter still needs to preserve/re-find the exact provider offer, re-price it, send synthetic TEST traveller data, and capture the returned TEST order/PNR. Production ticketing remains a separate commercial/consolidator requirement.
+Duffel is the supported supplier TEST path on this branch:
+
+1. create an Offer Request for the exact route/date/cabin,
+2. prefer the reliable Duffel Airways TEST offer when present,
+3. create an instant TEST order with Duffel test balance payment,
+4. capture the returned Duffel order ID and airline booking reference,
+5. pass the supplier reference through BOOKED → RECONCILED.
+
+The adapter accepts only a `DUFFEL_TEST_TOKEN` beginning with `duffel_test_`. No live Duffel token is accepted by the TEST adapter. The provider call is exposed only through the preview/test Concierge control and supplier TEST mode may start only once from TRANSFER_APPROVED to reduce duplicate-order risk.
 
 ### Hotel — HBX / Hotelbeds TEST
 
@@ -99,10 +103,10 @@ Official HBX hotel flow:
 4. capture HBX booking reference
 5. verify booking detail / cancellation path
 
-CreditIQ already has an HBX availability adapter. The booking adapter must preserve the exact `rateKey` and use TEST credentials/certification access. Production remains gated by HBX commercial approval/certification.
+CreditIQ's HBX availability adapter now preserves the exact `rateKey` and `rateType`. The TEST booking path performs CheckRate only for `RECHECK`, refuses production environment, allows at least 60 seconds for booking confirmation, creates the reservation, captures the returned HBX booking reference, and passes that reference through BOOKED → RECONCILED. Production remains gated by HBX commercial approval/certification.
 
 ## Definition of “full booking enabled”
 
-Do not call CreditIQ fully transactional until at least one FLIGHT and one HOTEL case complete the provider-backed TEST flow above and the returned supplier references are captured through the same Concierge lifecycle.
+Do not call CreditIQ fully transactional until at least one FLIGHT and one HOTEL case complete the provider-backed TEST flow above with configured provider credentials and the returned supplier references are captured through the same Concierge lifecycle. Code-level mocked tests prove orchestration, not supplier acceptance.
 
 After that, production enablement additionally requires supplier commercial approval, payment/ticketing settlement, cancellation/refund handling, monitoring, and explicit production feature gates.
