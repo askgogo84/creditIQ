@@ -50,6 +50,7 @@ it('runs the approved case through the preview booking sandbox from the admin qu
     holder: { firstName: 'Test', lastName: 'Traveller' },
     participantCount: 1,
     simulation: 'SUCCESS',
+    supplier: 'INTERNAL',
   })
-  expect(await screen.findByText(/Sandbox booking RECONCILED: CIQ-FLT-ABCDEF1234/)).toBeInTheDocument()
+  expect(await screen.findByText(/INTERNAL booking RECONCILED: CIQ-FLT-ABCDEF1234/)).toBeInTheDocument()
 })
