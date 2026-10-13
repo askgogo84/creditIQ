@@ -162,7 +162,7 @@ export default function AdminConciergePage() {
 
           {['TRANSFER_APPROVED','BOOKING_IN_PROGRESS','BOOKED'].includes(selected.status) && <details style={{ marginTop: 18, padding: 14, border: '1px dashed var(--line)', borderRadius: 12, background: 'var(--surface-2)' }}>
             <summary style={{ fontWeight: 800, cursor: 'pointer' }}>Transaction sandbox · preview/test only</summary>
-            <p style={{ fontSize: 10, lineHeight: 1.5, color: 'var(--ink-2)' }}>INTERNAL simulates the full state machine only. DUFFEL_TEST and HBX_TEST call the suppliers' non-production environments and store the returned test booking reference through the same BOOKED → RECONCILED lifecycle. Production is disabled by default.</p>
+            <p style={{ fontSize: 10, lineHeight: 1.5, color: 'var(--ink-2)' }}>INTERNAL simulates the full state machine only. DUFFEL_TEST and HBX_TEST call the suppliers&apos; non-production environments and store the returned test booking reference through the same BOOKED → RECONCILED lifecycle. Production is disabled by default.</p>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2,minmax(0,1fr))', gap: 8 }}>
               <select aria-label="Sandbox supplier" value={sandboxSupplier} onChange={e => {
                 const value = e.target.value as typeof sandboxSupplier
