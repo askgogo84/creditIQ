@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import type { RedemptionOption } from '@/lib/fusion-core'
 import type { StayCard } from '@/components/ciq/stay-points/StayOnPointsView'
-import { buildFlightConciergeRequest, buildHotelConciergeRequest } from './travel-requests'
+import { buildCashHotelConciergeRequest, buildFlightConciergeRequest, buildHotelConciergeRequest } from './travel-requests'
 
 const option: RedemptionOption = {
   cardName: 'SBI Elite',
@@ -69,6 +69,51 @@ describe('Travel → Concierge request snapshots', () => {
       departs_at: '2026-10-02T23:10:00', arrives_at: '2026-10-03T06:15:00',
     })
     expect(request.sourceSnapshot).toMatchObject({ cash: { source: 'kiwi-mcp', booking_link_present: true } })
+  })
+
+  it('preserves exact live hotel dates, room, provider and HBX rate identity for Concierge', () => {
+    const request = buildCashHotelConciergeRequest({
+      id: 'hbx:7295:rate-1',
+      hotelId: '7295',
+      hotelName: 'Synthetic Bangkok Hotel',
+      chainName: 'Accor',
+      stars: 4,
+      roomName: 'Superior Room',
+      roomType: 'SUP',
+      cancellationPolicy: 'Free cancellation',
+      mealPlan: 'Breakfast',
+      paymentType: 'AT_WEB',
+      currency: 'EUR',
+      totalPrice: 101.25,
+      deeplink: null,
+      source: 'hotelbeds-hbx',
+      rateKey: 'rate-key-123',
+      rateType: 'RECHECK',
+    }, {
+      destination: 'Bangkok',
+      checkin: '2026-11-10',
+      checkout: '2026-11-12',
+      adults: 2,
+      rooms: 1,
+    })
+
+    expect(request.expectedCashMinor).toBe(10125)
+    expect(request.currency).toBe('EUR')
+    expect(request.selection).toMatchObject({
+      hotel_name: 'Synthetic Bangkok Hotel',
+      hotel_id: '7295',
+      destination: 'Bangkok',
+      checkin: '2026-11-10',
+      checkout: '2026-11-12',
+      adults: 2,
+      room_name: 'Superior Room',
+      provider: 'hotelbeds-hbx',
+      hbx_rate_key: 'rate-key-123',
+      hbx_rate_type: 'RECHECK',
+    })
+    expect(request.sourceSnapshot).toMatchObject({
+      cash_rate: { state: 'LIVE_PROVIDER_RETURNED', source: 'hotelbeds-hbx', hbx_rate_key_present: true },
+    })
   })
 
   it('carries hotel execution blockers into Concierge rather than removing them', () => {
