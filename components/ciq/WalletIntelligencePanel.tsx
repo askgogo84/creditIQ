@@ -13,7 +13,7 @@ export function WalletIntelligencePanel({ cardName, bank }: { cardName?: string;
     let current = true
     setState('loading')
     authedFetch('/api/feed').then(async res => {
-      if (!res.ok) throw new Error('feed unavailable')
+      if (!res.ok) throw new Error('Card intelligence could not be loaded. Please retry.')
       const data = await res.json()
       if (!Array.isArray(data.items)) throw new Error('invalid feed')
       if (current) { setItems(data.items); setState('available') }

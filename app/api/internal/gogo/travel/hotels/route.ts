@@ -230,7 +230,7 @@ function liveResponse(params: {
     pointsAware: Boolean(params.userLinkId) && !params.walletError,
     walletCards: params.portfolio.length,
     verifiedBalances: params.portfolio.filter((card) => card.verified).length,
-    error: params.walletError ? 'wallet unavailable' : null,
+    error: params.walletError ? 'Wallet could not be loaded. Please retry.' : null,
   }
 
   return NextResponse.json({
@@ -395,7 +395,7 @@ export async function POST(req: NextRequest) {
     pointsAware: Boolean(userLinkId) && !walletError,
     walletCards: portfolio.length,
     verifiedBalances: portfolio.filter((card) => card.verified).length,
-    error: walletError ? 'wallet unavailable' : null,
+    error: walletError ? 'Wallet could not be loaded. Please retry.' : null,
   }
   return unavailable(attempts, identity, compactWallet(portfolio))
 }

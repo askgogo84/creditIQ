@@ -101,7 +101,7 @@ Respond ONLY with valid JSON (no markdown, no backticks, no explanation outside 
         body: JSON.stringify({ prompt, spends, totalSpend, merchant }),
         signal,
         });
-        if (!response.ok) throw new Error('Analysis unavailable');
+        if (!response.ok) throw new Error('Analysis could not be completed. Please retry.');
         return response.json();
       }, 60000);
       if (!data || !Array.isArray(data.cards) || !data.cards.length || data.cards.length > 20 ||

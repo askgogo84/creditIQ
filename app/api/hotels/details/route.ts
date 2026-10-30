@@ -21,6 +21,6 @@ export async function GET(req: NextRequest) {
     const detail = await getBookingDemandHotelDetails(hotelId)
     return NextResponse.json({ detail, source: 'booking-demand', fetched_at: new Date().toISOString() })
   } catch (error: any) {
-    return NextResponse.json({ error: error?.message || 'hotel details unavailable' }, { status: 502 })
+    return NextResponse.json({ error: error?.message || 'Hotel details could not be loaded. Please retry.' }, { status: 502 })
   }
 }

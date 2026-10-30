@@ -79,7 +79,7 @@ export function FlightAwardVerificationPanel({
     <div className="fav-root">
       <div className={`fav-status${live ? ' live' : ''}`}>
         <div><small>Award pricing authority</small><b>{authority}</b><span>{programmeName} · {points.toLocaleString('en-IN')} miles{live ? ' · live selected-programme result' : ' · broad cached discovery result'}</span></div>
-        {loading ? <em>Verifying…</em> : <em>{response?.status ?? 'cached'}</em>}
+        {loading ? <em>Verifying…</em> : <em>{response?.status?.includes('UNAVAILABLE') ? 'Check programme directly' : (response?.status ?? 'cached').replaceAll('_', ' ').toLowerCase()}</em>}
       </div>
 
       {publishedGuide ? <div className="fav-guide">

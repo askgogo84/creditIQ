@@ -63,7 +63,7 @@ export default function CiraPage() {
         body: JSON.stringify({ message: question, history }),
         signal,
         })
-        if (!response.ok) throw new Error('Assistant unavailable')
+        if (!response.ok) throw new Error('The assistant could not respond. Please retry.')
         const reply = await response.json()
         if (typeof reply.message !== 'string' || !reply.message.trim()) throw new Error('Missing response')
         return reply

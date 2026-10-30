@@ -136,7 +136,7 @@ export default function AdminConciergePage() {
       {sandboxMessage && <div role="status" style={{ marginBottom: 14, padding: 12, border: '1px solid var(--line)', borderRadius: 10, color: 'var(--prov-verified)', background: 'var(--surface-2)' }}>{sandboxMessage}</div>}
       <div style={{ display: 'grid', gridTemplateColumns: '340px minmax(0,1fr)', gap: 16 }}>
         <aside style={{ border: '1px solid var(--line)', borderRadius: 14, overflow: 'hidden', background: 'var(--surface)' }}>
-          {cases.map(c => <button key={c.id} onClick={() => setSelectedId(c.id)} style={{ display: 'block', width: '100%', textAlign: 'left', padding: 13, border: 0, borderBottom: '1px solid var(--line-soft)', background: selected?.id === c.id ? 'var(--surface-2)' : 'transparent', color: 'var(--ink)' }}><b style={{ display: 'block', fontSize: 12 }}>{c.title}</b><span style={{ fontSize: 10, color: 'var(--ink-3)' }}>{c.source_type} · {c.status} · {money(c.expected_cash_minor, c.currency)}</span></button>)}
+          {cases.map(c => <button key={c.id} onClick={() => setSelectedId(c.id)} style={{ display: 'block', width: '100%', textAlign: 'left', padding: 13, border: 0, borderBottom: '1px solid var(--line-soft)', background: selected?.id === c.id ? 'var(--surface-2)' : 'transparent', color: 'var(--ink)' }}><b style={{ display: 'block', fontSize: 12 }}>{c.title}</b><span style={{ fontSize: 10, color: 'var(--ink-3)' }}>{c.source_type} · {c.status === 'AWARD_UNAVAILABLE' ? 'Award no longer available' : c.status} · {money(c.expected_cash_minor, c.currency)}</span></button>)}
         </aside>
         {selected ? <section style={{ border: '1px solid var(--line)', borderRadius: 14, background: 'var(--surface)', padding: 18 }}>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, minmax(0,1fr))', gap: 8, marginBottom: 16 }}>
@@ -191,7 +191,7 @@ export default function AdminConciergePage() {
           </details>}
 
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginTop: 20, paddingTop: 14, borderTop: '1px solid var(--line)' }}>
-            {['NEEDS_INFORMATION','PRICE_CHANGED','AWARD_UNAVAILABLE','FAIL'].map(action => <button key={action} disabled={busy} onClick={() => void act(action)} style={{ minHeight: 36, padding: '0 10px', fontSize: 10 }}>{action.replaceAll('_',' ')}</button>)}
+            {['NEEDS_INFORMATION','PRICE_CHANGED','AWARD_UNAVAILABLE','FAIL'].map(action => <button key={action} disabled={busy} onClick={() => void act(action)} style={{ minHeight: 36, padding: '0 10px', fontSize: 10 }}>{action === 'AWARD_UNAVAILABLE' ? 'Award no longer available' : action.replaceAll('_',' ')}</button>)}
           </div>
         </section> : <section style={{ padding: 30 }}>No Concierge cases.</section>}
       </div>

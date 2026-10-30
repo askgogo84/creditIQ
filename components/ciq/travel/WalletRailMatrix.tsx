@@ -346,7 +346,7 @@ export function WalletRailMatrix({
     })
       .then(async (res) => {
         const data = await res.json() as Response
-        if (!res.ok) throw new Error(data.error || 'rail matrix unavailable')
+        if (!res.ok) throw new Error(data.error || 'Redemption paths could not be loaded. Please retry.')
         if (!cancelled) {
           setMatrix(data.matrix ?? null)
           setDecision(data.decision ?? null)

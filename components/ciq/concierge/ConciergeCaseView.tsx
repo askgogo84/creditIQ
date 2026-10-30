@@ -74,6 +74,7 @@ function money(minor: number | null, currency: string) {
 }
 
 function label(status: string) {
+  if (status === 'AWARD_UNAVAILABLE') return 'Award no longer available'
   return status.replaceAll('_', ' ').toLowerCase().replace(/^./, (c) => c.toUpperCase())
 }
 

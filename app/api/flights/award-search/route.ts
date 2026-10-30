@@ -54,6 +54,6 @@ export async function POST(req: NextRequest) {
     return NextResponse.json(result, { status })
   } catch (error) {
     console.error('flight award orchestrator failed', error)
-    return NextResponse.json({ error: 'flight award search unavailable' }, { status: 502 })
+    return NextResponse.json({ error: 'Award search could not be completed. Please retry.' }, { status: 502 })
   }
 }

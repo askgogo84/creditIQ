@@ -10,7 +10,7 @@ export async function GET(req: NextRequest) {
   const sUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
   const svcKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
-  if (!sUrl || !anonKey || !svcKey) return NextResponse.json({ error: 'Card service unavailable' }, { status: 503 });
+  if (!sUrl || !anonKey || !svcKey) return NextResponse.json({ error: 'Cards could not be loaded. Please retry.' }, { status: 503 });
 
   // verify caller from their bearer token
   const auth = req.headers.get('authorization') ?? '';

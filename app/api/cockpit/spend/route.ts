@@ -111,6 +111,6 @@ export async function POST(req: NextRequest) {
     })
   } catch (error) {
     console.error('cockpit spend failed', error)
-    return NextResponse.json({ error: 'spend comparison unavailable' }, { status: 500 })
+    return NextResponse.json({ error: 'Spend comparison could not be loaded. Please retry.' }, { status: 500 })
   }
 }

@@ -91,7 +91,7 @@ export default function InvestorHotelWorkspace(p: Props) {
       try {
         const res = await authedFetch('/api/travel/wallet')
         const data = await res.json()
-        if (!res.ok || cancelled) throw new Error(data?.error || 'wallet unavailable')
+        if (!res.ok || cancelled) throw new Error(data?.error || 'Wallet could not be loaded. Please retry.')
         const supported = ((data.cards || []) as TravelWalletCard[]).find(isSupportedAccorWalletCard)
         if (!supported) {
           if (!cancelled) setWalletBridgeState('not-found')

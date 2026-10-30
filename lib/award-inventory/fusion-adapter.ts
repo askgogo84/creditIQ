@@ -193,7 +193,7 @@ async function flexibleCachedAwards(input: {
     state: awards.length ? 'SUCCESS' : (process.env.SEATS_AERO_API_KEY ? 'EMPTY' : 'UNAVAILABLE'),
     freshness: process.env.SEATS_AERO_API_KEY ? 'CACHED' : null,
     reason: awards.length
-      ? `${awards.length} cached Seats.aero fallback option(s) returned after Panorama was unavailable or empty.`
+      ? `${awards.length} cached Seats.aero fallback option(s) returned after Panorama did not return live options.`
       : 'Cached fallback discovery returned no award options. This still does not prove that no live award exists.',
   })
 
