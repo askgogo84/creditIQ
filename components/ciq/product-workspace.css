@@ -995,7 +995,8 @@
 .ciq-approved-shell .ciq-cira-history-head h1 { font-family:var(--font-serif); font-weight:500; }
 .ciq-approved-shell .ciq-cira-history-list button.active { border-color:#34372f; background:#23261f; }
 .ciq-approved-shell .ciq-cira-chat { background:radial-gradient(circle at 50% -10%,rgba(189,145,61,.07),transparent 35%),#181a16; }
-.ciq-approved-shell .ciq-cira-chat-head { border-bottom-color:#34372f; }
+.ciq-approved-shell .ciq-cira-chat-head { border-bottom-color:#34372f; background:#181a16; }
+.ciq-cira-message > div { white-space:pre-wrap; overflow-wrap:anywhere; }
 .ciq-approved-shell .ciq-cira-avatar,.ciq-approved-shell .ciq-cira-message-avatar { background:#bd913d; color:#1b1c18; }
 .ciq-approved-shell .ciq-cira-intro h2 { font-family:var(--font-serif); font-weight:500; }
 .ciq-approved-shell .ciq-cira-prompts button { border-color:#34372f; background:#20221d; color:#ded9ce; }

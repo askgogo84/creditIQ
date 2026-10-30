@@ -219,7 +219,8 @@ export function SimpleHotelWorkspace() {
     setVerifyId(key)
     setVerifyMessage(current => ({ ...current, [key]: '' }))
     try {
-      const res = await authedFetch('/api/hotels/award-search', {
+      const data = await withRequestTimeout(async signal => {
+        const res = await authedFetch('/api/hotels/award-search', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -231,9 +232,12 @@ export function SimpleHotelWorkspace() {
           numberOfAdults: adults,
           numberOfKids: 0,
         }),
-      })
-      const data = await res.json().catch(() => ({}))
-      const message = data.reason || data.note || (
+        signal,
+        })
+        if (!res.ok && res.status !== 409 && res.status !== 503) throw new Error('Programme verification unavailable')
+        return res.json()
+      }, 30000)
+      const message = (typeof data.reason === 'string' && data.reason) || (typeof data.note === 'string' && data.note) || (
         data.status === 'SUCCESS'
           ? 'Programme availability returned. Open the programme and match this exact property before transferring points.'
           : data.status === 'PENDING'
@@ -336,7 +340,7 @@ export function SimpleHotelWorkspace() {
 
       {!loading && searched && mode === 'cash' && (
         <section style={{ marginTop: 18 }}>
-          <div style={{ marginBottom: 10 }}><strong style={{ fontSize: 18 }}>Live cash hotels</strong><span style={{ display: 'block', color: 'var(--ink-3)', fontSize: 11, marginTop: 2 }}>{cashSource ? `Source: ${cashSource}` : 'No production cash provider returned inventory.'}</span></div>
+          <div style={{ marginBottom: 10 }}><strong style={{ fontSize: 18 }}>Live cash hotels</strong><span style={{ display: 'block', color: 'var(--ink-3)', fontSize: 11, marginTop: 2 }}>{cashSource ? `Source: ${cashSource}` : 'Cash prices could not be confirmed for this search.'}</span></div>
           {cashOffers.length ? (
             <div style={{ display: 'grid', gap: 8 }}>
               {cashOffers.slice(0, 18).map(offer => {
@@ -363,7 +367,7 @@ export function SimpleHotelWorkspace() {
                 )
               })}
             </div>
-          ) : <div style={{ padding: 22, border: '1px solid var(--line)', borderRadius: 14, background: 'var(--surface)' }}>No production cash inventory is available right now. The points tab remains usable.</div>}
+          ) : <div style={{ padding: 22, border: '1px solid var(--line)', borderRadius: 14, background: 'var(--surface)' }}>No live cash rates are available for this search. Try another destination or date, or check the hotel directly. You can still explore loyalty options in the points tab.</div>}
         </section>
       )}
     </div>

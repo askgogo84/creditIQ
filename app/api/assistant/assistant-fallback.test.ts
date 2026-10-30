@@ -45,6 +45,25 @@ beforeEach(() => {
 })
 
 describe('CIRA safe fallback', () => {
+  it('explains wallet valuation without asking a model to invent card rates', async () => {
+    const { POST } = await import('./route')
+    const res = await POST(request('Explain why my wallet shows points rather than a rupee value. What do I need for a hotel redemption?'))
+    const body = await res.json()
+    expect(body.message).toContain('does not have a verified single rupee value')
+    expect(body.message).toContain('confirmed points quote')
+    expect(body.message).toContain('Missing information stays unknown')
+    expect(body.message).toContain('(/hotels)')
+    expect(callAI).not.toHaveBeenCalled()
+  })
+
+  it('does not promise wallet-only recommendations when the spend model is unavailable', async () => {
+    callAI.mockResolvedValue({ ok: false, reason: 'ai_error' })
+    const { POST } = await import('./route')
+    const body = await (await POST(request('Which card for an Amazon purchase?'))).json()
+    expect(body.message).toContain('cards you do not own')
+    expect(body.message).toContain('(/spend-optimizer)')
+    expect(body.message).not.toContain('best card from your wallet')
+  })
   it('returns a useful 200 travel fallback when every AI provider is unavailable', async () => {
     callAI.mockResolvedValue({
       ok: false,

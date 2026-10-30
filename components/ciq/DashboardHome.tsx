@@ -259,6 +259,7 @@ export function DashboardHome({
     : cards.some(c => c.points === null) ? 'Some balances are unknown' : cards.length ? 'No verified balance yet' : availability === 'available' ? 'No cards yet' : 'Wallet data pending'
   const selfLine = summary.selfEntered > 0 ? 'Self-entered balances labelled separately' : ''
   const readiness = cards[wi]?.readiness
+  const readinessLabel = availability === 'loading' ? 'CHECKING' : availability === 'unavailable' ? 'RETRY NEEDED' : availability === 'partial' ? 'PARTIAL DATA' : 'SELECT A BOOKING'
   const readinessPanel = <>
     <div style={{ fontFamily: DISPLAY, fontSize: 24, lineHeight: 1.2 }}>Explore your redemption options</div>
     <div role="status" style={{ fontSize: 13, lineHeight: 1.5 }}>
@@ -517,7 +518,7 @@ export function DashboardHome({
               <div style={{ background: '#12151F', color: '#F6F2EA', borderRadius: 12, padding: 20, display: 'flex', flexDirection: 'column', gap: 12 }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 8 }}>
                   <span style={{ fontWeight: 600, fontSize: 11, letterSpacing: '.1em', color: '#C8C9CE' }}>REDEMPTION READINESS</span>
-                  <span style={estimateChipDark}>UNAVAILABLE</span>
+                  <span style={estimateChipDark}>{readinessLabel}</span>
                 </div>
                 {readinessPanel}
               </div>
@@ -598,7 +599,7 @@ export function DashboardHome({
         <div style={{ background: '#12151F', color: '#F6F2EA', borderRadius: 12, padding: 16, display: 'flex', flexDirection: 'column', gap: 8 }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 8 }}>
             <span style={{ fontWeight: 600, fontSize: 11, letterSpacing: '.1em', color: '#C8C9CE' }}>ALL {totalLabel} POINTS</span>
-            <span style={estimateChipDark}>UNAVAILABLE</span>
+            <span style={estimateChipDark}>{readinessLabel}</span>
           </div>
           {readinessPanel}
         </div>

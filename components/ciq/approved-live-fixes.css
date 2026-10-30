@@ -21,8 +21,8 @@
 .ciq-approved-shell .approved-wallet-card > div {
   min-height: 0 !important;
   display: grid !important;
-  grid-template-columns: minmax(0, 1fr) auto !important;
-  grid-template-rows: auto auto !important;
+  grid-template-columns: minmax(0, 1fr) !important;
+  grid-template-rows: auto auto auto !important;
   align-items: center !important;
   gap: 7px 8px !important;
   padding: 0 !important;
@@ -61,11 +61,24 @@
 
 .ciq-approved-shell .approved-wallet-card > div > div:nth-child(2) > div:first-child {
   font-size: 12px !important;
+  white-space: normal !important;
+  overflow-wrap: anywhere;
+  line-height: 1.4;
+}
+
+.ciq-approved-shell .approved-wallet-card > div > div:nth-child(2) > div:last-child {
+  flex-wrap: wrap;
+  row-gap: 4px !important;
 }
 
 .ciq-approved-shell .approved-wallet-card > div > div:nth-child(3) {
   gap: 4px !important;
+  width: 100%;
+  justify-content: space-between;
+  flex-wrap: wrap;
 }
+
+.ciq-approved-shell .approved-wallet-card button { min-width: 32px; min-height: 32px; }
 
 .ciq-approved-shell .approved-wallet-card > div > div:nth-child(3) > div:first-child > div:first-child {
   font-size: 15px !important;
