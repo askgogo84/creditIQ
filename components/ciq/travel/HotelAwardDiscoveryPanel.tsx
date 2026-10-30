@@ -122,7 +122,7 @@ export function HotelAwardDiscoveryPanel({ search }: { search: Search | null }) 
         setMessage(data.reason || '')
       })
       .catch(error => {
-        if (!cancelled) setMessage(error instanceof Error ? error.message : 'Award discovery unavailable')
+        if (!cancelled) setMessage(error instanceof Error ? error.message : 'Hotel discovery could not be completed. Please retry.')
       })
       .finally(() => {
         if (!cancelled) setLoading(false)
@@ -160,7 +160,7 @@ export function HotelAwardDiscoveryPanel({ search }: { search: Search | null }) 
           <h2 style={{ margin: '4px 0 3px', fontSize: 19 }}>Choose the actual hotel first. Then CreditIQ works out how to redeem.</h2>
           <p style={{ margin: 0, color: 'var(--ink-2)', fontSize: 10.5, maxWidth: 780 }}>First-party hotel programme catalogues are preferred. Cached award observations are merged only as supporting discovery. Select a hotel to see your card-specific transfer path and open the programme for the final live points check.</p>
         </div>
-        <span style={{ color: properties.length ? 'var(--copper)' : 'var(--ink-3)', fontSize: 9, fontWeight: 850, textTransform: 'uppercase', whiteSpace: 'nowrap' }}>{loading ? 'Finding loyalty hotels…' : properties.length ? `${properties.length} hotels · ${sourceSummary.firstParty} official` : status || 'Unavailable'}</span>
+        <span style={{ color: properties.length ? 'var(--copper)' : 'var(--ink-3)', fontSize: 9, fontWeight: 850, textTransform: 'uppercase', whiteSpace: 'nowrap' }}>{loading ? 'Finding loyalty hotels…' : properties.length ? `${properties.length} hotels · ${sourceSummary.firstParty} official` : status?.includes('UNAVAILABLE') ? 'Check programme directly' : status?.replaceAll('_', ' ') || 'Check programme directly'}</span>
       </div>
 
       {loading ? (

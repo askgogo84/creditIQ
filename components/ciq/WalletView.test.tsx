@@ -115,7 +115,7 @@ describe('WalletView — holdings ledger', () => {
   it('handles malformed readiness without crashing or leaving a loading state', async () => {
     load.mockResolvedValue(new Response('{"cards":[{"id":"bad"}]}'));
     renderWallet();
-    await waitFor(() => expect(screen.getByText('Redemption readiness temporarily unavailable.')).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByText('We could not load redemption readiness. Please retry.')).toBeInTheDocument());
     expect(screen.getByText('1,240')).toBeInTheDocument();
   });
 

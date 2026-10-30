@@ -52,7 +52,7 @@ it('keeps missing FX unavailable and preserves independent cash/portal paths', a
   const body = await (await POST(request({ cardId: 'hdfc-infinia', bookingId }))).json()
   expect(body.fx).toBeNull()
   expect(body.plan.candidates.every((c: any) => c.kind !== 'PROGRAMME')).toBe(true)
-  expect(body.advice).toContain('FX unavailable')
+  expect(body.advice).toContain('Live FX rate needed')
 })
 it('preserves missing balance without a verified zero or personal plan', async () => {
   state.rows.statement_imports = [{ bank: 'HDFC', card_name: 'Infinia', points_balance: null }]

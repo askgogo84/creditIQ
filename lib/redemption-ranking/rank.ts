@@ -68,7 +68,7 @@ function cashCandidate(pricing: SelectedTravelPricing): RankedRailCandidate {
     cashPayableMinor: cash,
     cashCurrency: normalizedCurrency(pricing.cashCurrency),
     reasons: cash == null
-      ? ['Matched cash price is unavailable.']
+      ? ['A matching cash quote is needed before comparing value.']
       : ['Pay cash and retain all wallet points.'],
   }
 }

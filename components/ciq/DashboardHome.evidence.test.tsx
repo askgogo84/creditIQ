@@ -21,7 +21,7 @@ it('keeps statement provenance while readiness is loading', async () => {
 it('keeps provenance and explicitly reports failed readiness', async () => {
   load.mockResolvedValue(new Response('{}', { status: 500 }))
   render(<DashboardHome {...props} />)
-  await waitFor(() => expect(screen.getByText(/Redemption readiness temporarily unavailable/)).toBeInTheDocument())
+  await waitFor(() => expect(screen.getByText(/We could not load redemption readiness/)).toBeInTheDocument())
   expect(screen.getByText(/100% verified/)).toBeInTheDocument()
   expect(screen.queryByText(/0\.25|1\.80/)).not.toBeInTheDocument()
   expect(screen.queryByText(/No partners are mapped/)).not.toBeInTheDocument()

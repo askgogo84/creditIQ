@@ -17,7 +17,7 @@ export function RedemptionCandidateResults({ candidates }: { candidates?: Candid
     </div>}
     {visible.map((candidate, i) => <div key={i} className="bg-ink-900/40 border border-white/10 rounded-lg p-3">
       <b>{candidate.kind === 'PROGRAMME' ? 'Programme scenario — conditional' : candidate.kind}</b>
-      <p className="text-sm">{candidate.cashPayableMinor === null ? 'Payable amount unavailable.' : `Booking cash payable: ${formatINR(candidate.cashPayableMinor / 100)}`}</p>
+      <p className="text-sm">{candidate.cashPayableMinor === null ? 'Confirm the payable amount before booking.' : `Booking cash payable: ${formatINR(candidate.cashPayableMinor / 100)}`}</p>
       {candidate.instructionBlocked && <p className="text-xs">{candidate.instructionBlocked.replaceAll('_', ' ')}</p>}
     </div>)}
     {candidates.length === 0 && <p className="text-sm">No booking comparison is available.</p>}

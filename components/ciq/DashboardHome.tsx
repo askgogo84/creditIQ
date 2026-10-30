@@ -259,13 +259,13 @@ export function DashboardHome({
     : cards.some(c => c.points === null) ? 'Some balances are unknown' : cards.length ? 'No verified balance yet' : availability === 'available' ? 'No cards yet' : 'Wallet data pending'
   const selfLine = summary.selfEntered > 0 ? 'Self-entered balances labelled separately' : ''
   const readiness = cards[wi]?.readiness
-  const readinessLabel = availability === 'loading' ? 'CHECKING' : availability === 'unavailable' ? 'RETRY NEEDED' : availability === 'partial' ? 'PARTIAL DATA' : 'SELECT A BOOKING'
+  const readinessLabel = availability === 'loading' ? 'CHECKING' : availability === 'unavailable' ? 'RETRY NEEDED' : availability === 'partial' ? 'PARTIAL DATA' : readiness?.state === 'UNSUPPORTED' ? 'CHECK CARD TERMS' : 'SELECT A BOOKING'
   const readinessPanel = <>
     <div style={{ fontFamily: DISPLAY, fontSize: 24, lineHeight: 1.2 }}>Explore your redemption options</div>
     <div role="status" style={{ fontSize: 13, lineHeight: 1.5 }}>
-      {availability === 'loading' ? 'Loading redemption readiness…' : availability === 'unavailable' ? 'Redemption readiness temporarily unavailable. Previously loaded balances retain their source.' : availability === 'partial' ? 'Partial wallet: some balances are unknown.' : readiness?.reason ?? (cards.length ? 'Value depends on the redemption and booking.' : 'Add a card to check redemption readiness.')}
+      {availability === 'loading' ? 'Loading redemption readiness…' : availability === 'unavailable' ? 'We could not load redemption readiness. Please retry. Previously loaded balances retain their source.' : availability === 'partial' ? 'Partial wallet: some balances are unknown.' : readiness?.reason ?? (cards.length ? 'Value depends on the redemption and booking.' : 'Add a card to check redemption readiness.')}
     </div>
-    {cards[wi] && <div style={{ fontSize: 12 }}>Balance source: {cards[wi].selfEntered ? 'self-entered' : cards[wi].source ?? 'unavailable'} · {cards[wi].observedAt ?? 'date unavailable'}</div>}
+    {cards[wi] && <div style={{ fontSize: 12 }}>Balance source: {cards[wi].selfEntered ? 'self-entered' : cards[wi].source ?? 'not recorded'} · {cards[wi].observedAt ?? 'date not recorded'}</div>}
     {readiness?.ratio && <div style={{ fontSize: 13, lineHeight: 1.5 }}>{readiness.programme}: {readiness.ratio.value.fromUnits} bank points → {readiness.ratio.value.toUnits} programme point · Ratio only. <a href={readiness.ratio.source_url} target="_blank" rel="noreferrer" style={{ display: 'inline-flex', alignItems: 'center', minHeight: 44, textDecoration: 'underline' }}>Issuer source · {readiness.ratio.as_of}</a></div>}
     {readiness?.blockers.map(blocker => <div key={blocker} style={{ fontSize: 12, lineHeight: 1.4 }}>{blocker}</div>)}
     <div style={{ fontSize: 12 }}>Booking comparisons are separate from whole-wallet valuation.</div>
@@ -373,7 +373,7 @@ export function DashboardHome({
                 }}>{p.name}</span>
               ))}
             </div>
-            {c.noPartners && <div style={{ fontSize: D ? 14 : 12, lineHeight: 1.4, color: '#3A3D47' }}>{availability === 'loading' ? 'Loading transfer partners…' : availability === 'unavailable' ? 'Transfer partners temporarily unavailable.' : 'No partners mapped to this balance yet.'}</div>}
+            {c.noPartners && <div style={{ fontSize: D ? 14 : 12, lineHeight: 1.4, color: '#3A3D47' }}>{availability === 'loading' ? 'Loading transfer partners…' : availability === 'unavailable' ? 'We could not load transfer partners. Please retry.' : 'No partners mapped to this balance yet.'}</div>}
             <div style={{ marginTop: 'auto', fontWeight: 500, fontSize: 11, color: '#4A4D57' }}>Tap to flip back</div>
           </div>
         )}
@@ -443,7 +443,7 @@ export function DashboardHome({
         )}
         {ws.noPartners && (
           <div style={{ border: '1px dashed #9A9CA3', borderRadius: 8, padding: 14, fontSize: 14, lineHeight: 1.45, color: '#3A3D47' }}>
-            {availability === 'loading' ? 'Loading transfer partners…' : availability === 'unavailable' ? 'Transfer partners temporarily unavailable. Your saved card identity is unchanged.' : 'No partners are mapped to this balance yet. Once we identify the issuer, its transfer paths will show here.'}
+            {availability === 'loading' ? 'Loading transfer partners…' : availability === 'unavailable' ? 'We could not load transfer partners. Please retry. Your saved card identity is unchanged.' : 'No partners are mapped to this balance yet. Match the exact card variant to review supported transfer paths.'}
           </div>
         )}
       </>

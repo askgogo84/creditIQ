@@ -17,8 +17,8 @@ export function redemptionReadiness(card: { bank: string; cardName: string | nul
     state: card.points === null ? 'BALANCE_UNKNOWN' as const : supported ? 'BOOKING_REQUIRED' as const : 'UNSUPPORTED' as const,
     walletValueInr: null,
     reason: card.points === null ? 'Balance unknown. Add a current balance before planning.' : supported
-      ? 'Select a booking to compare redemption paths. Whole-wallet value is unavailable.'
-      : 'Booking rules for this card are not captured. Whole-wallet value is unavailable.',
+      ? 'Select a booking to compare redemption paths. Value depends on that booking, not the wallet total.'
+      : 'Confirm this card’s booking rules with the issuer before comparing a redemption. Value depends on the selected booking.',
     programme: supported ? 'Accor ALL' : null,
     ratio: supported ? HDFC_ACCOR_ROUTE.ratio : null,
     blockers: supported ? [

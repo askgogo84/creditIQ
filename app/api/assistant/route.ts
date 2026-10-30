@@ -28,7 +28,7 @@ function fallbackMessage(raw: unknown) {
 
   if (/hotel|stay|marriott|hilton|ihg|accor|hyatt|taj|itc/.test(q)) {
     return [
-      'I can still help with this even while the AI model is temporarily unavailable.',
+      'The AI service could not complete this request. These steps can help you continue.',
       'Open Hotels, choose the property first, then compare cash versus the loyalty programme. Treat cached points as discovery only and verify the live award price before transferring any bank points.',
       '→ [Open Hotels](/hotels)',
     ].join('\n');
@@ -36,7 +36,7 @@ function fallbackMessage(raw: unknown) {
 
   if (/flight|trip|travel|singapore|dubai|bangkok|miles|award|points/.test(q)) {
     return [
-      'I can still help plan this trip even while the AI model is temporarily unavailable.',
+      'The AI service could not complete this request. You can continue planning through Travel.',
       'Open Travel and search the exact route/date. CreditIQ will reduce the result to one of three actions: Pay cash, Use points, or Verify award first. If it says Verify award first, do not transfer points yet.',
       '→ [Open Travel](/trip-planner)',
     ].join('\n');
@@ -44,15 +44,15 @@ function fallbackMessage(raw: unknown) {
 
   if (/amazon|swiggy|merchant|purchase|spend|card/.test(q)) {
     return [
-      'Card recommendations are temporarily unavailable while the AI service is unavailable.',
+      'The AI service could not load card recommendations. Please retry.',
       'You can retry Spend Smart for a catalogue comparison of monthly spending. Results may include cards you do not own and remain estimates to verify with the issuer.',
       '→ [Open Spend Smart](/spend-optimizer)',
     ].join('\n');
   }
 
   return [
-    'CIRA is temporarily running in safe fallback mode because the AI provider is unavailable.',
-    'You can still view Wallet and search Travel or Hotels. AI card comparisons may also be temporarily unavailable.',
+    'The AI service could not complete this request. Here are ways to continue in CreditIQ.',
+    'You can still view Wallet and search Travel or Hotels. Retry AI card comparisons shortly.',
   ].join('\n');
 }
 

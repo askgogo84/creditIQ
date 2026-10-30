@@ -27,6 +27,6 @@ export function calculateAdvisor(card: DecisionWalletCard, rate: RateResult | nu
     ...common, plan,
     booking: { ...booking, hotelId: rate.hotel.id, capturedAt: rate.captured_at, source: rate.source_id, isLive: false, basis: 'Captured starting-from member rate: 12 Oct 2026, 3 nights, 2 adults, 1 room. Recheck checkout price.' },
     fx,
-    advice: `Server-calculated booking comparison: ${plan.recommendedPath.replaceAll('_', ' ').toLowerCase()}. ${plan.blockedReason ?? 'This comparison applies only to the selected captured stay.'} No programme balance was supplied. ${readiness.blockers.join(' ')} Exact transfer instructions remain withheld.${fx ? '' : ' FX unavailable: programme INR economics cannot be compared.'}`,
+    advice: `Server-calculated booking comparison: ${plan.recommendedPath.replaceAll('_', ' ').toLowerCase()}. ${plan.blockedReason ?? 'This comparison applies only to the selected captured stay.'} No programme balance was supplied. ${readiness.blockers.join(' ')} Exact transfer instructions remain withheld.${fx ? '' : ' Live FX rate needed: programme INR economics cannot be compared.'}`,
   }
 }

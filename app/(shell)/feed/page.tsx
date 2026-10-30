@@ -60,7 +60,7 @@ export default function FeedPage() {
     setError(false)
     try {
       const res = await authedFetch('/api/feed')
-      if (!res.ok) throw new Error('Intelligence unavailable')
+      if (!res.ok) throw new Error('Card intelligence could not be loaded. Please retry.')
       const data = await res.json()
       if (!Array.isArray(data.items)) throw new Error('Invalid intelligence response')
       setItems(Array.isArray(data.items) ? data.items : [])

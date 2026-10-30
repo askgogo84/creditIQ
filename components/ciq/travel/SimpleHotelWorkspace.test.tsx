@@ -18,7 +18,7 @@ it.each([409, 'timeout'])('keeps programme verification usable after %s', async 
   fireEvent.click(screen.getByRole('button', { name: 'Search hotels' }))
   await waitFor(() => expect(screen.getByText('Synthetic Hotel')).toBeInTheDocument())
   fireEvent.click(screen.getByRole('button', { name: 'Check programme for these dates' }))
-  await waitFor(() => expect(screen.getByText(outcome === 'timeout' ? /Live programme verification is unavailable/ : 'Check the programme directly.')).toBeInTheDocument())
+  await waitFor(() => expect(screen.getByText(outcome === 'timeout' ? /Check the programme directly to confirm availability/ : 'Check the programme directly.')).toBeInTheDocument())
   expect(screen.getByRole('button', { name: 'Check programme for these dates' })).toBeEnabled()
 })
 it('explains an invalid search instead of silently doing nothing', () => {

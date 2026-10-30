@@ -234,7 +234,7 @@ export function SimpleHotelWorkspace() {
         }),
         signal,
         })
-        if (!res.ok && res.status !== 409 && res.status !== 503) throw new Error('Programme verification unavailable')
+        if (!res.ok && res.status !== 409 && res.status !== 503) throw new Error('Programme verification could not be completed')
         return res.json()
       }, 30000)
       const message = (typeof data.reason === 'string' && data.reason) || (typeof data.note === 'string' && data.note) || (
@@ -247,7 +247,7 @@ export function SimpleHotelWorkspace() {
       setVerifyMessage(current => ({ ...current, [key]: message }))
       await requestHotelVerdict(cashOffers, property, data)
     } catch {
-      setVerifyMessage(current => ({ ...current, [key]: 'Live programme verification is unavailable right now. Keep your points until you can check directly.' }))
+      setVerifyMessage(current => ({ ...current, [key]: 'Check the programme directly to confirm availability. Keep your points until that check is complete.' }))
     } finally {
       setVerifyId(null)
     }

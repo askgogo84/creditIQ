@@ -11,7 +11,7 @@ export function RedemptionCoverage({ routes }: { routes: ReturnType<typeof cardR
       <strong>{route.name}</strong><div>{labels[route.evidenceState]}</div>
       {route.ratio && <div>{route.ratio.fromUnits} card points → {route.ratio.toUnits} programme points</div>}
       <p>Still needed: {route.missing.join('; ')}.</p>
-      {route.sources.filter(source => safeSourceUrl(source.sourceUrl)).map((source, i) => <a key={source.sourceId + i} href={safeSourceUrl(source.sourceUrl)!} target="_blank" rel="noopener noreferrer" style={{ display: 'inline-flex', alignItems: 'center', minHeight: 44, marginRight: 12 }}>Source · {source.capturedAt || 'capture date unavailable'} ↗</a>)}
+      {route.sources.filter(source => safeSourceUrl(source.sourceUrl)).map((source, i) => <a key={source.sourceId + i} href={safeSourceUrl(source.sourceUrl)!} target="_blank" rel="noopener noreferrer" style={{ display: 'inline-flex', alignItems: 'center', minHeight: 44, marginRight: 12 }}>Source · {source.capturedAt || 'capture date not recorded'} ↗</a>)}
     </article>)}
   </details>
 }

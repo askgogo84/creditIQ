@@ -271,7 +271,7 @@ export function GlobalHotelWorkspace() {
 
           {error && (
             <div className="ghw-error">
-              <b>Cash inventory is unavailable for this comparison.</b>
+              <b>No cash quote was returned for this comparison. Check the hotel directly.</b>
               <span>{error}</span>
               {attempts.length > 0 && (
                 <div className="ghw-provider-attempts" aria-label="Live hotel provider status">

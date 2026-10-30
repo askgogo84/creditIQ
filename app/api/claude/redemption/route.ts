@@ -33,11 +33,11 @@ export async function POST(req: NextRequest) {
     if (body.bookingId) {
       const rates = await new SeededRateProvider().search({ hotel_id: body.bookingId as string, nights: 3 })
       rate = rates.find(r => r.hotel.programme_id === 'accor-all') ?? null
-      if (!rate) return NextResponse.json({ error: 'Captured booking unavailable.' }, { status: 422 })
+      if (!rate) return NextResponse.json({ error: 'Select a captured booking before comparing redemption paths.' }, { status: 422 })
       if (redemptionReadiness(matches[0]).state === 'BOOKING_REQUIRED') fx = await new LiveFxProvider().rate('EUR', 'INR')
     }
     return NextResponse.json(calculateAdvisor(matches[0], rate, fx))
   } catch {
-    return NextResponse.json({ error: 'Redemption evidence temporarily unavailable.' }, { status: 503 })
+    return NextResponse.json({ error: 'Redemption evidence could not be loaded. Please retry.' }, { status: 503 })
   }
 }
