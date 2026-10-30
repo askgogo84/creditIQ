@@ -9,6 +9,18 @@ vi.mock('@/lib/request-timeout', async importOriginal => {
 })
 vi.mock('@/components/ciq/concierge/ConciergeRequestButton', () => ({ ConciergeRequestButton: () => <button>Concierge</button> }))
 beforeEach(() => { load.mockReset() })
+it.each([409, 'timeout'])('keeps programme verification usable after %s', async outcome => {
+  load.mockImplementation((url: string) => {
+    if (url.endsWith('/award-search')) return outcome === 'timeout' ? new Promise(() => {}) : Promise.resolve({ ok: false, status: 409, json: async () => ({ status: 'DIRECT_REQUIRED', reason: 'Check the programme directly.' }) })
+    return Promise.resolve({ ok: true, status: 200, json: async () => url.endsWith('/award-discovery') ? { properties: [{ providerPropertyId: 'synthetic', programmeId: 'club-itc', name: 'Synthetic Hotel' }] } : {} })
+  })
+  render(<SimpleHotelWorkspace />)
+  fireEvent.click(screen.getByRole('button', { name: 'Search hotels' }))
+  await waitFor(() => expect(screen.getByText('Synthetic Hotel')).toBeInTheDocument())
+  fireEvent.click(screen.getByRole('button', { name: 'Check programme for these dates' }))
+  await waitFor(() => expect(screen.getByText(outcome === 'timeout' ? /Check the programme directly to confirm availability/ : 'Check the programme directly.')).toBeInTheDocument())
+  expect(screen.getByRole('button', { name: 'Check programme for these dates' })).toBeEnabled()
+})
 it('explains an invalid search instead of silently doing nothing', () => {
   render(<SimpleHotelWorkspace />)
   fireEvent.change(screen.getByLabelText('Destination'), { target: { value: '' } })

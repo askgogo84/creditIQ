@@ -1,8 +1,9 @@
 'use client'
 
 import { useEffect, useRef, useState } from 'react'
-import { ArrowRight, Clock3, Plus, Send, ShieldCheck, Sparkles } from 'lucide-react'
+import { ArrowRight, Plus, Send, ShieldCheck, Sparkles } from 'lucide-react'
 import { authedFetch } from '@/lib/authed-fetch'
+import { withRequestTimeout } from '@/lib/request-timeout'
 
 interface Message {
   role: 'user' | 'assistant'
@@ -14,12 +15,6 @@ const SUGGESTIONS = [
   'Which card should I use for my next purchase?',
   'Find benefits that may expire this month',
   'Explain what my wallet is really worth',
-]
-
-const RECENT = [
-  { title: 'Plan Singapore with points', time: 'Just now' },
-  { title: 'Best card for ₹2L tax payment', time: 'Yesterday' },
-  { title: 'Review Axis statement', time: '28 Aug' },
 ]
 
 function renderMarkdown(text: string) {
@@ -46,7 +41,8 @@ export default function CiraPage() {
   useEffect(() => { endRef.current?.scrollIntoView({ behavior: 'smooth' }) }, [messages, loading])
   useEffect(() => { inputRef.current?.focus() }, [])
   useEffect(() => {
-    const question = new URLSearchParams(window.location.search).get('q')
+    const params = new URLSearchParams(window.location.search)
+    const question = params.get('q') || params.get('seed')
     if (question) setInput(question)
   }, [])
 
@@ -60,12 +56,18 @@ export default function CiraPage() {
     setLoading(true)
 
     try {
-      const response = await authedFetch('/api/assistant', {
+      const data = await withRequestTimeout(async signal => {
+        const response = await authedFetch('/api/assistant', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ message: question, history }),
-      })
-      const data = await response.json()
+        signal,
+        })
+        if (!response.ok) throw new Error('The assistant could not respond. Please retry.')
+        const reply = await response.json()
+        if (typeof reply.message !== 'string' || !reply.message.trim()) throw new Error('Missing response')
+        return reply
+      }, 45000)
       setMessages(previous => [...previous, {
         role: 'assistant',
         content: data.message || 'Sorry, I could not get a response. Please try again.',
@@ -91,21 +93,21 @@ export default function CiraPage() {
               <span>CIRA</span>
               <h1>Concierge</h1>
             </div>
-            <button type="button" aria-label="New conversation" onClick={() => setMessages([])}>
+            <button type="button" aria-label="New conversation" disabled={loading} onClick={() => { setMessages([]); setInput('') }}>
               <Plus size={17} />
             </button>
           </div>
 
-          <button type="button" className="ciq-cira-new" onClick={() => setMessages([])}>
+          <button type="button" className="ciq-cira-new" disabled={loading} onClick={() => { setMessages([]); setInput('') }}>
             <Sparkles size={15} /> New conversation
           </button>
 
-          <div className="ciq-cira-history-label">Recent</div>
+          <div className="ciq-cira-history-label">Try a question</div>
           <div className="ciq-cira-history-list">
-            {RECENT.map((item, index) => (
-              <button key={item.title} type="button" className={index === 0 ? 'active' : undefined}>
-                <span>{item.title}</span>
-                <small><Clock3 size={11} /> {item.time}</small>
+            {SUGGESTIONS.slice(0, 3).map(suggestion => (
+              <button key={suggestion} type="button" disabled={loading} onClick={() => { setInput(suggestion); inputRef.current?.focus() }}>
+                <span>{suggestion}</span>
+                <small>Example question</small>
               </button>
             ))}
           </div>

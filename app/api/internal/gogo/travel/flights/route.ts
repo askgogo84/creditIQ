@@ -245,7 +245,7 @@ export async function POST(req: NextRequest) {
       pointsAware: Boolean(userLinkId) && !walletError,
       walletCards: portfolio.length,
       verifiedBalances: portfolio.filter((card) => card.verified).length,
-      error: walletError ? 'wallet unavailable' : null,
+      error: walletError ? 'Wallet could not be loaded. Please retry.' : null,
     },
     wallet: compactWallet(portfolio),
     flights,

@@ -217,12 +217,12 @@ function RankingSummary({ ranking }: { ranking: RailRankingResult }) {
     return (
       <div className="wrm-ranking projected">
         <div className="wrm-ranking-row">
-          <div><small>Best projected path · verification required</small><b>{candidateLabel(projected, programmeId)}</b><span>{moneyMinor(projected.cashPayableMinor, projected.cashCurrency) ?? 'Cash component unavailable'}{projected.bankPointsTargetMinimum != null ? ` · at least ${projected.bankPointsTargetMinimum.toLocaleString('en-IN')} bank points` : ''}</span></div>
+          <div><small>Best projected path · verification required</small><b>{candidateLabel(projected, programmeId)}</b><span>{moneyMinor(projected.cashPayableMinor, projected.cashCurrency) ?? 'Confirm cash component'}{projected.bankPointsTargetMinimum != null ? ` · at least ${projected.bankPointsTargetMinimum.toLocaleString('en-IN')} bank points` : ''}</span></div>
           <em>Projected</em>
         </div>
         {executable && (
           <div className="wrm-ranking-row executable">
-            <div><small>Best executable now</small><b>{candidateLabel(executable, programmeId)}</b><span>{moneyMinor(executable.cashPayableMinor, executable.cashCurrency) ?? 'Cash amount unavailable'}</span></div>
+            <div><small>Best executable now</small><b>{candidateLabel(executable, programmeId)}</b><span>{moneyMinor(executable.cashPayableMinor, executable.cashCurrency) ?? 'Confirm cash amount'}</span></div>
             <em>Executable</em>
           </div>
         )}
@@ -235,7 +235,7 @@ function RankingSummary({ ranking }: { ranking: RailRankingResult }) {
     return (
       <div className="wrm-ranking executable-only">
         <div className="wrm-ranking-row executable">
-          <div><small>{ranking.recommendationState === 'CASH_ONLY' ? 'Best executable now' : 'Best executable path'}</small><b>{candidateLabel(executable, programmeId)}</b><span>{moneyMinor(executable.cashPayableMinor, executable.cashCurrency) ?? 'Cash amount unavailable'}</span></div>
+          <div><small>{ranking.recommendationState === 'CASH_ONLY' ? 'Best executable now' : 'Best executable path'}</small><b>{candidateLabel(executable, programmeId)}</b><span>{moneyMinor(executable.cashPayableMinor, executable.cashCurrency) ?? 'Confirm cash amount'}</span></div>
           <em>Executable</em>
         </div>
       </div>
@@ -346,7 +346,7 @@ export function WalletRailMatrix({
     })
       .then(async (res) => {
         const data = await res.json() as Response
-        if (!res.ok) throw new Error(data.error || 'rail matrix unavailable')
+        if (!res.ok) throw new Error(data.error || 'Redemption paths could not be loaded. Please retry.')
         if (!cancelled) {
           setMatrix(data.matrix ?? null)
           setDecision(data.decision ?? null)

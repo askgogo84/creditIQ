@@ -180,7 +180,9 @@ function buildExecutionPlan(row: Row): ExecutionPlan {
       steps: [
         `Open ${portal}.`,
         `Search the exact ${row.from} → ${row.to} flight for ${routeDate} and match the same cabin.`,
-        `Apply the CreditIQ wallet mix: ${amount || 'verify the points + cash split at checkout'}.`,
+        option.state === 'PROJECTED_NEEDS_VERIFICATION'
+          ? `Compare this projected mix with the issuer checkout: ${amount || 'points + cash split not yet confirmed'}. Do not treat it as a confirmed redemption.`
+          : `Apply the CreditIQ wallet mix: ${amount || 'verify the points + cash split at checkout'}.`,
         'Before paying, re-check the live fare, portal cap, fees and final points/cash split.',
       ],
       warning: option.state === 'PROJECTED_NEEDS_VERIFICATION'

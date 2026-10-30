@@ -3,6 +3,7 @@ import Link from 'next/link';
 import { SlidersHorizontal, Sparkles } from 'lucide-react';
 import { CardsClient } from './CardsClient';
 import { createClient } from '@supabase/supabase-js';
+import { uniqueCatalogueRoutes } from '@/lib/catalogue-routes';
 
 export const revalidate = 300; // revalidate every 5 mins
 
@@ -29,11 +30,11 @@ async function getCards() {
       .select('*')
       .eq('active', true)
       .order('iq_score', { ascending: false });
-    if (!error && data && data.length > 0) return data;
+    if (!error && data && data.length > 0) return uniqueCatalogueRoutes(data);
   } catch (e) {}
   // fallback to seed
   const { SEED_CARDS } = await import('@/lib/data/seed-cards');
-  return SEED_CARDS.filter((c: any) => c.active !== false);
+  return uniqueCatalogueRoutes(SEED_CARDS.filter((c: any) => c.active !== false));
 }
 
 export default async function CardsIndexPage() {

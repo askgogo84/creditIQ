@@ -68,7 +68,7 @@ function cashCandidate(pricing: SelectedTravelPricing): RankedRailCandidate {
     cashPayableMinor: cash,
     cashCurrency: normalizedCurrency(pricing.cashCurrency),
     reasons: cash == null
-      ? ['Matched cash price is unavailable.']
+      ? ['A matching cash quote is needed before comparing value.']
       : ['Pay cash and retain all wallet points.'],
   }
 }
@@ -141,12 +141,12 @@ function transferCandidate(
         reasons.push('Balance covers the ratio-derived target, but issuer minimum/increment are not fully sourced.')
       }
     } else {
-      reasons.push('Wallet balance is unavailable for affordability checking.')
+      reasons.push('Confirm the wallet balance before checking affordability.')
     }
   }
 
   const taxesComparable = awardTaxes != null && sameCurrency(pricing.awardTaxesCurrency, pricing.cashCurrency)
-  if (awardTaxes == null) reasons.push('Award taxes/cash component are unavailable.')
+  if (awardTaxes == null) reasons.push('Confirm award taxes and the cash component before comparing value.')
   else if (!sameCurrency(pricing.awardTaxesCurrency, pricing.cashCurrency)) {
     reasons.push('Award taxes and cash benchmark use different currencies; no FX conversion is invented here.')
   }

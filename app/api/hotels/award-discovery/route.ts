@@ -137,6 +137,6 @@ export async function POST(req: NextRequest) {
     })
   } catch (error) {
     console.error('hotel award discovery failed', error)
-    return NextResponse.json({ error: 'hotel award discovery unavailable' }, { status: 502 })
+    return NextResponse.json({ error: 'Hotel discovery could not be completed. Please retry.' }, { status: 502 })
   }
 }

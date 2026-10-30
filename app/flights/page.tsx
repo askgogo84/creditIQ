@@ -350,7 +350,7 @@ function FlightCard({ flight, open, onToggle }: { flight: FusedFlight; open: boo
                 <div style={{ fontSize: 20, fontWeight: 900, color: GOLD, lineHeight: 1.1 }}>
                   {inr(award!.mileageCost)}<span style={{ fontSize: 12, color: GREY, fontWeight: 700 }}> miles</span>
                 </div>
-                <div style={{ fontSize: 10, color: GREY_SOFT, marginTop: 2 }}>Cash price unavailable</div>
+                <div style={{ fontSize: 10, color: GREY_SOFT, marginTop: 2 }}>Check airline cash fare</div>
               </>
             ) : (
               <>
@@ -388,7 +388,7 @@ function FlightCard({ flight, open, onToggle }: { flight: FusedFlight; open: boo
                 : `Book via Points: ${inr(award!.mileageCost)} miles + est. taxes`}
             </button>
             <div style={{ marginTop: 6, fontSize: 11, color: GREY_SOFT, textAlign: 'center' }}>
-              Cash price unavailable for this date {'—'} points booking only.
+              No cash quote returned for this date {'—'} points booking only.
             </div>
           </div>
         ) : (

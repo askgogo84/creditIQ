@@ -65,7 +65,7 @@ function hotelAwardStateLabel(response: AwardSearchResponse | null, hasJoinedRat
   if (response?.status === 'CACHED_DISCOVERY') return 'Property/programme discovered · live price not confirmed'
   if (response?.status === 'DIRECT_REQUIRED') return 'Direct loyalty check required'
   if (response?.status === 'NO_LIVE_RATES') return 'No live award rate returned · direct check still available'
-  if (response?.status === 'PROVIDER_UNAVAILABLE') return 'Award provider unavailable · direct check still available'
+  if (response?.status === 'PROVIDER_UNAVAILABLE') return 'Check awards directly with the programme'
   if (response?.status === 'PENDING') return 'Live award search pending'
   return 'Availability not confirmed'
 }
@@ -165,7 +165,7 @@ export function HotelAwardJoinPanel({
       )}
 
       {!loading && response?.status === 'PROVIDER_UNAVAILABLE' && (
-        <div className="haj-status error"><b>Award source unavailable — redemption path preserved</b><span>{response.reason || response.error || 'Missing provider access is not treated as zero award space.'}</span></div>
+        <div className="haj-status error"><b>Live award check needs a direct programme check</b><span>{response.reason || response.error || 'Missing provider access is not treated as zero award space.'}</span></div>
       )}
 
       {!loading && response?.status === 'NO_LIVE_RATES' && (

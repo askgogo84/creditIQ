@@ -152,7 +152,7 @@ export default function LiveAwardRow({
       </span>
       {withCash && data?.cashPrice != null
         ? <span style={{ fontSize: 12, color: GREY }}>{'·'} {'≈'} {'₹'}{data.cashPrice.toLocaleString('en-IN')} cash</span>
-        : <span style={{ fontSize: 12, color: GREY }}>{'·'} cash fare unavailable</span>}
+        : <span style={{ fontSize: 12, color: GREY }}>{'·'} check airline cash fare</span>}
     </div>
   );
 

@@ -155,7 +155,7 @@ export async function GET() {
     return NextResponse.json(config)
   } catch (err) {
     console.error('App config error:', err)
-    return NextResponse.json({ error: 'Config unavailable' }, { status: 500 })
+    return NextResponse.json({ error: 'Settings could not be loaded. Please retry.' }, { status: 500 })
   }
 }
 

@@ -83,7 +83,7 @@ export async function GET(req: NextRequest) {
     .eq('token_hash', hashToken(token))
     .gt('expires_at', now)
     .maybeSingle()
-  if (error || !data) return NextResponse.json({ error: 'handoff expired or unavailable' }, { status: 404 })
+  if (error || !data) return NextResponse.json({ error: 'This handoff has expired or could not be found.' }, { status: 404 })
 
   void db.from('corporate_travel_handoffs').update({ accessed_at: now }).eq('id', data.id)
   return NextResponse.json({

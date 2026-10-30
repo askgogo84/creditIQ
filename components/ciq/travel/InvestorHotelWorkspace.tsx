@@ -91,7 +91,7 @@ export default function InvestorHotelWorkspace(p: Props) {
       try {
         const res = await authedFetch('/api/travel/wallet')
         const data = await res.json()
-        if (!res.ok || cancelled) throw new Error(data?.error || 'wallet unavailable')
+        if (!res.ok || cancelled) throw new Error(data?.error || 'Wallet could not be loaded. Please retry.')
         const supported = ((data.cards || []) as TravelWalletCard[]).find(isSupportedAccorWalletCard)
         if (!supported) {
           if (!cancelled) setWalletBridgeState('not-found')
@@ -119,7 +119,7 @@ export default function InvestorHotelWorkspace(p: Props) {
           <h1>Hotels: compare the booking path, not just point value.</h1>
           <p>Compact property results on the left. The selected hotel’s cash, portal and programme path on the right — using the exact v3.1 output already computed by CreditIQ.</p>
         </div>
-        <div className="ihw-live-state">{p.fx ? `EUR/INR ${p.fx.rate.toFixed(2)} · ${p.fx.source}` : 'Live EUR/INR unavailable · no fallback'}</div>
+        <div className="ihw-live-state">{p.fx ? `EUR/INR ${p.fx.rate.toFixed(2)} · ${p.fx.source}` : 'Live EUR/INR rate needed · no fallback'}</div>
       </div>
 
       <div className="ihw-wallet-band">
@@ -130,7 +130,7 @@ export default function InvestorHotelWorkspace(p: Props) {
         </div>
         <div>
           <span>Accor conversion</span>
-          <b>{p.programmeConversionValueInr !== null ? `${money(p.programmeConversionValueInr)} / HDFC point` : 'Unavailable'}</b>
+          <b>{p.programmeConversionValueInr !== null ? `${money(p.programmeConversionValueInr)} / HDFC point` : 'Live rate needed'}</b>
           <small>2 HDFC → 1 ALL · programme-level economics</small>
         </div>
         <div className="ihw-coverage-note">
@@ -224,13 +224,13 @@ function HotelDecisionPanel({ card, props: p }: { card: StayCard | null; props: 
         {card.recommended_path === 'TRANSFER_THEN_BOOK' ? (
           <>
             <Step n="1" title="Reconfirm the exact room/rate" text={`Open ${card.programme_name} direct before moving points.`} />
-            <Step n="2" title={card.bank_points_exact !== null ? `Transfer exactly ${pts(card.bank_points_exact)} HDFC Reward Points` : 'Do not transfer yet — exact issuer step withheld'} text={card.bank_points_target !== null ? `Arithmetic target: at least ${pts(card.bank_points_target)} HDFC Reward Points for ${pts(card.programme_points_spent ?? 0)} ${card.programme_name} points.` : 'Transfer target unavailable.'} />
+            <Step n="2" title={card.bank_points_exact !== null ? `Transfer exactly ${pts(card.bank_points_exact)} HDFC Reward Points` : 'Do not transfer yet — exact issuer step withheld'} text={card.bank_points_target !== null ? `Arithmetic target: at least ${pts(card.bank_points_target)} HDFC Reward Points for ${pts(card.programme_points_spent ?? 0)} ${card.programme_name} points.` : 'Confirm transfer terms before choosing an amount.'} />
             <Step n="3" title={card.programme_points_spent !== null ? `${card.bank_points_exact !== null ? 'Redeem' : 'If verified, redeem'} ${pts(card.programme_points_spent)} ${card.programme_name} points` : 'Use the verified programme block'} text={card.points_offset_inr !== null && card.execution_cash_payable_inr !== null ? `Projected offset ${inr(card.points_offset_inr)}, leaving ${inr(card.execution_cash_payable_inr)} in cash.` : 'CreditIQ is withholding the rupee redemption result until required inputs are trustworthy.'} />
           </>
         ) : card.recommended_path === 'PORTAL' ? (
           <>
             <Step n="1" title="Use SmartBuy" text={card.portal_points_used !== null ? `Use ${pts(card.portal_points_used)} HDFC Reward Points.` : 'Use the portal path selected by the engine.'} />
-            <Step n="2" title="Pay the remaining cash" text={portalCash !== null ? `Cash payable is ${money(portalCash)}, including the redemption fee.` : 'Cash remainder unavailable.'} />
+            <Step n="2" title="Pay the remaining cash" text={portalCash !== null ? `Cash payable is ${money(portalCash)}, including the redemption fee.` : 'Confirm the remaining cash amount before booking.'} />
           </>
         ) : card.recommended_path === 'CASH_AND_RETAIN' ? (
           <Step n="1" title="Pay cash and retain points" text={`Pay ${inr(card.cash_total_inr)} and keep the bank balance for a stronger future redemption.`} />
@@ -252,7 +252,7 @@ function HotelDecisionPanel({ card, props: p }: { card: StayCard | null; props: 
           <div><dt>Rules</dt><dd>{card.rule_state}</dd></div>
           <div><dt>Balance</dt><dd>{card.balance_state}</dd></div>
           <div><dt>Cash source</dt><dd>{card.rate_is_live ? 'LIVE' : `CAPTURED · ${card.rate_source}`}</dd></div>
-          <div><dt>FX</dt><dd>{p.fx ? `${p.fx.rate.toFixed(2)} · ${p.fx.source}` : 'UNAVAILABLE · no fallback'}</dd></div>
+          <div><dt>FX</dt><dd>{p.fx ? `${p.fx.rate.toFixed(2)} · ${p.fx.source}` : 'LIVE RATE NEEDED · no fallback'}</dd></div>
         </dl>
         {card.conflicts.length > 0 && <p>{card.conflicts.join(' · ')}</p>}
       </div>

@@ -1,5 +1,6 @@
 ﻿'use client';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
+import { uniqueCatalogueRoutes } from '@/lib/catalogue-routes';
 import { CardTile, type TileCard } from '@/components/design/CardTile';
 import { type CardVariant } from '@/components/design/CreditCard3D';
 import { isFieldUnknown } from '@/lib/data/unverified-cards';
@@ -87,10 +88,11 @@ function matchCategory(card: any, key: string): boolean {
 interface Props { initialCards: any[] }
 
 export function CardsClient({ initialCards }: Props) {
+  const cards = useMemo(() => uniqueCatalogueRoutes(initialCards), [initialCards]);
   const [activeCategory, setActiveCategory] = useState('all');
   const [search, setSearch] = useState('');
 
-  const filtered = initialCards.filter(c => {
+  const filtered = cards.filter(c => {
     const matchesCat = matchCategory(c, activeCategory);
     const q = search.toLowerCase();
     const matchesSearch = !q || c.name?.toLowerCase().includes(q) || c.bank?.toLowerCase().includes(q);
@@ -101,7 +103,7 @@ export function CardsClient({ initialCards }: Props) {
     <div className="approved-cards-client">
       <div className="ciq-workspace-surface approved-card-toolbar">
         <div style={{ display: 'flex', justifyContent: 'space-between', gap: 18, alignItems: 'center', flexWrap: 'wrap', marginBottom: 14 }}>
-          <div><div className="ciq-editorial-kicker">Curated catalogue</div><div style={{ marginTop: 5, fontSize: 13, color: 'var(--ink-3)' }}>Showing {filtered.length} of {initialCards.length} cards</div></div>
+          <div><div className="ciq-editorial-kicker">Curated catalogue</div><div style={{ marginTop: 5, fontSize: 13, color: 'var(--ink-3)' }}>Showing {filtered.length} of {cards.length} cards</div></div>
           <input
             type="search"
             aria-label="Search cards or banks"

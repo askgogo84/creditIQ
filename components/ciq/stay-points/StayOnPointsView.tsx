@@ -159,7 +159,7 @@ export default function StayOnPointsView(p: Props) {
             <div className="bandValue">
               {p.programmeConversionValueInr !== null
                 ? `${money(p.programmeConversionValueInr)} / HDFC Reward Point`
-                : 'FX comparison unavailable'}
+                : 'Live exchange rate needed'}
             </div>
           </div>
           <span className="sourceBadge">2 HDFC → 1 ALL</span>
@@ -170,7 +170,7 @@ export default function StayOnPointsView(p: Props) {
         {p.fx ? (
           <div className="bandMeta">EUR/INR {p.fx.rate.toFixed(2)} · live from {p.fx.source}</div>
         ) : (
-          <div className="bandMeta warnText">Live EUR/INR unavailable. CreditIQ is not using a stored fallback rate.</div>
+          <div className="bandMeta warnText">A live EUR/INR rate could not be retrieved. Retry before comparing INR values; no fallback rate is used.</div>
         )}
       </section>
 
@@ -364,7 +364,7 @@ function PathSteps({ card: c, balance }: { card: StayCard; balance: number }) {
         <Step n="2" title="Pay the remaining cash">
           {c.portal_cash_payable_inr !== null
             ? <>Cash payable is <b>{inr(c.portal_cash_payable_inr)}</b>, including the redemption fee.</>
-            : 'Cash remainder unavailable.'}
+            : 'Confirm the remaining cash amount before booking.'}
         </Step>
       </div>
     );

@@ -8,6 +8,19 @@ import { rankedWalletIntelligence, walletIntelligencePrompt } from '@/lib/intell
 import { ciraCanonicalTravelContext } from '@/lib/redemption-rails/cira-context';
 
 export const runtime = 'nodejs';
+export const maxDuration = 60;
+
+// A whole-wallet value is not an output of the booking-specific redemption engine.
+// Keep this product explanation deterministic rather than asking a model to invent rates.
+function walletValueMessage(message: string) {
+  if (!(/\bwallet\b/i.test(message) && /\b(value|worth|rupees?|valuation)\b/i.test(message))) return null;
+  return [
+    'Your wallet shows reward points because CreditIQ does not have a verified single rupee value for the whole wallet. Points in different programmes are not interchangeable, and their value depends on the specific redemption. Statement or linked balances and self-entered balances keep their source labels.',
+    'For a hotel comparison, choose the property, dates, room and guests; obtain a current cash price including taxes and a confirmed points quote. The comparison also needs your card and programme balances, current eligibility, transfer ratio, minimum and increment, any fees and, where required, a current exchange rate. Missing information stays unknown rather than being filled with a fallback value.',
+    'A booking comparison is separate from a whole-wallet valuation. Confirm availability and the final price directly before transferring points or paying.',
+    '→ [Compare a hotel stay](/hotels)',
+  ].join('\n\n');
+}
 
 function fallbackMessage(raw: unknown) {
   const message = String(raw || '').trim();
@@ -15,7 +28,7 @@ function fallbackMessage(raw: unknown) {
 
   if (/hotel|stay|marriott|hilton|ihg|accor|hyatt|taj|itc/.test(q)) {
     return [
-      'I can still help with this even while the AI model is temporarily unavailable.',
+      'The AI service could not complete this request. These steps can help you continue.',
       'Open Hotels, choose the property first, then compare cash versus the loyalty programme. Treat cached points as discovery only and verify the live award price before transferring any bank points.',
       '→ [Open Hotels](/hotels)',
     ].join('\n');
@@ -23,7 +36,7 @@ function fallbackMessage(raw: unknown) {
 
   if (/flight|trip|travel|singapore|dubai|bangkok|miles|award|points/.test(q)) {
     return [
-      'I can still help plan this trip even while the AI model is temporarily unavailable.',
+      'The AI service could not complete this request. You can continue planning through Travel.',
       'Open Travel and search the exact route/date. CreditIQ will reduce the result to one of three actions: Pay cash, Use points, or Verify award first. If it says Verify award first, do not transfer points yet.',
       '→ [Open Travel](/trip-planner)',
     ].join('\n');
@@ -31,15 +44,15 @@ function fallbackMessage(raw: unknown) {
 
   if (/amazon|swiggy|merchant|purchase|spend|card/.test(q)) {
     return [
-      'I can still compare your wallet while the AI model is temporarily unavailable.',
-      'Use Spend Smart for the purchase amount/category and CreditIQ will show the best card from your wallet plus the expected reward.',
-      '→ [Open Spend Smart](/spend-smart)',
+      'The AI service could not load card recommendations. Please retry.',
+      'You can retry Spend Smart for a catalogue comparison of monthly spending. Results may include cards you do not own and remain estimates to verify with the issuer.',
+      '→ [Open Spend Smart](/spend-optimizer)',
     ].join('\n');
   }
 
   return [
-    'CIRA is temporarily running in safe fallback mode because the AI provider is unavailable.',
-    'You can still use Wallet, Spend Smart, Travel and Hotels normally; those decision engines do not require the chat model to calculate their core results.',
+    'The AI service could not complete this request. Here are ways to continue in CreditIQ.',
+    'You can still view Wallet and search Travel or Hotels. Retry AI card comparisons shortly.',
   ].join('\n');
 }
 
@@ -56,7 +69,10 @@ export async function POST(req: NextRequest) {
       message = msgs[msgs.length - 1]?.content;
       history = msgs.slice(0, -1).map((m: any) => ({ role: m.role, content: m.content }));
     }
-    if (!message) return NextResponse.json({ error: 'Missing message' }, { status: 400 });
+    if (typeof message !== 'string' || !message.trim()) return NextResponse.json({ error: 'Missing message' }, { status: 400 });
+    const explanation = walletValueMessage(message);
+    if (explanation) return NextResponse.json({ ok: true, provider: null, message: explanation });
+    history = Array.isArray(history) ? history.filter((item: any) => item && ['user', 'assistant'].includes(item.role) && typeof item.content === 'string') : [];
 
     const { context, devaluations, igInsights, sourced } = await retrieveRelevantCards(message, {
       topK: 6,
@@ -89,7 +105,9 @@ IMPORTANT RULES:
 - Respond in plain conversational text ONLY. Never use JSON format.
 - Never output code blocks or backticks.
 - Keep responses SHORT -- 2-4 sentences max unless complex.
-- Be direct and specific with card names and numbers.
+- Use card names, rates, ratios and eligibility claims only when supported by the supplied evidence. Do not supply generic rupee-per-point ranges from memory.
+- Missing evidence does not mean a card has no transfer partners. Say what needs verification; do not invent either eligibility or exclusions.
+- A booking-specific comparison is not a whole-wallet valuation. Never convert the wallet total using a generic per-point constant.
 - Use Rs. for rupee amounts.
 - If CANONICAL TRAVEL RAILS is present, it outranks generic/community context.
 - If PERSONALISED WALLET INTELLIGENCE is present, prioritise cards/programmes the user can actually reach.
@@ -101,7 +119,7 @@ IMPORTANT RULES:
     ];
 
     const ai = await callAI({
-      max_tokens: 300,
+      max_tokens: 1000,
       system: systemPrompt,
       messages,
       timeoutMs: 15000,

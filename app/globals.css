@@ -1248,7 +1248,7 @@ html:not(.dark):not([data-theme="dark"]) .nav__link.active {
 }
 
 /* Fix header background in light mode */
-html:not(.dark):not([data-theme="dark"]) header {
+html:not(.dark):not([data-theme="dark"]) header:not(.ciq-cira-chat-head) {
   background: var(--surface, #fff) !important;
   border-bottom-color: var(--line, rgba(20,41,80,0.08)) !important;
 }

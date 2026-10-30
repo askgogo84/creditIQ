@@ -112,6 +112,6 @@ export async function GET(req: NextRequest) {
     })
   } catch (error) {
     console.error('cockpit summary failed', error)
-    return NextResponse.json({ error: 'cockpit summary unavailable' }, { status: 500 })
+    return NextResponse.json({ error: 'Wallet summary could not be loaded. Please retry.' }, { status: 500 })
   }
 }

@@ -100,6 +100,13 @@
 .ciq-simple-travel-workspace { width: 100%; min-width: 0; overflow-x: clip; }
 .ciq-simple-travel-workspace * { min-width: 0; }
 .ciq-simple-travel-search > * { min-width: 0; }
+.ciq-simple-travel-search .fp-fld { display: flex; flex-direction: column; gap: 4px; position: relative; }
+.ciq-simple-travel-search .fp-fld-label { display: block; font-size: 11px; color: var(--ink-3); }
+.ciq-simple-travel-search .fp-fld-val { width: 100%; min-width: 0; height: 42px; padding: 0 10px; border: 1px solid var(--line); border-radius: 10px; background: var(--surface-2); color: var(--ink); font: inherit; }
+.ciq-simple-travel-search .fp-ap-list { position: absolute; top: 100%; left: 0; right: 0; z-index: 30; margin: 4px 0 0; padding: 5px; list-style: none; background: var(--surface); border: 1px solid var(--line); border-radius: 10px; box-shadow: 0 10px 25px #0002; }
+.ciq-simple-travel-search .fp-ap-opt { display: flex; justify-content: space-between; gap: 8px; padding: 10px; cursor: pointer; font-size: 13px; border-radius: 6px; }
+.ciq-simple-travel-search .fp-ap-opt.active { background: var(--surface-2); }
+.ciq-simple-travel-search .fp-ap-code, .ciq-simple-travel-search .fp-ap-empty { color: var(--ink-3); font-size: 12px; }
 
 @media (max-width: 899px) {
   .approved-travel-header {

@@ -135,7 +135,7 @@ function fmtTime(iso: string) {
 }
 
 function fmtDuration(mins: number) {
-  if (!(mins > 0)) return 'duration unavailable'
+  if (!(mins > 0)) return 'confirm duration'
   return `${Math.floor(mins / 60)}h ${(mins % 60).toString().padStart(2, '0')}m`
 }
 
@@ -201,7 +201,7 @@ function cabinCost(row: FusionRow, rowCabin: SearchCabin, targetCabin: SearchCab
     }
   }
   if (row.price > 0) return { value: `₹${row.price.toLocaleString('en-IN')}`, label: 'cash fare' }
-  return { value: '—', label: 'fare unavailable' }
+  return { value: '—', label: 'check airline fare' }
 }
 
 function resultDate(row: FusionRow) {
@@ -535,7 +535,7 @@ export function GlobalFlightWorkspace() {
                     <span className="approved-award-programme"><i className="approved-airline-logo">{programmeMark(carrier)}</i><span><b>{carrier}</b><small>{awardPrefix}{row.from} {depart || ''} → {row.to} {arrive || ''} · {duration} · {fmtStops(stops)} · {cabinLabel(rowCabin)}</small></span></span>
                     <span><b>{economyCost.value}</b><small>{economyCost.label}</small></span>
                     <span><b>{businessCost.value}</b><small>{businessCost.label}</small></span>
-                    <span className="approved-wallet-path"><b>{summary?.verdictLabel || (award ? (selfServe.executable ? 'Ready to verify' : reachable ? 'Wallet route' : 'Verify route') : `Cash · ${cabinLabel(rowCabin)}`)}</b><small>{rowSummaryDetail || (award ? (selfServe.pointsNeeded ? `${selfServe.pointsNeeded.toLocaleString('en-IN')} card pts` : 'needs verification') : row.price > 0 ? `₹${row.price.toLocaleString('en-IN')}` : 'fare unavailable')}</small></span>
+                    <span className="approved-wallet-path"><b>{summary?.verdictLabel || (award ? (selfServe.executable ? 'Ready to verify' : reachable ? 'Wallet route' : 'Verify route') : `Cash · ${cabinLabel(rowCabin)}`)}</b><small>{rowSummaryDetail || (award ? (selfServe.pointsNeeded ? `${selfServe.pointsNeeded.toLocaleString('en-IN')} card pts` : 'needs verification') : row.price > 0 ? `₹${row.price.toLocaleString('en-IN')}` : 'check airline fare')}</small></span>
                     <ChevronDown className="approved-row-chevron" size={16} />
                   </button>
 
@@ -558,7 +558,7 @@ export function GlobalFlightWorkspace() {
                             return <article className={`approved-path-choice${option.id === summary.bestPath?.id ? ' winner' : ''}`} key={option.id}><span>{stateLabel}</span><b>{option.label}</b><strong>{optionAmount(option)}</strong><small>{savings ? `${savings} less cash than the matched fare` : option.reasons[0] || 'Sourced wallet path'}</small></article>
                           })}{usableSummaryPaths.length === 0 && <article className="approved-path-choice winner"><span>CreditIQ verdict</span><b>{summary.verdictLabel}</b><strong>{moneyMinor(summary.cash.amountMinor, summary.cash.currency) || 'No comparable amount'}</strong><small>{summary.blockedReasons[0] || 'No safe wallet route can be promoted.'}</small></article>}</div>
                         ) : (
-                          <div className="approved-path-grid"><article className={`approved-path-choice${award && selfServe.executable ? ' winner' : ''}`}><span>Award route</span><b>{award ? programme : 'No award match'}</b><strong>{selfServe.pointsNeeded ? `${selfServe.pointsNeeded.toLocaleString('en-IN')} card pts` : award ? `${award.mileageCost.toLocaleString('en-IN')} miles` : 'Unavailable'}</strong><small>{selfServe.ratioLabel ? `Ratio ${selfServe.ratioLabel} · ${selfServe.durationLabel}` : taxes ? `Returned taxes ${taxes}` : 'Verify programme terms'}</small></article><article className={`approved-path-choice${!award && row.price > 0 ? ' winner' : ''}`}><span>Cash alternative</span><b>Pay airline directly</b><strong>{row.price > 0 ? `₹${row.price.toLocaleString('en-IN')}` : 'Fare unavailable'}</strong><small>{row.price > 0 ? 'Keep all reward points' : 'No live cash number returned'}</small></article></div>
+                          <div className="approved-path-grid"><article className={`approved-path-choice${award && selfServe.executable ? ' winner' : ''}`}><span>Award route</span><b>{award ? programme : 'No award match'}</b><strong>{selfServe.pointsNeeded ? `${selfServe.pointsNeeded.toLocaleString('en-IN')} card pts` : award ? `${award.mileageCost.toLocaleString('en-IN')} miles` : 'Check award space'}</strong><small>{selfServe.ratioLabel ? `Ratio ${selfServe.ratioLabel} · ${selfServe.durationLabel}` : taxes ? `Returned taxes ${taxes}` : 'Verify programme terms'}</small></article><article className={`approved-path-choice${!award && row.price > 0 ? ' winner' : ''}`}><span>Cash alternative</span><b>Pay airline directly</b><strong>{row.price > 0 ? `₹${row.price.toLocaleString('en-IN')}` : 'Check airline fare'}</strong><small>{row.price > 0 ? 'Keep all reward points' : 'No live cash number returned'}</small></article></div>
                         ))}
 
                         {detailTab === 'book' && (

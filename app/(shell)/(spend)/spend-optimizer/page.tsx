@@ -2,10 +2,8 @@
 
 import { useState, type CSSProperties } from 'react';
 import { authedFetch } from '@/lib/authed-fetch';
-import { SEED_CARDS } from '@/lib/data/seed-cards';
+import { withRequestTimeout } from '@/lib/request-timeout';
 import { useScrollToResults } from '@/lib/hooks/useScrollToResults';
-
-const CARD_COUNT = SEED_CARDS.length;
 
 // Keep the visible v3 category rail identical to the approved mock. The engine can
 // still reason across the full card catalogue; these are the six purchase entry points.
@@ -52,18 +50,21 @@ export default function SpendOptimizerPage() {
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<AIResult | null>(null);
   const [error, setError] = useState('');
+  const [showAssumptions, setShowAssumptions] = useState(false);
   const { ref: resultsRef, scrollToResults } = useScrollToResults();
 
   const totalSpend = Object.values(spends).reduce((sum, value) => sum + (parseInt(value) || 0), 0);
   const activeCategory = CATEGORIES.find(item => item.id === category) || CATEGORIES[0];
 
   const handleAnalyze = async () => {
-    if (totalSpend <= 0) {
-      setError('Please enter a purchase amount.');
+    if (!Number.isFinite(totalSpend) || totalSpend <= 0) {
+      setError('Please enter a valid monthly spend amount.');
       return;
     }
 
     setError('');
+    setShowAssumptions(false);
+    setResult(null);
     setLoading(true);
     try {
       const spendSummary = `${activeCategory.promptLabel}: Rs.${totalSpend.toLocaleString('en-IN')}/month`;
@@ -93,26 +94,30 @@ Respond ONLY with valid JSON (no markdown, no backticks, no explanation outside 
   "insight": "One surprising insight about their spend pattern or a card opportunity they might not know"
 }`;
 
-      const response = await authedFetch('/api/spend-optimizer', {
+      const data = await withRequestTimeout(async signal => {
+        const response = await authedFetch('/api/spend-optimizer', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ prompt, spends, totalSpend }),
-      });
-      if (!response.ok) throw new Error('failed');
-      const data = await response.json();
-      if (data.error) throw new Error(data.error);
+        body: JSON.stringify({ prompt, spends, totalSpend, merchant }),
+        signal,
+        });
+        if (!response.ok) throw new Error('Analysis could not be completed. Please retry.');
+        return response.json();
+      }, 60000);
+      if (!data || !Array.isArray(data.cards) || !data.cards.length || data.cards.length > 20 ||
+        !data.cards.every((card: CardResult) => card &&
+          ['name', 'bank', 'bestFor'].every(key => typeof card[key as 'name' | 'bank' | 'bestFor'] === 'string') &&
+          ['monthlyEarnings', 'annualEarnings', 'annualFee'].every(key => Number.isFinite(card[key as 'monthlyEarnings' | 'annualEarnings' | 'annualFee']) && card[key as 'monthlyEarnings' | 'annualEarnings' | 'annualFee'] >= 0) &&
+          Number.isFinite(card.netAnnualValue)) ||
+        (data.topPickReason != null && typeof data.topPickReason !== 'string') ||
+        (data.insight != null && typeof data.insight !== 'string')) throw new Error('Incomplete analysis');
       setResult(data);
       if (data?.cards?.length > 0) scrollToResults();
-    } catch (e: unknown) {
-      setError('Analysis failed. Please try again. ' + (e instanceof Error ? e.message : ''));
+    } catch {
+      setError('We could not complete the card comparison. Please try again.');
     } finally {
       setLoading(false);
     }
-  };
-
-  const handleReset = () => {
-    setResult(null);
-    setError('');
   };
 
   return (
@@ -121,7 +126,7 @@ Respond ONLY with valid JSON (no markdown, no backticks, no explanation outside 
         <div>
           <span className="approved-eyebrow">Merchant-level intelligence</span>
           <h1>Spend Smart</h1>
-          <p>Know the best card, route and expected reward before you pay.</p>
+          <p>Compare catalogue cards for your monthly spend. Recommendations may include cards you do not own.</p>
         </div>
       </header>
 
@@ -155,7 +160,7 @@ Respond ONLY with valid JSON (no markdown, no backticks, no explanation outside 
               </div>
             </label>
             <label>
-              <span>Purchase amount</span>
+              <span>Monthly spend amount</span>
               <div className="approved-amount-input">
                 <b>₹</b>
                 <input
@@ -172,7 +177,7 @@ Respond ONLY with valid JSON (no markdown, no backticks, no explanation outside 
               </div>
             </label>
             <button type="button" className="approved-primary" onClick={handleAnalyze} disabled={loading || totalSpend === 0}>
-              {loading ? <><i className="approved-spinner" /> Analysing {CARD_COUNT} cards…</> : <>✦ Find my best card</>}
+              {loading ? <><i className="approved-spinner" /> Comparing catalogue cards…</> : <>✦ Compare cards</>}
             </button>
           </div>
           {error && <div className="approved-spend-error">{error}</div>}
@@ -185,7 +190,7 @@ Respond ONLY with valid JSON (no markdown, no backticks, no explanation outside 
                 <article className="winner-card surface">
                   <div className="winner-glow" />
                   <div className="winner-top">
-                    <span className="winner-badge">✦ Best way to pay</span>
+                    <span className="winner-badge">✦ Catalogue comparison</span>
                     <span className="confidence">AI estimate · verify issuer terms</span>
                   </div>
                   <div className="winner-main">
@@ -196,20 +201,20 @@ Respond ONLY with valid JSON (no markdown, no backticks, no explanation outside 
                     </div>
                     <div>
                       <span className="overline">Best match for {merchant || 'this purchase'}</span>
-                      <h2>Use {result.cards[0].name}</h2>
+                      <h2>Compare {result.cards[0].name}</h2>
                       <p>{result.topPickReason || result.cards[0].bestFor}</p>
                     </div>
                     <div className="winner-value">
-                      <small>Expected value</small>
+                      <small>Estimated monthly value</small>
                       <strong>{fmt(result.cards[0].monthlyEarnings)}</strong>
                       <span>{totalSpend > 0 ? `${((result.cards[0].monthlyEarnings / totalSpend) * 100).toFixed(1)}% effective return` : 'estimated'}</span>
                     </div>
                   </div>
                   <div className="winner-steps">
-                    <div><b>1</b><span>Review the route</span></div><i />
+                    <div><b>1</b><span>Check eligibility</span></div><i />
                     <div><b>2</b><span>Confirm issuer terms</span></div><i />
-                    <div><b>3</b><span>Pay with this card</span></div>
-                    <button type="button" className="button primary">Show exact steps →</button>
+                    <div><b>3</b><span>Compare with your cards</span></div>
+                    <button type="button" className="button primary" aria-expanded={showAssumptions} aria-controls="spend-assumptions" onClick={() => setShowAssumptions(value => !value)}>Review assumptions →</button>
                   </div>
                 </article>
 
@@ -217,10 +222,10 @@ Respond ONLY with valid JSON (no markdown, no backticks, no explanation outside 
                   <div className="section-kicker">Value comparison</div>
                   <div className="meter-ring">
                     <div className="ring" style={{ '--value': 88 } as CSSProperties}>
-                      <span><b>#1</b><small>wallet match</small></span>
+                      <span><b>#1</b><small>catalogue match</small></span>
                     </div>
                   </div>
-                  <div className="meter-row best"><span>Best route</span><b>{fmt(result.cards[0].monthlyEarnings)}</b></div>
+                  <div className="meter-row best"><span>Monthly estimate</span><b>{fmt(result.cards[0].monthlyEarnings)}</b></div>
                   <div className="meter-row"><span>Annual earn</span><b>{fmt(result.cards[0].annualEarnings)}</b></div>
                   <div className="meter-row"><span>Annual fee</span><b>{result.cards[0].annualFee === 0 ? 'Free' : fmt(result.cards[0].annualFee)}</b></div>
                   <div className="meter-save"><small>Net annual value</small><strong>{fmt(result.cards[0].netAnnualValue)}</strong></div>
@@ -231,12 +236,16 @@ Respond ONLY with valid JSON (no markdown, no backticks, no explanation outside 
             {result.insight && <div className="approved-result-insight"><b>CreditIQ insight</b><span>{result.insight}</span></div>}
 
             <div className="section-head page-section-head">
-              <div><span className="section-kicker">All wallet options</span><h2>Why this card wins</h2></div>
-              <button type="button" className="text-button" onClick={handleReset}>Reward assumptions ▾</button>
+              <div><span className="section-kicker">Catalogue options</span><h2>Compare the estimates</h2></div>
+              <button type="button" className="text-button" aria-expanded={showAssumptions} aria-controls="spend-assumptions" onClick={() => setShowAssumptions(value => !value)}>Reward assumptions ▾</button>
             </div>
+            {showAssumptions && <section id="spend-assumptions" className="approved-result-insight" aria-label="Reward assumptions">
+              <b>How to read this comparison</b>
+              <span>The amount entered is monthly spend in the selected category. AI estimates compare catalogue cards, including cards outside your wallet. Annual estimates assume the same spend for 12 months and subtract the listed annual fee; they may exclude taxes, caps and exclusions. Verify eligibility, current issuer terms, reward redemption value and any fee waiver before applying or paying. These are estimates, not verified payment instructions.</span>
+            </section>}
 
             <div className="comparison-table surface">
-              <div className="compare-head"><span>Card & route</span><span>Reward earned</span><span>Estimated value</span><span>Effective return</span><span></span></div>
+              <div className="compare-head"><span>Card</span><span>Monthly estimate</span><span>Net annual estimate</span><span>Estimated return</span><span></span></div>
               {result.cards.map((card, index) => {
                 const effectiveReturn = totalSpend > 0 ? (card.monthlyEarnings / totalSpend) * 100 : 0;
                 return (
@@ -245,7 +254,7 @@ Respond ONLY with valid JSON (no markdown, no backticks, no explanation outside 
                     <b>{fmt(card.monthlyEarnings)}</b>
                     <b>{fmt(card.netAnnualValue)}</b>
                     <strong>{effectiveReturn.toFixed(1)}%</strong>
-                    <span className={index === 0 ? 'status good' : 'status neutral'}>{RANK_LABELS[index] || `#${card.rank}`}</span>
+                    <span className={index === 0 ? 'status good' : 'status neutral'}>{RANK_LABELS[index] || `#${index + 1}`}</span>
                   </div>
                 );
               })}

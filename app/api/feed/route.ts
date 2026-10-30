@@ -60,6 +60,6 @@ export async function GET(req: NextRequest) {
     })
   } catch (error) {
     console.error('feed error', error)
-    return NextResponse.json({ error: 'Card intelligence is temporarily unavailable.', availability: 'unavailable' }, { status: 503 })
+    return NextResponse.json({ error: 'Card intelligence could not be loaded. Please retry.', availability: 'unavailable' }, { status: 503 })
   }
 }

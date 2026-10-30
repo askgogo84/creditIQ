@@ -25,7 +25,7 @@ function svcClient() {
 
 export async function GET(req: NextRequest) {
   try {
-    if (!URL_ENV() || !ANON() || !SVC()) return NextResponse.json({ error: 'Card service unavailable' }, { status: 503 });
+    if (!URL_ENV() || !ANON() || !SVC()) return NextResponse.json({ error: 'Cards could not be loaded. Please retry.' }, { status: 503 });
     const userId = await callerId(req);
     if (!userId) return NextResponse.json({ error: 'unauthorized', cards: [] }, { status: 401 });
     const { data, error } = await svcClient()

@@ -86,7 +86,7 @@ function blockedReasons(ranking: RailRankingResult): string[] {
   const reasons: Array<string | null | undefined> = []
 
   if (ranking.pricing.programmePointsRequired != null && ranking.pricing.awardTaxesMinor == null) {
-    reasons.push('Award taxes/cash component are unavailable; final award economics require verification.')
+    reasons.push('Confirm award taxes and the cash component before comparing final award economics.')
   }
 
   if (ranking.recommendationState === 'PROJECTED_WINNER_NEEDS_VERIFICATION') {

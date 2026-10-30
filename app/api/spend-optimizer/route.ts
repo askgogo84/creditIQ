@@ -13,21 +13,27 @@ export async function POST(req: NextRequest) {
     const rl = await rateLimit(req, 'spend-optimizer')
     if (!rl.ok) return rl.res
 
-    const { prompt, spends, totalSpend } = await req.json()
+    const { prompt, spends, totalSpend, merchant } = await req.json()
     if (!prompt) return NextResponse.json({ error: 'Missing prompt' }, { status: 400 })
 
     // Detect intent from actual spend categories (not just prompt text)
     const spendKeys = Object.keys(spends || {}).filter(k => parseInt(spends[k]) > 0)
     const promptLower = prompt.toLowerCase()
 
-    let intent: 'travel' | 'cashback' | 'dining' | 'fuel' | 'shopping' | 'general' = 'general'
+    type SpendIntent = 'travel' | 'cashback' | 'dining' | 'fuel' | 'shopping' | 'general'
+    let intent: SpendIntent = 'general'
 
     // Priority: highest spend category determines intent
     const spendAmounts = spendKeys.map(k => ({ key: k, amount: parseInt(spends[k]) || 0 }))
     spendAmounts.sort((a, b) => b.amount - a.amount)
     const topSpendKey = spendAmounts[0]?.key || ''
 
-    if (topSpendKey === 'travel' || promptLower.includes('travel') || promptLower.includes('flight') || promptLower.includes('lounge')) {
+    // Structured user input outranks category words in the prompt's JSON example.
+    // The old example mentioned travel/dining, making shopping requests retrieve travel cards.
+    const categoryIntent: Record<string, SpendIntent> = { travel: 'travel', dining: 'dining', fuel: 'fuel', shopping: 'shopping', utilities: 'general', international: 'general' }
+    if (categoryIntent[topSpendKey]) {
+      intent = categoryIntent[topSpendKey]
+    } else if (promptLower.includes('travel') || promptLower.includes('flight') || promptLower.includes('lounge')) {
       intent = 'travel'
     } else if (topSpendKey === 'dining' || promptLower.includes('dining') || promptLower.includes('restaurant')) {
       intent = 'dining'
@@ -40,7 +46,10 @@ export async function POST(req: NextRequest) {
     }
 
     // Increase topK to surface more card options for the AI to choose from
-    const { context, devaluations, sourced } = await retrieveRelevantCards(prompt, {
+    const retrievalQuery = typeof merchant === 'string' && merchant.trim()
+      ? `${merchant.trim().slice(0, 200)} ${topSpendKey} credit card rewards`
+      : prompt
+    const { context, devaluations, sourced } = await retrieveRelevantCards(retrievalQuery, {
       topK: 20,  // was 10 — doubled to see more cards
       intent,
       maxFee: spends?.maxFee,
@@ -50,7 +59,7 @@ export async function POST(req: NextRequest) {
     // prose). This route JSON.parse()s the reply, so pin the output format here at the
     // route level — insurance against a rare prose reply. Scoped to this route only.
     const systemPrompt = buildRagSystemPrompt(context, devaluations, undefined, sourced) +
-      '\n\nOUTPUT FORMAT: Respond with valid JSON ONLY, exactly matching the schema in the user message. No markdown, no code fences, no prose before or after the JSON.'
+      '\n\nThese are catalogue comparisons, not proof of card ownership. Missing retrieved evidence does not prove that a merchant has no dedicated card or accelerator. Do not invent transfer eligibility or exclusions. Clearly label uncertain estimates and verify issuer terms.\nOUTPUT FORMAT: Respond with valid JSON ONLY, exactly matching the schema in the user message. No markdown, no code fences, no prose before or after the JSON.'
 
     const ai = await callClaude({
       model: MODELS.sonnet,
