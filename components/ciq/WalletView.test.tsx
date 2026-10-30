@@ -1,5 +1,8 @@
 import { describe, it, expect, vi, beforeAll, beforeEach } from 'vitest';
-import { render, screen, fireEvent, within } from '@testing-library/react';
+import { render, screen, fireEvent, within, waitFor } from '@testing-library/react';
+
+const load = vi.hoisted(() => vi.fn());
+vi.mock('@/lib/authed-fetch', () => ({ authedFetch: load }));
 
 // WalletView renders PageHeader → SectionTabs, which calls useRouter() (throws outside
 // the app-router context) and usePathname(). Stub both; a null pathname makes SectionTabs
@@ -21,7 +24,7 @@ beforeAll(() => {
   })) as unknown as typeof window.matchMedia;
 });
 
-beforeEach(() => { localStorage.clear(); });
+beforeEach(() => { localStorage.clear(); load.mockReset().mockResolvedValue(new Response('{"cards":[]}')); });
 
 type C = React.ComponentProps<typeof WalletView>['cards'];
 const CARDS: C = [
@@ -79,10 +82,41 @@ describe('WalletView — holdings ledger', () => {
 
   it('withholds unsupported wallet rupee value instead of fabricating a range', () => {
     renderWallet();
-    expect(screen.getByText('Unavailable')).toBeInTheDocument();
-    expect(screen.getByText('Value depends on the redemption and booking.')).toBeInTheDocument();
+    expect(screen.queryByText('Unavailable')).not.toBeInTheDocument();
+    expect(screen.getByText('Your reward points')).toBeInTheDocument();
+    expect(screen.getByText(/Rupee value depends on how you redeem/)).toBeInTheDocument();
     expect(screen.queryByText(/≈ ₹[\d,]+–₹[\d,]+/)).not.toBeInTheDocument();
     expect(screen.queryByText('estimate')).not.toBeInTheDocument();
+  });
+
+  it('groups issuer aliases without merging distinct card holdings', () => {
+    renderWallet({ cards: [CARDS[0], { ...CARDS[0], id: 'other', bank: 'HDFC Bank', card_name: 'Regalia Gold', points_balance: 100 }] });
+    const breakdown = within(document.querySelector('.approved-wallet-breakdown') as HTMLElement);
+    expect(breakdown.getByText('HDFC Bank')).toBeInTheDocument();
+    expect(breakdown.getByText('1,000 pts')).toBeInTheDocument();
+    expect(document.querySelectorAll('.approved-wallet-card')).toHaveLength(2);
+  });
+
+  it('keeps missing and invalid balances out of the known total and bank subtotals', () => {
+    renderWallet({ cards: [{ ...CARDS[0], points_balance: Number.NaN }, { ...CARDS[1], points_balance: -10 }, CARDS[2]], totalPoints: -1 });
+    const summary = within(document.querySelector('.approved-wallet-summary') as HTMLElement);
+    expect(summary.getByText('Known reward points')).toBeInTheDocument();
+    expect(summary.getByText(/Some balances are missing/)).toBeInTheDocument();
+    expect(summary.getAllByText('Balance needed')).toHaveLength(2);
+    expect(summary.queryByText(/NaN|\-10/)).not.toBeInTheDocument();
+  });
+
+  it('does not call a verified zero balance self-entered', () => {
+    renderWallet({ cards: [{ ...CARDS[0], points_balance: 0 }] });
+    expect(screen.queryByText('All self-entered.')).not.toBeInTheDocument();
+    expect(screen.getByText('Statement verified')).toBeInTheDocument();
+  });
+
+  it('handles malformed readiness without crashing or leaving a loading state', async () => {
+    load.mockResolvedValue(new Response('{"cards":[{"id":"bad"}]}'));
+    renderWallet();
+    await waitFor(() => expect(screen.getByText('Redemption readiness temporarily unavailable.')).toBeInTheDocument());
+    expect(screen.getByText('1,240')).toBeInTheDocument();
   });
 
   it('empty state (0 cards): both primary actions, no Best Move', () => {

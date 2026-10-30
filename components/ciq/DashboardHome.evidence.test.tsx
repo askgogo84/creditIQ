@@ -10,13 +10,13 @@ beforeEach(() => {
   vi.stubGlobal('ResizeObserver', class { observe() {} disconnect() {} })
 })
 const props = { displayName: 'Synthetic', primaryBank: 'HDFC', totalPoints: 11400, cards: [{ id: 'one', bank: 'HDFC', card_name: 'Infinia', points_balance: 11400, source: 'statement', self_entered: false }] }
-it('keeps statement provenance while readiness is loading', () => {
+it('keeps statement provenance while readiness is loading', async () => {
   load.mockImplementation(() => new Promise(() => {}))
   render(<DashboardHome {...props} />)
   expect(screen.getByText(/100% verified/)).toBeInTheDocument()
   expect(screen.getByText(/Loading redemption readiness/)).toBeInTheDocument()
-  expect(screen.getByText('Wallet value unavailable')).toBeInTheDocument()
-  expect(load).toHaveBeenCalledWith('/api/cockpit/summary')
+  expect(screen.getByText('Explore your redemption options')).toBeInTheDocument()
+  await waitFor(() => expect(load).toHaveBeenCalledWith('/api/cockpit/summary', { signal: expect.any(AbortSignal) }))
 })
 it('keeps provenance and explicitly reports failed readiness', async () => {
   load.mockResolvedValue(new Response('{}', { status: 500 }))

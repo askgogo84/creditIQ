@@ -31,6 +31,7 @@ import { RedemptionCoverage } from './RedemptionCoverage'
 import { useRouter } from 'next/navigation'
 import type { redemptionReadiness } from '@/lib/redemption-engine/readiness'
 import { authedFetch } from '@/lib/authed-fetch'
+import { withRequestTimeout } from '@/lib/request-timeout'
 import { cockpitDisplay, cockpitBody } from './cockpit-fonts'
 import './home-2a-wheel.css'
 
@@ -150,8 +151,8 @@ export function DashboardHome({
   useEffect(() => {
     let active = true
     setAvailability('loading')
-    authedFetch('/api/cockpit/summary')
-      .then(async r => { if (!r.ok) throw new Error('summary failed'); return r.json() })
+    withRequestTimeout(signal => authedFetch('/api/cockpit/summary', { signal })
+      .then(async r => { if (!r.ok) throw new Error('summary failed'); return r.json() }), 15000)
       .then((json: SummaryResponse) => { if (active) { setData(json); setAvailability(json.availability ?? 'available') } })
       .catch(() => { if (active) setAvailability('unavailable') })
     return () => { active = false }
@@ -259,7 +260,7 @@ export function DashboardHome({
   const selfLine = summary.selfEntered > 0 ? 'Self-entered balances labelled separately' : ''
   const readiness = cards[wi]?.readiness
   const readinessPanel = <>
-    <div style={{ fontFamily: DISPLAY, fontSize: 24, lineHeight: 1.2 }}>Wallet value unavailable</div>
+    <div style={{ fontFamily: DISPLAY, fontSize: 24, lineHeight: 1.2 }}>Explore your redemption options</div>
     <div role="status" style={{ fontSize: 13, lineHeight: 1.5 }}>
       {availability === 'loading' ? 'Loading redemption readiness…' : availability === 'unavailable' ? 'Redemption readiness temporarily unavailable. Previously loaded balances retain their source.' : availability === 'partial' ? 'Partial wallet: some balances are unknown.' : readiness?.reason ?? (cards.length ? 'Value depends on the redemption and booking.' : 'Add a card to check redemption readiness.')}
     </div>
