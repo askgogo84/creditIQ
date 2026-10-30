@@ -4,6 +4,7 @@ import { useMemo, useState } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { ArrowRight, ChevronDown, Plane, ShieldCheck, Sparkles } from 'lucide-react'
 import { authedFetch } from '@/lib/authed-fetch'
+import { withRequestTimeout } from '@/lib/request-timeout'
 import { AirportSelect } from '@/components/ciq/fly-points/AirportSelect'
 import { resolveCity } from '@/lib/data/airports'
 import type { RedemptionOption } from '@/lib/fusion-core'
@@ -401,26 +402,33 @@ export function SimpleFlightWorkspace() {
   }), [uniqueRows])
 
   async function search() {
-    if (!from || !to || from === to || !date) return
+    if (!from || !to || from === to || !date) {
+      setError('Choose different departure and arrival airports and a travel date.')
+      return
+    }
     setLoading(true)
     setError('')
     setRows([])
     setSearched(true)
     try {
-      const res = await authedFetch('/api/flights/fusion', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          from,
-          to,
-          date_from: shift(date, -flex),
-          date_to: shift(date, flex),
-          cash_date: date,
-          cabin,
-        }),
-      })
-      const data = await res.json()
-      if (!res.ok) throw new Error(data.error || 'Flight search failed')
+      const data = await withRequestTimeout(async signal => {
+        const res = await authedFetch('/api/flights/fusion', {
+          signal,
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            from,
+            to,
+            date_from: shift(date, -flex),
+            date_to: shift(date, flex),
+            cash_date: date,
+            cabin,
+          }),
+        })
+        const result = await res.json()
+        if (!res.ok) throw new Error(result.error || 'Flight search failed')
+        return result
+      }, 45000)
       setRows(Array.isArray(data.flights) ? data.flights : [])
     } catch (e: any) {
       setError(e?.message || 'Could not search flights.')

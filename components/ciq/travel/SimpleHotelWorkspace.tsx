@@ -1,8 +1,10 @@
 'use client'
+import './simple-hotel-responsive.css'
 
 import { useState } from 'react'
 import { ArrowRight, BedDouble, CheckCircle2, ShieldCheck } from 'lucide-react'
 import { authedFetch } from '@/lib/authed-fetch'
+import { withRequestTimeout } from '@/lib/request-timeout'
 import { ConciergeRequestButton } from '@/components/ciq/concierge/ConciergeRequestButton'
 import { buildCashHotelConciergeRequest } from '@/components/ciq/concierge/travel-requests'
 
@@ -117,7 +119,8 @@ export function SimpleHotelWorkspace() {
       || (loyaltyProperty ? 'DISCOVERY_ONLY' : 'NONE')
 
     try {
-      const res = await authedFetch('/api/hotels/verdict', {
+      const { res, data } = await withRequestTimeout(signal => authedFetch('/api/hotels/verdict', {
+        signal,
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -141,8 +144,7 @@ export function SimpleHotelWorkspace() {
             pricingAuthority,
           },
         }),
-      })
-      const data = await res.json().catch(() => ({}))
+      }).then(async res => ({ res, data: await res.json().catch(() => ({})) })), 10000)
       if (res.ok && data.verdict) setHotelVerdict(data.verdict)
     } catch {
       // Search remains usable even when the decision service is unavailable.
@@ -150,7 +152,10 @@ export function SimpleHotelWorkspace() {
   }
 
   async function search() {
-    if (!destination.trim() || !checkin || !checkout || checkout <= checkin) return
+    if (!destination.trim() || !checkin || !checkout || checkout <= checkin) {
+      setError('Enter a destination and choose a check-out date after check-in.')
+      return
+    }
     setLoading(true)
     setSearched(true)
     setError('')
@@ -163,16 +168,18 @@ export function SimpleHotelWorkspace() {
     const loyaltyPayload = { destination: destination.trim(), checkInDate: checkin, checkOutDate: checkout, adults }
 
     const [cashResult, loyaltyResult] = await Promise.allSettled([
-      authedFetch('/api/hotels/search', {
+      withRequestTimeout(signal => authedFetch('/api/hotels/search', {
+        signal,
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
-      }).then(async res => ({ res, data: await res.json().catch(() => ({})) })),
-      authedFetch('/api/hotels/award-discovery', {
+      }).then(async res => ({ res, data: await res.json().catch(() => ({})) }))),
+      withRequestTimeout(signal => authedFetch('/api/hotels/award-discovery', {
+        signal,
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(loyaltyPayload),
-      }).then(async res => ({ res, data: await res.json().catch(() => ({})) })),
+      }).then(async res => ({ res, data: await res.json().catch(() => ({})) }))),
     ])
 
     let loyaltyRows: LoyaltyProperty[] = []
@@ -247,10 +254,10 @@ export function SimpleHotelWorkspace() {
       <div style={{ marginBottom: 18 }}>
         <div className="ciq-editorial-kicker">Hotels</div>
         <h1 style={{ margin: '5px 0 6px', fontSize: 30 }}>Pick the hotel first. Then decide cash or points.</h1>
-        <p style={{ margin: 0, color: 'var(--ink-2)', maxWidth: 760 }}>CreditIQ keeps loyalty hotels and live cash prices separate so a test provider or missing cash feed can never create a fake redemption answer.</p>
+        <p style={{ margin: 0, color: 'var(--ink-2)', maxWidth: 760 }}>Compare hotel cash prices and loyalty options. Confirm availability and the final price with the provider before booking or transferring points.</p>
       </div>
 
-      <section style={{ display: 'grid', gridTemplateColumns: '1.2fr 160px 160px 110px auto', gap: 9, alignItems: 'end', padding: 14, border: '1px solid var(--line)', borderRadius: 18, background: 'var(--surface)' }}>
+      <section className="ciq-hotel-search" style={{ display: 'grid', gap: 9, alignItems: 'end', padding: 14, border: '1px solid var(--line)', borderRadius: 18, background: 'var(--surface)' }}>
         <label><small>Destination</small><input value={destination} onChange={e => setDestination(e.target.value)} placeholder="Goa, Dubai, Singapore…" style={{ width: '100%', height: 42, border: '1px solid var(--line)', borderRadius: 10, padding: '0 11px', background: 'var(--surface)' }} /></label>
         <label><small>Check-in</small><input type="date" value={checkin} onChange={e => setCheckin(e.target.value)} style={{ width: '100%', height: 42, border: '1px solid var(--line)', borderRadius: 10, padding: '0 9px', background: 'var(--surface)' }} /></label>
         <label><small>Check-out</small><input type="date" value={checkout} onChange={e => setCheckout(e.target.value)} style={{ width: '100%', height: 42, border: '1px solid var(--line)', borderRadius: 10, padding: '0 9px', background: 'var(--surface)' }} /></label>
@@ -265,7 +272,7 @@ export function SimpleHotelWorkspace() {
 
       <div style={{ marginTop: 12, padding: '11px 13px', borderRadius: 12, background: 'var(--surface-2)', display: 'flex', gap: 9, alignItems: 'center', color: 'var(--ink-2)', fontSize: 11.5 }}>
         <ShieldCheck size={17} />
-        <span><b>No test inventory:</b> HBX evaluation data is now excluded from customer results. If no production cash provider responds, CreditIQ will say so instead of showing unrelated hotels.</span>
+        <span><b>Check before you transfer:</b> A hotel’s loyalty listing does not guarantee a points booking for your dates. We keep cash prices and programme availability clearly labelled.</span>
       </div>
 
       {hotelVerdict && (
@@ -341,7 +348,7 @@ export function SimpleHotelWorkspace() {
                   rooms: 1,
                 })
                 return (
-                  <article key={offer.id} style={{ border: '1px solid var(--line)', borderRadius: 14, background: 'var(--surface)', padding: 13, display: 'grid', gridTemplateColumns: 'minmax(0,1fr) 150px minmax(190px,240px)', gap: 14, alignItems: 'center' }}>
+                  <article key={offer.id} className="ciq-hotel-cash-result" style={{ border: '1px solid var(--line)', borderRadius: 14, background: 'var(--surface)', padding: 13, display: 'grid', gap: 14, alignItems: 'center' }}>
                     <div>
                       <strong style={{ display: 'block', fontSize: 14 }}>{offer.hotelName}</strong>
                       <span style={{ display: 'block', marginTop: 3, fontSize: 11, color: 'var(--ink-2)' }}>{[offer.chainName, offer.stars ? `${offer.stars} star` : null, offer.roomName || offer.roomType].filter(Boolean).join(' · ')}</span>

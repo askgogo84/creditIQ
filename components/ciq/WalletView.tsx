@@ -5,6 +5,8 @@ import { usePathname } from 'next/navigation'
 import Link from 'next/link'
 import { ArrowRight, Check, Upload } from 'lucide-react'
 import { authedFetch } from '@/lib/authed-fetch'
+import { canonicalBank } from '@/lib/redemption-rails/card-resolver'
+import { withRequestTimeout } from '@/lib/request-timeout'
 import { RedemptionCoverage } from './RedemptionCoverage'
 import type { redemptionReadiness } from '@/lib/redemption-engine/readiness'
 import { SEED_CARDS } from '@/lib/data/seed-cards'
@@ -74,22 +76,37 @@ export function WalletView({
   useEffect(() => {
     if (pathname === '/dashboard') return
     let active = true
+    setReadiness(null)
     setReadinessError(false)
-    authedFetch('/api/cockpit/summary').then(async res => { if (!res.ok) throw new Error(); return res.json() }).then(data => { if (active) setReadiness(data.cards) }).catch(() => { if (active) setReadinessError(true) })
+    withRequestTimeout(signal => authedFetch('/api/cockpit/summary', { signal })
+      .then(async res => { if (!res.ok) throw new Error(); return res.json() }), 15000)
+      .then(data => {
+        if (!Array.isArray(data.cards) || data.cards.some((card: { readiness?: ReturnType<typeof redemptionReadiness> }) => !card?.readiness || !Array.isArray(card.readiness.blockers))) throw new Error('Invalid readiness response')
+        if (active) setReadiness(data.cards)
+      })
+      .catch(() => { if (active) setReadinessError(true) })
     return () => { active = false }
   }, [pathname, cards])
   const isVerified = (card: Card) => Number.isSafeInteger(card.points_balance) && card.points_balance >= 0 && card.source === 'statement' && !card.self_entered
   const verifiedPoints = cards.filter(isVerified).reduce((sum, card) => sum + (card.points_balance || 0), 0)
-  const selfEnteredPoints = Math.max(0, totalPoints - verifiedPoints)
+  const knownPoints = cards.reduce((sum, card) => sum + (Number.isSafeInteger(card.points_balance) && card.points_balance >= 0 ? card.points_balance : 0), 0)
+  const selfEnteredPoints = Math.max(0, knownPoints - verifiedPoints)
   const unknownBalances = cards.some(card => !Number.isSafeInteger(card.points_balance) || card.points_balance < 0)
   const allBalancesUnknown = cards.length > 0 && cards.every(card => !Number.isSafeInteger(card.points_balance) || card.points_balance < 0)
-  const verification = totalPoints > 0 ? Math.round(verifiedPoints / totalPoints * 100) : 0
+  const verification = knownPoints > 0 ? Math.round(verifiedPoints / knownPoints * 100) : 0
   const [tourOpen, setTourOpen] = useState(false)
   const [balancesHidden, setBalancesHidden] = useState(false)
-  const bankTotals = Object.entries(cards.reduce<Record<string, number>>((totals, item) => {
-    totals[item.bank] = (totals[item.bank] || 0) + (item.points_balance || 0)
+  const bankTotals = Object.values(cards.reduce<Record<string, { bank: string; points: number; known: boolean; partial: boolean }>>((totals, item) => {
+    const key = canonicalBank(item.bank)
+    const labels: Record<string, string> = { hdfc: 'HDFC Bank', axis: 'Axis Bank', icici: 'ICICI Bank', sbi: 'SBI', amex: 'American Express', bob: 'Bank of Baroda' }
+    const entry = totals[key] ?? { bank: labels[key] ?? item.bank.trim(), points: 0, known: false, partial: false }
+    const known = Number.isSafeInteger(item.points_balance) && item.points_balance >= 0
+    if (known) entry.points += item.points_balance
+    entry.known ||= known
+    entry.partial ||= !known
+    totals[key] = entry
     return totals
-  }, {})).sort((a, b) => b[1] - a[1]).slice(0, 3)
+  }, {})).sort((a, b) => b.points - a.points).slice(0, 3)
 
   const closeTour = (reason: 'skip' | 'done') => {
     setTourOpen(false)
@@ -113,16 +130,16 @@ export function WalletView({
 
       <section className="approved-wallet-summary">
         <div>
-          <small>Wallet value</small>
-          <strong>{balancesHidden ? '••••' : 'Unavailable'}</strong>
-          <span>Value depends on the redemption and booking.</span>
-          <span>{allBalancesUnknown ? 'Balances unknown' : <>Across <b>{balancesHidden ? '••••' : totalPoints.toLocaleString('en-IN')}</b> {unknownBalances ? 'known reward points (partial wallet)' : 'reward points'}</>}</span>
+          <small>{unknownBalances ? 'Known reward points' : 'Your reward points'}</small>
+          <strong>{balancesHidden ? '••••' : allBalancesUnknown ? 'Balance needed' : knownPoints.toLocaleString('en-IN')}</strong>
+          <span>{cards.length === 0 ? 'Add your first card to start tracking rewards.' : allBalancesUnknown ? 'Add current balances to see your rewards total.' : `Across ${cards.length} ${cards.length === 1 ? 'card' : 'cards'}${unknownBalances ? ' · Some balances are missing' : ''}`}</span>
+          <span>Rupee value depends on how you redeem. Points stay in their own programmes.</span>
           <span className="approved-wallet-point-split">Verified <b>{balancesHidden ? '••••' : verifiedPoints.toLocaleString('en-IN')}</b> · Self-entered <b>{balancesHidden ? '••••' : selfEnteredPoints.toLocaleString('en-IN')}</b></span>
-          {cards.length > 0 && cards.every(card => Number.isSafeInteger(card.points_balance) && card.points_balance >= 0) && verifiedPoints === 0 && <span className="approved-wallet-verify-note"><b>All self-entered.</b> Upload a statement to verify this wallet.</span>}
+          {cards.length > 0 && cards.every(card => Number.isSafeInteger(card.points_balance) && card.points_balance >= 0 && !isVerified(card)) && <span className="approved-wallet-verify-note"><b>All self-entered.</b> Upload a statement to verify this wallet.</span>}
         </div>
         <div className="approved-value-ring"><div style={{ '--value': Math.max(2, verification) } as React.CSSProperties}><span><b>{verification}%</b><small>verified</small></span></div></div>
         <div className="approved-wallet-breakdown">
-          {bankTotals.map(([bank, points]) => <div key={bank}><span>{bank}</span><b>{balancesHidden ? '••••' : `${points.toLocaleString('en-IN')} pts`}</b><i><em style={{ width: `${totalPoints ? Math.max(8, Math.round(points / totalPoints * 100)) : 0}%` }} /></i></div>)}
+          {bankTotals.map(({ bank, points, known, partial }) => <div key={bank}><span>{bank}</span><b>{balancesHidden ? '••••' : !known ? 'Balance needed' : `${points.toLocaleString('en-IN')} pts${partial ? ' · partial' : ''}`}</b><i><em style={{ width: `${knownPoints && points > 0 ? Math.max(8, Math.round(points / knownPoints * 100)) : 0}%` }} /></i></div>)}
           {bankTotals.length === 0 && <p>Add a card to see your wallet composition.</p>}
         </div>
       </section>

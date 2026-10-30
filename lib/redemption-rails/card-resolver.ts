@@ -12,7 +12,7 @@ const BANK_ALIASES: Record<string, string> = {
   bob: 'bob',
 }
 
-function canonicalBank(value: string): string {
+export function canonicalBank(value: string): string {
   const raw = normalize(value)
   if (BANK_ALIASES[raw]) return BANK_ALIASES[raw]
   return raw.replace(/(bank|cards|card|limited|ltd)+$/g, '')
