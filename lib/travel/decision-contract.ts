@@ -85,7 +85,10 @@ function uniqueReasons(values: Array<string | null | undefined>): string[] {
 function blockedReasons(ranking: RailRankingResult): string[] {
   const reasons: Array<string | null | undefined> = []
 
-  if (ranking.pricing.programmePointsRequired != null && ranking.pricing.awardTaxesMinor == null) {
+  const selected = ranking.recommendationState === 'PROJECTED_WINNER_NEEDS_VERIFICATION'
+    ? ranking.bestProjected : ranking.bestExecutable
+  const awardPath = !selected || selected.railType === 'LOYALTY_TRANSFER' || selected.railType === 'COBRAND_NATIVE'
+  if (awardPath && ranking.pricing.programmePointsRequired != null && ranking.pricing.awardTaxesMinor == null) {
     reasons.push('Confirm award taxes and the cash component before comparing final award economics.')
   }
 

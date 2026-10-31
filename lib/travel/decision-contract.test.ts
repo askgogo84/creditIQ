@@ -1,6 +1,15 @@
 import { describe, expect, it } from 'vitest'
 import { buildWalletRailMatrix } from '@/lib/redemption-rails'
 import { buildTravelDecisionContract } from './decision-contract'
+import { deterministicTravelDecision } from '@/lib/typesafe/creditiq-travel-decision'
+
+it('does not attach unrelated award-tax blockers or cached-award risk to the portal winner', () => {
+  const d = buildTravelDecisionContract({ matrix: matrix(30_000), pricing: { ...pricing, awardTaxesMinor: null }, awardStatus: 'DISCOVERY_ONLY' })
+  expect(d.searchSummary?.bestPath?.railType).toBe('BANK_TRAVEL_PORTAL')
+  expect(d.searchSummary?.verdict).toBe('VERIFY_REDEMPTION')
+  expect(d.blockedReasons.join(' ')).not.toMatch(/award taxes/i)
+  expect(deterministicTravelDecision(d)).toMatchObject({ action: 'VERIFY_REDEMPTION', transferRisk: 'MEDIUM', verificationRequired: true })
+})
 
 function matrix(points = 68_500) {
   return buildWalletRailMatrix([

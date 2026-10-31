@@ -54,7 +54,9 @@ function fallbackAction(decision: TravelDecisionContract): CreditIQJevAction {
 }
 
 function deterministicRisk(decision: TravelDecisionContract): CreditIQTransferRisk {
-  if (decision.awardState.status === 'DISCOVERY_ONLY') return 'HIGH'
+  const railType = decision.searchSummary?.bestPath?.railType
+  if (decision.awardState.status === 'DISCOVERY_ONLY' &&
+    (!railType || railType === 'LOYALTY_TRANSFER' || railType === 'COBRAND_NATIVE')) return 'HIGH'
   if (decision.conciergeAction.requiresLiveReverification) return 'MEDIUM'
   if (decision.blockedReasons.length > 0) return 'MEDIUM'
   return 'LOW'
