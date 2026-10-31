@@ -2,6 +2,16 @@ import { describe, expect, it } from 'vitest'
 import type { TravelDecisionContract } from '@/lib/travel/decision-contract'
 import { buildSearchRedemptionSummary } from './search-redemption-summary'
 
+it('keeps portal checkout verification separate from an unrelated cached award', () => {
+  const d = decision()
+  d.awardState.status = 'DISCOVERY_ONLY'
+  const winner = d.wallet.projectedWinner!
+  winner.railType = 'BANK_TRAVEL_PORTAL'
+  const summary = buildSearchRedemptionSummary(d)
+  expect(summary.bestPath?.railType).toBe('BANK_TRAVEL_PORTAL')
+  expect(summary.verdict).toBe('VERIFY_REDEMPTION')
+})
+
 function decision(overrides: Partial<TravelDecisionContract> = {}): TravelDecisionContract {
   const transferRail = {
     id: 'hdfc-infinia-transfer-air-india-maharaja',

@@ -4,6 +4,8 @@ import { useEffect, useMemo, useState } from 'react'
 import { Bell, CalendarRange, Plane, RefreshCw, Trash2 } from 'lucide-react'
 import { AirportSelect } from '@/components/ciq/fly-points/AirportSelect'
 import { authedFetch } from '@/lib/authed-fetch'
+import { watchSearchBlocker, watchWindowEnded } from '@/lib/travel/watch-intent'
+import './dream-trip.css'
 
 interface Watch {
   id: string
@@ -53,7 +55,7 @@ export default function DreamTripPage() {
   const [targetDate, setTargetDate] = useState(plusDays(45))
   const [cabin, setCabin] = useState<Watch['cabin']>('business')
   const [flexDays, setFlexDays] = useState<0 | 3 | 7>(7)
-  const [travellers, setTravellers] = useState(2)
+  const [travellers, setTravellers] = useState(1)
   const [nonstop, setNonstop] = useState(false)
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
@@ -101,6 +103,9 @@ export default function DreamTripPage() {
   }
 
   async function checkWatch(id: string) {
+    const watch = watches.find(item => item.id === id)
+    const blocker = watch ? watchSearchBlocker(watch) : 'Refresh the watch list and try again.'
+    if (blocker) { setError(blocker); return }
     setCheckingId(id)
     setError('')
     try {
@@ -133,16 +138,16 @@ export default function DreamTripPage() {
     if (res.ok && data.watch) setWatches(current => current.map(item => item.id === watch.id ? data.watch : item))
   }
 
-  const activeCount = useMemo(() => watches.filter(watch => watch.status === 'ACTIVE').length, [watches])
+  const activeCount = useMemo(() => watches.filter(watch => watch.status === 'ACTIVE' && !watchWindowEnded(watch)).length, [watches])
 
   return (
-    <div style={{ display: 'grid', gap: 18 }}>
+    <div className="ciq-dream-trip" style={{ display: 'grid', gap: 18 }}>
       <section className="surface" style={{ padding: 18 }}>
-        <div style={{ display: 'flex', alignItems: 'end', justifyContent: 'space-between', gap: 16, marginBottom: 14 }}>
+        <div className="ciq-dream-header" style={{ display: 'flex', alignItems: 'end', justifyContent: 'space-between', gap: 16, marginBottom: 14 }}>
           <div><span className="approved-section-kicker">Dream Trip 2.0</span><h2 style={{ margin: '4px 0 3px', fontSize: 24 }}>Tell CreditIQ where you want to go.</h2><p style={{ margin: 0, color: 'var(--muted)', fontSize: 12 }}>Watch a flexible award window, compare it with your wallet and keep the decision state honest: verify, wait, pay cash or keep points.</p></div>
           <div style={{ textAlign: 'right' }}><b style={{ fontSize: 22 }}>{activeCount}</b><small style={{ display: 'block', color: 'var(--muted)' }}>active watches</small></div>
         </div>
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr .8fr .75fr .65fr .65fr auto', gap: 8, alignItems: 'end' }}>
+        <div className="ciq-dream-search ciq-simple-travel-search" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr .8fr .75fr .65fr .65fr auto', gap: 8, alignItems: 'end' }}>
           <AirportSelect label="From" value={from} exclude={to} onChange={setFrom} />
           <AirportSelect label="To" value={to} exclude={from} onChange={setTo} />
           <label style={fieldStyle}><span>Target date</span><input type="date" value={targetDate} onChange={e => setTargetDate(e.target.value)} style={inputStyle} /></label>
@@ -162,16 +167,18 @@ export default function DreamTripPage() {
         {loading ? <div className="surface" style={{ padding: 24 }}>Loading watches…</div> : watches.length === 0 ? <div className="surface" style={{ padding: 28, textAlign: 'center', color: 'var(--muted)' }}><Plane size={22} /><p>Create your first Dream Trip above. CreditIQ will keep the target, flexible dates and wallet context together.</p></div> : (
           <div style={{ display: 'grid', gap: 9 }}>
             {watches.map(watch => {
-              const copy = stateCopy(watch.last_state)
+              const expired = watchWindowEnded(watch)
+              const blocker = watchSearchBlocker(watch)
+              const copy = expired ? ['Travel window ended', blocker!] : stateCopy(watch.last_state)
               const snapshot = watch.last_result || {}
               const award = snapshot.award || null
               return (
-                <article className="surface" key={watch.id} style={{ padding: 15, display: 'grid', gridTemplateColumns: '1.25fr .8fr .8fr 1fr auto', gap: 14, alignItems: 'center' }}>
+                <article className="surface ciq-dream-watch" key={watch.id} style={{ padding: 15, display: 'grid', gridTemplateColumns: '1.25fr .8fr .8fr 1fr auto', gap: 14, alignItems: 'center' }}>
                   <div><div style={{ display: 'flex', gap: 8, alignItems: 'center' }}><b style={{ fontSize: 15 }}>{watch.origin} → {watch.destination}</b><span style={pillStyle}>{watch.cabin.replace('_', ' ')}</span></div><small style={{ color: 'var(--muted)' }}>{watch.target_date} · {watch.flex_days ? `±${watch.flex_days} days` : 'exact date'} · {watch.travellers} traveller{watch.travellers === 1 ? '' : 's'}{watch.nonstop_only ? ' · non-stop' : ''}</small><p style={{ margin: '7px 0 0', fontSize: 11, color: 'var(--muted)' }}>{copy[1]}</p></div>
                   <div><small style={labelStyle}>Decision</small><b style={{ display: 'block', marginTop: 3 }}>{copy[0]}</b><small style={{ color: 'var(--muted)' }}>{watch.last_checked_at ? `checked ${new Date(watch.last_checked_at).toLocaleString()}` : 'not checked yet'}</small></div>
                   <div><small style={labelStyle}>Best award</small><b style={{ display: 'block', marginTop: 3 }}>{watch.best_award_miles ? `${Number(watch.best_award_miles).toLocaleString('en-IN')} miles` : '—'}</b><small style={{ color: 'var(--muted)' }}>{watch.best_programme || 'programme pending'}{watch.best_date ? ` · ${watch.best_date}` : ''}</small></div>
                   <div><small style={labelStyle}>Cash benchmark</small><b style={{ display: 'block', marginTop: 3 }}>{moneyMinor(watch.best_cash_minor)}</b><small style={{ color: 'var(--muted)' }}>{award?.seats ? `${award.seats} award seat${award.seats === 1 ? '' : 's'} observed` : 'target-date reference'}</small></div>
-                  <div style={{ display: 'flex', gap: 6, justifyContent: 'end' }}><button className="approved-primary" onClick={() => void checkWatch(watch.id)} disabled={checkingId === watch.id}>{checkingId === watch.id ? 'Checking…' : 'Check now'}</button><button className="approved-secondary" onClick={() => void toggleWatch(watch)} title={watch.status === 'ACTIVE' ? 'Pause alerts' : 'Resume alerts'}><Bell size={14} /> {watch.status === 'ACTIVE' ? 'Pause' : 'Resume'}</button><button className="approved-secondary" onClick={() => void removeWatch(watch.id)} title="Delete watch"><Trash2 size={14} /></button></div>
+                  <div style={{ display: 'flex', gap: 6, justifyContent: 'end', flexWrap: 'wrap' }}><button className="approved-primary" onClick={() => void checkWatch(watch.id)} disabled={checkingId === watch.id || !!blocker} title={blocker || undefined}>{expired ? 'Window ended' : checkingId === watch.id ? 'Checking…' : 'Check now'}</button><button className="approved-secondary" onClick={() => void toggleWatch(watch)} disabled={expired} title={watch.status === 'ACTIVE' ? 'Pause alerts' : 'Resume alerts'}><Bell size={14} /> {watch.status === 'ACTIVE' ? 'Pause' : 'Resume'}</button><button className="approved-secondary" onClick={() => void removeWatch(watch.id)} title="Delete watch"><Trash2 size={14} /></button>{blocker && !expired && <small role="status">{blocker}</small>}</div>
                 </article>
               )
             })}

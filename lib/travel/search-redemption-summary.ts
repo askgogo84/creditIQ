@@ -141,7 +141,8 @@ function verdictFor(decision: TravelDecisionContract, recommended: RankedRailCan
   if (state === 'CASH_ONLY' || recommended?.railType === 'CASH_RETAIN') return 'PAY_CASH'
 
   if (state === 'PROJECTED_WINNER_NEEDS_VERIFICATION') {
-    if (decision.awardState.status === 'DISCOVERY_ONLY') return 'VERIFY_AWARD'
+    if (decision.awardState.status === 'DISCOVERY_ONLY' &&
+      (recommended?.railType === 'LOYALTY_TRANSFER' || recommended?.railType === 'COBRAND_NATIVE')) return 'VERIFY_AWARD'
     return 'VERIFY_REDEMPTION'
   }
 

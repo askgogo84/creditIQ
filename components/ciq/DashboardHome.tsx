@@ -160,7 +160,6 @@ export function DashboardHome({
 
   const summary: Summary = data?.summary ?? fallbackSummary
   const cards: Card[] = data?.cards ?? fallbackCards
-  const catalogueCount = data?.catalogueCount
 
   // Slots = real cards + at least one ghost, padded to 8 so a sparse wallet still
   // reads as a wheel. Ghosts are the honest "add a card" empty state.
@@ -270,7 +269,7 @@ export function DashboardHome({
     {readiness?.blockers.map(blocker => <div key={blocker} style={{ fontSize: 12, lineHeight: 1.4 }}>{blocker}</div>)}
     <div style={{ fontSize: 12 }}>Booking comparisons are separate from whole-wallet valuation.</div>
   </>
-  const catalogueLabel = catalogueCount ? 'Catalogue · ' + catalogueCount + ' cards' : 'Catalogue'
+  const catalogueLabel = 'Browse the card catalogue'
   const unknownBalances = cards.some(card => card.points === null)
   const totalLabel = cards.length > 0 && cards.every(card => card.points === null) ? 'Unknown' : f(total)
 
