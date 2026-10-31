@@ -1,6 +1,15 @@
 import { programmeIdForFlightSource } from '@/lib/redemption-rails/programme-resolver'
 
-export function watchSearchBlocker(watch: { cabin: string; travellers: number; status?: string }) {
+export function watchWindowEnded(watch: { target_date?: string; flex_days?: number }, today = new Date().toISOString().slice(0, 10)) {
+  if (!watch.target_date) return false
+  const end = new Date(`${watch.target_date}T00:00:00Z`)
+  if (!Number.isFinite(end.getTime())) return false
+  end.setUTCDate(end.getUTCDate() + (watch.flex_days || 0))
+  return end.toISOString().slice(0, 10) < today
+}
+
+export function watchSearchBlocker(watch: { cabin: string; travellers: number; status?: string; target_date?: string; flex_days?: number }) {
+  if (watchWindowEnded(watch)) return 'This travel window has ended. Create a new watch with future dates.'
   if (watch.status && watch.status !== 'ACTIVE') return 'Resume this watch before checking it.'
   if (!['economy', 'business', 'first'].includes(watch.cabin)) return 'Premium economy watch search is not supported yet. Your saved cabin has not been changed.'
   if (watch.travellers !== 1) return 'Party-size availability is not supported by this watch search yet. Your saved traveller count has not been changed. Ask Concierge to verify the whole party.'

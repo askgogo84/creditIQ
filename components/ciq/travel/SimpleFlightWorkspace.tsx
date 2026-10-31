@@ -210,7 +210,9 @@ function buildExecutionPlan(row: Row): ExecutionPlan {
         discovery
           ? `First verify live ${programme} award space for this exact flight. The current ${awardPoints ? `${awardPoints.toLocaleString('en-IN')}-point` : 'award'} figure is discovery guidance, not a confirmed seat.`
           : `Confirm the exact ${programme} award and current price${awardPoints ? ` of ${awardPoints.toLocaleString('en-IN')} points` : ''} before transferring anything.`,
-        `Transfer ${bankPoints != null ? bankPoints.toLocaleString('en-IN') : 'the verified number of'} card points to ${programme}. Current mapped ratio: ${ratio}.`,
+        candidate?.bankPointsToTransferExact != null && option.state === 'EXECUTABLE'
+          ? `After confirming the live award and issuer terms, transfer ${candidate.bankPointsToTransferExact.toLocaleString('en-IN')} card points to ${programme}. Current mapped ratio: ${ratio}.`
+          : `Confirm the issuer minimum, increment and final amount before transferring to ${programme}. ${bankPoints != null ? `Indicative target: ${bankPoints.toLocaleString('en-IN')} card points, not an exact transfer instruction. ` : ''}Current mapped ratio: ${ratio}.`,
         `Allow for ${timing}. Do not assume the transfer is instant; re-check award space after the points arrive.`,
         `Book directly with ${programme} and pay the final taxes/fees shown at checkout.`,
       ],
@@ -240,8 +242,9 @@ function FlightCard({ row }: { row: Row }) {
   const action = friendlyAction(row)
   const amount = optionAmount(summary?.bestPath)
   const date = (row.award?.date || row.departure || '').slice(0, 10)
-  const live = row.decision?.awardState?.status === 'LIVE_OR_PROVIDER_RETURNED'
-  const discovery = row.decision?.awardState?.status === 'DISCOVERY_ONLY'
+  const awardPath = summary?.bestPath?.railType === 'LOYALTY_TRANSFER' || summary?.bestPath?.railType === 'COBRAND_NATIVE'
+  const live = awardPath && row.decision?.awardState?.status === 'LIVE_OR_PROVIDER_RETURNED'
+  const discovery = awardPath && row.decision?.awardState?.status === 'DISCOVERY_ONLY'
   const plan = buildExecutionPlan(row)
   const ranked = rankWalletOptions(row.redemption || [])
   const bestLegacy = row.bestOption ?? null
@@ -281,7 +284,7 @@ function FlightCard({ row }: { row: Row }) {
         <div style={{ padding: '10px 16px', borderTop: '1px solid var(--line)', background: '#f8f6ef', display: 'flex', flexWrap: 'wrap', gap: 8, alignItems: 'center', fontSize: 10.5, color: 'var(--ink-2)' }}>
           <b style={{ color: 'var(--ink)' }}>{row.jevDecision.source === 'jev' ? 'Jev decision' : 'CreditIQ safe fallback'}</b>
           {row.jevDecision.confidence != null && <span>Confidence {Math.round(row.jevDecision.confidence * 100)}%</span>}
-          <span>Transfer risk {row.jevDecision.transferRisk.toLowerCase()}</span>
+          <span>{awardPath ? 'Transfer' : 'Verification'} risk {row.jevDecision.transferRisk.toLowerCase()}</span>
           {row.jevDecision.verificationRequired && <span style={{ color: '#9A6700', fontWeight: 750 }}>Verification required</span>}
           <span style={{ flexBasis: '100%' }}>{row.jevDecision.reason}</span>
         </div>

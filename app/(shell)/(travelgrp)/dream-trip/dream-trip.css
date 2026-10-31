@@ -1,0 +1,12 @@
+.ciq-dream-trip { min-width: 0; grid-template-columns: minmax(0, 1fr); }
+.ciq-dream-trip section, .ciq-dream-search > *, .ciq-dream-watch > * { min-width: 0; overflow-wrap: anywhere; }
+.ciq-dream-search input, .ciq-dream-search select { width: 100%; max-width: 100%; min-width: 0; box-sizing: border-box; }
+@media (max-width: 1200px) {
+  .ciq-dream-trip .ciq-dream-search, .ciq-dream-trip .ciq-dream-watch { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; }
+}
+@media (max-width: 600px) {
+  .ciq-dream-trip .ciq-dream-search, .ciq-dream-trip .ciq-dream-watch { grid-template-columns: minmax(0, 1fr) !important; }
+  .ciq-dream-header { flex-direction: column; align-items: stretch !important; }
+  .ciq-dream-header > div { min-width: 0; text-align: left !important; }
+  .ciq-dream-watch > div:last-child { justify-content: flex-start !important; }
+}
