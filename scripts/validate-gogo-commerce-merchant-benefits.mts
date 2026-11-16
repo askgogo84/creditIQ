@@ -1,6 +1,9 @@
 import assert from 'node:assert/strict'
 import {readFileSync} from 'node:fs'
-import {parseMerchantQuoteRequest,issuerVerifiedMerchantBenefits} from '../lib/commerce/issuer-merchant-benefits'
+import * as issuerModule from '../lib/commerce/issuer-merchant-benefits'
+// CreditIQ's CJS tsconfig is imported by this ESM .mts contract runner via tsx.
+const issuerFns: any = (issuerModule as any).default ?? issuerModule
+const {parseMerchantQuoteRequest, issuerVerifiedMerchantBenefits} = issuerFns
 const now=Date.parse('2026-11-16T09:00:00Z')
 const q={userLinkId:'d3233314-2ce5-4c0b-82fd-b4e51f5c05ad',cartSha256:'a'.repeat(64),
  provider:'swiggy' as const,currency:'INR' as const,totalPaise:34567}
