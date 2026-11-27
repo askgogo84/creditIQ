@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "prebuild": "npm run check:card-links && npm run check:transfer-graph && npm run check:point-values && npm run check:airports && npm run check:travel-matrix && npm run check:airindia-guide && npm run check:awardtool-truth && npm run check:gogo-bridge",
+    "prebuild": "npm run check:card-links && npm run check:transfer-graph && npm run check:point-values && npm run check:airports && npm run check:travel-matrix && npm run check:airindia-guide && npm run check:awardtool-truth && npm run check:gogo-bridge && npm run check:travel-shopping-truth",
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
@@ -22,7 +22,8 @@
     "audit:affiliate-db": "tsx scripts/audit-affiliate-coverage-db.ts",
     "gen:card-art": "tsx scripts/gen-card-art-manifest.ts",
     "test": "vitest run",
-    "qa:e2e": "tsx scripts/qa-e2e.ts"
+    "qa:e2e": "tsx scripts/qa-e2e.ts",
+    "check:travel-shopping-truth": "tsx scripts/validate-travel-shopping-truth.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.30.1",
