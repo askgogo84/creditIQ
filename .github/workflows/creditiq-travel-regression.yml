@@ -35,6 +35,8 @@ jobs:
         run: npm run check:travel-shopping-truth
       - name: Parallel Flights API pilot fixtures
         run: npm run check:parallel-flights-pilot
+      - name: Parallel Shopping pilot fixtures
+        run: npm run check:parallel-shopping-pilot
       - name: All existing Vitest regressions
         run: npm test
       - name: TypeScript check
