@@ -1,5 +1,6 @@
 ﻿import { NextRequest, NextResponse } from 'next/server'
 import { normalizeTravelpayoutsPricesForDates } from '@/lib/flights/travelpayouts-prices-for-dates'
+import { validateFlightParty } from '@/lib/flights/search-party'
 import { searchSkyscannerFlights, skyscannerFlightsConfigured } from '@/lib/flights/providers/skyscanner-live'
 import { searchAmadeusFlights, amadeusFlightsConfigured } from '@/lib/flights/providers/amadeus'
 import { searchKiwiMcpFlights } from '@/lib/flights/providers/kiwi-mcp'
@@ -40,6 +41,12 @@ function normalizeCabin(raw: string): Cabin {
 
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url)
+  const party = validateFlightParty(searchParams)
+  if (!party.ok) return NextResponse.json({ error: party.code, detail: party.detail }, { status: party.status })
+  const adults = party.adults
+  const send = (flights: any[], coverage: Coverage, extra: Record<string, unknown> = {}) =>
+    response(flights.map(f => ({ ...f, pricedAdults: adults, fareBasis: party.fareBasis })),
+      coverage, { ...extra, requestedAdults: adults, fareBasis: party.fareBasis })
   const from = (searchParams.get('from') || 'DEL').toUpperCase().trim()
   const to = (searchParams.get('to') || 'BOM').toUpperCase().trim()
   const dateFrom = searchParams.get('date_from') || ''
@@ -56,13 +63,13 @@ export async function GET(req: NextRequest) {
   // when the commercial API key is added to Vercel.
   if (skyscannerFlightsConfigured() && dateFrom) {
     try {
-      const result = await searchSkyscannerFlights({ from, to, date: dateFrom, cabin, adults: 1 })
+      const result = await searchSkyscannerFlights({ from, to, date: dateFrom, cabin, adults })
       attempts.push({
         provider: 'skyscanner-live', ok: true, loaded: result.flights.length,
         note: result.flights.length ? `${result.status}; ${result.polls} poll(s)` : `${result.status}; zero itineraries; trying next provider`,
       })
       if (result.flights.length > 0) {
-        return response(result.flights, {
+        return send(result.flights, {
           provider: 'skyscanner-live',
           mode: result.status === 'RESULT_STATUS_COMPLETE' ? 'PROVIDER_COMPLETE' : 'PROVIDER_WINDOW',
           loaded: result.flights.length,
@@ -89,13 +96,13 @@ export async function GET(req: NextRequest) {
   // accidentally make a production-money claim.
   if (amadeusFlightsConfigured() && dateFrom) {
     try {
-      const result = await searchAmadeusFlights({ from, to, date: dateFrom, cabin, adults: 1, max: 100 })
+      const result = await searchAmadeusFlights({ from, to, date: dateFrom, cabin, adults, max: 100 })
       attempts.push({
         provider: 'amadeus', ok: true, status: result.status, loaded: result.flights.length,
         note: result.flights.length ? `flight offers returned from ${result.base}` : 'zero flight offers; trying next provider',
       })
       if (result.flights.length > 0) {
-        return response(result.flights, {
+        return send(result.flights, {
           provider: 'amadeus',
           mode: 'PROVIDER_WINDOW',
           loaded: result.flights.length,
@@ -121,13 +128,13 @@ export async function GET(req: NextRequest) {
   // not a claim of exhaustive market inventory.
   if (dateFrom) {
     try {
-      const result = await searchKiwiMcpFlights({ from, to, date: dateFrom, cabin, adults: 1 })
+      const result = await searchKiwiMcpFlights({ from, to, date: dateFrom, cabin, adults })
       attempts.push({
         provider: 'kiwi-mcp', ok: true, loaded: result.flights.length,
         note: result.flights.length ? `${result.protocol} MCP; live exact-cabin itineraries returned` : `${result.protocol} MCP; zero exact-cabin itineraries; trying next provider`,
       })
       if (result.flights.length > 0) {
-        return response(result.flights, {
+        return send(result.flights, {
           provider: 'kiwi-mcp',
           mode: 'PROVIDER_WINDOW',
           loaded: result.flights.length,
@@ -162,7 +169,7 @@ export async function GET(req: NextRequest) {
       url.searchParams.set('fly_to', to)
       if (dateFrom) url.searchParams.set('date_from', dateFrom)
       if (dateTo) url.searchParams.set('date_to', dateTo)
-      url.searchParams.set('adults', '1')
+      url.searchParams.set('adults', String(adults))
       url.searchParams.set('curr', 'INR')
       url.searchParams.set('limit', String(KIWI_MAX_RESULTS))
       url.searchParams.set('sort', 'price')
@@ -213,7 +220,7 @@ export async function GET(req: NextRequest) {
           const reportedTotal = Number.isFinite(Number(data._results)) ? Number(data._results) : null
           const hitProviderLimit = raw.length >= KIWI_MAX_RESULTS
           const providerHasMore = reportedTotal !== null ? reportedTotal > raw.length : hitProviderLimit
-          return response(flights, {
+          return send(flights, {
             provider: 'kiwi',
             mode: providerHasMore ? 'PROVIDER_WINDOW' : 'PROVIDER_COMPLETE',
             loaded: flights.length,
@@ -240,7 +247,7 @@ export async function GET(req: NextRequest) {
 
   // 5. Travelpayouts / Aviasales dated-fare discovery. This is intentionally the
   // last fallback: prices are cached from recent searches and cabin is not exposed.
-  if (tpToken) {
+  if (tpToken && adults === 1) {
     try {
       const url = new URL('https://api.travelpayouts.com/aviasales/v3/prices_for_dates')
       url.searchParams.set('origin', from)
@@ -262,7 +269,7 @@ export async function GET(req: NextRequest) {
         attempts.push({ provider: 'travelpayouts-v3', ok: true, status: res.status, loaded: flights.length, note: flights.length ? 'dated cached fares returned' : 'no dated cached fares returned' })
 
         if (flights.length > 0) {
-          return response(flights, {
+          return send(flights, {
             provider: 'travelpayouts-v3',
             mode: 'PARTIAL_FALLBACK',
             loaded: flights.length,
@@ -284,10 +291,11 @@ export async function GET(req: NextRequest) {
       console.error('flight search: travelpayouts v3 failed', error)
     }
   } else {
-    attempts.push({ provider: 'travelpayouts-v3', ok: false, loaded: 0, note: 'not configured' })
+    attempts.push({ provider: 'travelpayouts-v3', ok: false, loaded: 0, note: adults > 1
+      ? 'cached one-person fare cannot price a multi-adult party' : 'not configured' })
   }
 
-  return response([], {
+  return send([], {
     provider: 'none',
     mode: 'UNAVAILABLE',
     loaded: 0,

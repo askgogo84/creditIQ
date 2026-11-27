@@ -1,0 +1,6 @@
+# Implementation Plan & Test Matrix
+P0 1) Inspect the provider contract and current app constraints; 2) Validate adults and unsupported trips; 3) Propagate adults to live providers; 4) No party-blind cached fallback; 5) Add pure price-watch rules, source authority and tests.
+P1 6) Validate Parallel Flights early-access entitlement and exact official request/response contract; 7) implement flag-gated provider adapter and normalize into existing flight shape; 8) shadow compare on exact routes and cabins; 9) enable based on verified provider readiness only.
+P2 10) Add opt-in persistence and scheduled monitoring, dedupe, throttling, cost cap, notifications, cancel; 11) Shopping API product quote adapters and best-card comparison; 12) corporate policy and travel handoff; 13) booking execution only via approved partner contract.
+Tests: one adult back-compat; 2/9 adult priced groups; zero/10/fraction invalid; child and return itinerary reject clearly; live booking link and source; cached fallback for groups forbidden; stale/wrong currency/wrong party/cabin/route watch reject; threshold, drop, debounce, dedupe, reprice; no unauthorized send; no payments; 375px layout. Run npx tsc --noEmit, npm test, provider validators, next build, staging browser E2E. Full checkout required before any merge.
+**Do not merge or deploy to production without owner approval.**
