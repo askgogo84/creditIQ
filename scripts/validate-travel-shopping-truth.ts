@@ -16,7 +16,8 @@ check('nine adults', () => assert.equal(party({ adults: '9' }).ok, true))
 for (const adults of ['0', '-1', '1.5', '10', '01', 'abc']) {
   check('invalid adult count ' + adults, () => assert.equal(party({ adults }).ok, false))
 }
-for (const input of [{ children:'1' }, { infants:'1' }, { child_ages:'6' }, { children_ages:'6,9' }, { return_date:'2027-01-01' }, { round_trip:'true' }]) {
+const unsupportedParties: Array<Record<string, string>> = [{ children:'1' }, { infants:'1' }, { child_ages:'6' }, { children_ages:'6,9' }, { return_date:'2027-01-01' }, { round_trip:'true' }]
+for (const input of unsupportedParties) {
   check('unsupported passenger/leg ' + JSON.stringify(input), () => assert.equal(party(input).ok, false))
 }
 check('explicit zero children fine', () => assert.equal(party({ children: '0' }).ok, true))
