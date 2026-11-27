@@ -1,0 +1,5 @@
+# Backend Schema Proposal — NOT APPLIED
+A later migration should provide user-owned fare_watch_rules (id uuid, user_id uuid, from_iata, to_iata, depart_date, cabin, adults, target_minor, currency, active, expires_at, created_at), fare_watch_checks (watch_id, checked_at, provider, source_quote_id, observed_minor, source_fetched_at, confidence, terms_snapshot_hash), and fare_watch_events (watch_id, event_kind, quote_hash, notified_at, delivery_status).
+Add RLS by auth.uid() owner, foreign keys and a unique per-watch quote/event idempotency key. Never store raw payment data or passport information.
+Use durable worker with per-tenant/provider quotas and failure/retry policy. Separate approved organization business requests from private personal watch rules.
+No production SQL or migration in this PR; schema is a proposal needing staging approval.
