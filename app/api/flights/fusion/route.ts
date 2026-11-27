@@ -4,6 +4,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { requireAuth } from '@/lib/api-auth';
 import { validateFlightParty } from '@/lib/flights/search-party';
+import { parallelPilotUserAllowed, searchParallelFlights } from '@/lib/flights/providers/parallel-flights';
 import {
   getAvailabilityTrips,
   type SeatsAeroResult,
@@ -72,6 +73,55 @@ async function fetchCashFlights(
   } catch (e) {
     console.error('fusion: cash flight fetch failed', e);
     return { flights: [], coverage: null, attempts: [], source: null, cashCabinVerified: false };
+  }
+}
+
+/**
+ * Parallel is enabled only for explicitly allowlisted authenticated users;
+ * the public GET /api/flights/search never receives the paid API key.
+ * Any provider failure or missing entitlement falls through to existing sources.
+ */
+async function fetchPreferredCashFlights(
+  base: string,
+  from: string,
+  to: string,
+  dateFrom: string,
+  dateTo: string,
+  cabin: Cabin,
+  userId: string,
+): Promise<CashFetch> {
+  if (!dateFrom || !parallelPilotUserAllowed(userId)) {
+    return fetchCashFlights(base, from, to, dateFrom, dateTo, cabin)
+  }
+  const result = await searchParallelFlights({
+    from, to, date: dateFrom, cabin, adults: 1,
+  })
+  if (result.status === 'SUCCESS' && result.flights.length) {
+    return {
+      flights: result.flights,
+      source: 'parallel-flights',
+      cashCabinVerified: true,
+      coverage: {
+        provider: 'parallel-flights',
+        mode: 'PROVIDER_WINDOW',
+        loaded: result.flights.length,
+        provider_total: null,
+        has_more: true,
+        fetched_at: new Date().toISOString(),
+        note: 'Parallel returned source-listed one-way fares. The airline may show a different checkout price; reprice before booking.',
+      },
+      attempts: [{ provider: 'parallel-flights', ok: true, loaded: result.flights.length, note: 'PROVIDER_RETURNED' }],
+    }
+  }
+  const fallback = await fetchCashFlights(base, from, to, dateFrom, dateTo, cabin)
+  return {
+    ...fallback,
+    attempts: [{
+      provider: 'parallel-flights',
+      ok: false,
+      loaded: 0,
+      note: result.status,
+    }, ...fallback.attempts],
   }
 }
 
@@ -221,7 +271,7 @@ export async function POST(req: NextRequest) {
     const base = new URL(req.url).origin;
 
     const [cashFetch, awardFetch, portfolio] = await Promise.all([
-      fetchCashFlights(base, from, to, cashReferenceDate, cashReferenceDate, cabin),
+      fetchPreferredCashFlights(base, from, to, cashReferenceDate, cashReferenceDate, cabin, gate.userId),
       searchFusionAwards({ origin: from, destination: to, startDate: dateFrom, endDate: dateTo, cabin }),
       loadDecisionPortfolio(gate.userId),
     ]);
