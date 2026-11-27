@@ -1,0 +1,5 @@
+# Application Flow — Consumer and Business
+Consumer: select exact IATA route + departure date + cabin + adult count → get provider-priced quotes → show source/freshness/bookability → compare wallet earn/redemption → optionally opt-in price watcher → alert with new quote and reprice requirement → user visits genuine booking link and completes payment separately.
+Business: request itinerary → organization policy and approval → re-price supplier quote → Finance approval → booking desk/provider fulfillment → receipt and statement reconciliation. Keep private employee travel data isolated from corporate spending data.
+Unsupported case: child travellers or round trip requested before providers support it → show honest unsupported state, do not substitute a single-adult ticket.
+Price watcher: authorized user opts in, route/party fingerprint stored, checks performed on schedule by separate worker, alerts only when live evidence passes rules, deduped by source quote and threshold crossing.
