@@ -3,6 +3,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { requireAuth } from '@/lib/api-auth';
+import { validateFlightParty } from '@/lib/flights/search-party';
 import {
   getAvailabilityTrips,
   type SeatsAeroResult,
@@ -188,6 +189,22 @@ export async function POST(req: NextRequest) {
 
   try {
     const body = await req.json().catch(() => ({}));
+    // Cash fares and award availability are not yet group-reconciled in Fusion.
+    // Refuse a misleading one-seat reward comparison for group/return/child searches.
+    const partyQuery = new URLSearchParams();
+    for (const field of ['adults', 'children', 'infants', 'child_ages', 'children_ages', 'ages', 'return_date', 'returnDate', 'round_trip', 'roundtrip']) {
+      if (body[field] !== undefined && body[field] !== null) partyQuery.set(field, String(body[field]));
+    }
+    const party = validateFlightParty(partyQuery);
+    if (!party.ok) {
+      return NextResponse.json({ error: party.code, detail: party.detail }, { status: party.status });
+    }
+    if (party.adults !== 1) {
+      return NextResponse.json({
+        error: 'group_award_comparison_not_yet_verified',
+        detail: 'Cash fares can be searched for multiple adults, but wallet points and award-seat comparisons must be group-verified first.',
+      }, { status: 422 });
+    }
     const from = (body.from || '').toUpperCase().trim();
     const to = (body.to || '').toUpperCase().trim();
     const dateFrom = body.date_from || '';
