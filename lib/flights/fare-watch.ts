@@ -15,6 +15,8 @@ export type FareWatch = {
   minDropMinor?: number
   baselineMinor?: number | null
   lastAlertKey?: string | null
+  lastAlertAt?: string | null
+  lastNotifiedMinor?: number | null
   expiresAt?: string | null
 }
 export type FareObservation = {
@@ -66,5 +68,13 @@ export function evaluateFareWatch(watch: FareWatch, observed: FareObservation, n
   }
   const alertKey = [watch.id, observed.provider, observed.quoteId, observed.totalMinor].join('|')
   if (watch.lastAlertKey === alertKey) return deny('DUPLICATE_ALERT')
+  if (watch.lastNotifiedMinor != null && validMinor(watch.lastNotifiedMinor) &&
+      observed.totalMinor >= watch.lastNotifiedMinor) return deny('NO_FURTHER_PRICE_DROP')
+  if (watch.lastAlertAt) {
+    const prior = Date.parse(watch.lastAlertAt)
+    if (Number.isFinite(prior) && prior <= nowMs && nowMs - prior < 24 * 60 * 60_000) {
+      return deny('ALERT_COOLDOWN')
+    }
+  }
   return { notify: true, reason: 'PRICE_CONDITION_MET', alertKey, requireRepriceBeforePurchase: true }
 }
