@@ -105,7 +105,7 @@ export default function ParallelPilotPage() {
               <label style={{fontSize:12}}>To airport<input style={field} value={to} maxLength={3} onChange={e=>setTo(e.target.value.toUpperCase())}/></label>
             </div>
             <label style={{display:'block',fontSize:12,marginTop:12}}>Departure date<input type="date" style={field} value={depart} onChange={e=>setDepart(e.target.value)}/></label>
-            <button onClick={flightSearch} disabled={flightBusy} style={{...primary,opacity:flightBusy?.6:1}}>
+            <button onClick={flightSearch} disabled={flightBusy} style={{...primary,opacity:flightBusy ? 0.6 : 1}}>
               {flightBusy?'Searching…':'Search flight offers'}
             </button>
             {flightResult && <div role="status" style={{marginTop:18,borderTop:'1px solid #ece5dc',paddingTop:12}}>
@@ -124,7 +124,7 @@ export default function ParallelPilotPage() {
             <h2 style={{fontSize:20,margin:'10px 0'}}>India product search</h2>
             <p style={{fontSize:12,color:'#746b64',lineHeight:1.5}}>Only approved testers with Shopping API access can search. Prices exclude unknown checkout taxes, delivery and credit-card rewards.</p>
             <label style={{display:'block',fontSize:12}}>Public product name<input style={field} value={product} maxLength={200} onChange={e=>setProduct(e.target.value)}/></label>
-            <button onClick={shoppingSearch} disabled={shopBusy} style={{...primary,opacity:shopBusy?.6:1}}>
+            <button onClick={shoppingSearch} disabled={shopBusy} style={{...primary,opacity:shopBusy ? 0.6 : 1}}>
               {shopBusy?'Searching…':'Find store listings'}
             </button>
             {shopResult && <div role="status" style={{marginTop:18,borderTop:'1px solid #ece5dc',paddingTop:12}}>
