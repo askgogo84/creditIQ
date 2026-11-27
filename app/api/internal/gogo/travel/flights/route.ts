@@ -118,6 +118,15 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'returnDate must be YYYY-MM-DD when provided' }, { status: 400 })
   }
 
+  // A multi-adult quote must not be mixed with a one-person award calculation.
+  // Do not silently ignore an explicitly requested return segment either.
+  if (adults !== 1 || body.returnDate) {
+    return NextResponse.json({
+      error: 'group_or_round_trip_award_comparison_not_supported',
+      detail: 'Use live adult-only one-way search until the complete travel decision contract supports the requested party and return leg.',
+    }, { status: 422 })
+  }
+
   const searchUrl = new URL('/api/flights/search', req.nextUrl.origin)
   searchUrl.searchParams.set('from', origin)
   searchUrl.searchParams.set('to', destination)
