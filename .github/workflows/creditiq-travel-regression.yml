@@ -1,0 +1,39 @@
+name: CreditIQ travel and shopping regression
+on:
+  pull_request:
+    paths:
+      - "app/api/flights/**"
+      - "app/api/internal/gogo/travel/**"
+      - "lib/flights/**"
+      - "lib/commerce/**"
+      - "scripts/validate-travel-shopping-truth.ts"
+      - "package.json"
+      - ".github/workflows/creditiq-travel-regression.yml"
+  push:
+    branches:
+      - feat/parallel-travel-truth-watch-20261127
+permissions:
+  contents: read
+concurrency:
+  group: ciq-travel-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  regression:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: "22"
+          cache: npm
+      - name: Install locked dependencies
+        run: npm ci
+      - name: Fare, source, and shopping truth tests
+        run: npm run check:travel-shopping-truth
+      - name: All existing Vitest regressions
+        run: npm test
+      - name: TypeScript check
+        run: npx tsc --noEmit
