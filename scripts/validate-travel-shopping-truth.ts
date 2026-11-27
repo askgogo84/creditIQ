@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict'
+import { readFileSync } from 'node:fs'
 import { validateFlightParty } from '../lib/flights/search-party'
 import { evaluateFareWatch, type FareWatch, type FareObservation } from '../lib/flights/fare-watch'
 import { assessMerchantQuote, type MerchantQuote } from '../lib/commerce/offer-truth'
@@ -70,4 +71,13 @@ check('stale shopping quote not comparable',()=>assert.equal(shopping({...quote,
 check('unsafe shopping URL rejected',()=>assert.equal(shopping({...quote,productUrl:'http://localhost/demo'}).state,'INVALID'))
 check('negative fees rejected',()=>assert.equal(shopping({...quote,taxMinor:-1}).state,'DISCOVERY_ONLY'))
 check('no product purchase action',()=>assert.equal(shopping().requiresCheckoutReverification,true))
+const searchRoute = readFileSync(new URL('../app/api/flights/search/route.ts', import.meta.url), 'utf8')
+check('flight endpoint rejects unsupported party', () => assert.match(searchRoute, /validateFlightParty\(searchParams\)/))
+check('skyscanner receives adult count', () => assert.match(searchRoute, /searchSkyscannerFlights\(\{ from, to, date: dateFrom, cabin, adults \}\)/))
+check('kiwi MCP receives adult count', () => assert.match(searchRoute, /searchKiwiMcpFlights\(\{ from, to, date: dateFrom, cabin, adults \}\)/))
+check('cached fare disabled for groups', () => assert.match(searchRoute, /tpToken && adults === 1/))
+const fusionRoute = readFileSync(new URL('../app/api/flights/fusion/route.ts', import.meta.url), 'utf8')
+check('fusion requires group award verification', () => assert.match(fusionRoute, /group_award_comparison_not_yet_verified/))
+const bridgeRoute = readFileSync(new URL('../app/api/internal/gogo/travel/flights/route.ts', import.meta.url), 'utf8')
+check('AskGogo bridge cannot silently drop party', () => assert.match(bridgeRoute, /group_or_round_trip_award_comparison_not_supported/))
 console.log('CreditIQ Travel/Shopping Truth:', checked, 'checks passed')
