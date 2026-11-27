@@ -1,0 +1,28 @@
+name: CreditIQ Gogo Merchant Benefits Contract
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'lib/commerce/issuer-merchant-benefits.ts'
+      - 'app/api/internal/gogo/commerce/merchant-benefits/route.ts'
+      - 'supabase/migrations/20261116090000_verified_issuer_merchant_quotes.sql'
+      - 'scripts/validate-gogo-commerce-merchant-benefits.mts'
+      - '.github/workflows/gogo-commerce-merchant-benefits.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npx --no-install tsx scripts/validate-gogo-commerce-merchant-benefits.mts
+      - run: npx --no-install tsc --noEmit
