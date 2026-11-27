@@ -98,8 +98,8 @@ export function normalizeParallelFlights(
     if (!segs.length) return []
     // The Flights API filters by cabin, but reject any explicitly conflicting
     // segment. Premium cabins need a reported match for every segment.
-    const allCabinsKnown = segs.every(s => cabinOf(s?.cabin) === input.cabin)
-    if (segs.some(s => s?.cabin && cabinOf(s.cabin) !== input.cabin)) return []
+    const allCabinsKnown = segs.every((s: any) => cabinOf(s?.cabin) === input.cabin)
+    if (segs.some((s: any) => s?.cabin && cabinOf(s.cabin) !== input.cabin)) return []
     if (input.cabin !== 'economy' && !allCabinsKnown) return []
     const segments: ParallelFlight['segments'] = segs.map((s: any) => {
       const flightNo = String(s?.flight_number || '').trim()
