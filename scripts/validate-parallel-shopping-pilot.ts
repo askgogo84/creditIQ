@@ -69,6 +69,10 @@ const api=readFileSync(new URL('../app/api/commerce/parallel-shopping/route.ts',
 await check('API requires bearer auth',()=>assert.match(api,/requireAuth\(req\)/))
 await check('API enforces pilot membership',()=>assert.match(api,/parallelShoppingAllowed\(gate\.userId\)/))
 await check('API refuses payment claims',()=>assert.match(api,/paymentsExecuted: false/))
+const pilotPage = readFileSync(new URL('../app/parallel-pilot/page.tsx',import.meta.url),'utf8')
+await check('Pilot UI requires signed-in CreditIQ identity',()=>assert.match(pilotPage,/sb\.auth\.getUser\(\)/))
+await check('Pilot UI sends authorized shopping POST',()=>assert.match(pilotPage,/\/api\/commerce\/parallel-shopping/))
+await check('Pilot UI preserves original wallet fusion route',()=>assert.match(pilotPage,/\/api\/flights\/fusion/))
 console.log('Parallel Shopping pilot:',checks,'checks passed')
 }
 main().catch(err=>{console.error(err);process.exitCode=1})
