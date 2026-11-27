@@ -44,9 +44,18 @@ export async function GET(req: NextRequest) {
   const party = validateFlightParty(searchParams)
   if (!party.ok) return NextResponse.json({ error: party.code, detail: party.detail }, { status: party.status })
   const adults = party.adults
-  const send = (flights: any[], coverage: Coverage, extra: Record<string, unknown> = {}) =>
-    response(flights.map(f => ({ ...f, pricedAdults: adults, fareBasis: party.fareBasis })),
+  const send = (flights: any[], coverage: Coverage, extra: Record<string, unknown> = {}) => {
+    // Only providers with documented group-total offer fields can price 2+ adults.
+    // A future provider must pass an explicit review before entering this allowlist.
+    const groupTotalSourced = adults === 1 ||
+      coverage.provider === 'skyscanner-live' || coverage.provider === 'amadeus'
+    if (!groupTotalSourced) return response([], {
+      ...coverage, provider: 'none', mode: 'UNAVAILABLE', loaded: 0,
+      note: 'Source did not establish a total fare for the requested adult party.',
+    }, { ...extra, requestedAdults: adults, error: 'group_fare_total_unverified' })
+    return response(flights.map(f => ({ ...f, pricedAdults: adults, fareBasis: party.fareBasis })),
       coverage, { ...extra, requestedAdults: adults, fareBasis: party.fareBasis })
+  }
   const from = (searchParams.get('from') || 'DEL').toUpperCase().trim()
   const to = (searchParams.get('to') || 'BOM').toUpperCase().trim()
   const dateFrom = searchParams.get('date_from') || ''
@@ -126,7 +135,10 @@ export async function GET(req: NextRequest) {
   // cached discovery fare is live. We accept only structured results that include
   // an exact cabin and a Kiwi booking URL. The returned list is a provider window,
   // not a claim of exhaustive market inventory.
-  if (dateFrom) {
+  // Kiwi MCP itinerary.price has no explicit passenger-total field. A live two-adult
+  // spot check returned a fare close to the single-adult price. Until we can
+  // prove total-for-party semantics, do not promote it as a multi-person total.
+  if (dateFrom && adults === 1) {
     try {
       const result = await searchKiwiMcpFlights({ from, to, date: dateFrom, cabin, adults })
       attempts.push({
@@ -157,12 +169,14 @@ export async function GET(req: NextRequest) {
       console.warn('flight search: kiwi MCP failed', error)
     }
   } else {
-    attempts.push({ provider: 'kiwi-mcp', ok: false, loaded: 0, note: 'date missing' })
+    attempts.push({ provider: 'kiwi-mcp', ok: false, loaded: 0, note: adults > 1
+      ? 'party total not verified; Kiwi MCP disabled for multi-adult fares' : 'date missing' })
   }
 
   // 4. Kiwi Tequila — legacy invited-partner itinerary source where a valid key
   // is active. An HTTP-200 EMPTY result is deliberately non-terminal.
-  if (kiwiKey) {
+  // Legacy Kiwi f.price is also not verified as an all-passenger total here.
+  if (kiwiKey && adults === 1) {
     try {
       const url = new URL('https://api.tequila.kiwi.com/v2/search')
       url.searchParams.set('fly_from', from)
@@ -242,7 +256,8 @@ export async function GET(req: NextRequest) {
       console.error('flight search: kiwi failed', error)
     }
   } else {
-    attempts.push({ provider: 'kiwi', ok: false, loaded: 0, note: 'not configured' })
+    attempts.push({ provider: 'kiwi', ok: false, loaded: 0, note: adults > 1
+      ? 'party total not verified; Kiwi legacy disabled for multi-adult fares' : 'not configured' })
   }
 
   // 5. Travelpayouts / Aviasales dated-fare discovery. This is intentionally the
