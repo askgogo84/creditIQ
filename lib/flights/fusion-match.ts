@@ -60,7 +60,7 @@ export function matchAwardToCashFlight(
 
 export function cashSourceCabinVerified(source: unknown, providerFlag: unknown): boolean {
   if (providerFlag === false) return false
-  return ['skyscanner-live', 'amadeus', 'kiwi-mcp', 'kiwi'].includes(String(source || ''))
+  return ['skyscanner-live', 'amadeus', 'kiwi-mcp', 'kiwi', 'parallel-flights'].includes(String(source || ''))
 }
 
 export function airlineDisplayName(value: string | null | undefined): string {

@@ -33,6 +33,8 @@ jobs:
         run: npm ci
       - name: Fare, source, and shopping truth tests
         run: npm run check:travel-shopping-truth
+      - name: Parallel Flights API pilot fixtures
+        run: npm run check:parallel-flights-pilot
       - name: All existing Vitest regressions
         run: npm test
       - name: TypeScript check
