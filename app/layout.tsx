@@ -1,4 +1,4 @@
-﻿import type { Metadata, Viewport } from "next";
+import type { Metadata, Viewport } from "next";
 import { GeistSans } from "geist/font/sans";
 import { GeistMono } from "geist/font/mono";
 import { clashDisplay, satoshi, jetbrainsMono } from "./fonts";
@@ -11,6 +11,7 @@ import "@/components/ciq/mobile-production-fixes.css";
 import "@/components/ciq/mobile-route-overrides.css";
 import { CreditIQAssistant } from "@/components/CreditIQAssistant";
 import { AppDownloadBanner } from '@/components/AppDownloadBanner';
+import { ConnectorReferral } from '@/components/ConnectorReferral';
 import { logMissingEnv } from "@/lib/env-check";
 
 logMissingEnv();
@@ -61,6 +62,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         {children}
         <CreditIQAssistant />
         <AppDownloadBanner />
+        <ConnectorReferral />
       </body>
     </html>
   );

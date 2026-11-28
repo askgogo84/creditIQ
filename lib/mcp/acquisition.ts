@@ -3,6 +3,7 @@ import { z } from 'zod'
 
 const channels = ['claude', 'chatgpt', 'mcp'] as const
 const channel = z.enum(channels)
+const referralEvent = z.object({ event: z.literal('creditiq_mcp_referral'), channel })
 const toolEvent = z.object({
   event: z.literal('creditiq_mcp_call'), channel, tool: z.string().regex(/^[a-z_]{1,64}$/),
   outcome: z.enum(['ok', 'limited', 'unavailable']), durationMs: z.number().nonnegative(),
@@ -24,11 +25,15 @@ export function summarizeAcquisition(lines: string[], aggregates: Aggregates) {
     let calls = 0
     let successful = 0
     let totalLatencyMs = 0
+    let countedReferralVisits = 0
     for (const line of lines) {
-      const eventStart = line.indexOf('{"event":"creditiq_mcp_call"')
+      const eventStart = line.indexOf('{"event":"creditiq_mcp_')
       if (eventStart === -1) continue
       try {
-        const event = toolEvent.safeParse(JSON.parse(line.slice(eventStart)))
+        const payload: unknown = JSON.parse(line.slice(eventStart))
+        const referral = referralEvent.safeParse(payload)
+        if (referral.success && referral.data.channel === platform) countedReferralVisits += 1
+        const event = toolEvent.safeParse(payload)
         if (!event.success || event.data.channel !== platform) continue
         calls += 1
         successful += Number(event.data.outcome === 'ok')
@@ -43,7 +48,7 @@ export function summarizeAcquisition(lines: string[], aggregates: Aggregates) {
       platform, calls, successful,
       meanToolLatencyMs: calls ? Math.round(totalLatencyMs / calls) : null,
       discovery: verified?.discovery ?? null,
-      referrals: verified?.referrals ?? null,
+      referrals: verified?.referrals ?? (countedReferralVisits || null),
       registrations: verified?.registrations ?? null,
       linkedAccounts: verified?.linkedAccounts ?? null,
       consentingActiveUsers: verified?.consentingActiveUsers ?? null,

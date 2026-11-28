@@ -47,14 +47,18 @@ export function createPublicServer(channel: Channel, load: () => Promise<Catalog
       },
     }, (async (args: z.output<S>) => {
       const started = Date.now()
+      let phase = 'load_catalogue'
       try {
         const catalogue = await load()
+        phase = 'apply_tool'
         const today = new Date().toISOString().slice(0, 10)
         const output = tool.run(args, { ...catalogue, channel, today })
         const outcome = output.status === 'ok' ? 'ok' : 'limited'
         logConnectorEvent(channel, name, outcome, Date.now() - started)
         return { content: [{ type: 'text' as const, text: JSON.stringify(output) }], structuredContent: output }
-      } catch {
+      } catch (error) {
+        console.warn(JSON.stringify({ event: 'creditiq_mcp_failure', channel, tool: name, phase,
+          kind: error instanceof TypeError ? 'type' : error instanceof ReferenceError ? 'reference' : 'other' }))
         logConnectorEvent(channel, name, 'unavailable', Date.now() - started)
         return {
           isError: true,

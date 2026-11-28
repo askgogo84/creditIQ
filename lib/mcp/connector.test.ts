@@ -29,6 +29,12 @@ describe('public CreditIQ catalogue', () => {
     ] })
   })
 
+  it('ignores legacy live records without route slugs', () => {
+    const legacy = { ...SEED_CARDS[0], slug: null } as unknown as typeof SEED_CARDS[number]
+    const mixed = { ...ctx, source: 'live_catalogue' as const, cards: [legacy, ...ctx.cards] }
+    expect(catalogueTools.compare_credit_cards.run({ cards: ['HDFC Infinia', 'Axis Magnus'] }, mixed).status).toBe('ok')
+  })
+
   it('finds international lounges and travel cards without claiming live admission', () => {
     expect(catalogueTools.check_lounge_access.run({ scope: 'international', limit: 3 }, ctx)).toMatchObject({
       cards: [{ lounges: expect.arrayContaining([expect.objectContaining({ scope: 'international', issuerConfirmationRequired: true })]) },

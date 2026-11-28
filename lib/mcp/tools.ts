@@ -96,7 +96,8 @@ function sourceUrl(value: string | undefined) {
 }
 
 function catalogueCards(ctx: Context) {
-  return ctx.cards.filter(card => /^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(card.slug) && typeof card.name === 'string')
+  return ctx.cards.filter(card => typeof card?.slug === 'string' &&
+    /^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(card.slug) && typeof card.name === 'string')
 }
 
 function resolve(ctx: Context, query: string) {
@@ -119,7 +120,7 @@ function numeric(card: CreditCard, field: keyof CreditCard) {
 }
 
 function available(card: CreditCard) {
-  return card.active && ![card.name, card.best_for, card.welcome_benefit_description, ...(card.highlights ?? [])]
+  return card.active && ![card.name, card.best_for, card.welcome_benefit_description, ...(Array.isArray(card.highlights) ? card.highlights : [])]
     .some(value => typeof value === 'string' && /\bdiscontinued\b|\bclosed to new applicants\b|\bno longer issued\b/i.test(value))
 }
 
@@ -148,7 +149,7 @@ function describe(card: CreditCard, ctx: Context) {
 }
 
 function loungeDetails(card: CreditCard, type?: z.infer<typeof scope>) {
-  return (card.lounges ?? []).filter(lounge => !type || lounge.type === type).slice(0, 6).map(lounge => ({
+  return (Array.isArray(card.lounges) ? card.lounges : []).filter(lounge => !type || lounge.type === type).slice(0, 6).map(lounge => ({
     scope: lounge.type,
     network: lounge.network,
     visitsPerYear: lounge.visits_per_year ?? null,
@@ -187,7 +188,7 @@ function estimate(card: CreditCard, input: Budget, ctx: Context) {
     }
   }
   const broad = new Set(['grocery', 'dining', 'travel', 'online', 'fuel', 'utility'])
-  const rules = (card.category_rewards ?? []).filter(rule => broad.has(rule.category) && rule.unit === 'percent' &&
+  const rules = (Array.isArray(card.category_rewards) ? card.category_rewards : []).filter(rule => broad.has(rule.category) && rule.unit === 'percent' &&
     typeof rule.rate === 'number' && Number.isFinite(rule.rate) && rule.rate >= 0)
   const value = calculateAnnualValue({
     ...card,
@@ -222,7 +223,7 @@ export const catalogueTools = {
   }), (input, ctx) => {
     const words = input.query ? norm(input.query).split(' ').filter(Boolean) : []
     const cards = eligible(ctx, input).filter(card => {
-      const haystack = new Set(norm([card.name, card.slug, card.bank, ...(card.category ?? [])].join(' ')).split(' '))
+      const haystack = new Set(norm([card.name, card.slug, card.bank, ...(Array.isArray(card.category) ? card.category : [])].join(' ')).split(' '))
       return (!input.query || (words.length > 0 && words.every(word => haystack.has(word)))) &&
         (!input.category || card.category?.includes(input.category))
     }).slice(0, input.limit).map(card => describe(card, ctx))
@@ -291,7 +292,7 @@ export const catalogueTools = {
     const match = resolve(ctx, input.card)
     if (!match.card) return cardError(ctx, match)
     const card = match.card
-    const changes = (card.devaluations ?? []).filter(change => /^\d{4}-\d{2}-\d{2}$/.test(change.date))
+    const changes = (Array.isArray(card.devaluations) ? card.devaluations : []).filter(change => /^\d{4}-\d{2}-\d{2}$/.test(change.date))
       .sort((a, b) => b.date.localeCompare(a.date)).slice(0, 8).map(change => ({
         effectiveDate: change.date, category: change.category, sourceUrl: sourceUrl(change.source_url),
         state: change.date > ctx.today ? 'scheduled_change' : 'historical_change',

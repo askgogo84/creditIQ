@@ -34,7 +34,7 @@ export function oauthConfig(resource: URL) {
 type OAuth = NonNullable<ReturnType<typeof oauthConfig>>
 const introspectionResponse = z.object({
   active: z.literal(true), iss: z.string(), sub: uuid,
-  aud: z.union([z.string(), z.array(z.string())]), exp: z.number().int(),
+  aud: z.union([z.string(), z.array(z.string())]), exp: z.number().int(), nbf: z.number().int().optional(),
   client_id: z.string().min(1), scope: z.string(),
 })
 
@@ -61,7 +61,8 @@ export async function linkedUser(authorization: string | null, config: OAuth, re
     if (!parsed.success) return null
     const claims = parsed.data
     const audiences = Array.isArray(claims.aud) ? claims.aud : [claims.aud]
-    if (claims.iss !== config.issuer || claims.exp <= Math.floor(Date.now() / 1000) ||
+    const now = Math.floor(Date.now() / 1000)
+    if (claims.iss !== config.issuer || claims.exp <= now || (claims.nbf !== undefined && claims.nbf > now) ||
       audiences.length !== 1 || audiences[0] !== config.audience || !claims.scope.split(/\s+/).includes(walletScope)) return null
     return claims.sub
   } catch {
