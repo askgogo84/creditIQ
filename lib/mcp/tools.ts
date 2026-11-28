@@ -21,7 +21,8 @@ function cardPath(slug: string) {
 }
 const currency = z.number().nonnegative().max(5_000_000)
 const text = z.string().trim().min(1).max(80)
-  .regex(/^[\p{L}\p{N} .+&,()'’/-]+$/u)
+  // JSON Schema serializes the pattern without JavaScript's Unicode flag.
+  .refine(value => /^[\p{L}\p{N} .+&,()'’/-]+$/u.test(value), 'Use letters, numbers or common card-name punctuation.')
   .refine(value => !/(?:\d[ -]?){12,}/.test(value), 'Use a card product name or slug, never a card number.')
 const limit = z.number().int().min(1).max(8).default(5)
 const spend = z.strictObject({

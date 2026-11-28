@@ -103,6 +103,7 @@ describe('public CreditIQ catalogue', () => {
     try {
       const list = await client.listTools()
       expect(list.tools).toHaveLength(8)
+      expect(JSON.stringify(list.tools.map(tool => tool.inputSchema))).not.toContain('\\p{')
       expect(list.tools.every(tool => tool.annotations?.readOnlyHint && !tool.annotations.destructiveHint)).toBe(true)
       const widget = await client.readResource({ uri: 'ui://creditiq/card-results.html' })
       expect(widget.contents[0].mimeType).toBe('text/html;profile=mcp-app')
