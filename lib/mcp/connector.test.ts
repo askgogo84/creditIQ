@@ -35,6 +35,16 @@ describe('public CreditIQ catalogue', () => {
     expect(catalogueTools.compare_credit_cards.run({ cards: ['HDFC Infinia', 'Axis Magnus'] }, mixed).status).toBe('ok')
   })
 
+  it('decodes live JSON fields and withholds a conflicting forex placeholder', () => {
+    const item = { ...SEED_CARDS.find(card => card.slug === 'hdfc-infinia')!,
+      lounges: '[{"type":"international","network":"Priority Pass","visits_per_year":4}]',
+      forex_markup_percent: 0 } as unknown as typeof SEED_CARDS[number]
+    const data = { ...ctx, source: 'live_catalogue' as const, cards: [item] }
+    expect(catalogueTools.find_travel_card.run({ internationalLoungeRequired: true, limit: 3 }, data)).toMatchObject({
+      status: 'ok', cards: [{ forexMarkupPercent: null, lounges: [{ scope: 'international', visitsPerYear: 4 }] }],
+    })
+  })
+
   it('finds international lounges and travel cards without claiming live admission', () => {
     expect(catalogueTools.check_lounge_access.run({ scope: 'international', limit: 3 }, ctx)).toMatchObject({
       cards: [{ lounges: expect.arrayContaining([expect.objectContaining({ scope: 'international', issuerConfirmationRequired: true })]) },

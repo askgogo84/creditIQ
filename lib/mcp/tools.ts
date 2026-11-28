@@ -14,10 +14,10 @@ export type Channel = 'mcp' | 'claude' | 'chatgpt'
 export type Context = Catalogue & { channel: Channel; today: string }
 const origin = 'https://www.creditiq.app'
 const freshnessDays = 180
-const detailSlugs = new Set(SEED_CARDS.map(card => card.slug))
+const seedBySlug = new Map(SEED_CARDS.map(card => [card.slug, card]))
 
 function cardPath(slug: string) {
-  return detailSlugs.has(slug) ? '/card/' + slug : '/cards'
+  return seedBySlug.has(slug) ? '/card/' + slug : '/cards'
 }
 const currency = z.number().nonnegative().max(5_000_000)
 const text = z.string().trim().min(1).max(80)
@@ -81,7 +81,8 @@ function recordAge(date: string | undefined, today: string) {
   return days > freshnessDays ? 'stale' : 'dated'
 }
 
-function safeLabel(value: string, max = 100) {
+function safeLabel(value: unknown, max = 100) {
+  if (typeof value !== 'string') return ''
   return value.replace(/[\u0000-\u001f\u007f-\u009f\u200b-\u200f\u202a-\u202e\u2066-\u2069<>]/g, ' ').slice(0, max)
 }
 
@@ -92,6 +93,17 @@ function sourceUrl(value: string | undefined) {
     return parsed.protocol === 'https:' && !parsed.username && !parsed.password ? parsed.toString() : null
   } catch {
     return null
+  }
+}
+
+function storedArray<T>(value: unknown): T[] {
+  if (Array.isArray(value)) return value
+  if (typeof value !== 'string' || value.length > 30_000) return []
+  try {
+    const parsed: unknown = JSON.parse(value)
+    return Array.isArray(parsed) ? parsed : []
+  } catch {
+    return []
   }
 }
 
@@ -120,25 +132,32 @@ function numeric(card: CreditCard, field: keyof CreditCard) {
 }
 
 function available(card: CreditCard) {
-  return card.active && ![card.name, card.best_for, card.welcome_benefit_description, ...(Array.isArray(card.highlights) ? card.highlights : [])]
+  return card.active && ![card.name, card.best_for, card.welcome_benefit_description, ...storedArray<string>(card.highlights)]
     .some(value => typeof value === 'string' && /\bdiscontinued\b|\bclosed to new applicants\b|\bno longer issued\b/i.test(value))
 }
 
 function describe(card: CreditCard, ctx: Context) {
   const apply = getApplyUrl(card)
   const age = recordAge(card.last_verified, ctx.today)
-  const fields = ['joining_fee_inr', 'annual_fee_inr', 'fee_waiver_spend_inr', 'base_reward_rate', 'forex_markup_percent', 'reward_currency']
-  const conflicts = fields.filter(field => isFieldUnverified(card.slug, field))
+  const fields = ['joining_fee_inr', 'annual_fee_inr', 'fee_waiver_spend_inr', 'base_reward_rate', 'forex_markup_percent', 'reward_currency'] as const
+  const snapshot = ctx.source === 'live_catalogue' ? seedBySlug.get(card.slug) : undefined
+  const mismatches = fields.filter(field => snapshot?.[field] != null && card[field] != null && snapshot[field] !== card[field])
+  const conflicts = fields.filter(field => isFieldUnverified(card.slug, field) || mismatches.includes(field))
+  const comparableNumber = (field: typeof fields[number]) => conflicts.includes(field) ? null : numeric(card, field)
+  const foreignFee = comparableNumber('forex_markup_percent')
+  // Several live rows use 0 as a placeholder. Only show zero when the dated
+  // curated catalogue provides a matching product value.
+  const forex = foreignFee === 0 && ctx.source === 'live_catalogue' && snapshot?.forex_markup_percent !== 0 ? null : foreignFee
   return {
     slug: card.slug,
     name: safeLabel(card.name),
     issuer: safeLabel(card.bank ?? ''),
     status: !available(card) ? 'legacy_or_inactive' : age === 'stale' ? 'stale_catalogue' : age === 'unknown' ? 'verification_unknown' : 'listed',
-    annualFeeInr: numeric(card, 'annual_fee_inr'),
-    joiningFeeInr: numeric(card, 'joining_fee_inr'),
-    annualFeeWaiverSpendInr: numeric(card, 'fee_waiver_spend_inr'),
-    forexMarkupPercent: numeric(card, 'forex_markup_percent'),
-    rewardCurrency: isFieldUnknown(card.slug, 'reward_currency') ? null : safeLabel(card.reward_currency ?? '', 40),
+    annualFeeInr: comparableNumber('annual_fee_inr'),
+    joiningFeeInr: comparableNumber('joining_fee_inr'),
+    annualFeeWaiverSpendInr: comparableNumber('fee_waiver_spend_inr'),
+    forexMarkupPercent: forex,
+    rewardCurrency: conflicts.includes('reward_currency') ? null : safeLabel(card.reward_currency ?? '', 40),
     disputedOrUnverifiedFields: conflicts,
     lastVerified: age === 'unknown' ? null : card.last_verified,
     freshness: age,
@@ -149,9 +168,9 @@ function describe(card: CreditCard, ctx: Context) {
 }
 
 function loungeDetails(card: CreditCard, type?: z.infer<typeof scope>) {
-  return (Array.isArray(card.lounges) ? card.lounges : []).filter(lounge => !type || lounge.type === type).slice(0, 6).map(lounge => ({
+  return storedArray<NonNullable<CreditCard['lounges']>[number]>(card.lounges).filter(lounge => lounge && (lounge.type === 'domestic' || lounge.type === 'international') && (!type || lounge.type === type)).slice(0, 6).map(lounge => ({
     scope: lounge.type,
-    network: lounge.network,
+    network: safeLabel(lounge.network, 60),
     visitsPerYear: lounge.visits_per_year ?? null,
     visitsPerQuarter: lounge.visits_per_quarter ?? null,
     spendRequired: lounge.spend_gated ?? null,
@@ -167,7 +186,7 @@ function cardError(ctx: Context, resolution: Exclude<ReturnType<typeof resolve>,
 
 function eligible(ctx: Context, input: Filters) {
   return catalogueCards(ctx).filter(card => available(card) && (input.maxAnnualFeeInr === undefined ||
-    (numeric(card, 'annual_fee_inr') !== null && !isFieldUnverified(card.slug, 'annual_fee_inr') &&
+    (numeric(card, 'annual_fee_inr') !== null && describe(card, ctx).annualFeeInr !== null &&
       card.annual_fee_inr <= input.maxAnnualFeeInr)))
 }
 
@@ -188,11 +207,12 @@ function estimate(card: CreditCard, input: Budget, ctx: Context) {
     }
   }
   const broad = new Set(['grocery', 'dining', 'travel', 'online', 'fuel', 'utility'])
-  const rules = (Array.isArray(card.category_rewards) ? card.category_rewards : []).filter(rule => broad.has(rule.category) && rule.unit === 'percent' &&
+  const rules = storedArray<CreditCard['category_rewards'][number]>(card.category_rewards).filter(rule => rule && broad.has(rule.category) && rule.unit === 'percent' &&
     typeof rule.rate === 'number' && Number.isFinite(rule.rate) && rule.rate >= 0)
   const value = calculateAnnualValue({
     ...card,
     welcome_benefit_inr: 0,
+    lounges: [],
     fee_waiver_spend_inr: undefined,
     category_rewards: rules,
     redemption_options: [],
@@ -223,9 +243,9 @@ export const catalogueTools = {
   }), (input, ctx) => {
     const words = input.query ? norm(input.query).split(' ').filter(Boolean) : []
     const cards = eligible(ctx, input).filter(card => {
-      const haystack = new Set(norm([card.name, card.slug, card.bank, ...(Array.isArray(card.category) ? card.category : [])].join(' ')).split(' '))
+      const haystack = new Set(norm([card.name, card.slug, card.bank, ...storedArray<string>(card.category)].join(' ')).split(' '))
       return (!input.query || (words.length > 0 && words.every(word => haystack.has(word)))) &&
-        (!input.category || card.category?.includes(input.category))
+        (!input.category || storedArray<string>(card.category).includes(input.category))
     }).slice(0, input.limit).map(card => describe(card, ctx))
     return result(ctx, '/cards', { status: cards.length ? 'ok' : 'not_found', cards })
   }),
@@ -292,7 +312,7 @@ export const catalogueTools = {
     const match = resolve(ctx, input.card)
     if (!match.card) return cardError(ctx, match)
     const card = match.card
-    const changes = (Array.isArray(card.devaluations) ? card.devaluations : []).filter(change => /^\d{4}-\d{2}-\d{2}$/.test(change.date))
+    const changes = storedArray<NonNullable<CreditCard['devaluations']>[number]>(card.devaluations).filter(change => change && /^\d{4}-\d{2}-\d{2}$/.test(change.date))
       .sort((a, b) => b.date.localeCompare(a.date)).slice(0, 8).map(change => ({
         effectiveDate: change.date, category: change.category, sourceUrl: sourceUrl(change.source_url),
         state: change.date > ctx.today ? 'scheduled_change' : 'historical_change',
@@ -342,8 +362,7 @@ export const catalogueTools = {
     internationalLoungeRequired: z.boolean().default(false), limit,
   }), (input, ctx) => {
     const cards = eligible(ctx, input).map(card => ({ ...describe(card, ctx), lounges: loungeDetails(card, 'international') }))
-      .filter(card => !card.disputedOrUnverifiedFields.includes('forex_markup_percent') &&
-        (card.forexMarkupPercent !== null || card.lounges.length > 0) &&
+      .filter(card => (card.forexMarkupPercent !== null || card.lounges.length > 0) &&
         (!input.internationalLoungeRequired || card.lounges.length > 0) &&
         (input.maxForexMarkupPercent === undefined ||
           (card.forexMarkupPercent !== null && card.forexMarkupPercent <= input.maxForexMarkupPercent)))
