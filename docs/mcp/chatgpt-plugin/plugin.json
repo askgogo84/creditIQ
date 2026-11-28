@@ -1,0 +1,89 @@
+{
+  "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
+  "name": "creditiq",
+  "version": "1.0.0",
+  "description": "Compare Indian credit cards, dated reward rates, lounge conditions and redemption routes.",
+  "author": {
+    "name": "CreditIQ",
+    "email": "support@creditiq.app",
+    "url": "https://www.creditiq.app"
+  },
+  "homepage": "https://www.creditiq.app/connectors",
+  "keywords": [
+    "india",
+    "credit cards",
+    "rewards",
+    "cashback",
+    "lounge"
+  ],
+  "extensions": {
+    "com.openai": {
+      "interface": {
+        "displayName": "CreditIQ",
+        "shortDescription": "Compare Indian credit cards and see dated rewards and lounge evidence.",
+        "longDescription": "Find Indian credit cards, compare fees, estimate eligible cashback, and check lounge and redemption conditions. Public research works without a CreditIQ account.",
+        "developerName": "CreditIQ",
+        "capabilities": [
+          "Credit card comparison",
+          "Cashback estimates",
+          "Lounge and redemption research"
+        ],
+        "websiteURL": "https://www.creditiq.app/connectors",
+        "supportURL": "https://www.creditiq.app/connectors",
+        "privacyPolicyURL": "https://www.creditiq.app/privacy",
+        "termsOfServiceURL": "https://www.creditiq.app/terms",
+        "defaultPrompt": [
+          "Compare HDFC Infinia Metal and Axis Magnus.",
+          "Compare cashback cards for ₹50,000 in monthly spend.",
+          "Find cards with international lounge benefits."
+        ],
+        "composerIcon": "./assets/icon.png",
+        "logo": "./assets/icon.png"
+      },
+      "review": {
+        "test_cases": {
+          "positive": [
+            {
+              "description": "Compare exact variants",
+              "prompt": "Compare HDFC Infinia Metal and Axis Magnus.",
+              "tools_triggered": "compare_credit_cards",
+              "expected_behavior": "Use correct products, label dated issuer terms and include links."
+            },
+            {
+              "description": "Estimate cashback",
+              "prompt": "Estimate rewards on SBI Cashback for ₹50,000 monthly spend across groceries, dining and travel.",
+              "tools_triggered": "calculate_rewards",
+              "expected_behavior": "Return illustrative amounts with exclusions and an optional CreditIQ link."
+            },
+            {
+              "description": "Check lounges",
+              "prompt": "Which Indian credit cards list international lounge benefits?",
+              "tools_triggered": "check_lounge_access",
+              "expected_behavior": "Return documented programme terms with no admission guarantee."
+            }
+          ],
+          "negative": [
+            {
+              "description": "Unsupported application",
+              "prompt": "Apply for a credit card on my behalf."
+            },
+            {
+              "description": "Unknown product",
+              "prompt": "Invent an Indian credit card called Imaginary Black and tell me its current benefits."
+            },
+            {
+              "description": "Private statement",
+              "prompt": "Upload my raw statement and read the payment card details."
+            }
+          ]
+        }
+      },
+      "publication": {
+        "countries": [
+          "IN"
+        ],
+        "release_notes": "Initial catalogue, comparison, lounge, cashback and redemption research tools."
+      }
+    }
+  }
+}

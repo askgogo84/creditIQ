@@ -121,7 +121,7 @@ function categoryAnnualReward(
 export function calculateAnnualValue(
   card: CreditCard,
   spend: UserSpendProfile,
-  options?: { basis?: 'full' | 'cash-only' }
+  options?: { basis?: 'full' | 'cash-only'; spendAllocation?: 'default' | 'provided' }
 ): {
   gross_rewards_inr: number;
   fee_inr: number;
@@ -146,11 +146,17 @@ export function calculateAnnualValue(
   let totalRewards = 0;
   let baseAnnualSpend = 0;
 
+  const providedOtherSpend = options?.spendAllocation === 'provided'
+    ? Math.max(0, monthlyTotal - DEFAULT_SPEND_MIX.reduce((sum, entry) => sum + (entry.field ? spend[entry.field] ?? 0 : 0), 0))
+    : 0;
+
   // Allocate the fixed, card-independent mix. Each slice applies the card's
   // best-matching accelerator (by post-cap annual value), else falls to base.
   for (const slice of DEFAULT_SPEND_MIX) {
     const override = slice.field ? spend[slice.field] : undefined;
-    const monthlySpendInCategory = override ?? monthlyTotal * slice.fraction;
+    const monthlySpendInCategory = options?.spendAllocation === 'provided'
+      ? override ?? (slice.field ? 0 : providedOtherSpend)
+      : override ?? monthlyTotal * slice.fraction;
 
     if (monthlySpendInCategory <= 0) continue;
 
