@@ -20,7 +20,7 @@
     "com.openai": {
       "interface": {
         "displayName": "CreditIQ",
-        "shortDescription": "Compare Indian credit cards and see dated rewards and lounge evidence.",
+        "shortDescription": "Compare Indian credit cards",
         "longDescription": "Find Indian credit cards, compare fees, estimate eligible cashback, and check lounge and redemption conditions. Public research works without a CreditIQ account.",
         "developerName": "CreditIQ",
         "capabilities": [
@@ -38,7 +38,8 @@
           "Find cards with international lounge benefits."
         ],
         "composerIcon": "./assets/icon.png",
-        "logo": "./assets/icon.png"
+        "logo": "./assets/icon.png",
+        "category": "Productivity"
       },
       "review": {
         "test_cases": {
@@ -60,6 +61,18 @@
               "prompt": "Which Indian credit cards list international lounge benefits?",
               "tools_triggered": "check_lounge_access",
               "expected_behavior": "Return documented programme terms with no admission guarantee."
+            },
+            {
+              "description": "Shortlist by budget",
+              "prompt": "Which Indian cashback cards should I compare for ₹50,000 in monthly spend?",
+              "tools_triggered": "recommend_credit_cards",
+              "expected_behavior": "Use the stated INR budget, disclose spend mix and estimate assumptions, and avoid promising approval."
+            },
+            {
+              "description": "Compare redemption paths",
+              "prompt": "How can I compare HDFC Infinia points for statement credit, vouchers and airline transfers?",
+              "tools_triggered": "optimize_redemption",
+              "expected_behavior": "Show dated, separate channels and never turn a transfer ratio into a cash price."
             }
           ],
           "negative": [

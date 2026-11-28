@@ -35,7 +35,7 @@ Statement parsing remains the first-party website feature. Do not enable a conne
 - Short description: Compare Indian credit cards, estimate rewards, and check dated lounge and redemption benefits.
 - Suggested discovery text: Use CreditIQ to research Indian credit card fees, cashback, airport lounges, foreign currency fees and card point redemption options. No account needed for public data.
 - Category: compare financial products or personal finance, using the category nearest the current portal taxonomy.
-- Icon: public/creditiq_logo_512.png, owned CreditIQ asset. Check the portal's requested format and current screenshots separately.
+- Icon: chatgpt-plugin/assets/icon.png, a square 512px derivative of the owned CreditIQ asset. Record review footage on the actual platforms.
 - Docs and privacy notice: https://www.creditiq.app/connectors
 - Privacy: https://www.creditiq.app/privacy
 - Terms: https://www.creditiq.app/terms
