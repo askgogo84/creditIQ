@@ -10,8 +10,12 @@ export async function POST(request: NextRequest, { params }: { params: { channel
   const headers = { 'Cache-Control': 'no-store' }
   const channel = referralChannel(params.channel)
   if (!connectorEnabled() || !channel) return new Response(null, { status: 404, headers })
-  if (request.headers.get('origin') !== request.nextUrl.origin ||
-    request.headers.get('sec-fetch-site') !== 'same-origin' || request.body) {
+  const host = request.headers.get('host')
+  const protocol = process.env.VERCEL ? 'https:' : request.nextUrl.protocol
+  const origin = host ? protocol + '//' + host : request.nextUrl.origin
+  const length = request.headers.get('content-length')
+  if (request.headers.get('origin') !== origin ||
+    request.headers.get('sec-fetch-site') !== 'same-origin' || (length !== null && length !== '0')) {
     return new Response(null, { status: 403, headers })
   }
   if (request.headers.get('sec-gpc') === '1' || request.headers.get('dnt') === '1') return new Response(null, { status: 204, headers })
